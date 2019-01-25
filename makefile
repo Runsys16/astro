@@ -7,7 +7,7 @@ CFLAGS   = $(INCS) -g -std=c++11 -O2 -fpermissive -mtune=core2 -Wno-deprecated -
 PATHLIBS = -L"/usr/local/lib" -L"/usr/lib"
 LIBS	 =  $(PATHLIBS) -lX11 -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
 
-BIN_NAME = essai
+BIN_NAME = astro
 
 
 
