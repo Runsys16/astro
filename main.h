@@ -94,6 +94,8 @@ void                charge_image_camera(void);
 void                change_background_camera(void);
 
 void                suivi(void);
+void                change_cam();
+
 
 static void         idleGL(void);
 static void         quit(void);

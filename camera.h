@@ -17,7 +17,7 @@ private:
     PanelSimple *               panelPreview;
 
     PanelText*                  pCamFilename;
-    vec2                        vCameraSize;
+    ivec2                        vCameraSize;
     int                         xCam, yCam, dxCam, dyCam;
     
     bool                        bChargingCamera;
@@ -26,6 +26,9 @@ private:
 public :
     Camera();
     Camera(int, int);
+    void                        createControlID(PanelSimple * p, int x, int y, char* str);
+    void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
+    void                        CreateControl();
     void                        CreatePreview();
     void                        resizePreview(int, int);
     void                        change_background_camera();

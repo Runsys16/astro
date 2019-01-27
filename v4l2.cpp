@@ -41,6 +41,7 @@ Device_cam::Device_cam()
     sizeChoix       = 0;
 
     bEnregistre     = false;
+    bCapture        = false;
     bmp_buffer      = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -221,8 +222,10 @@ void Device_cam::errno_exit(const char *s)
 {
     sprintf(strErr, "%s error %d, %s", s, errno, strerror(errno));
     fprintf(stderr, "%s\n", strErr);
+    
+    logf((char*)"%s", strErr);
     //exit(EXIT_FAILURE);
-    close_device();
+    //close_device();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -284,6 +287,7 @@ int Device_cam::read_frame(void)
 
             default:
                 errno_exit("read");
+                return -1;
             }
         }
 
@@ -309,6 +313,7 @@ int Device_cam::read_frame(void)
 
             default:
                 errno_exit("VIDIOC_DQBUF");
+                return -1;
             }
         }
 
@@ -324,7 +329,10 @@ int Device_cam::read_frame(void)
         //printf( "%d %d\n", buffers[buf.index].start, buf.bytesused);
 
         if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
-                errno_exit("VIDIOC_QBUF");
+        {
+            errno_exit("VIDIOC_QBUF");
+            return -1;
+        }
         break;
 
     case IO_METHOD_USERPTR:
@@ -347,6 +355,7 @@ int Device_cam::read_frame(void)
             default:
                 log((char*)"Erreur Device_cam::read_frame()");
                 errno_exit("VIDIOC_DQBUF");
+                return -1;
             }
         }
 
@@ -426,21 +435,26 @@ void Device_cam::mainloop(void)
 void Device_cam::stop_capturing(void)
 {
     if (fd == -1)       return;
+    if ( !bCapture )            return;
 
-        enum v4l2_buf_type type;
+    bCapture = false;
 
-        switch (io) {
-        case IO_METHOD_READ:
-                /* Nothing to do. */
-                break;
+    logf( (char*)"-------------- Device_cam::stop_capturing %s------------------", dev_name);
 
-        case IO_METHOD_MMAP:
-        case IO_METHOD_USERPTR:
-                type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                if (-1 == xioctl(fd, VIDIOC_STREAMOFF, &type))
-                        errno_exit("VIDIOC_STREAMOFF");
-                break;
-        }
+    enum v4l2_buf_type type;
+
+    switch (io) {
+    case IO_METHOD_READ:
+            /* Nothing to do. */
+            break;
+
+    case IO_METHOD_MMAP:
+    case IO_METHOD_USERPTR:
+            type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            if (-1 == xioctl(fd, VIDIOC_STREAMOFF, &type))
+                    errno_exit("VIDIOC_STREAMOFF");
+            break;
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -449,51 +463,55 @@ void Device_cam::start_capturing(void)
 {
     if (fd == -1)       return;
 
+    if ( bCapture ) return;
+    
+    logf( (char*)"-------------- Device_cam::start_capturing %s------------------", dev_name);
+    
+    unsigned int i;
+    enum v4l2_buf_type type;
 
-        unsigned int i;
-        enum v4l2_buf_type type;
+    switch (io) {
+    case IO_METHOD_READ:
+            /* Nothing to do. */
+            break;
 
-        switch (io) {
-        case IO_METHOD_READ:
-                /* Nothing to do. */
-                break;
+    case IO_METHOD_MMAP:
+            for (i = 0; i < n_buffers; ++i) {
+                    struct v4l2_buffer buf;
 
-        case IO_METHOD_MMAP:
-                for (i = 0; i < n_buffers; ++i) {
-                        struct v4l2_buffer buf;
+                    CLEAR(buf);
+                    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                    buf.memory = V4L2_MEMORY_MMAP;
+                    buf.index = i;
 
-                        CLEAR(buf);
-                        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                        buf.memory = V4L2_MEMORY_MMAP;
-                        buf.index = i;
+                    if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
+                            errno_exit("VIDIOC_QBUF");
+            }
+            type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            if (-1 == xioctl(fd, VIDIOC_STREAMON, &type))
+                    errno_exit("VIDIOC_STREAMON");
+            break;
 
-                        if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
-                                errno_exit("VIDIOC_QBUF");
-                }
-                type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                if (-1 == xioctl(fd, VIDIOC_STREAMON, &type))
-                        errno_exit("VIDIOC_STREAMON");
-                break;
+    case IO_METHOD_USERPTR:
+            for (i = 0; i < n_buffers; ++i) {
+                    struct v4l2_buffer buf;
 
-        case IO_METHOD_USERPTR:
-                for (i = 0; i < n_buffers; ++i) {
-                        struct v4l2_buffer buf;
+                    CLEAR(buf);
+                    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                    buf.memory = V4L2_MEMORY_USERPTR;
+                    buf.index = i;
+                    buf.m.userptr = (unsigned long)buffers[i].start;
+                    buf.length = buffers[i].length;
 
-                        CLEAR(buf);
-                        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                        buf.memory = V4L2_MEMORY_USERPTR;
-                        buf.index = i;
-                        buf.m.userptr = (unsigned long)buffers[i].start;
-                        buf.length = buffers[i].length;
-
-                        if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
-                                errno_exit("VIDIOC_QBUF");
-                }
-                type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                if (-1 == xioctl(fd, VIDIOC_STREAMON, &type))
-                        errno_exit("VIDIOC_STREAMON");
-                break;
-        }
+                    if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
+                            errno_exit("VIDIOC_QBUF");
+            }
+            type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            if (-1 == xioctl(fd, VIDIOC_STREAMON, &type))
+                    errno_exit("VIDIOC_STREAMON");
+            break;
+    }
+    bCapture = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -877,6 +895,7 @@ int Device_cam::open_device()
     if (-1 == stat(dev_name, &st)) {
         sprintf(strErr, "Cannot identify '%s': %d, %s", dev_name, errno, strerror(errno));
         fprintf(stderr, "%s\n", strErr);
+        logf((char*)"%s", strErr);
         fd = -1;
         return(EXIT_FAILURE);
     }
@@ -885,6 +904,7 @@ int Device_cam::open_device()
         sprintf(strErr, "%s is no device", dev_name);
         fprintf(stderr, "%s\n", strErr);
         fd = -1;
+        logf((char*)"%s", strErr);
         return(EXIT_FAILURE);
     }
 
@@ -893,6 +913,7 @@ int Device_cam::open_device()
     if (-1 == fd) {
         sprintf(strErr, "Cannot open '%s': %d, %s", dev_name, errno, strerror(errno));
         fprintf(stderr, "%s\n", strErr);
+        logf((char*)"%s", strErr);
         fd = -1;
         return(EXIT_FAILURE);
     }

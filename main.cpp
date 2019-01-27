@@ -47,6 +47,8 @@ int                 count_png   = 30;
 //int                 height = 600;
 int                 width  = 950;
 int                 height = 534;
+int                 widthScreen  = 0;
+int                 heightScreen = 0;
 
 int                 xPos;
 int                 yPos;
@@ -451,7 +453,8 @@ static void displayGL(void)
 //--------------------------------------------------------------------------------------------------------------------
 static void reshapeGL(int newWidth, int newHeight)
 {
-    cout << "reshapeGL("<< newWidth <<" "<< newHeight <<")"<< endl;
+    logf((char*) "reshapeGL(%d, %d)", newWidth, newHeight);
+
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( newWidth, newHeight );
 
@@ -615,6 +618,53 @@ void change_background_camera(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void change_cam(void)
+{
+    switch(cam)
+    {
+        case CAM0:
+            //if (!bPause)    {
+                camera.stop_capturing();
+                //camera.uninit_device();
+            //}
+            break;
+        case CAM1:
+            //if (!bPause)    {
+                pCameras[0]->stop_capturing();
+                //pCameras[0]->uninit_device();
+            //}
+            break;
+    }
+    //
+    // Rotation du choix des cameras
+    //
+    int nb = pCameras.size() + 2;
+	int a = cam;
+    a = ++a % nb;
+    cam = (background_t)a;
+    //
+    //
+    //
+    switch(cam)
+    {
+        case CAM0:
+            //if (!bPause)    {
+                //camera.init_device();
+                camera.start_capturing();
+            //}
+            break;
+        case CAM1:
+            //if (!bPause)    {
+                //pCameras[0]->init_device();
+                pCameras[0]->start_capturing();
+            //}
+            break;
+    }
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void suivi(void)
 {
     //change_background_pleiade();
@@ -694,11 +744,11 @@ static void idleGL(void)
         case CAM1:
             if (!bPause)    {
                 //change_background_camera();
-                log((char*)"ERROR");
+                //log((char*)"ERROR");
                 pCameras[0]->setVisible(true);
-                log((char*)"ERROR visible");
+                //log((char*)"ERROR visible");
                 pCameras[0]->change_background_camera();
-                log((char*)"ERROR");
+                //log((char*)"ERROR");
             }
             break;
     }
@@ -768,10 +818,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
-		int a = cam;
-        a = ++a % 2;
-        cam = (background_t)a;
-        
+		change_cam();
         }
 		break;
 	case 10:
@@ -1155,7 +1202,7 @@ void resizePreview(int width, int height)	{
 
     int modX, modY;
 
-    printf( "rsc=%f   rpv=%f\n", rsc, rpv);
+    //printf( "rsc=%f   rpv=%f\n", rsc, rpv);
 	if ( rsc > rpv )    {
 	    zoom = (float)height/IMAGEH;
 
@@ -1167,7 +1214,7 @@ void resizePreview(int width, int height)	{
 	} 
 	else                {
 	    zoom = (float)width/IMAGEW;
-        printf( "Zoom=%f\n", zoom );
+        //printf( "Zoom=%f\n", zoom );
 
 	    dxCam = zoom * IMAGEW;
 	    dyCam = zoom * IMAGEH;
@@ -1181,9 +1228,9 @@ void resizePreview(int width, int height)	{
     rw = (float)vCameraSize.x/(float)dxCam;
     rh = (float)vCameraSize.y/(float)dyCam;
 
-    printf( "Screen  : %dx%d\n", width, height);
-    printf( "Ratio   : %0.2fx%0.2f\n", rw, rh);
-    printf( "Preview : %d,%d %dx%d\n", xCam, yCam, dxCam, dyCam);
+    //printf( "Screen  : %dx%d\n", width, height);
+    //printf( "Ratio   : %0.2fx%0.2f\n", rw, rh);
+    //printf( "Preview : %d,%d %dx%d\n", xCam, yCam, dxCam, dyCam);
 
 	
 	panelPreView->setPosAndSize( xCam, yCam, dxCam, dyCam);
@@ -1312,7 +1359,7 @@ static void CreateControl()	{
 
     panelControl->setVisible(bPanelControl);
 
-    printf("panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
+    logf((char*)"** CreateControl()  panelControl  %d,%d %dx%d", x, y, dx, dy);   
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1382,7 +1429,7 @@ static void CreateHelp()
     Y = 20 + 20 + 192;
 	panelHelp->setPos(X, Y);
 
-    printf("panelHelp  %d,%d %dx%d\n", X, Y, DX, DY);
+    logf((char*)"** CreateHelp()  panelHelp  %d,%d %dx%d", X, Y, DX, DY);
 }	
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1390,7 +1437,7 @@ static void CreateHelp()
 static void CreatePreview()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 	//wm.setScreenSize( width, height );
-    log((char*)"CreatePreview");
+    log((char*)"** CreatePreview()");
 	panelPreView = new PanelSimple();
 	resizePreview(width, height);
 	panelPreView->setBackground( (char*)"frame-0.raw");
@@ -1408,8 +1455,6 @@ static void CreatePreview()	{
 
 	panelPreView->setCanMove(false);
  	wm.add( panelPreView );
-
-    printf("panelPreview  %d,%d %dx%d\n", 0, 0, width, height);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1440,7 +1485,7 @@ static void CreateStatus()	{
  	wm.add( panelStatus );
  	panelStatus->setBackground((char*)"background.tga");
 
-    printf("panelSatuts  %d,%d %dx%d\n", x, y, dx, dy);
+    logf((char*)"** CreateStatus()  panelSatuts  %d,%d %dx%d", x, y, dx, dy);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1465,7 +1510,7 @@ static void CreateStdOut()	{
 
     string st = string("Bonjour\n");
        
-    printf("panelStdOut  %d,%d %dx%d\n", x, y, dx, dy);
+    logf((char*)"** CreateStdOut()  panelStdOut  %d,%d %dx%d", x, y, dx, dy);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1586,6 +1631,8 @@ void parse_option( int argc, char**argv )
 
             case 'f':
                     bFull = true;
+                    width  = widthScreen;
+                    height = heightScreen;
                     break;
 
             case 'l':
@@ -1655,6 +1702,8 @@ void getX11Screen()
     for (int i = 0; i < count_screens; ++i) {
         screen = ScreenOfDisplay(display, i);
         printf("\tScreen %d: %dX%d\n", i + 1, screen->width, screen->height);
+        widthScreen = screen->width;
+        heightScreen = screen->height;
     }
 
     // close the display
@@ -1665,6 +1714,7 @@ void getX11Screen()
 //--------------------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
+    getX11Screen();
     parse_option(argc, argv);
     
     vCameraSize.x = 1280;
@@ -1676,7 +1726,6 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    getX11Screen();
     cout <<"Screen size "<< glutGet(GLUT_SCREEN_WIDTH) <<"x"<< glutGet(GLUT_SCREEN_HEIGHT) << endl;
 
 	xPos = (glutGet(GLUT_SCREEN_WIDTH)-width)/2;
@@ -1711,23 +1760,24 @@ int main(int argc, char **argv)
     glewInit();
     
     
-    /*
+    //*
     pCameras.push_back( new Camera(300,168) );
-    pCameras.push_back( new Camera(200,112) );
-    pCameras.push_back( new Camera(100,56) );
+    //pCameras.push_back( new Camera(200,112) );
+    //pCameras.push_back( new Camera(100,56) );
     //pCameras.push_back( new Camera(width,height) );
     
     Camera* pCamera = pCameras[0];
 
-    log((char*)"Camera 2");    
-    pCamera->setDevName( (char*)"/dev/video0" );
+    log((char*)"**********  Camera 2  ********************");    
+    pCamera->setDevName( (char*)"/dev/video2" );
     pCamera->open_device();
     pCamera->init_device();
     pCamera->capability_list();
-    pCamera->uninit_device();
-    pCamera->close_device();
+    //pCamera->uninit_device();
+    //pCamera->close_device();
     //*/
     
+    log((char*)"**********  Camera 1  ********************");    
     if ( camera.open_device() )   
     {
         bPng = true;
@@ -1737,6 +1787,7 @@ int main(int argc, char **argv)
     
     camera.init_device();
     camera.capability_list();
+    //camera.uninit_device();
 
     vCameraSize.x = camera.getWidth();
     vCameraSize.y = camera.getHeight();
@@ -1753,8 +1804,8 @@ int main(int argc, char **argv)
     else
     {
         log((char*)"APPEL change_background_pleiade");
-        camera.start_capturing();
-        change_background_camera();
+        //camera.start_capturing();
+        //change_background_camera();
     }
     
     

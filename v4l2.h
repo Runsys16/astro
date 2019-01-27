@@ -119,6 +119,7 @@ private:
 	int                     row_stride, wBmp, hBmp, pixel_size;
 
     bool                    bEnregistre;
+    bool                    bCapture;
 
 public :
 
@@ -155,9 +156,11 @@ public :
     inline  bool            isErr()                 { return fd == -1; }
     
     inline  void            setDevName(char* s)     { dev_name = s; }
+    inline  char*           getDevName()            { return dev_name; }
+
     inline  int             getFd()                 { return fd; }
 
-    inline  unsigned char*  getBuffer()         { return bmp_buffer; }
+    inline  unsigned char*  getBuffer()             { return bmp_buffer; }
 
     inline  char*           getName()               { return (char*)name.c_str(); }
     inline  void            enregistre()            { bEnregistre = true; }
