@@ -23,6 +23,7 @@ void Camera_mgr::add( string dev_name )
     pCamera->init_device();
     pCamera->capability_list();
     pCamera->start_capturing();
+    pCamera->addControl();
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -30,6 +31,7 @@ void Camera_mgr::add( string dev_name )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::change_background_camera( void )
 {
+    //logf((char*)"----------- Camera_mgr::change_background_camera() -------------");
     for( int i=0; i<pCameras.size(); i++ )
     {
         pCameras[i]->change_background_camera();

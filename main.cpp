@@ -655,7 +655,7 @@ static void idleGL(void)
         case PLEIADES:
             //pCameras[0]->setVisible(false);
             if (!bPause)    {
-                change_background_pleiade();
+                //change_background_pleiade();
                 if (bSuivi)    suivi();
             }
             break;
@@ -668,9 +668,9 @@ static void idleGL(void)
             if (!bPause)    {
                 //change_background_camera();
                 //log((char*)"ERROR");
-                pCameras[0]->setVisible(true);
+                //pCameras[0]->setVisible(true);
                 //log((char*)"ERROR visible");
-                pCameras[0]->change_background_camera();
+                //pCameras[0]->change_background_camera();
                 //log((char*)"ERROR");
             }
             break;
@@ -1754,7 +1754,7 @@ int main(int argc, char **argv)
     }
     
     
-    glClearColor( 0.0,0.0,0.0,1.0);
+    glClearColor( 1.0,0.0,0.0,1.0);
     glutMainLoop();
 
     //camera.uninit_device();

@@ -29,9 +29,11 @@ public :
     
     void                        init();
     
+    void                        addControl();
     void                        createControlID(PanelSimple * p, int x, int y, char* str);
     void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
     void                        CreateControl();
+
     void                        CreatePreview();
     void                        resizePreview(int, int);
 
@@ -39,7 +41,7 @@ public :
     void                        change_background_camera();
     //void                        charge_image_camera();
     
-    std::thread                 memberThread() { return std::thread(&Camera::threadExtractImg, this); }    
+    std::thread                 memberThread();
     
     void                        setVisible(bool b);
     

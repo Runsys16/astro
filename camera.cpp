@@ -52,7 +52,8 @@ void Camera::CreatePreview()	{
 	resizePreview(getWidth(), getHeight());
 	panelPreview->setBackground( (char*)"frame-0.raw");
 	
-	pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
+	//pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
+	pCamFilename = new PanelText( (char*)getDevName(),		PanelText::LARGE_FONT, 20, 10 );
 	panelPreview->add( pCamFilename );
 
     string  pStr;
@@ -82,8 +83,8 @@ void Camera::resizePreview(int width, int height)	{
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
-	wsc = getWidth();
-	hsc = getHeight();
+	//wsc = getWidth();
+	//hsc = getHeight();
 	
 	float rsc = (float)wsc/(float)hsc;
 	float rpv = (float)vCameraSize.x/(float)vCameraSize.y;
@@ -158,21 +159,13 @@ void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int i
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::CreateControl()	{
-    logf((char*)"------------- Camera::CreateControl() ---------------");
-	WindowsManager& wm = WindowsManager::getInstance();
+void Camera::addControl()	{
+    logf((char*)"------------- Camera::addControl() ---------------");
+    if ( getFd() == -1 )
+    {
+        logf((char*)"Le materiel n'est pas encore ouvert");
+    }
 
-    panelControl = new PanelWindow();
-    int dx = 200;
-    int dy = 150;
-    int x = getWidth() - dx - 20;
-    int y = 20;
-
-    panelControl->setPosAndSize( x, y, dx, dy);
-    ///home/rene/programmes/opengl/video/essai
-    wm.add(panelControl);
-    panelControl->setBackground((char*)"background.tga");
-    
     int xt  = 10;
     int yt  = 10;
     int dyt = 16;
@@ -190,11 +183,32 @@ void Camera::CreateControl()	{
     createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance (auto)", 0x0098090C );
     createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance", 0x0098091A );
 
-    dy = ++n*dyt;
-    panelControl->setSize( dx, dy);
-    //resizeControl(getWidth(), getHeight());
+    int dy = ++n*dyt;
+    panelControl->setSize( 200, dy);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::CreateControl()	{
+    logf((char*)"------------- Camera::CreateControl() ---------------");
+    if ( getFd() == -1 )
+    {
+        logf((char*)"Le materiel n'est pas encore ouvert");
+    }
+	WindowsManager& wm = WindowsManager::getInstance();
 
-    //panelControl->setVisible(bPanelControl);
+    panelControl = new PanelWindow();
+    int dx = 200;
+    int dy = 150;
+    int x = getWidth() - dx - 20;
+    int y = 20;
+
+    panelControl->setPosAndSize( x, y, dx, dy);
+    ///home/rene/programmes/opengl/video/essai
+    wm.add(panelControl);
+    panelControl->setBackground((char*)"background.tga");
+    
+    addControl();
 
     logf((char*)"panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
 }
@@ -215,12 +229,20 @@ void charge_camera()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::threadExtractImg()
 {
-    log((char*)"Camera::threadExtractImg()");
+    //log((char*)"Camera::threadExtractImg() start");
     mainloop();
 
     bChargingCamera = true;
-    log((char*)"Camera::threadExtractImg()");
+    //log((char*)"Camera::threadExtractImg() stop");
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+std::thread Camera::memberThread()
+{
+    //log((char*)"Camera::memberThread()");
+    return std::thread(&Camera::threadExtractImg, this); 
+}    
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -228,12 +250,13 @@ void Camera::change_background_camera(void)
 {
     static float previousTime = -1;
 
-    log((char*)"START Camera::change_background_camera()");
-    logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
+    //log((char*)"START Camera::change_background_camera()");
+    //logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
     if ( vCameraSize.x = -1 )
     {
         vCameraSize.x = getWidth();
         vCameraSize.y = getHeight();
+        
     }
     //bFreePtr = false;
     if ( bChargingCamera )
@@ -257,14 +280,12 @@ void Camera::change_background_camera(void)
             cerr << "ERREUR : " << e.what() << endl;
         }
 
-        pCamFilename->changeText( (char*)getDevName() );
+        //pCamFilename->changeText( (char*)getDevName() );
 
         pCharging = &bChargingCamera;
 
-        //pthread_chargement_camera = new thread(charge_camera);
-        log((char*)"  Start Thread");
         thread_chargement_camera = memberThread();
-        log((char*)"  Fin   Thread");
+        thread_chargement_camera.detach();
         
         float t = Timer::getInstance().getCurrentTime();
         if ( previousTime != -1 )
@@ -279,7 +300,7 @@ void Camera::change_background_camera(void)
         
         bChargingCamera = false;
      }
-    log((char*)"END   Camera::change_background_camera()");
+    //log((char*)"END   Camera::change_background_camera()");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
