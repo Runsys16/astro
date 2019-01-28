@@ -23,8 +23,6 @@ Camera::Camera(int w, int h)
     setWidth(w);
     setHeight(h);
     
-    CreatePreview();
-    CreateControl();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -83,8 +81,17 @@ void Camera::resizePreview(int width, int height)	{
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
-	//wsc = getWidth();
-	//hsc = getHeight();
+    logf((char*) "Screen (%d, %d)", wsc, hsc);
+
+
+    if ( vCameraSize.x == -1 )
+    {
+        vCameraSize.x = getWidth();
+        vCameraSize.y = getHeight();
+        logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
+    }
+
+
 	
 	float rsc = (float)wsc/(float)hsc;
 	float rpv = (float)vCameraSize.x/(float)vCameraSize.y;
@@ -98,7 +105,7 @@ void Camera::resizePreview(int width, int height)	{
     printf( "vCamera.x=%.2f   vCamera.y=%.2f\n", vCameraSize.x, vCameraSize.y);
 	*/
 	if ( rsc > rpv )    {
-	    zoom = (float)height/(float)vCameraSize.y;
+	    zoom = (float)hsc/(float)vCameraSize.y;
 
 	    dxCam = zoom * (float)vCameraSize.x;
 	    dyCam = zoom * (float)vCameraSize.y;
@@ -107,7 +114,7 @@ void Camera::resizePreview(int width, int height)	{
 	    yCam = modY = 0;
 	} 
 	else                {
-	    zoom = (float)width/(float)vCameraSize.x;
+	    zoom = (float)wsc/(float)vCameraSize.x;
         printf( "Zoom=%f\n", zoom );
 
 	    dxCam = zoom * (float)vCameraSize.x;
@@ -117,7 +124,8 @@ void Camera::resizePreview(int width, int height)	{
 	    yCam = modY = (hsc - dyCam) / 2;
 	} 
 
-    logf((char*) "   Screen  : %dx%d", width, height);
+
+    logf((char*) "   Screen  : %dx%d", wsc, hsc);
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
 	
@@ -251,12 +259,11 @@ void Camera::change_background_camera(void)
     static float previousTime = -1;
 
     //log((char*)"START Camera::change_background_camera()");
-    //logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
-    if ( vCameraSize.x = -1 )
+    if ( vCameraSize.x == -1 )
     {
         vCameraSize.x = getWidth();
         vCameraSize.y = getHeight();
-        
+        logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
     }
     //bFreePtr = false;
     if ( bChargingCamera )

@@ -23,8 +23,10 @@ void Camera_mgr::add( string dev_name )
     pCamera->init_device();
     pCamera->capability_list();
     pCamera->start_capturing();
-    pCamera->addControl();
+    //pCamera->addControl();
     
+    pCamera->CreatePreview();
+    pCamera->CreateControl();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
