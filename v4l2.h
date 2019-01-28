@@ -136,9 +136,11 @@ public :
     int                     xioctl(int fh, int request, void *arg);
     void                    process_image(const void *p, int size);
     int                     read_frame(void);
-    void                    mainloop(void);
+
+    void                    mainloop(void);    
     void                    stop_capturing(void);
     void                    start_capturing(void);
+
     void                    uninit_device(void);
     void                    init_read(unsigned int buffer_size);
     void                    init_mmap(void);

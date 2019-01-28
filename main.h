@@ -17,10 +17,6 @@
 
 #include <WindowsManager.h>
 
-#include "v4l2.h"
-#include "Mathlib.h"
-#include "timer.h"
-
 enum background_t
 {
     PLEIADES,
@@ -117,9 +113,9 @@ void                resizePreview(int width, int height);
 static void         CreateResultat();
 static void         createControlID(PanelSimple * p, int x, int y, char* str);
 static void         createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
-static void         CreateControl();
+//static void         CreateControl();
 static void         CreateHelp();
-static void         CreatePreview();
+//static void         CreatePreview();
 static void         CreateStatus();
 static void         CreateStdOut();
 

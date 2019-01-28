@@ -1,6 +1,10 @@
 #include "main.h"
 #include "v4l2.h"
 #include "camera.h"
+#include "camera_mgr.h"
+#include "Mathlib.h"
+#include "timer.h"
+
 
 //#define DEBUG 1
 #define SIZEPT  20
@@ -10,16 +14,15 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-PanelWindow *       panelControl;
+//PanelWindow *       panelControl;
 PanelWindow *       panelHelp;
 PanelWindow *       panelResultat;
 PanelWindow *       panelCourbe;
 
-PanelSimple *       panelPreView;
+//PanelSimple *       panelPreView;
 PanelSimple *       panelStatus;
 
 PanelScrollText*    panelStdOut;
-//PanelConsole *      panelStatus;
 
 PanelText*          pCamFilename;
 PanelText*          R;
@@ -33,7 +36,7 @@ PanelText*          pFPS;
 PanelText *         pErr;
 
 
-Device_cam          camera      = Device_cam();
+//Device_cam          camera      = Device_cam();
 
 char                background[]="frame-0.raw";
 GLenum err;
@@ -458,8 +461,8 @@ static void reshapeGL(int newWidth, int newHeight)
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( newWidth, newHeight );
 
-    resizePreview(newWidth, newHeight);
-    resizeControl(newWidth, newHeight);
+    //resizePreview(newWidth, newHeight);
+    //resizeControl(newWidth, newHeight);
     resizeHelp(newWidth, newHeight);
     resizeCourbe(newWidth, newHeight);
 
@@ -475,33 +478,15 @@ static void reshapeGL(int newWidth, int newHeight)
 	    width = newWidth;
 	    height = newHeight;
     }
+    
     //cout << "reshapeGL("<< newWidth <<" "<< newHeight <<")"<< endl;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void reset_camera(void)
-{
-    camera.uninit_device();
-    camera.close_device();
-
-    camera.open_device();
-    camera.init_device();
-
-    //camera.def_crop(640,480);
-        
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void write_image(void)
 {
-        
-    //camera.capability_list();
-    
-    //camera.start_capturing();
-    camera.mainloop();
-    //camera.stop_capturing();
+    //camera.mainloop();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -518,6 +503,7 @@ void charge_image_pleiade(void)
 //--------------------------------------------------------------------------------------------------------------------
 void change_background_pleiade(void)
 {
+    return;
     static int plus = 1;
     if (bPause)         return;    
 
@@ -533,7 +519,7 @@ void change_background_pleiade(void)
         sPleiade[57] = num[1];
         sPleiade[58] = num[2];
 
-        panelPreView->deleteBackground();
+        //panelPreView->deleteBackground();
         pCamFilename->changeText( (char*) num );
 
 
@@ -547,7 +533,7 @@ void change_background_pleiade(void)
         h   = readB.h;
         d   = readB.d;
         
-        panelPreView->setBackground( ptr, w, h, d);
+        //panelPreView->setBackground( ptr, w, h, d);
         //panelPreView->setBackground( (char*)sPleiade);
         //unsigned int w,h,d;
         //ptr = _ImageTools::OpenImage( (const std::string)sPleiade, w, h, d );
@@ -567,67 +553,10 @@ void change_background_pleiade(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void charge_image_camera(void)
-{
-    write_image();
-
-    bChargingCamera = true;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void change_background_camera(void)
-{
-    static float previousTime = -1;
-    
-    bFreePtr = false;
-    if ( bChargingCamera )
-    {
-            panelPreView->deleteBackground();
-            //panelPreView->setBackground( (char*)background);
-            try
-            {
-                panelPreView->setBackground( camera.getBuffer(), vCameraSize.x, vCameraSize.y, 3);
-                ptr = camera.getBuffer();
-                if (bSuivi)    suivi();
-            }
-            catch(std::exception const& e)
-            {
-                panelPreView->setBackground( (char*)background);
-                cerr << "ERREUR : " << e.what() << endl;
-            }
-
-            pCamFilename->changeText( (char*)"frame-0.raw" );
-
-            pthread_chargement_camera = new thread(charge_image_camera);
-            
-            float t = Timer::getInstance().getCurrentTime();
-            if ( previousTime != -1 )
-            {
-                float ecoule = t - previousTime;
-                char hz[255];
-                sprintf(hz, "%.1fHz", 1.0/ecoule);
-                pHertz->changeText( hz );
-                //logf( (char*)"Time : %0.4f", ecoule );
-            }
-            previousTime = t;
-            
-            bChargingCamera = false;
-     }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void change_cam(void)
 {
     switch(cam)
     {
-        case CAM0:
-            //if (!bPause)    {
-                camera.stop_capturing();
-                //camera.uninit_device();
-            //}
-            break;
         case CAM1:
             //if (!bPause)    {
                 pCameras[0]->stop_capturing();
@@ -647,12 +576,6 @@ void change_cam(void)
     //
     switch(cam)
     {
-        case CAM0:
-            //if (!bPause)    {
-                //camera.init_device();
-                camera.start_capturing();
-            //}
-            break;
         case CAM1:
             //if (!bPause)    {
                 //pCameras[0]->init_device();
@@ -738,7 +661,7 @@ static void idleGL(void)
             break;
         case CAM0:
             if (!bPause)    {
-                change_background_camera();
+                Camera_mgr::getInstance().change_background_camera();
             }
             break;
         case CAM1:
@@ -764,7 +687,7 @@ static void idleGL(void)
 		WindowsManager::getInstance().idleGL( elapsedTime );
 	}
 
-    WindowsManager::getInstance().onBottom(panelPreView);
+    //WindowsManager::getInstance().onBottom(panelPreView);
 
 	glutPostRedisplay();
 }
@@ -803,7 +726,7 @@ static void rotateVisible()
     Panel*  pFocus = WindowsManager::getInstance().getFocus();
 
     if ( pFocus == panelHelp)       pFocus->setVisible(!pFocus->getVisible());
-    if ( pFocus == panelControl)    pFocus->setVisible(!pFocus->getVisible());
+    //if ( pFocus == panelControl)    pFocus->setVisible(!pFocus->getVisible());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -842,6 +765,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'O':
     	bAutorisationSuivi = !bAutorisationSuivi;
     	break;
+    	/*
     case 'E':
         pControl = camera.getControl("Exposure (Absolute)");
         if (pControl)       pControl->plus();
@@ -912,6 +836,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'r':  // '-'
         reset_camera();
         break;
+        */
     case 'p':  // '-'
         bPause = !bPause;
 
@@ -922,11 +847,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             pErr->changeText((char*)"" );
         }
         break;
+    /*
     case '1':
         bPanelControl = !bPanelControl;
         panelControl->setVisible(bPanelControl);
         log( (char*)"Toggle panelControl !!!" );
         break;
+    */
     case '2':
         bPanelHelp = !bPanelHelp;
         panelHelp->setVisible(bPanelHelp);
@@ -952,14 +879,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         if ( bPng )
         {
             log( (char*)"Affiche le suivi sauvegarde" );
-            pthread_chargement_camera->join();
-            camera.stop_capturing();
+            //pthread_chargement_camera->join();
+            //camera.stop_capturing();
         }
         else
         {
             log( (char*)"Affiche la camera" );
-            pthread_chargement_pleiades->join();
-            camera.start_capturing();
+            //pthread_chargement_pleiades->join();
+            //camera.start_capturing();
         }
         break;
     case 'A':
@@ -991,6 +918,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"Longueur : %f   %.0fd%.0fm%.2fs", l, DMS.d, DMS.m, DMS.s );
         }
         break;
+/*
     case 'f':
         {
         camera.enum_format();
@@ -1004,11 +932,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         reset_camera();
         }
         break;
+
     case 'Q':
         {
         camera.enregistre();
         }
         break;
+*/
     default:
         {
         logf((char*)"key: %d", key);
@@ -1021,28 +951,28 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 	WindowsManager::getInstance().keyboardUpFunc( key, x, y);
-    WindowsManager::getInstance().onBottom(panelPreView);
+    //WindowsManager::getInstance().onBottom(panelPreView);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialFunc(int key, int x, int y)	{
 	WindowsManager::getInstance().keyboardSpecialFunc( key, x, y);
-    WindowsManager::getInstance().onBottom(panelPreView);
+    //WindowsManager::getInstance().onBottom(panelPreView);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialUpFunc(int key, int x, int y)	{
 	WindowsManager::getInstance().keyboardSpecialUpFunc( key, x, y);
-    WindowsManager::getInstance().onBottom(panelPreView);
+    //WindowsManager::getInstance().onBottom(panelPreView);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
 	WindowsManager::getInstance().mouseFunc(button, state, x, y);
-    WindowsManager::getInstance().onBottom(panelPreView);
+    //WindowsManager::getInstance().onBottom(panelPreView);
 
 	//if ( bPause && button == 0 && state == 0 )	{
 	if ( button == 0 && state == 0 )	{
@@ -1131,14 +1061,14 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMotionFunc(int x, int y)	{	
 	WindowsManager::getInstance().motionFunc(x, y);
-    WindowsManager::getInstance().onBottom(panelPreView);
+    //WindowsManager::getInstance().onBottom(panelPreView);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutPassiveMotionFunc(int x, int y)	{
 	WindowsManager::getInstance().passiveMotionFunc(x, y);
-    WindowsManager::getInstance().onBottom(panelPreView);
+    //WindowsManager::getInstance().onBottom(panelPreView);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1150,10 +1080,11 @@ void resizeHelp(int width, int height)	{
     if ( dx==0)     return;
 
     int x = width - dx - 20;
-    int y = 20 + panelControl->getDY() + 20 ;
+    int y = 20 + 200 + 20 ;
 
     panelHelp->setPos( x,  y );
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1170,6 +1101,7 @@ void resizeControl(int width, int height)	{
     //printf("resizeControl(%d, %d\n", width, height);
     //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1183,6 +1115,7 @@ void resizeCourbe(int width, int height)	{
     //printf("resizeControl(%d, %d\n", width, height);
     //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1236,6 +1169,7 @@ void resizePreview(int width, int height)	{
 	panelPreView->setPosAndSize( xCam, yCam, dxCam, dyCam);
 	panelPreView->setDisplayGL(displayGL_cb);
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1287,6 +1221,7 @@ static void CreateResultat()	{
     panelResultat->setBackground((char*)"background.tga");
     panelResultat->setVisible(bPanelResultat);
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1361,6 +1296,7 @@ static void CreateControl()	{
 
     logf((char*)"** CreateControl()  panelControl  %d,%d %dx%d", x, y, dx, dy);   
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1430,7 +1366,8 @@ static void CreateHelp()
 	panelHelp->setPos(X, Y);
 
     logf((char*)"** CreateHelp()  panelHelp  %d,%d %dx%d", X, Y, DX, DY);
-}	
+}
+/*	
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1456,6 +1393,7 @@ static void CreatePreview()	{
 	panelPreView->setCanMove(false);
  	wm.add( panelPreView );
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1516,8 +1454,8 @@ static void CreateStdOut()	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateAllWindows()	{
-    CreatePreview();
-    CreateControl();
+    //CreatePreview();
+    //CreateControl();
     CreateHelp();
     CreateResultat();
     CreateStatus();
@@ -1595,6 +1533,7 @@ void parse_size( string s )
 void parse_option( int argc, char**argv )
 {
     bool bOK = false;
+    /*
     for(int i=0; i<20; i++ )    {
         if (camera.isDevice(i))    {
             cout <<"Camera sur /dev/video"<< i << endl;
@@ -1602,6 +1541,7 @@ void parse_option( int argc, char**argv )
             break;
         }
     }
+    */
     
     if (!bOK)           cout <<"Pas de camera !!!" << endl;
 
@@ -1622,6 +1562,8 @@ void parse_option( int argc, char**argv )
 
             case 'd':
                     strncpy( dev_name, optarg, sizeof(dev_name));
+                    Camera_mgr::getInstance().add(dev_name);
+                    //log((char*)"Fin**");
                     bPng = false;
                     break;
 
@@ -1678,7 +1620,7 @@ void parse_option( int argc, char**argv )
             }
     }
     
-    camera.setDevName(dev_name);
+    //camera.setDevName(dev_name);
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1714,8 +1656,6 @@ void getX11Screen()
 //--------------------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-    getX11Screen();
-    parse_option(argc, argv);
     
     vCameraSize.x = 1280;
     vCameraSize.y = 720;
@@ -1760,7 +1700,7 @@ int main(int argc, char **argv)
     glewInit();
     
     
-    //*
+    /*
     pCameras.push_back( new Camera(300,168) );
     //pCameras.push_back( new Camera(200,112) );
     //pCameras.push_back( new Camera(100,56) );
@@ -1769,13 +1709,15 @@ int main(int argc, char **argv)
     Camera* pCamera = pCameras[0];
 
     log((char*)"**********  Camera 2  ********************");    
-    pCamera->setDevName( (char*)"/dev/video2" );
+    pCamera->setDevName( (char*)"/dev/video1" );
     pCamera->open_device();
     pCamera->init_device();
     pCamera->capability_list();
     //pCamera->uninit_device();
     //pCamera->close_device();
-    //*/
+    */
+    
+    /*
     
     log((char*)"**********  Camera 1  ********************");    
     if ( camera.open_device() )   
@@ -1791,10 +1733,13 @@ int main(int argc, char **argv)
 
     vCameraSize.x = camera.getWidth();
     vCameraSize.y = camera.getHeight();
-
-        log((char*)"APPEL change_background_pleiade");
+    */
+    
+    log((char*)"APPEL change_background_pleiade");
 	CreateAllWindows();
 
+    getX11Screen();
+    parse_option(argc, argv);
 
 
     if (bPng)   {
@@ -1812,9 +1757,9 @@ int main(int argc, char **argv)
     glClearColor( 0.0,0.0,0.0,1.0);
     glutMainLoop();
 
-    camera.uninit_device();
+    //camera.uninit_device();
     
-    camera.close_device();
+    //camera.close_device();
 
 	return 0;
 }

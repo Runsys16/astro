@@ -34,11 +34,15 @@ timer.o: timer.cpp timer.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-camera.o: camera.cpp camera.h#
+camera.o: camera.cpp camera.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o
+camera_mgr.o: camera_mgr.cpp camera_mgr.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 

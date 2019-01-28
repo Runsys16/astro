@@ -2,10 +2,10 @@
 #define CAMERA_H  1
 
 #include "v4l2.h"
+#include "timer.h"
 
 #include <WindowsManager.h>
 #include <thread>
-
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -21,18 +21,25 @@ private:
     int                         xCam, yCam, dxCam, dyCam;
     
     bool                        bChargingCamera;
-    thread*                     pthread_chargement_camera;
+    thread                      thread_chargement_camera;
 
 public :
     Camera();
     Camera(int, int);
+    
+    void                        init();
+    
     void                        createControlID(PanelSimple * p, int x, int y, char* str);
     void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
     void                        CreateControl();
     void                        CreatePreview();
     void                        resizePreview(int, int);
+
+    void                        threadExtractImg();
     void                        change_background_camera();
     //void                        charge_image_camera();
+    
+    std::thread                 memberThread() { return std::thread(&Camera::threadExtractImg, this); }    
     
     void                        setVisible(bool b);
     

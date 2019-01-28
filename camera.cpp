@@ -6,8 +6,10 @@
 Camera::Camera()
 {
     Device_cam();
-    bChargingCamera = true;
-    CreatePreview();
+
+    init();
+
+    //CreatePreview();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -16,13 +18,24 @@ Camera::Camera(int w, int h)
 {
     logf((char*)"----------- Constructeur Camera(%d, %d) -------------", w, h);
     Device_cam();
+    
+    init();
+    setWidth(w);
+    setHeight(h);
+    
+    CreatePreview();
+    CreateControl();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::init()
+{
+    logf((char*)"Camera::init() -------------");
+
     bChargingCamera = true;
     vCameraSize.x = -1;
     vCameraSize.y = -1;
-    setWidth(w);
-    setHeight(h);
-    CreatePreview();
-    //CreateControl();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -54,14 +67,14 @@ void Camera::CreatePreview()	{
 	//panelPreview->setCanMove(false);
  	wm.add( panelPreview );
 
-    logf((char*)"Camera::CreatePreview  name %s ", pStr.c_str());
-    logf((char*)"Camera::CreatePreview  %d,%d %dx%d", 0, 0, getWidth(), getHeight());
+    logf((char*)"    name %s ", pStr.c_str());
+    logf((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizePreview(int width, int height)	{
-    logf((char*) "Camera::resizePreview(%d, %d", width, height);
+    logf((char*) "Camera::resizePreview(%d, %d)", width, height);
 	WindowsManager& wm = WindowsManager::getInstance();
 
     //vCameraSize.x = getWidth();
@@ -103,8 +116,8 @@ void Camera::resizePreview(int width, int height)	{
 	    yCam = modY = (hsc - dyCam) / 2;
 	} 
 
-    logf((char*) "Screen  : %dx%d\n", width, height);
-    logf((char*) "Preview : %d,%d %dx%d\n", xCam, yCam, dxCam, dyCam);
+    logf((char*) "   Screen  : %dx%d", width, height);
+    logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
 	
 	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
@@ -146,6 +159,7 @@ void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int i
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreateControl()	{
+    logf((char*)"------------- Camera::CreateControl() ---------------");
 	WindowsManager& wm = WindowsManager::getInstance();
 
     panelControl = new PanelWindow();
@@ -178,7 +192,7 @@ void Camera::CreateControl()	{
 
     dy = ++n*dyt;
     panelControl->setSize( dx, dy);
-    resizeControl(getWidth(), getHeight());
+    //resizeControl(getWidth(), getHeight());
 
     //panelControl->setVisible(bPanelControl);
 
@@ -191,9 +205,21 @@ bool*     pCharging;
 
 void charge_camera()
 {
+    
     write_image();
 
     *pCharging = true;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::threadExtractImg()
+{
+    log((char*)"Camera::threadExtractImg()");
+    mainloop();
+
+    bChargingCamera = true;
+    log((char*)"Camera::threadExtractImg()");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -202,8 +228,8 @@ void Camera::change_background_camera(void)
 {
     static float previousTime = -1;
 
-    //log((char*)"Camera::change_background_camera()");
-    //logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
+    log((char*)"START Camera::change_background_camera()");
+    logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
     if ( vCameraSize.x = -1 )
     {
         vCameraSize.x = getWidth();
@@ -234,7 +260,11 @@ void Camera::change_background_camera(void)
         pCamFilename->changeText( (char*)getDevName() );
 
         pCharging = &bChargingCamera;
-        pthread_chargement_camera = new thread(charge_camera);
+
+        //pthread_chargement_camera = new thread(charge_camera);
+        log((char*)"  Start Thread");
+        thread_chargement_camera = memberThread();
+        log((char*)"  Fin   Thread");
         
         float t = Timer::getInstance().getCurrentTime();
         if ( previousTime != -1 )
@@ -249,6 +279,7 @@ void Camera::change_background_camera(void)
         
         bChargingCamera = false;
      }
+    log((char*)"END   Camera::change_background_camera()");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
