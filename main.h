@@ -82,6 +82,7 @@ static void         displayGL(void);
 static void         reshapeGL(int newWidth, int newHeight);
 void                reset_camera(void);
 void                write_image(void);
+void                change_hertz(float);
 
 void                charge_image_pleiade(void);
 void                change_background_pleiade(void);

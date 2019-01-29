@@ -23,6 +23,9 @@ private:
     
     bool                        bChargingCamera;
     thread                      thread_chargement_camera;
+    
+    float                       hz;
+    float                       previousTime;
 
 public :
     Camera();
@@ -50,6 +53,7 @@ public :
     void                        setVisible(bool b);
     
     inline PanelWindow *        getPanelPreview()               { return panelPreview; }
+    inline float                getHertz()                      { return hz; }
 private:
 };
 

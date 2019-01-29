@@ -28,6 +28,9 @@ void Camera_mgr::add( string dev_name )
     
     pCamera->CreatePreview();
     pCamera->CreateControl();
+
+    active();
+    onBottom();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -40,6 +43,7 @@ void Camera_mgr::change_background_camera( void )
     {
         pCameras[i]->change_background_camera();
     }
+    if ( pCurrent )         change_hertz( pCurrent->getHertz() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

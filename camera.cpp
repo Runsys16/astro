@@ -34,6 +34,8 @@ void Camera::init()
     bChargingCamera = true;
     vCameraSize.x = -1;
     vCameraSize.y = -1;
+    
+    previousTime = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -343,7 +345,6 @@ std::thread Camera::memberThread()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::change_background_camera(void)
 {
-    static float previousTime = -1;
 
     //log((char*)"START Camera::change_background_camera()");
     if ( vCameraSize.x == -1 )
@@ -359,6 +360,7 @@ void Camera::change_background_camera(void)
         try
         {
             panelPreview->setBackground( getBuffer(), vCameraSize.x, vCameraSize.y, 3);
+            //logf((char*)" %s : %ld", getName(), getBuffer() );
             //if (bSuivi)    suivi();
         }
         catch(std::exception const& e)
@@ -377,11 +379,8 @@ void Camera::change_background_camera(void)
         float t = Timer::getInstance().getCurrentTime();
         if ( previousTime != -1 )
         {
-            float ecoule = t - previousTime;
-            char hz[255];
-            sprintf(hz, "%.1fHz", 1.0/ecoule);
-            //pHertz->changeText( hz );
-            //logf( (char*)"Time : %0.4f", ecoule );
+            hz = 1.0 / (t - previousTime);
+            //logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName() );
         }
         previousTime = t;
         
