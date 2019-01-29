@@ -19,16 +19,22 @@ SINGLETON_BEGIN( Camera_mgr )
 
 public:
     Camera_mgr();
-    void                add( string dev_name );
+    void                        add( string dev_name );
 
-    void                change_background_camera();
-    void                start_camera();
-    void                stop_camera();
+    void                        change_background_camera();
+    void                        start_camera();
+    void                        stop_camera();
+    void                        keyboard( char key );
+    void                        onBottom();
+    void                        resize( int, int );
+    void                        active();
     
-    
+   
 private:
     vector<Camera*>     pCameras;
     Camera*             pCurrent;
+    
+    int                 nActive;
     
     
 SINGLETON_END()

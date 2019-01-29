@@ -46,9 +46,14 @@ void Camera::CreatePreview()	{
     //setWidth(950);
     //setHeight(534);
 
-	panelPreview = new PanelSimple();
-	resizePreview(getWidth(), getHeight());
-	panelPreview->setBackground( (char*)"frame-0.raw");
+	//panelPreview = new PanelSimple();
+	panelPreview = new PanelWindow();
+
+	int wsc = wm.getWidth();
+	int hsc = wm.getHeight();
+
+	resizePreview(wsc, hsc);
+	//panelPreview->setBackground( (char*)"frame-0.raw");
 	
 	//pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
 	pCamFilename = new PanelText( (char*)getDevName(),		PanelText::LARGE_FONT, 20, 10 );
@@ -72,6 +77,22 @@ void Camera::CreatePreview()	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Camera::resizeControl(int width, int height)	{
+    int dx = panelControl->getDX();
+    int dy = panelControl->getDY();
+    
+    if ( dx==0)     return;
+    
+    int x = width - dx - 20;
+    int y = 20;
+
+    panelControl->setPos( x,  y );
+    //printf("resizeControl(%d, %d\n", width, height);
+    //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Camera::resizePreview(int width, int height)	{
     logf((char*) "Camera::resizePreview(%d, %d)", width, height);
 	WindowsManager& wm = WindowsManager::getInstance();
@@ -79,8 +100,74 @@ void Camera::resizePreview(int width, int height)	{
     //vCameraSize.x = getWidth();
     //vCameraSize.y = getHeight();
 
-	int wsc = wm.getWidth();
-	int hsc = wm.getHeight();
+	int wsc = width;
+	int hsc = height;
+    logf((char*) "Screen (%d, %d)", wsc, hsc);
+
+
+    if ( vCameraSize.x == -1 )
+    {
+        vCameraSize.x = getWidth();
+        vCameraSize.y = getHeight();
+        logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
+    }
+
+
+	
+	float rsc = (float)wsc/(float)hsc;
+	float rpv = (float)vCameraSize.x/(float)vCameraSize.y;
+
+    int modX, modY;
+    float zoom;
+    
+    /*
+    printf( "rsc=%f   rpv=%f\n", rsc, rpv);
+    printf( "wsc=%d   hsc=%d\n", wsc, hsc);
+    printf( "vCamera.x=%.2f   vCamera.y=%.2f\n", vCameraSize.x, vCameraSize.y);
+	*/
+	if ( rsc > rpv )    {
+	    zoom = (float)hsc/(float)vCameraSize.y;
+
+	    dxCam = zoom * (float)vCameraSize.x;
+	    dyCam = zoom * (float)vCameraSize.y;
+
+	    xCam = modX = (wsc - dxCam) / 2;
+	    yCam = modY = 0;
+	} 
+	else                {
+	    zoom = (float)wsc/(float)vCameraSize.x;
+        printf( "Zoom=%f\n", zoom );
+
+	    dxCam = zoom * (float)vCameraSize.x;
+	    dyCam = zoom * (float)vCameraSize.y;
+
+	    xCam = modX = 0;
+	    yCam = modY = (hsc - dyCam) / 2;
+	} 
+
+
+    dxCam /= 4;
+    dyCam /= 4;
+
+    logf((char*) "   Screen  : %dx%d", wsc, hsc);
+    logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
+
+	
+	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
+	panelPreview->setDisplayGL(displayGL_cb);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::fullSizePreview(int width, int height)	{
+    logf((char*) "Camera::resizePreview(%d, %d)", width, height);
+	WindowsManager& wm = WindowsManager::getInstance();
+
+    //vCameraSize.x = getWidth();
+    //vCameraSize.y = getHeight();
+
+	int wsc = width;
+	int hsc = height;
     logf((char*) "Screen (%d, %d)", wsc, hsc);
 
 
@@ -208,7 +295,7 @@ void Camera::CreateControl()	{
     panelControl = new PanelWindow();
     int dx = 200;
     int dy = 150;
-    int x = getWidth() - dx - 20;
+    int x = 1600 - dx - 20;
     int y = 20;
 
     panelControl->setPosAndSize( x, y, dx, dy);
@@ -224,7 +311,7 @@ void Camera::CreateControl()	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 bool*     pCharging;
-
+//
 void charge_camera()
 {
     
@@ -237,18 +324,18 @@ void charge_camera()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::threadExtractImg()
 {
-    //log((char*)"Camera::threadExtractImg() start");
+    //logf((char*)"Camera::threadExtractImg() start %s", (char*)getName());
     mainloop();
 
     bChargingCamera = true;
-    //log((char*)"Camera::threadExtractImg() stop");
+    //logf((char*)"Camera::threadExtractImg()  stop %s", (char*)getName());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 std::thread Camera::memberThread()
 {
-    //log((char*)"Camera::memberThread()");
+    //logf((char*)"Camera::memberThread() %s", (char*) getName() );
     return std::thread(&Camera::threadExtractImg, this); 
 }    
 //--------------------------------------------------------------------------------------------------------------------
@@ -269,20 +356,13 @@ void Camera::change_background_camera(void)
     if ( bChargingCamera )
     {
         panelPreview->deleteBackground();
-        //panelPreview->setBackground( (char*)background);
-        //log((char*)" bChargingCamera=true");
         try
         {
             panelPreview->setBackground( getBuffer(), vCameraSize.x, vCameraSize.y, 3);
-            //logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
-            //vCameraSize.x = getWidth();
-            //vCameraSize.y = getHeight();
-            //ptr = getBuffer();
             //if (bSuivi)    suivi();
         }
         catch(std::exception const& e)
         {
-            //panelPreview->setBackground( (char*)background);
             log((char*)"ERROR --- Camera::change_background_camera()");
             cerr << "ERREUR : " << e.what() << endl;
         }
@@ -319,7 +399,86 @@ void Camera::setVisible(bool b)
     //log((char*)"Camera::setVisible()");
     //panelControl->setVisible( b );
 }
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::keyboard(char key)
+{
+    //std::cout << (int)key << std::endl;
+	Control* pControl;
+	
+	switch(key){ 
+	
+    case 'E':
+        pControl = getControl("Exposure (Absolute)");
+        if (pControl)       pControl->plus();
+        break;
+    case 'e':    
+        pControl = getControl("Exposure (Absolute)");
+        if (pControl)       pControl->moins();
+        break;
+    case 'B':
+        pControl = getControl("Bright");
+        if (pControl)       pControl->plus();
+        break;
+    case 'b':    
+        pControl = getControl("Bright");
+        if (pControl)       pControl->moins();
+        break;
+    case 'C':
+        pControl = getControl("Contras");
+        if (pControl)       pControl->plus();
+        break;
+    case 'c':
+        pControl = getControl("Contras");
+        if (pControl)       pControl->moins();
+        break;
+    case 'H':
+        pControl = getControl("Hue");
+        if (pControl)       pControl->plus();
+        break;
+    case 'h':
+        pControl = getControl("Hue");
+        if (pControl)       pControl->moins();
+        break;
+    case 'G':
+        pControl = getControl("Gamma");
+        if (pControl)       pControl->plus();
+        break;
+    case 'g':
+        pControl = getControl("Gamma");
+        if (pControl)       pControl->moins();
+        break;
+    case 'Z':
+        pControl = getControl("Sharp");
+        if (pControl)       pControl->plus();
+        break;
+    case 'z':
+        pControl = getControl("Sharp");
+        if (pControl)       pControl->moins();
+        break;
+    case 'S':
+        pControl = getControl("Satu");
+        if (pControl)       pControl->plus();
+        break;
+    case 's':
+        pControl = getControl("Satu");
+        if (pControl)       pControl->moins();
+        break;
+    case 'W':
+        pControl = getControl(0x0098091A);
+        if (pControl)       pControl->plus();
+        break;
+    case 'w':
+        pControl = getControl(0x0098091A);
+        if (pControl)       pControl->moins();
+        break;
+    case 'l':  // '-'
+        capability_list();
+        break;
+        
+	}
+}
 
 
 

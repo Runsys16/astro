@@ -478,7 +478,7 @@ static void reshapeGL(int newWidth, int newHeight)
 	    width = newWidth;
 	    height = newHeight;
     }
-    
+    Camera_mgr::getInstance().resize( newWidth, newHeight );
     //cout << "reshapeGL("<< newWidth <<" "<< newHeight <<")"<< endl;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -555,6 +555,7 @@ void change_background_pleiade(void)
 //--------------------------------------------------------------------------------------------------------------------
 void change_cam(void)
 {
+    Camera_mgr::getInstance().active();
     switch(cam)
     {
         case CAM1:
@@ -649,6 +650,13 @@ static void idleGL(void)
     
 	timer.Idle();
 
+
+
+
+
+    if (!bPause)    {
+        Camera_mgr::getInstance().change_background_camera();
+    }
 
     switch(cam)
     {
@@ -945,6 +953,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 	}
+	
+	Camera_mgr::getInstance().keyboard( key );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1754,7 +1764,8 @@ int main(int argc, char **argv)
     }
     
     
-    glClearColor( 1.0,0.0,0.0,1.0);
+    float gris = 0.2;
+    glClearColor( gris, gris, gris,1.0);
     glutMainLoop();
 
     //camera.uninit_device();

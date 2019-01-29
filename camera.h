@@ -14,7 +14,8 @@ class Camera : public Device_cam
 {
 private:
     PanelWindow *               panelControl;
-    PanelSimple *               panelPreview;
+    PanelWindow *               panelPreview;
+    //PanelSimple *               panelPreview;
 
     PanelText*                  pCamFilename;
     ivec2                        vCameraSize;
@@ -36,15 +37,19 @@ public :
 
     void                        CreatePreview();
     void                        resizePreview(int, int);
+    void                        fullSizePreview(int, int);
+    void                        resizeControl(int, int);
 
     void                        threadExtractImg();
     void                        change_background_camera();
-    //void                        charge_image_camera();
+    
+    void                        keyboard( char );
     
     std::thread                 memberThread();
     
     void                        setVisible(bool b);
     
+    inline PanelWindow *        getPanelPreview()               { return panelPreview; }
 private:
 };
 
