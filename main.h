@@ -84,6 +84,7 @@ void                reset_camera(void);
 void                write_image(void);
 void                change_hertz(float);
 
+/*
 void                charge_image_pleiade(void);
 void                change_background_pleiade(void);
 
@@ -92,7 +93,7 @@ void                change_background_camera(void);
 
 void                suivi(void);
 void                change_cam();
-
+*/
 
 static void         idleGL(void);
 static void         quit(void);

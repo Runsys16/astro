@@ -499,104 +499,7 @@ void change_hertz(float hz)
     pHertz->changeText(sHz);
     //camera.mainloop();
 }
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void charge_image_pleiade(void)
-{
-    readB.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, readB.w, readB.h, readB.d );
 
-    bChargingPleiades = true;
-    bFreePtr = true;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void change_background_pleiade(void)
-{
-    return;
-    static int plus = 1;
-    if (bPause)         return;    
-
-    if ( bChargingPleiades )
-    {
-        //if ( pthread_chargement )   delete pthread_chargement;
-
-        char num[] = "000";
-        
-        
-        sprintf( num, "%03d", count_png );
-        sPleiade[56] = num[0];
-        sPleiade[57] = num[1];
-        sPleiade[58] = num[2];
-
-        //panelPreView->deleteBackground();
-        pCamFilename->changeText( (char*) num );
-
-
-        unsigned int w, h, d;
-        
-        if (bFreePtr)   free(ptr);
-        bFreePtr = false;
-
-        ptr = readB.ptr;
-        w   = readB.w;
-        h   = readB.h;
-        d   = readB.d;
-        
-        //panelPreView->setBackground( ptr, w, h, d);
-        //panelPreView->setBackground( (char*)sPleiade);
-        //unsigned int w,h,d;
-        //ptr = _ImageTools::OpenImage( (const std::string)sPleiade, w, h, d );
-        
-        //printf( "%s\n", &sPleiade[56] );
-        if ((count_png+=plus)>=119)    plus = -1;
-        if ((count_png+=plus)<=30)      plus = 1;
-
-
-
-        pthread_chargement_pleiades = new thread(charge_image_pleiade);
-        bChargingPleiades = false;
-    }
-    //log((char*)"change_background_pleiade()");
-    
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void change_cam(void)
-{
-    Camera_mgr::getInstance().active();
-    switch(cam)
-    {
-        case CAM1:
-            //if (!bPause)    {
-                pCameras[0]->stop_capturing();
-                //pCameras[0]->uninit_device();
-            //}
-            break;
-    }
-    //
-    // Rotation du choix des cameras
-    //
-    int nb = pCameras.size() + 2;
-	int a = cam;
-    a = ++a % nb;
-    cam = (background_t)a;
-    //
-    //
-    //
-    switch(cam)
-    {
-        case CAM1:
-            //if (!bPause)    {
-                //pCameras[0]->init_device();
-                pCameras[0]->start_capturing();
-            //}
-            break;
-    }
-    
-}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -760,7 +663,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
-		change_cam();
+		Camera_mgr::getInstance().active();
+		//change_cam();
         }
 		break;
 	case 10:
@@ -1720,69 +1624,17 @@ int main(int argc, char **argv)
 	initGL(argc, argv);
     glewInit();
     
-    
-    /*
-    pCameras.push_back( new Camera(300,168) );
-    //pCameras.push_back( new Camera(200,112) );
-    //pCameras.push_back( new Camera(100,56) );
-    //pCameras.push_back( new Camera(width,height) );
-    
-    Camera* pCamera = pCameras[0];
-
-    log((char*)"**********  Camera 2  ********************");    
-    pCamera->setDevName( (char*)"/dev/video1" );
-    pCamera->open_device();
-    pCamera->init_device();
-    pCamera->capability_list();
-    //pCamera->uninit_device();
-    //pCamera->close_device();
-    */
-    
-    /*
-    
-    log((char*)"**********  Camera 1  ********************");    
-    if ( camera.open_device() )   
-    {
-        bPng = true;
-        bPanelControl = false;
-    }
-    
-    
-    camera.init_device();
-    camera.capability_list();
-    //camera.uninit_device();
-
-    vCameraSize.x = camera.getWidth();
-    vCameraSize.y = camera.getHeight();
-    */
-    
-    log((char*)"APPEL change_background_pleiade");
-	CreateAllWindows();
+    CreateAllWindows();
 
     getX11Screen();
     parse_option(argc, argv);
 
-
-    if (bPng)   {
-        log((char*)"APPEL change_background_pleiade");
-        change_background_pleiade();
-    }
-    else
-    {
-        log((char*)"APPEL change_background_pleiade");
-        //camera.start_capturing();
-        //change_background_camera();
-    }
-    
     Camera_mgr::getInstance().add( new Pleiade() );
     
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
     glutMainLoop();
 
-    //camera.uninit_device();
-    
-    //camera.close_device();
 
 	return 0;
 }
