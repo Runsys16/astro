@@ -12,7 +12,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 class Camera : public Device_cam
 {
-private:
+protected:
     PanelWindow *               panelControl;
     PanelWindow *               panelPreview;
     //PanelSimple *               panelPreview;
@@ -38,13 +38,13 @@ public :
     void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
     void                        CreateControl();
 
-    void                        CreatePreview();
-    void                        resizePreview(int, int);
-    void                        fullSizePreview(int, int);
-    void                        resizeControl(int, int);
+    virtual void                CreatePreview();
+    virtual void                resizePreview(int, int);
+    virtual void                fullSizePreview(int, int);
+    virtual void                resizeControl(int, int);
 
     void                        threadExtractImg();
-    void                        change_background_camera();
+    virtual void                change_background_camera();
     
     void                        keyboard( char );
     

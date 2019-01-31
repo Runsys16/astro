@@ -20,6 +20,7 @@ SINGLETON_BEGIN( Camera_mgr )
 public:
     Camera_mgr();
     void                        add( string dev_name );
+    void                        add( Camera* );
 
     void                        change_background_camera();
     void                        start_camera();

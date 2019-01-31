@@ -4,6 +4,7 @@
 #include "camera_mgr.h"
 #include "Mathlib.h"
 #include "timer.h"
+#include "pleiade.h"
 
 
 //#define DEBUG 1
@@ -1773,6 +1774,7 @@ int main(int argc, char **argv)
         //change_background_camera();
     }
     
+    //Camera_mgr::getInstance().add( new Pleiade() );
     
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);

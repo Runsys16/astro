@@ -165,9 +165,6 @@ void Camera::fullSizePreview(int width, int height)	{
     logf((char*) "Camera::resizePreview(%d, %d)", width, height);
 	WindowsManager& wm = WindowsManager::getInstance();
 
-    //vCameraSize.x = getWidth();
-    //vCameraSize.y = getHeight();
-
 	int wsc = width;
 	int hsc = height;
     logf((char*) "Screen (%d, %d)", wsc, hsc);
@@ -188,11 +185,7 @@ void Camera::fullSizePreview(int width, int height)	{
     int modX, modY;
     float zoom;
     
-    /*
-    printf( "rsc=%f   rpv=%f\n", rsc, rpv);
-    printf( "wsc=%d   hsc=%d\n", wsc, hsc);
-    printf( "vCamera.x=%.2f   vCamera.y=%.2f\n", vCameraSize.x, vCameraSize.y);
-	*/
+
 	if ( rsc > rpv )    {
 	    zoom = (float)hsc/(float)vCameraSize.y;
 
@@ -217,7 +210,6 @@ void Camera::fullSizePreview(int width, int height)	{
     logf((char*) "   Screen  : %dx%d", wsc, hsc);
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
-	
 	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
 	panelPreview->setDisplayGL(displayGL_cb);
 }
