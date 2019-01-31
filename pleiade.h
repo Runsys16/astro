@@ -13,7 +13,8 @@ protected:
     thread                      thread_chargement_pleiade;
     bool                        bChargingPleiades;
     bool                        bFreePtr;
-    char                        sPleiade[]  = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
+    bool                        bFirst;
+    char                        sPleiade[255];
     struct readBackground       readB;
     
     GLubyte*                    ptr;

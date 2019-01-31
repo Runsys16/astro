@@ -18,7 +18,6 @@ protected:
     //PanelSimple *               panelPreview;
 
     PanelText*                  pCamFilename;
-    ivec2                        vCameraSize;
     int                         xCam, yCam, dxCam, dyCam;
     
     bool                        bChargingCamera;
@@ -26,6 +25,9 @@ protected:
     
     float                       hz;
     float                       previousTime;
+
+protected:
+    ivec2                        vCameraSize;
 
 public :
     Camera();

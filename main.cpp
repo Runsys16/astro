@@ -1774,7 +1774,7 @@ int main(int argc, char **argv)
         //change_background_camera();
     }
     
-    //Camera_mgr::getInstance().add( new Pleiade() );
+    Camera_mgr::getInstance().add( new Pleiade() );
     
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
