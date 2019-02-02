@@ -56,7 +56,15 @@ public :
     
     inline PanelWindow *        getPanelPreview()               { return panelPreview; }
     inline float                getHertz()                      { return hz; }
-private:
+
+    virtual GLubyte*            getPtr();
+
+    int                         get_xCam();
+    int                         get_yCam();
+    int                         get_dxCam();
+    int                         get_dyCam();
+
+
 };
 
 #endif

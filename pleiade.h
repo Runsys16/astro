@@ -26,6 +26,8 @@ public :
 
     void                        threadExtractImgPleiade();
     std::thread                 memberThreadPleiade();
+    virtual GLubyte*            getPtr();
+
 
 };
 

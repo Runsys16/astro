@@ -384,7 +384,7 @@ void getSkyPointLine(struct sky_point* point, int x, int y, int size)
     //int offset = GET_OFFSET(0,y,vCameraSize.x);
     
     //printf( "getPointLine x%d y%d\n", x, y);
-    
+    ptr = Camera_mgr::getInstance().getPtr();
     for( x=min; x<max; x++) 
     {
         int offset = getOffset(x,y,vCameraSize.x);
@@ -567,7 +567,6 @@ static void idleGL(void)
 
 
 
-
     if (!bPause)    {
         Camera_mgr::getInstance().change_background_camera();
     }
@@ -611,7 +610,9 @@ static void idleGL(void)
 
     //WindowsManager::getInstance().onBottom(panelPreView);
 
+    //Camera_mgr::getInstance().idleGL();
 	glutPostRedisplay();
+    //Camera_mgr::getInstance().idleGL();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -663,7 +664,22 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
-		Camera_mgr::getInstance().active();
+		Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+		cam_mgr.active();
+
+        xCam = cam_mgr.get_xCam();
+        yCam = cam_mgr.get_yCam();
+        dxCam = cam_mgr.get_dxCam();
+        dyCam = cam_mgr.get_dyCam();
+    
+        vCameraSize.x = 1920.0;
+        vCameraSize.y = 1080;
+
+        //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
+        //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
+        rw = (float)vCameraSize.x/(float)dxCam;
+        rh = (float)vCameraSize.y/(float)dyCam;
+		
 		//change_cam();
         }
 		break;
@@ -901,7 +917,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 
 	//if ( bPause && button == 0 && state == 0 )	{
 	if ( button == 0 && state == 0 )	{
-	    printf( "---------------------- Cllick x=%d y=%d\n" , x, y );
+	    logf( "---------------------- Click x=%d y=%d\n" , x, y );
 
 	    //int X = (float)x * rw; 
 	    //int Y = (float)y * rh;
@@ -910,6 +926,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    
 	    screen2tex(X,Y);
 	    
+        ptr = Camera_mgr::getInstance().getPtr();
         int N = getOffset(X, Y, vCameraSize.x);
 	    int r = ptr[N];
 	    int g = ptr[N+1];
@@ -1009,24 +1026,6 @@ void resizeHelp(int width, int height)	{
 
     panelHelp->setPos( x,  y );
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void resizeControl(int width, int height)	{
-    int dx = panelControl->getDX();
-    int dy = panelControl->getDY();
-    
-    if ( dx==0)     return;
-    
-    int x = width - dx - 20;
-    int y = 20;
-
-    panelControl->setPos( x,  y );
-    //printf("resizeControl(%d, %d\n", width, height);
-    //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1040,61 +1039,6 @@ void resizeCourbe(int width, int height)	{
     //printf("resizeControl(%d, %d\n", width, height);
     //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void resizePreview(int width, int height)	{
-    #define IMAGEW      vCameraSize.x
-    #define IMAGEH      vCameraSize.y
-
-    logf((char*)"resizePreview(%d, %d)",width,height);
-	WindowsManager& wm = WindowsManager::getInstance();
-	wm.setScreenSize( width, height );
-
-	int wsc = wm.getWidth();
-	int hsc = wm.getHeight();
-	
-	float rsc = (float)wsc/(float)hsc;
-	float rpv = (float)IMAGEW/(float)IMAGEH;
-
-    int modX, modY;
-
-    //printf( "rsc=%f   rpv=%f\n", rsc, rpv);
-	if ( rsc > rpv )    {
-	    zoom = (float)height/IMAGEH;
-
-	    dxCam = zoom * IMAGEW;
-	    dyCam = zoom * IMAGEH;
-
-	    xCam = modX = (wsc - dxCam) / 2;
-	    yCam = modY = 0;
-	} 
-	else                {
-	    zoom = (float)width/IMAGEW;
-        //printf( "Zoom=%f\n", zoom );
-
-	    dxCam = zoom * IMAGEW;
-	    dyCam = zoom * IMAGEH;
-
-	    xCam = modX = 0;
-	    yCam = modY = (hsc - dyCam) / 2;
-	} 
-
-    //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
-    //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
-    rw = (float)vCameraSize.x/(float)dxCam;
-    rh = (float)vCameraSize.y/(float)dyCam;
-
-    //printf( "Screen  : %dx%d\n", width, height);
-    //printf( "Ratio   : %0.2fx%0.2f\n", rw, rh);
-    //printf( "Preview : %d,%d %dx%d\n", xCam, yCam, dxCam, dyCam);
-
-	
-	panelPreView->setPosAndSize( xCam, yCam, dxCam, dyCam);
-	panelPreView->setDisplayGL(displayGL_cb);
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1146,82 +1090,6 @@ static void CreateResultat()	{
     panelResultat->setBackground((char*)"background.tga");
     panelResultat->setVisible(bPanelResultat);
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-static void createControlID(PanelSimple * p, int x, int y, char* str)	{
-	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
-    PanelText* pt = new PanelText( (char*)"     ", PanelText::NORMAL_FONT, x + 150, y );
-    p->add( pt );
-
-    Control* pControl = camera.getControl(str);
-    if (pControl)       {
-        pControl->setPanelText(pt);
-        char text[] = "0000000000000000";
-        sprintf( text, "%d", pControl->getValue()); 
-        pt->changeText(text);
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-static void createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id)	{
-	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
-    PanelText* pt = new PanelText( (char*)"     ", PanelText::NORMAL_FONT, x + 150, y );
-    p->add( pt );
-
-    Control* pControl = camera.getControl(id);
-    if (pControl)       {
-        pControl->setPanelText(pt);
-        char text[] = "0000000000000000";
-        sprintf( text, "%d", pControl->getValue()); 
-        pt->changeText(text);
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-static void CreateControl()	{
-	WindowsManager& wm = WindowsManager::getInstance();
-
-    panelControl = new PanelWindow();
-    int dx = 200;
-    int dy = 150;
-    int x = width - dx - 20;
-    int y = 20;
-
-    panelControl->setPosAndSize( x, y, dx, dy);
-    ///home/rene/programmes/opengl/video/essai
-    wm.add(panelControl);
-    panelControl->setBackground((char*)"background.tga");
-    
-    int xt  = 10;
-    int yt  = 10;
-    int dyt = 16;
-    int n = 0;
-
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Brightness" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Contrast" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Saturation" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Hue" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Gamma" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Sharpness" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Exposure, Auto" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Exposure (Absolute)" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Power Line" );
-    createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance (auto)", 0x0098090C );
-    createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance", 0x0098091A );
-
-    dy = ++n*dyt;
-    panelControl->setSize( dx, dy);
-    resizeControl(width, height);
-
-    panelControl->setVisible(bPanelControl);
-
-    logf((char*)"** CreateControl()  panelControl  %d,%d %dx%d", x, y, dx, dy);   
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1587,6 +1455,11 @@ int main(int argc, char **argv)
 
     vCameraSize.x = 1920;
     vCameraSize.y = 1080;
+    
+    xCam = 0;
+    yCam = 0;
+    dxCam = 1920;
+    dyCam = 1080;
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);

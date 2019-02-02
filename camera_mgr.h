@@ -26,9 +26,17 @@ public:
     void                        start_camera();
     void                        stop_camera();
     void                        keyboard( char key );
+    void                        idleGL();
     void                        onBottom();
     void                        resize( int, int );
     void                        active();
+
+    GLubyte*                    getPtr();
+
+    int                         get_xCam();
+    int                         get_yCam();
+    int                         get_dxCam();
+    int                         get_dyCam();
     
    
 private:
