@@ -76,29 +76,22 @@ int                 getOffset( int x, int y, int width );
 void                screen2tex( int& x, int& y );
 void                tex2screen( int& x, int& y);
 void                getSkyPoint(struct sky_point&, int, int, int);
-void                resizePreview(int, int);
+
 void                change_fov( void );
 static void         displayGL(void);
 static void         reshapeGL(int newWidth, int newHeight);
+
 void                reset_camera(void);
 void                write_image(void);
 void                change_hertz(float);
 
-/*
-void                charge_image_pleiade(void);
-void                change_background_pleiade(void);
-
-void                charge_image_camera(void);
-void                change_background_camera(void);
-
-void                suivi(void);
-void                change_cam();
-*/
+void                getSuiviParameter();
 
 static void         idleGL(void);
 static void         quit(void);
 static void         initGL(int argc, char **argv);
 static void         rotateVisible();
+
 static void         glutKeyboardFunc(unsigned char key, int x, int y);
 static void         glutKeyboardUpFunc(unsigned char key, int x, int y);
 static void         glutSpecialFunc(int key, int x, int y);
@@ -106,21 +99,17 @@ static void         glutSpecialUpFunc(int key, int x, int y);
 static void         glutMouseFunc(int button, int state, int x, int y);
 static void         glutMotionFunc(int x, int y);
 static void         glutPassiveMotionFunc(int x, int y);
-void                resizePreview(int width, int height);
+
 void                resizeHelp  (int width, int height);
 void                resizeControl(int width, int height);
 void                resizeCourbe(int width, int height);
-void                resizePreview(int width, int height);
 
 static void         CreateResultat();
 static void         createControlID(PanelSimple * p, int x, int y, char* str);
 static void         createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
-//static void         CreateControl();
 static void         CreateHelp();
-//static void         CreatePreview();
 static void         CreateStatus();
 static void         CreateStdOut();
-
 static void         CreateAllWindows();
 
 static void         usage(FILE *fp, int argc, char **argv);

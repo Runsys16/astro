@@ -506,8 +506,10 @@ void change_hertz(float hz)
 void suivi(void)
 {
     //change_background_pleiade();
+    getSuiviParameter();   
     
     char   sSkyPoint[100];
+    
     struct sky_point point;
     point.xAverage = 0.0;
     point.yAverage = 0.0;
@@ -553,6 +555,34 @@ void suivi(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void getSuiviParameter(void)
+{
+    Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+    //cam_mgr.active();
+
+    xCam = cam_mgr.get_xCam();
+    yCam = cam_mgr.get_yCam();
+    dxCam = cam_mgr.get_dxCam();
+    dyCam = cam_mgr.get_dyCam();
+
+    vCameraSize.x = 1920.0;
+    vCameraSize.y = 1080;
+
+    //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
+    //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
+    rw = (float)vCameraSize.x/(float)dxCam;
+    rh = (float)vCameraSize.y/(float)dyCam;
+
+    /*
+    logf( (char*)"-------------------------------------" );
+    logf( (char*)"width=%d height=%d" , width, height );
+    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d", xCam, yCam, dxCam, dyCam );
+    logf( (char*)"rw=%0.2f rh=%0.2f" , rw, rh );
+    */
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void idleGL(void)
 {
     Timer&          timer = Timer::getInstance();
@@ -571,32 +601,7 @@ static void idleGL(void)
         Camera_mgr::getInstance().change_background_camera();
     }
 
-    switch(cam)
-    {
-        case PLEIADES:
-            //pCameras[0]->setVisible(false);
-            if (!bPause)    {
-                //change_background_pleiade();
-                if (bSuivi)    suivi();
-            }
-            break;
-        case CAM0:
-            if (!bPause)    {
-                Camera_mgr::getInstance().change_background_camera();
-            }
-            break;
-        case CAM1:
-            if (!bPause)    {
-                //change_background_camera();
-                //log((char*)"ERROR");
-                //pCameras[0]->setVisible(true);
-                //log((char*)"ERROR visible");
-                //pCameras[0]->change_background_camera();
-                //log((char*)"ERROR");
-            }
-            break;
-    }
-
+    if (bSuivi)    suivi();
 
 	
 	if ( prevTime < 0 )	{
@@ -680,6 +685,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         rw = (float)vCameraSize.x/(float)dxCam;
         rh = (float)vCameraSize.y/(float)dyCam;
 		
+	    logf( (char*)"width=%d height=%d\n" , width, height );
+	    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d\n", xCam, yCam, dxCam, dyCam );
+	    logf( (char*)"rw=%0.2f rh=%0.2f\n" , rw, rh );
 		//change_cam();
         }
 		break;
@@ -919,8 +927,10 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	if ( button == 0 && state == 0 )	{
 	    logf( "---------------------- Click x=%d y=%d\n" , x, y );
 
-	    //int X = (float)x * rw; 
-	    //int Y = (float)y * rh;
+        getSuiviParameter();
+
+        Camera_mgr::getInstance().onBottom();
+        
 	    int X = x;
 	    int Y = y;
 	    
@@ -989,9 +999,6 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	        bSuivi = false;
         }
 
-	    printf( "width=%d height=%d\n" , width, height );
-	    printf( "xCam=%d yCam=%d dxCam=%d dyCam=%d\n", xCam, yCam, dxCam, dyCam );
-	    printf( "rw=%0.2f rh=%0.2f\n" , rw, rh );
 	    printf( "xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
 	    printf( "    l=%d rgb=%d,%d,%d\n" , r,g,b,  l );
 
@@ -1160,33 +1167,6 @@ static void CreateHelp()
 
     logf((char*)"** CreateHelp()  panelHelp  %d,%d %dx%d", X, Y, DX, DY);
 }
-/*	
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-static void CreatePreview()	{
-	WindowsManager& wm = WindowsManager::getInstance();
-	//wm.setScreenSize( width, height );
-    log((char*)"** CreatePreview()");
-	panelPreView = new PanelSimple();
-	resizePreview(width, height);
-	panelPreView->setBackground( (char*)"frame-0.raw");
-	
-	pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
-	panelPreView->add( pCamFilename );
-
-    string * pStr;
-	
-	pStr = new string((char*)camera.getName());
-	PanelTextOmbre* pTO = new PanelTextOmbre( *pStr,	PanelText::LARGE_FONT, 0, 10 );
-	pTO->setAlign( PanelText::CENTER );
-	panelPreView->add( pTO );
-	
-
-	panelPreView->setCanMove(false);
- 	wm.add( panelPreView );
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
