@@ -35,7 +35,7 @@ public :
     
     void                        init();
     
-    void                        addControl();
+    int                         addControl();
     void                        createControlID(PanelSimple * p, int x, int y, char* str);
     void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
     void                        CreateControl();
@@ -43,7 +43,9 @@ public :
     virtual void                CreatePreview();
     virtual void                resizePreview(int, int);
     virtual void                fullSizePreview(int, int);
+
     virtual void                resizeControl(int, int);
+    void                        resizeControlFirst(int, int, int, int);
 
     void                        threadExtractImg();
     virtual void                change_background_camera();

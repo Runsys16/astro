@@ -38,6 +38,9 @@ public:
     int                         get_dxCam();
     int                         get_dyCam();
     
+    int                         getSize();
+    int                         getNum(Camera *);
+    
    
 private:
     vector<Camera*>     pCameras;

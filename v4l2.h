@@ -125,6 +125,7 @@ public :
 
     Device_cam();
     
+    void                    getIOName();
     bool                    isDevice(int);
     void                    enumerate_menu(__u32 id);
     void                    capability_list( void );

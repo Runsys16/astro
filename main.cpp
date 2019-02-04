@@ -47,10 +47,10 @@ char                sPleiade[]  = "/home/rene/Documents/astronomie/tmp/test/suiv
 //                                 00        10        20        30        40        50        60        -
 int                 count_png   = 30;
 
-//int                 width  = 1066;
-//int                 height = 600;
-int                 width  = 950;
-int                 height = 534;
+int                 width  = 1422;
+int                 height = 800;
+//int                 width  = 950;
+//int                 height = 534;
 int                 widthScreen  = 0;
 int                 heightScreen = 0;
 
@@ -119,9 +119,6 @@ float               zoom;
 vector<vec2>        t_vResultat;
 float               offset_x;
 float               offset_y;
-
-vector<Camera*>     pCameras;
-background_t        cam;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -133,7 +130,7 @@ int             nCalibre = 0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-static const char short_options[] = "d:hfs:l";
+static const char short_options[] = "d:hfs:lp";
 static const struct option
 long_options[] = {
         { "device", required_argument, NULL, 'd' },
@@ -141,8 +138,25 @@ long_options[] = {
         { "format", no_argument,       NULL, 'f' },
         { "size",   required_argument, NULL, 's' },
         { "log",    no_argument,       NULL, 'l' },
+        { "pleiade",no_argument,       NULL, 'p' },
         { 0, 0, 0, 0 }
 };
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+static void usage(FILE *fp, int argc, char **argv)
+{
+        fprintf(fp,
+                 "Usage: %s [options]\n\n"
+                 "Version 1.3\n"
+                 "Options:\n"
+                 "-d | --device name   Video device name [/dev/video(n)]\n"
+                 "-h | --help          Print this message\n"
+                 "-f | --full          Full size windows\n"
+                 "-l | --log           Affiche les logs\n"
+                 "",
+                 argv[0] );
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -457,7 +471,7 @@ static void displayGL(void)
 //--------------------------------------------------------------------------------------------------------------------
 static void reshapeGL(int newWidth, int newHeight)
 {
-    logf((char*) "reshapeGL(%d, %d)", newWidth, newHeight);
+    logf((char*) "-------- reshapeGL(%d, %d)", newWidth, newHeight);
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( newWidth, newHeight );
@@ -669,6 +683,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
+	    logf( (char*)"-------------- Touche 'TAB'" );
 		Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 		cam_mgr.active();
 
@@ -685,9 +700,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         rw = (float)vCameraSize.x/(float)dxCam;
         rh = (float)vCameraSize.y/(float)dyCam;
 		
-	    logf( (char*)"width=%d height=%d\n" , width, height );
-	    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d\n", xCam, yCam, dxCam, dyCam );
-	    logf( (char*)"rw=%0.2f rh=%0.2f\n" , rw, rh );
+	    logf( (char*)"width=%d height=%d" , width, height );
+	    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d", xCam, yCam, dxCam, dyCam );
+	    logf( (char*)"rw=%0.2f rh=%0.2f" , rw, rh );
 		//change_cam();
         }
 		break;
@@ -699,11 +714,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         if (bFull ){
      		glutFullScreen();
             //reshapeGL(vCameraSize.x,1200);
-            printf( "w=%d h=%d\n", width, height );
+            logf( (char*)"w=%d h=%d\n", width, height );
             log( (char*)"FullScreen !!!" );
         }
         else    {
-            printf( "w=%d h=%d\n", width, height );
+            logf( (char*)"w=%d h=%d\n", width, height );
 		    glutPositionWindow( (glutGet(GLUT_SCREEN_WIDTH)-width)/2, (glutGet(GLUT_SCREEN_HEIGHT)-height)/2  );
 		    glutReshapeWindow( width, height );
             log( (char*)"NormalScreen !!!" );
@@ -712,78 +727,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'O':
     	bAutorisationSuivi = !bAutorisationSuivi;
     	break;
-    	/*
-    case 'E':
-        pControl = camera.getControl("Exposure (Absolute)");
-        if (pControl)       pControl->plus();
-        break;
-    case 'e':    
-        pControl = camera.getControl("Exposure (Absolute)");
-        if (pControl)       pControl->moins();
-        break;
-    case 'B':
-        pControl = camera.getControl("Bright");
-        if (pControl)       pControl->plus();
-        break;
-    case 'b':    
-        pControl = camera.getControl("Bright");
-        if (pControl)       pControl->moins();
-        break;
-    case 'C':
-        pControl = camera.getControl("Contras");
-        if (pControl)       pControl->plus();
-        break;
-    case 'c':
-        pControl = camera.getControl("Contras");
-        if (pControl)       pControl->moins();
-        break;
-    case 'H':
-        pControl = camera.getControl("Hue");
-        if (pControl)       pControl->plus();
-        break;
-    case 'h':
-        pControl = camera.getControl("Hue");
-        if (pControl)       pControl->moins();
-        break;
-    case 'G':
-        pControl = camera.getControl("Gamma");
-        if (pControl)       pControl->plus();
-        break;
-    case 'g':
-        pControl = camera.getControl("Gamma");
-        if (pControl)       pControl->moins();
-        break;
-    case 'Z':
-        pControl = camera.getControl("Sharp");
-        if (pControl)       pControl->plus();
-        break;
-    case 'z':
-        pControl = camera.getControl("Sharp");
-        if (pControl)       pControl->moins();
-        break;
-    case 'S':
-        pControl = camera.getControl("Satu");
-        if (pControl)       pControl->plus();
-        break;
-    case 's':
-        pControl = camera.getControl("Satu");
-        if (pControl)       pControl->moins();
-        break;
-    case 'W':
-        pControl = camera.getControl(0x0098091A);
-        if (pControl)       pControl->plus();
-        break;
-    case 'w':
-        pControl = camera.getControl(0x0098091A);
-        if (pControl)       pControl->moins();
-        break;
-    case 'l':  // '-'
-        camera.capability_list();
-        break;
-    case 'r':  // '-'
-        reset_camera();
-        break;
-        */
+
     case 'p':  // '-'
         bPause = !bPause;
 
@@ -794,13 +738,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             pErr->changeText((char*)"" );
         }
         break;
-    /*
-    case '1':
-        bPanelControl = !bPanelControl;
-        panelControl->setVisible(bPanelControl);
-        log( (char*)"Toggle panelControl !!!" );
-        break;
-    */
+
     case '2':
         bPanelHelp = !bPanelHelp;
         panelHelp->setVisible(bPanelHelp);
@@ -925,7 +863,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 
 	//if ( bPause && button == 0 && state == 0 )	{
 	if ( button == 0 && state == 0 )	{
-	    logf( "---------------------- Click x=%d y=%d\n" , x, y );
+	    logf( (char*)"---------------------- Click x=%d y=%d\n" , x, y );
 
         getSuiviParameter();
 
@@ -999,10 +937,9 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	        bSuivi = false;
         }
 
-	    printf( "xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
-	    printf( "    l=%d rgb=%d,%d,%d\n" , r,g,b,  l );
+	    logf( (char*)"xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
+	    logf( (char*)"    l=%d rgb=%d,%d,%d\n" , r,g,b,  l );
 
-	    logf( (char*)"Suivi (%0.2f, %0.2f)" , xSuivi, ySuivi );
 	} 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1261,22 +1198,6 @@ void logf(char *fmt, ...)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-static void usage(FILE *fp, int argc, char **argv)
-{
-        fprintf(fp,
-                 "Usage: %s [options]\n\n"
-                 "Version 1.3\n"
-                 "Options:\n"
-                 "-d | --device name   Video device name [/dev/video(n)]\n"
-                 "-h | --help          Print this message\n"
-                 "-f | --full          Full size windows\n"
-                 "-l | --log           Affiche les logs\n"
-                 "",
-                 argv[0] );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void parse_size( string s )
 {
     std::size_t found = s.find("x");
@@ -1361,6 +1282,12 @@ void parse_option( int argc, char**argv )
                     printf( "%s\n", cSize );
                     parse_size(cSize);
                     break;
+            case 'p':
+                {
+                Camera_mgr::getInstance().add( new Pleiade() );
+                }
+                break;
+    
             /*
             case 'm':
                     io = IO_METHOD_MMAP;
@@ -1399,6 +1326,33 @@ void parse_option( int argc, char**argv )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void parse_option_size( int argc, char**argv )
+{
+    char        cSize[100];
+
+    for (;;) {
+            int idx;
+            int c;
+
+            c = getopt_long(argc, argv, short_options, long_options, &idx);
+
+            if (-1 == c)
+                    break;
+
+            switch (c) {
+            case 's':
+                    strncpy( cSize, optarg, sizeof(cSize) );
+
+                    //string      sSize=string((const char*)cSize);
+                    printf( "%s\n", cSize );
+                    parse_size(cSize);
+                    break;
+            }
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 #include <X11/Xlib.h>
 void getX11Screen()
 {
@@ -1429,6 +1383,7 @@ void getX11Screen()
 //--------------------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
+    //parse_option_size(argc, argv);
     
     vCameraSize.x = 1280;
     vCameraSize.y = 720;
@@ -1482,8 +1437,6 @@ int main(int argc, char **argv)
     getX11Screen();
     parse_option(argc, argv);
 
-    Camera_mgr::getInstance().add( new Pleiade() );
-    
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
     glutMainLoop();

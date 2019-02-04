@@ -1,5 +1,8 @@
 #include "camera.h"
 
+
+#include "camera_mgr.h"
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -41,12 +44,9 @@ void Camera::init()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreatePreview()	{
-    log((char*)"----------- CreatePreview -------------");
+    logf((char*)"----------- CreatePreview ------------- %s", getDevName() );
 
 	WindowsManager& wm = WindowsManager::getInstance();
-	//wm.setScreenSize( getWidth(), height );
-    //setWidth(950);
-    //setHeight(534);
 
 	//panelPreview = new PanelSimple();
 	panelPreview = new PanelWindow();
@@ -54,18 +54,17 @@ void Camera::CreatePreview()	{
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
 
+    logf((char*)"    wsc=%d hsc=%d", wsc, hsc);
 	resizePreview(wsc, hsc);
 	//panelPreview->setBackground( (char*)"frame-0.raw");
 	
 	//pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
 	pCamFilename = new PanelText( (char*)getDevName(),		PanelText::LARGE_FONT, 20, 10 );
 	panelPreview->add( pCamFilename );
-
-    string  pStr;
 	
-	pStr = "";//
-	//pStr = getName();
-	PanelTextOmbre* pTO = new PanelTextOmbre( pStr,	PanelText::LARGE_FONT, 0, 10 );
+	
+	//string pStr = getName();
+	PanelTextOmbre* pTO = new PanelTextOmbre( getName(),	PanelText::LARGE_FONT, 0, 10 );
 	pTO->setAlign( PanelText::CENTER );
 	panelPreview->add( pTO );
 	
@@ -73,34 +72,55 @@ void Camera::CreatePreview()	{
 	//panelPreview->setCanMove(false);
  	wm.add( panelPreview );
 
-    logf((char*)"    name %s ", pStr.c_str());
+    logf((char*)"    name %s ", getName() );
     logf((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizeControl(int width, int height)	{
+    logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getDevName() );
     int dx = panelControl->getDX();
     int dy = panelControl->getDY();
     
-    if ( dx==0)     return;
+    //if ( dx==0)     return;
+    dx = 200;
+    dy = 192;
     
     int x = width - dx - 20;
-    int y = 20;
 
-    panelControl->setPos( x,  y );
-    //printf("resizeControl(%d, %d\n", width, height);
-    //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
+    int nb = Camera_mgr::getInstance().getNum(this);
+    int y = 10+nb * (20+dy);
+
+    logf((char*) "Camera::resizeControl x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
+    panelControl->setPos( x, y );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
+    logf((char*) "Camera::resizeControlFirst(%d, %d, %d, %d) %s", width, height, dx, dy, getDevName() );
+    
+    //if ( dx==0)     return;
+
+    dx = 200;
+    dy = 192;
+
+    int x = width - dx - 20;
+
+    int nb = Camera_mgr::getInstance().getNum(this);
+    int y = 10+nb * (20+dy);
+
+    logf((char*) "Camera::resizeControlFirst x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
+    panelControl->setPos( x, y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizePreview(int width, int height)	{
-    logf((char*) "Camera::resizePreview(%d, %d)", width, height);
+    logf((char*) "Camera::resizePreview(%d, %d) %s", width, height,
+     getDevName() );
 	WindowsManager& wm = WindowsManager::getInstance();
-
-    //vCameraSize.x = getWidth();
-    //vCameraSize.y = getHeight();
 
 	int wsc = width;
 	int hsc = height;
@@ -122,11 +142,6 @@ void Camera::resizePreview(int width, int height)	{
     int modX, modY;
     float zoom;
     
-    /*
-    printf( "rsc=%f   rpv=%f\n", rsc, rpv);
-    printf( "wsc=%d   hsc=%d\n", wsc, hsc);
-    printf( "vCamera.x=%.2f   vCamera.y=%.2f\n", vCameraSize.x, vCameraSize.y);
-	*/
 	if ( rsc > rpv )    {
 	    zoom = (float)hsc/(float)vCameraSize.y;
 
@@ -138,7 +153,6 @@ void Camera::resizePreview(int width, int height)	{
 	} 
 	else                {
 	    zoom = (float)wsc/(float)vCameraSize.x;
-        printf( "Zoom=%f\n", zoom );
 
 	    dxCam = zoom * (float)vCameraSize.x;
 	    dyCam = zoom * (float)vCameraSize.y;
@@ -147,7 +161,7 @@ void Camera::resizePreview(int width, int height)	{
 	    yCam = modY = (hsc - dyCam) / 2;
 	} 
 
-
+    
     dxCam /= 4;
     dyCam /= 4;
 
@@ -197,7 +211,6 @@ void Camera::fullSizePreview(int width, int height)	{
 	} 
 	else                {
 	    zoom = (float)wsc/(float)vCameraSize.x;
-        printf( "Zoom=%f\n", zoom );
 
 	    dxCam = zoom * (float)vCameraSize.x;
 	    dyCam = zoom * (float)vCameraSize.y;
@@ -248,13 +261,9 @@ void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int i
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::addControl()	{
+int Camera::addControl()	{
     logf((char*)"------------- Camera::addControl() ---------------");
-    if ( getFd() == -1 )
-    {
-        logf((char*)"Le materiel n'est pas encore ouvert");
-    }
-
+ 
     int xt  = 10;
     int yt  = 10;
     int dyt = 16;
@@ -274,32 +283,42 @@ void Camera::addControl()	{
 
     int dy = ++n*dyt;
     panelControl->setSize( 200, dy);
+    
+    logf( (char*)"dy=%d", dy);
+    return dy;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreateControl()	{
-    logf((char*)"------------- Camera::CreateControl() ---------------");
+    logf((char*)"------------- Camera::CreateControl() --------------- %s", getDevName() );
     if ( getFd() == -1 )
     {
         logf((char*)"Le materiel n'est pas encore ouvert");
     }
-	WindowsManager& wm = WindowsManager::getInstance();
 
     panelControl = new PanelWindow();
+    
+	WindowsManager& wm = WindowsManager::getInstance();
+	int wsc = wm.getWidth();
+	int hsc = wm.getHeight();
+    
+    
     int dx = 200;
     int dy = 150;
-    int x = 1600 - dx - 20;
+    int x = wsc - dx - 20;
     int y = 20;
 
     panelControl->setPosAndSize( x, y, dx, dy);
+    
     ///home/rene/programmes/opengl/video/essai
     wm.add(panelControl);
     panelControl->setBackground((char*)"background.tga");
     
-    addControl();
+    dy = addControl();
+    resizeControlFirst(wsc, hsc, dx, dy);
 
-    logf((char*)"panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
+    //logf((char*)"panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -308,7 +327,6 @@ bool*     pCharging;
 //
 void charge_camera()
 {
-    
     write_image();
 
     *pCharging = true;
@@ -482,28 +500,28 @@ GLubyte* Camera::getPtr()
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::get_xCam()
 {
-    return panelPreview->getX();
+    return xCam;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::get_yCam()
 {
-    return panelPreview->getY();
+    return yCam;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::get_dxCam()
 {
-    return panelPreview->getDX();
+    return dxCam;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::get_dyCam()
 {
-    return panelPreview->getDY();
+    return dyCam;
 }
 
 

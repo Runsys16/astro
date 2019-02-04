@@ -21,6 +21,7 @@ void Camera_mgr::add( string dev_name )
     pCameras.push_back( pCamera );
     pCamera->setDevName( (char*)dev_name.c_str() );
     pCamera->open_device();
+    pCamera->getIOName();
     pCamera->init_device();
     pCamera->capability_list();
     pCamera->start_capturing();
@@ -121,6 +122,8 @@ void Camera_mgr::idleGL()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::active()
 {
+    logf((char*)"----------- Camera_mgr::active() -------------" );
+
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
 
@@ -134,7 +137,7 @@ void Camera_mgr::active()
     nActive = nActive % n;
     
     pCurrent = pCameras[nActive];
-    
+    WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
     
     if ( pCurrent )         pCurrent->fullSizePreview( w, h );
 }
@@ -180,6 +183,25 @@ int Camera_mgr::get_dyCam()
 {
     
     if ( pCurrent )             return pCurrent->get_dyCam();
+    return -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Camera_mgr::getSize()
+{
+    return pCameras.size();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Camera_mgr::getNum(Camera* p)
+{
+    int nb = pCameras.size();
+    for (int i=0; i<nb; i++)
+    {
+        if ( pCameras[i] == p )         return i;
+    }
     return -1;
 }
 //--------------------------------------------------------------------------------------------------------------------

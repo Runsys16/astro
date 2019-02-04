@@ -43,6 +43,8 @@ Device_cam::Device_cam()
     bEnregistre     = false;
     bCapture        = false;
     bmp_buffer      = NULL;
+    
+    name ="";
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -61,6 +63,34 @@ bool Device_cam::isDevice( int u )
     }
 
     return false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::getIOName()
+{
+    if (fd == -1)
+    {
+        name = "";
+        return;
+    }
+
+    struct v4l2_capability cap;
+    memset(&cap, 0, sizeof(v4l2_capability));
+    
+    if(ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1)
+    {
+        perror("cam_info: Can't get capabilities");
+        name = "";
+    } else {
+        //logf("Name:\t\t '%s'", (char*)cap.card);
+        string s = (char*)cap.card;
+        int n = s.find(':');
+        if ( n>0 )      s[n] = 0;
+        //logf("n = %d", n );
+        name = string(s);
+        logf("\n************* Name: '%s' ***********************\n", name.c_str() );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -715,7 +745,7 @@ void Device_cam::init_device(void)
                         errno_exit("VIDIOC_QUERYCAP");
                 }
         }
-        name = ( (char*) cap.card );
+        //name = ( (char*) cap.card );
         if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
                 fprintf(stderr, "%s is no video capture device\n",
                          dev_name);

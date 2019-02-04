@@ -17,12 +17,6 @@
 
 #include <WindowsManager.h>
 
-enum background_t
-{
-    PLEIADES,
-    CAM0,
-    CAM1
-};
 
 struct hms
 {
@@ -119,7 +113,9 @@ void                displayGL(void);
 
 void                log( char *);
 void                logf( char *, ...);
-void parse_option( int argc, char**argv );
-int main(int argc, char **argv);
+
+void                parse_option( int argc, char**argv );
+void                parse_option_size( int argc, char**argv );
+int                 main(int argc, char **argv);
 
 #endif
