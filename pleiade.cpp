@@ -16,6 +16,7 @@ Pleiade::Pleiade()
     ptr = NULL;
 
     Camera();
+    setName( (char*) "Pleiades" );
     vCameraSize.x = 1920;
     vCameraSize.y = 1080;
     bFreePtr = false;

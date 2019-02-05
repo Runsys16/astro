@@ -76,22 +76,18 @@ void Camera_mgr::keyboard( char key )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::resize(int width, int height)
 {
-    if ( pCurrent )            
-        WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
-        //WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
-
 
     for( int i=0; i<pCameras.size(); i++ )
     {
-        pCameras[i]->resizePreview( width, height );
         pCameras[i]->resizeControl( width, height );
     
-        if ( pCameras[i] != pCurrent )
-            WindowsManager::getInstance().onBottom( pCameras[i]->getPanelPreview() );
-        else
+        if ( pCameras[i] == pCurrent )
             pCameras[i]->fullSizePreview( width, height );
+        else
+            pCameras[i]->resizePreview( width, height );
     }
     
+    reOrder();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -128,18 +124,38 @@ void Camera_mgr::active()
     int h = WindowsManager::getInstance().getHeight();
 
     if ( pCurrent )         pCurrent->resizePreview( w, h );
-    //pCurrent->resizeControl( width, height );
-
-    onBottom();
 
     nActive++;
     int n = pCameras.size();
     nActive = nActive % n;
     
     pCurrent = pCameras[nActive];
-    WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
     
     if ( pCurrent )         pCurrent->fullSizePreview( w, h );
+    
+    reOrder();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::reOrder()
+{
+    logf((char*)"----------- Camera_mgr::reOrder() -------------" );
+    int nb = pCameras.size();
+
+    for( int i=0, a=0; i<nb; i++, a++ )
+    {
+        if ( pCameras[i] != pCurrent )
+        {
+            WindowsManager::getInstance().onBottom( pCameras[i]->getPanelPreview() );
+            pCameras[i]->getPanelPreview()->setPos( a*100, a*100 );
+        }
+        else
+            a--;
+    }
+
+    if ( pCurrent )            
+        WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

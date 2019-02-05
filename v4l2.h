@@ -165,6 +165,7 @@ public :
 
     inline  unsigned char*  getBuffer()             { return bmp_buffer; }
 
+    inline  void            setName( char * s)      { name = s; }
     inline  char*           getName()               { return (char*)name.c_str(); }
     inline  void            enregistre()            { bEnregistre = true; }
 

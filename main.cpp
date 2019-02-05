@@ -1436,6 +1436,8 @@ int main(int argc, char **argv)
 
     getX11Screen();
     parse_option(argc, argv);
+    logf ((char*)"##############");
+    Camera_mgr::getInstance().reOrder();
 
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);

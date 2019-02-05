@@ -30,6 +30,7 @@ public:
     void                        onBottom();
     void                        resize( int, int );
     void                        active();
+    void                        reOrder();
 
     GLubyte*                    getPtr();
 

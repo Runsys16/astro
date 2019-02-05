@@ -44,7 +44,7 @@ void Camera::init()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreatePreview()	{
-    logf((char*)"----------- CreatePreview ------------- %s", getDevName() );
+    logf((char*)"----------- CreatePreview ------------- %s", getName() );
 
 	WindowsManager& wm = WindowsManager::getInstance();
 
@@ -79,7 +79,7 @@ void Camera::CreatePreview()	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizeControl(int width, int height)	{
-    logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getDevName() );
+    logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName() );
     int dx = panelControl->getDX();
     int dy = panelControl->getDY();
     
@@ -92,7 +92,7 @@ void Camera::resizeControl(int width, int height)	{
     int nb = Camera_mgr::getInstance().getNum(this);
     int y = 10+nb * (20+dy);
 
-    logf((char*) "Camera::resizeControl x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
+    logf((char*) "                          x=%d y=%d nb=%d", x, y, nb );
     panelControl->setPos( x, y );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -118,13 +118,11 @@ void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizePreview(int width, int height)	{
-    logf((char*) "Camera::resizePreview(%d, %d) %s", width, height,
-     getDevName() );
+    logf((char*) "Camera::resizePreview(%d, %d) %s", width, height, getName() );
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	int wsc = width;
 	int hsc = height;
-    logf((char*) "Screen (%d, %d)", wsc, hsc);
 
 
     if ( vCameraSize.x == -1 )
@@ -176,12 +174,12 @@ void Camera::resizePreview(int width, int height)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::fullSizePreview(int width, int height)	{
-    logf((char*) "Camera::resizePreview(%d, %d)", width, height);
+    logf((char*) "Camera::fullSizePreview(%d, %d) %s ", width, height, getName() );
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	int wsc = width;
 	int hsc = height;
-    logf((char*) "Screen (%d, %d)", wsc, hsc);
+    //logf((char*) "Screen (%d, %d)", wsc, hsc);
 
 
     if ( vCameraSize.x == -1 )
@@ -230,7 +228,10 @@ void Camera::fullSizePreview(int width, int height)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
+    logf( (char*)"Ajout de '%s'", str );
+
 	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
+
     PanelText* pt = new PanelText( (char*)"     ", PanelText::NORMAL_FONT, x + 150, y );
     p->add( pt );
 
@@ -245,7 +246,8 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id)	{
+void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id)	{   
+    logf( (char*)"Ajout de '%s'", str );
 	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
     PanelText* pt = new PanelText( (char*)"     ", PanelText::NORMAL_FONT, x + 150, y );
     p->add( pt );
