@@ -86,7 +86,7 @@ class Control;
 class Device_cam
 {
 private:
-    char *                  dev_name;
+    string                  dev_name;
     enum io_method          io;
     int                     fd;
     struct buffer *         buffers;
@@ -158,8 +158,9 @@ public :
     inline  char*           getErr()                { return strErr; }
     inline  bool            isErr()                 { return fd == -1; }
     
+    void                    setDevName(string);
     inline  void            setDevName(char* s)     { dev_name = s; }
-    inline  char*           getDevName()            { return dev_name; }
+    inline  char*           getDevName()            { return (char*)dev_name.c_str(); }
 
     inline  int             getFd()                 { return fd; }
 

@@ -12,14 +12,37 @@ Camera_mgr::Camera_mgr()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera_mgr::add( string dev_name )
+bool Camera_mgr::camera_exist( string sdev )
 {
-    logf((char*)"----------- Camera_mgr::add( \"%s\" ) -------------", dev_name.c_str());
+    int nb = pCameras.size();
+    for( int i=0; i<nb; i++ )
+    {
+
+        //logf( (char*)"    [%d/%d] %s compare %s", i, nb, pCameras[i]->getDevName(), sdev.c_str() );
+        
+        if ( sdev.find( (char*)pCameras[i]->getDevName() ) != std::string::npos )
+        {
+        
+            return true;
+        }
+    }
+    return false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::add( string sdev_name )
+{
+
+    if ( camera_exist( sdev_name ) )            return;
+
+    //logf( (char*)"    Not Exist" );
+    logf((char*)"----------- Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
 
     Camera *        pCamera = new Camera(1600,900);
-    
-    pCameras.push_back( pCamera );
-    pCamera->setDevName( (char*)dev_name.c_str() );
+    //pCameras.push_back( pCamera );
+    string newString = sdev_name;
+    pCamera->setDevName( newString );
     pCamera->open_device();
     pCamera->getIOName();
     pCamera->init_device();
@@ -30,8 +53,11 @@ void Camera_mgr::add( string dev_name )
     pCamera->CreatePreview();
     pCamera->CreateControl();
 
+    pCameras.push_back( pCamera );
+
     active();
     onBottom();
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -48,6 +74,22 @@ void Camera_mgr::add( Camera* p )
 
     active();
     onBottom();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::sup( string name )
+{
+    logf((char*)"----------- Camera_mgr::sup() -------------" );
+
+    Camera* pCamera = getCamera( name );
+    if ( pCamera )
+    {   
+        int i = getNum( pCamera );
+        delete pCamera;
+        pCameras.erase(pCameras.begin()+i);
+    }
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -219,6 +261,19 @@ int Camera_mgr::getNum(Camera* p)
         if ( pCameras[i] == p )         return i;
     }
     return -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+Camera* Camera_mgr::getCamera( string name )
+{
+    int nb = pCameras.size();
+    for (int i=0; i<nb; i++)
+    {
+        string s = (char*)pCameras[i]->getDevName();
+        if ( s.find( name ) != string::npos )         return pCameras[i];
+    }
+    return NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

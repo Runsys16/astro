@@ -2,6 +2,7 @@
 #include "v4l2.h"
 #include "camera.h"
 #include "camera_mgr.h"
+#include "connexion_mgr.h"
 #include "Mathlib.h"
 #include "timer.h"
 #include "pleiade.h"
@@ -1436,8 +1437,12 @@ int main(int argc, char **argv)
 
     getX11Screen();
     parse_option(argc, argv);
-    logf ((char*)"##############");
+    
+    
+    logf ((char*)"############## START MANAGER ###################");
+    
     Camera_mgr::getInstance().reOrder();
+    Connexion_mgr::getInstance();
 
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);

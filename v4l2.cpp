@@ -23,7 +23,7 @@ struct v4l2_querymenu querymenu;
 //--------------------------------------------------------------------------------------------------------------------
 Device_cam::Device_cam()
 {
-    dev_name        = (char*)"/dev/video1";
+    dev_name        = "";
     io              = IO_METHOD_USERPTR;
     fd              = -1;
     out_buf         = 1;
@@ -45,6 +45,13 @@ Device_cam::Device_cam()
     bmp_buffer      = NULL;
     
     name ="";
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::setDevName( string s )
+{
+    dev_name = s;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -469,7 +476,7 @@ void Device_cam::stop_capturing(void)
 
     bCapture = false;
 
-    logf( (char*)"-------------- Device_cam::stop_capturing %s------------------", dev_name);
+    logf( (char*)"-------------- Device_cam::stop_capturing %s------------------", dev_name.c_str() );
 
     enum v4l2_buf_type type;
 
@@ -495,7 +502,7 @@ void Device_cam::start_capturing(void)
 
     if ( bCapture ) return;
     
-    logf( (char*)"-------------- Device_cam::start_capturing %s------------------", dev_name);
+    logf( (char*)"-------------- Device_cam::start_capturing %s------------------", dev_name.c_str() );
     
     unsigned int i;
     enum v4l2_buf_type type;
@@ -619,7 +626,7 @@ void Device_cam::init_mmap(void)
 
         if (-1 == xioctl(fd, VIDIOC_REQBUFS, &req)) {
                 if (EINVAL == errno) {
-                        sprintf(strErr, "%s does not support memory mapping", dev_name);
+                        sprintf(strErr, "%s does not support memory mapping", dev_name.c_str());
                         fprintf(stderr, "%s\n", strErr);
                         //exit(EXIT_FAILURE);
                         close_device();
@@ -630,8 +637,7 @@ void Device_cam::init_mmap(void)
         }
 
         if (req.count < 2) {
-                fprintf(stderr, "Insufficient buffer memory on %s\n",
-                         dev_name);
+                fprintf(stderr, "Insufficient buffer memory on %s\n", dev_name.c_str() );
                 //xit(EXIT_FAILURE);
                 close_device();
                 return;
@@ -687,7 +693,7 @@ void Device_cam::init_userp(unsigned int buffer_size)
         if (-1 == xioctl(fd, VIDIOC_REQBUFS, &req)) {
                 if (EINVAL == errno) {
                         fprintf(stderr, "%s does not support "
-                                 "user pointer i/o\n", dev_name);
+                                 "user pointer i/o\n", dev_name.c_str() );
                         //exit(EXIT_FAILURE);
                         close_device();
                         return;
@@ -736,8 +742,7 @@ void Device_cam::init_device(void)
 
         if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
                 if (EINVAL == errno) {
-                        fprintf(stderr, "%s is no V4L2 device\n",
-                                 dev_name);
+                        fprintf(stderr, "%s is no V4L2 device\n", dev_name.c_str() );
                     //exit(EXIT_FAILURE);
                     close_device();
                     return;
@@ -747,8 +752,7 @@ void Device_cam::init_device(void)
         }
         //name = ( (char*) cap.card );
         if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-                fprintf(stderr, "%s is no video capture device\n",
-                         dev_name);
+                fprintf(stderr, "%s is no video capture device\n", dev_name.c_str() );
                 //exit(EXIT_FAILURE);
                 close_device();
                 return;
@@ -757,8 +761,7 @@ void Device_cam::init_device(void)
         switch (io) {
         case IO_METHOD_READ:
                 if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
-                        fprintf(stderr, "%s does not support read i/o\n",
-                                 dev_name);
+                        fprintf(stderr, "%s does not support read i/o\n", dev_name.c_str() );
                     //exit(EXIT_FAILURE);
                     close_device();
                     return;
@@ -768,8 +771,7 @@ void Device_cam::init_device(void)
         case IO_METHOD_MMAP:
         case IO_METHOD_USERPTR:
                 if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-                        fprintf(stderr, "%s does not support streaming i/o\n",
-                                 dev_name);
+                        fprintf(stderr, "%s does not support streaming i/o\n", dev_name.c_str() );
                     //exit(EXIT_FAILURE);
                     close_device();
                     return;
@@ -922,8 +924,8 @@ int Device_cam::open_device()
     struct stat st;
 
 
-    if (-1 == stat(dev_name, &st)) {
-        sprintf(strErr, "Cannot identify '%s': %d, %s", dev_name, errno, strerror(errno));
+    if (-1 == stat(dev_name.c_str(), &st)) {
+        sprintf(strErr, "Cannot identify '%s': %d, %s", dev_name.c_str(), errno, strerror(errno));
         fprintf(stderr, "%s\n", strErr);
         logf((char*)"%s", strErr);
         fd = -1;
@@ -931,24 +933,24 @@ int Device_cam::open_device()
     }
 
     if (!S_ISCHR(st.st_mode)) {
-        sprintf(strErr, "%s is no device", dev_name);
+        sprintf(strErr, "%s is no device", dev_name.c_str() );
         fprintf(stderr, "%s\n", strErr);
         fd = -1;
         logf((char*)"%s", strErr);
         return(EXIT_FAILURE);
     }
 
-    fd = open(dev_name, O_RDWR /* required */ | O_NONBLOCK, 0);
+    fd = open(dev_name.c_str() , O_RDWR /* required */ | O_NONBLOCK, 0);
 
     if (-1 == fd) {
-        sprintf(strErr, "Cannot open '%s': %d, %s", dev_name, errno, strerror(errno));
+        sprintf(strErr, "Cannot open '%s': %d, %s", dev_name.c_str(), errno, strerror(errno));
         fprintf(stderr, "%s\n", strErr);
         logf((char*)"%s", strErr);
         fd = -1;
         return(EXIT_FAILURE);
     }
     
-    sprintf(strErr, "Open '%s'", dev_name);
+    sprintf(strErr, "Open '%s'", dev_name.c_str());
     
     return 0;
 }

@@ -9,11 +9,19 @@
 #include <sys/ioctl.h>
 #include <getopt.h>
 
+
+#include <thread>
+
 void usage(void);
 int serialport_init(const char* serialport, int baud);
 int serialport_writebyte(int fd, uint8_t b);
 int serialport_write(int fd, const char* str);
 int serialport_read_until(int fd, char* buf, char until);
+void serialport_read_thread(int fd);
+
+
+
+
 
 void usage(void) {
     printf("Usage: arduino-serial -p <serialport> [OPTIONS]\n"
@@ -73,6 +81,7 @@ int main(int argc, char *argv[])
             break;
         case 'b':
             baudrate = strtol(optarg,NULL,10);
+            printf("%d\n",baudrate);
             break;
         case 'p':
             strcpy(serialport,optarg);
@@ -89,13 +98,26 @@ int main(int argc, char *argv[])
             rc = serialport_write(fd, buf);
             if(rc==-1) return -1;
             break;
+            /*
         case 'r':
             serialport_read_until(fd, buf, '\n');
             printf("read: %s\n",buf);
+            serialport_read_until(fd, buf, '\n');
+            printf("read: %s\n",buf);
+            serialport_read_until(fd, buf, '\n');
+            printf("read: %s\n",buf);
+            serialport_read_until(fd, buf, '\n');
+            printf("read: %s\n",buf);
             break;
+            */
         }
+        
     }
 
+    std::thread t1(serialport_read_thread, fd);
+    t1.join();
+    
+    
     exit(EXIT_SUCCESS);    
 } // end main
     
@@ -111,10 +133,50 @@ int serialport_write(int fd, const char* str)
 {
     int len = strlen(str);
     int n = write(fd, str, len);
+
+    printf( "Envoi de '%s'\n", str ); 
+
     if( n!=len ) 
         return -1;
+        
+        
+    n = write(fd, "\n", 1);
+    if( n!=len ) 
+        return -1;
+    printf( "Envoi de LF\n" ); 
     return 0;
 }
+
+
+void serialport_read_thread(int fd )
+{
+    unsigned char b[1];
+    int i=0;
+    printf( "Debut de lecture\n" ); 
+    do { 
+        int n = read(fd, b, 1);  // read a char at a time
+        if( n==-1) 
+        {
+            continue;
+        }    // couldn't read
+        if( n==0 ) {
+            usleep( 10 * 1000 ); // wait 10 msec try again
+            printf("wait ...");
+            continue;
+        }
+        //buf[i] = b[0]; i++;
+        char c = b[0];
+        //if ( c==10)
+        printf( "%c", c);
+        b[0] = 0;
+        //if ( c < 20 )   printf( "%d-%c,", (int)c, c );
+        
+    } while( true );
+
+    printf( "FIN \n" );
+}
+
+
 
 int serialport_read_until(int fd, char* buf, char until)
 {
@@ -122,9 +184,14 @@ int serialport_read_until(int fd, char* buf, char until)
     int i=0;
     do { 
         int n = read(fd, b, 1);  // read a char at a time
-        if( n==-1) return -1;    // couldn't read
+        if( n==-1) 
+        {
+            printf("Erreur read()! %d - %s\n", errno,  strerror(errno));
+            return -1;
+        }    // couldn't read
         if( n==0 ) {
             usleep( 10 * 1000 ); // wait 10 msec try again
+            printf("wait ...");
             continue;
         }
         buf[i] = b[0]; i++;
@@ -140,11 +207,17 @@ int serialport_read_until(int fd, char* buf, char until)
 // returns valid fd, or -1 on error
 int serialport_init(const char* serialport, int baud)
 {
-    struct termios toptions;
+    struct termios toptions, oldtio;
     int fd;
     
-    //fprintf(stderr,"init_serialport: opening port %s @ %d bps\n",
-    //        serialport,baud);
+    tcgetattr(fd,&oldtio);
+    printf( "iflag = %08X\n", oldtio.c_iflag );
+    printf( "oflag = %08X\n", oldtio.c_oflag );
+    printf( "cflag = %08X\n", oldtio.c_cflag );
+    printf( "lflag = %08X\n", oldtio.c_lflag );
+    
+    fprintf(stderr,"init_serialport: opening port %s @ %d bps\n",
+            serialport,baud);
 
     fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1)  {
@@ -183,18 +256,34 @@ int serialport_init(const char* serialport, int baud)
     toptions.c_cflag &= ~CRTSCTS;
 
     toptions.c_cflag |= CREAD | CLOCAL;  // turn on READ & ignore ctrl lines
+
+
+    //toptions.c_cflag = CRTSCTS | CS8 | CLOCAL | CREAD;
+
+
+
     toptions.c_iflag &= ~(IXON | IXOFF | IXANY); // turn off s/w flow ctrl
 
     toptions.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // make raw
     toptions.c_oflag &= ~OPOST; // make raw
 
     // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
-    toptions.c_cc[VMIN]  = 0;
-    toptions.c_cc[VTIME] = 20;
+    toptions.c_cc[VMIN]  = 1;
+    toptions.c_cc[VTIME] = 10;
     
+
+    //toptions.c_iflag = 0x1248D110;
+    toptions.c_oflag = 0x00007FFC;
+    //toptions.c_cflag = 0x00000000;
+    toptions.c_lflag = 0x00000000;
+
     if( tcsetattr(fd, TCSANOW, &toptions) < 0) {
         perror("init_serialport: Couldn't set term attributes");
         return -1;
+    }
+    else
+    {
+        printf( "Init OK ...\n" );
     }
 
     return fd;

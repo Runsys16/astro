@@ -46,7 +46,15 @@ pleiade.o: pleiade.cpp pleiade.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o
+serial.o: serial.cpp serial.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+connexion_mgr.o: connexion_mgr.cpp connexion_mgr.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o serial.o connexion_mgr.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 
