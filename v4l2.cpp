@@ -262,7 +262,7 @@ void Device_cam::errno_exit(const char *s)
     
     logf((char*)"%s", strErr);
     //exit(EXIT_FAILURE);
-    //close_device();
+    close_device();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

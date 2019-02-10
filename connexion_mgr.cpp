@@ -5,8 +5,19 @@
 //--------------------------------------------------------------------------------------------------------------------
 Connexion_mgr::Connexion_mgr()
 {
-    th_poll_connexion = startThread();
-    th_poll_connexion.detach();
+    bStart = false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Connexion_mgr::start()
+{
+    if ( !bStart )
+    {
+        th_poll_connexion = startThread();
+        th_poll_connexion.detach();
+        bStart = true;
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -58,6 +69,7 @@ void Connexion_mgr::sup_port()
         }
         if ( !bFound )
         {
+            logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
             Camera_mgr::getInstance().sup( t_port_current[i] );
             t_port_current.erase(  t_port_current.begin() + i );
             return;
@@ -70,7 +82,7 @@ void Connexion_mgr::sup_port()
 void Connexion_mgr::pooling()
 {
     sleep(1);
-    logf( (char*)"Connexion_mgr::pooling()" );
+    //logf( (char*)"Connexion_mgr::pooling()" );
     
     struct dirent *lecture;
     DIR *rep;
@@ -127,4 +139,34 @@ std::thread Connexion_mgr::startThread()
 {
     return std::thread(&Connexion_mgr::threadPooling, this); 
 }    
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Connexion_mgr::print_list()
+{
+    logf( (char*)"---- Connexion_mgr::print_list()" );
+
+    int nb0 = t_port_polling.size();
+    int nb1 = t_port_current.size();
+    
+    bool bFound = false;
+
+    logf( (char*)"  t_port_polling : " );
+    for( int i=0; i<nb0; i++ )
+    {
+        logf( (char*)"    %s", t_port_polling[i].c_str() );
+    }
+
+    logf( (char*)"  t_port_current : " );
+    for( int i=0; i<nb1; i++ )
+    {
+        logf( (char*)"    %s", t_port_current[i].c_str() );
+    }
+}    
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
 

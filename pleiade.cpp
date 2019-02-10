@@ -6,6 +6,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 Pleiade::Pleiade()
 {
+    logf((char*)"----------- Constructeur Pleiade() -----------" );
+    
     bChargingPleiades = true;
     char  sTmp[] = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
     
@@ -15,7 +17,7 @@ Pleiade::Pleiade()
 
     ptr = NULL;
 
-    Camera();
+    //Camera();
     setName( (char*) "Pleiades" );
     setDevName( (char*) "Pleiades" );
     vCameraSize.x = 1920;

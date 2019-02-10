@@ -31,11 +31,14 @@ SINGLETON_BEGIN( Connexion_mgr )
 public:
     Connexion_mgr();
 
+    void                        start();
     void                        pooling();
     void                        threadPooling();
     std::thread                 startThread();
     void                        add_port();
     void                        sup_port();
+    
+    void                        print_list();
     
    
 private:
@@ -43,6 +46,7 @@ private:
     vector<string>              t_port_polling;
     vector<string>              t_port_current;
     
+    bool                        bStart;
     
 SINGLETON_END()
 

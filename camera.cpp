@@ -6,8 +6,34 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+Camera::~Camera()
+{
+    logf( (char*)"----------- Destructeur ~Camera() -----------" );
+    bChargingCamera = false;
+
+    close_device();
+
+    logf( (char*)"  join()" );
+    while( startThread );
+
+    logf( (char*)"  join() OK" );
+    
+    WindowsManager& vm = WindowsManager::getInstance();
+
+    panelPreview->deleteBackground();
+
+    vm.sup( panelPreview );
+    vm.sup( panelControl );
+    
+    delete panelPreview;
+    delete panelControl;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 Camera::Camera()
 {
+    logf((char*)"----------- Constructeur Camera() -------------" );
     Device_cam();
 
     init();
@@ -39,6 +65,7 @@ void Camera::init()
     vCameraSize.y = -1;
     
     previousTime = -1;
+    startThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -53,7 +80,6 @@ void Camera::CreatePreview()	{
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
-
     logf((char*)"    wsc=%d hsc=%d", wsc, hsc);
 	resizePreview(wsc, hsc);
 	//panelPreview->setBackground( (char*)"frame-0.raw");
@@ -341,8 +367,10 @@ void Camera::threadExtractImg()
     //logf((char*)"Camera::threadExtractImg() start %s", (char*)getName());
     mainloop();
 
-    bChargingCamera = true;
+    if ( getFd() != -1 )            bChargingCamera = true;
+    
     //logf((char*)"Camera::threadExtractImg()  stop %s", (char*)getName());
+    startThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -384,7 +412,7 @@ void Camera::change_background_camera(void)
         //pCamFilename->changeText( (char*)getDevName() );
 
         pCharging = &bChargingCamera;
-
+        startThread = true;
         thread_chargement_camera = memberThread();
         thread_chargement_camera.detach();
         

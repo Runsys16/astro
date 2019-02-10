@@ -74,6 +74,7 @@ void Camera_mgr::add( Camera* p )
 
     active();
     onBottom();
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -85,10 +86,14 @@ void Camera_mgr::sup( string name )
     Camera* pCamera = getCamera( name );
     if ( pCamera )
     {   
+        logf((char*)"  Camera_mgr::sup() %s", pCamera->getDevName() );
         int i = getNum( pCamera );
-        delete pCamera;
         pCameras.erase(pCameras.begin()+i);
+        delete pCamera;
+        logf((char*)"  Camera_mgr::sup() %s OK", pCamera->getDevName() );
     }
+
+    pCurrent = NULL;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -165,7 +170,7 @@ void Camera_mgr::active()
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
 
-    if ( pCurrent )         pCurrent->resizePreview( w, h );
+    if ( pCurrent != NULL )         pCurrent->resizePreview( w, h );
 
     nActive++;
     int n = pCameras.size();
@@ -275,6 +280,23 @@ Camera* Camera_mgr::getCamera( string name )
     }
     return NULL;
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::print_list()
+{
+    logf( (char*)"---- Camera_mgr::print_list()" );
+
+    int nb0 = pCameras.size();
+    
+ 
+    logf( (char*)"  pCameras : " );
+    for( int i=0; i<nb0; i++ )
+    {
+        logf( (char*)"    %s", pCameras[i]->getName() );
+    }
+
+}    
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

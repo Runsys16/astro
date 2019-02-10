@@ -22,6 +22,7 @@ protected:
     
     bool                        bChargingCamera;
     thread                      thread_chargement_camera;
+    bool                        startThread;
     
     float                       hz;
     float                       previousTime;
@@ -30,6 +31,7 @@ protected:
     ivec2                        vCameraSize;
 
 public :
+    ~Camera();
     Camera();
     Camera(int, int);
     

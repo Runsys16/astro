@@ -729,6 +729,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	bAutorisationSuivi = !bAutorisationSuivi;
     	break;
 
+    case 'l':
+        {            
+        Connexion_mgr::getInstance().print_list();
+        Camera_mgr::getInstance().print_list();
+        }
+        break;
+
     case 'p':  // '-'
         bPause = !bPause;
 
@@ -804,27 +811,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"Longueur : %f   %.0fd%.0fm%.2fs", l, DMS.d, DMS.m, DMS.s );
         }
         break;
-/*
-    case 'f':
-        {
-        camera.enum_format();
-        }
-        break;
-    case 'F':
-        {
-        camera.setSizeChoix();
-        logf((char*)"Choix = %d", camera.getSizeChoix() );
-        
-        reset_camera();
-        }
-        break;
 
-    case 'Q':
-        {
-        camera.enregistre();
-        }
-        break;
-*/
     default:
         {
         logf((char*)"key: %d", key);
@@ -1272,10 +1259,6 @@ void parse_option( int argc, char**argv )
                     height = heightScreen;
                     break;
 
-            case 'l':
-                    bPanelStdOut = true;
-                    break;
-
             case 's':
                     strncpy( cSize, optarg, sizeof(cSize) );
 
@@ -1442,7 +1425,7 @@ int main(int argc, char **argv)
     logf ((char*)"############## START MANAGER ###################");
     
     Camera_mgr::getInstance().reOrder();
-    Connexion_mgr::getInstance();
+    Connexion_mgr::getInstance().start();
 
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);

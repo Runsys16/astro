@@ -45,6 +45,8 @@ public:
     int                         getNum(Camera *);
     Camera*                     getCamera(string dev);
     
+    void                        print_list();
+    
    
 private:
     vector<Camera*>     pCameras;
