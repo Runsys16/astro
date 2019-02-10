@@ -19,13 +19,16 @@ protected:
     
     GLubyte*                    ptr;
 
+    int                         plus;
+    int                         count_png;
+
 public :
     Pleiade();
 
     virtual void                change_background_camera();
 
     void                        threadExtractImgPleiade();
-    std::thread                 memberThreadPleiade();
+    std::thread                 startThread();
     virtual GLubyte*            getPtr();
 
 

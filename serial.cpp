@@ -30,6 +30,8 @@ void Serial::init( string dev)
 //--------------------------------------------------------------------------------------------------------------------
 int Serial::write_byte( char b)
 {
+    if ( fd ==-1 )      return;
+
     int n = write(fd,&b,1);
     if( n!=1)
         return -1;
@@ -40,6 +42,8 @@ int Serial::write_byte( char b)
 //--------------------------------------------------------------------------------------------------------------------
 int Serial::write_string( const char* str)
 {
+    if ( fd ==-1 )      return;
+
     int len = strlen(str);
     int n = write(fd, str, len);
     if( n!=len ) 
@@ -194,6 +198,8 @@ void Serial::sopen()
 // returns valid fd, or -1 on error
 void Serial::sclose()
 {
+    if ( fd ==-1 )      return;
+
     close( fd );
     fd = -1;
 }

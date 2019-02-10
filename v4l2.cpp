@@ -923,6 +923,11 @@ int Device_cam::open_device()
 {
     struct stat st;
 
+    if ( dev_name.find("/dev/video0")!=string::npos )
+    {
+        fd = -1;
+        return;
+    }
 
     if (-1 == stat(dev_name.c_str(), &st)) {
         sprintf(strErr, "Cannot identify '%s': %d, %s", dev_name.c_str(), errno, strerror(errno));

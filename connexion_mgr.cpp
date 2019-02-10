@@ -43,11 +43,14 @@ void Connexion_mgr::add_port()
             sleep( 1 );
             if ( t_port_polling[i].find("video") != string::npos )
             {
-                Camera_mgr::getInstance().add( t_port_polling[i] );
+                logf( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
+                //if ( t_port_polling[i].find("video0") == string::npos )
+                    Camera_mgr::getInstance().add( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
             }
             else if ( t_port_polling[i].find("ttyACM") != string::npos )
             {
+                logf( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
                 Serial::getInstance().init( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
             }

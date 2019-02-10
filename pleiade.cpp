@@ -24,6 +24,12 @@ Pleiade::Pleiade()
     vCameraSize.y = 1080;
     bFreePtr = false;
     bFirst = true;
+    bChargingPleiades=false;
+    count_png = 0;
+    plus = 1;
+ 
+    thread_chargement_pleiade = startThread();
+    thread_chargement_pleiade.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -40,9 +46,9 @@ void Pleiade::threadExtractImgPleiade()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-std::thread Pleiade::memberThreadPleiade()
+std::thread Pleiade::startThread()
 {
-    //logf((char*)"Pleiade::memberThreadPleiade() %s", (char*) getName() );
+    //logf((char*)"Pleiade::startThread() %s", (char*) getName() );
     return std::thread(&Pleiade::threadExtractImgPleiade, this); 
 }  //--------------------------------------------------------------------------------------------------------------------
 //
@@ -50,12 +56,10 @@ std::thread Pleiade::memberThreadPleiade()
 void Pleiade::change_background_camera(void)
 {
     //log((char*)"***************************change_background_pleiade()");
-    static int plus = 1;
-    static int count_png = 0;
     
    //if ( pthread_chargement )   delete pthread_chargement;
 
-    if ( bChargingPleiades ) 
+    if ( bChargingPleiades && !bFirst ) 
     {
         panelPreview->deleteBackground();
         
@@ -105,7 +109,7 @@ void Pleiade::change_background_camera(void)
 
 
 
-        thread_chargement_pleiade = memberThreadPleiade();
+        thread_chargement_pleiade = startThread();
         thread_chargement_pleiade.detach();
 
         bChargingPleiades = false;
@@ -113,7 +117,7 @@ void Pleiade::change_background_camera(void)
         //log((char*)"***************************change_background_pleiade()");
     }
     //log((char*)"change_background_pleiade()");
-
+    if ( bFirst )       bFirst = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

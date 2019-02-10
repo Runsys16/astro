@@ -90,8 +90,8 @@ void Camera_mgr::sup( string name )
         logf((char*)"  Camera_mgr::sup() %s", pCamera->getDevName() );
         int i = getNum( pCamera );
         pCameras.erase(pCameras.begin()+i);
-        delete pCamera;
         logf((char*)"  Camera_mgr::sup() %s OK", pCamera->getDevName() );
+        delete pCamera;
     }
 
     pCurrent = NULL;
@@ -202,8 +202,11 @@ void  Camera_mgr::reOrder()
             a--;
     }
 
+    logf((char*)"DEBUG" );
+
     if ( pCurrent )            
         WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
+    logf((char*)"DEBUG" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

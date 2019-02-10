@@ -121,6 +121,7 @@ private:
     bool                    bEnregistre;
     bool                    bCapture;
 
+
 public :
 
     Device_cam();
