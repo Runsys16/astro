@@ -41,8 +41,16 @@ void Connexion_mgr::add_port()
         }
         if ( !bFound ){
             sleep( 1 );
-            Camera_mgr::getInstance().add( t_port_polling[i] );
-            t_port_current.push_back(  t_port_polling[i] );
+            if ( t_port_polling[i].find("video") != string::npos )
+            {
+                Camera_mgr::getInstance().add( t_port_polling[i] );
+                t_port_current.push_back(  t_port_polling[i] );
+            }
+            else if ( t_port_polling[i].find("ttyACM") != string::npos )
+            {
+                Serial::getInstance().init( t_port_polling[i] );
+                t_port_current.push_back(  t_port_polling[i] );
+            }
             return;
         }
     }
@@ -69,9 +77,18 @@ void Connexion_mgr::sup_port()
         }
         if ( !bFound )
         {
-            logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
-            Camera_mgr::getInstance().sup( t_port_current[i] );
-            t_port_current.erase(  t_port_current.begin() + i );
+            if ( t_port_current[i].find("video") != string::npos )
+            {
+                logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
+                Camera_mgr::getInstance().sup( t_port_current[i] );
+                t_port_current.erase(  t_port_current.begin() + i );
+            }
+            else if ( t_port_current[i].find("ttyACM") != string::npos )
+            {
+                logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
+                Serial::getInstance().sclose();
+                t_port_current.erase(  t_port_current.begin() + i );
+            }
             return;
         }
     }
@@ -113,6 +130,7 @@ void Connexion_mgr::pooling()
             char dev[255];
             sprintf( dev, "/dev/%s", s.c_str() );
             //logf( (char*)"  Found device ARDUINO '%s'", dev );
+            t_port_polling.push_back( string((char*)dev));
             
         }
     }

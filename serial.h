@@ -12,26 +12,45 @@
 #include <sys/ioctl.h>
 #include <getopt.h>
 
+#include <string>
 #include <thread>
 
+#include "main.h"
+
+
+using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Serial 
-{
+#include "Singleton.h"
+
+SINGLETON_BEGIN( Serial )
+
 protected:
+    string          dev_name;
     int             baudrate;
     int             fd;
+    thread          th_serial;
+    
+    char            buffer[1024];
+    int             idx;
+    int             nbZero;
+
 public :
     Serial();
 
-    void            serialport_init(const char* serialport, int baud);
-    int             serialport_writebyte(int fd, uint8_t b);
-    int             serialport_write(int fd, const char* str);
-    int             serialport_read_until(int fd, char* buf, char until);
+    void            init( string );
+    void            sopen();
+    void            sclose();
 
+    int             write_byte(char b);
+    int             write_string(const char* str);
 
-};
+    void            read_thread();
+
+    void            start_thread();
+
+SINGLETON_END()
 
 #endif
 

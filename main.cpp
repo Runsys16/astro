@@ -736,6 +736,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'g':
+        {            
+        Serial::getInstance().write_string( "g" );
+        }
+        break;
+
     case 'p':  // '-'
         bPause = !bPause;
 

@@ -3,6 +3,7 @@
 
 
 #include "camera.h"
+#include "serial.h"
 
 #include <WindowsManager.h>
 #include <thread>

@@ -17,6 +17,7 @@
 
 #include "main.h"
 #include "camera_mgr.h"
+#include "serial.h"
 
 
 using namespace std;

@@ -1,63 +1,144 @@
 #include "serial.h"    /* Standard input/output definitions */
     
-int Serial::serialport_writebyte( int fd, uint8_t b)
+
+
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+Serial::Serial()
+{
+    logf((char*)"----------- Constructeur Serial -------------" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::init( string dev)
+{
+    logf((char*)"----------- Serial::init(%s) -------------", dev.c_str() );
+    fd = -1;
+    dev_name = dev;
+    idx = 0;
+    nbZero = 0;
+    logf( (char*)"DEBUG" );
+    sopen();
+    logf( (char*)"DEBUG" );
+    start_thread();
+    logf( (char*)"DEBUG" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Serial::write_byte( char b)
 {
     int n = write(fd,&b,1);
     if( n!=1)
         return -1;
     return 0;
 }
-
-int Serial::serialport_write(int fd, const char* str)
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Serial::write_string( const char* str)
 {
     int len = strlen(str);
     int n = write(fd, str, len);
     if( n!=len ) 
         return -1;
-    n = write(fd, "\n", 1);
+    n = write_byte('\n');
     if( n!=len ) 
         return -1;
     return 0;
 }
-
-int Serial::serialport_read_until(int fd, char* buf, char until)
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::read_thread()
 {
-    char b[1];
+    unsigned char b[1];
     int i=0;
-    do { 
+    logf( (char*)"START Serial::read_thread" );
+    do {
+        if ( fd == -1 ) break;
+         
         int n = read(fd, b, 1);  // read a char at a time
-        if( n==-1) { printf("Erreur\n"); return -1;}    // couldn't read
+        if( n==-1) 
+        {
+            continue;
+        }    // couldn't read
         if( n==0 ) {
             usleep( 10 * 1000 ); // wait 10 msec try again
+            nbZero++;
+            if ( nbZero > 10)        sclose();
+            //printf("wait ...");
             continue;
         }
-        buf[i] = b[0]; i++;
-    } while( b[0] != until );
+        //buf[i] = b[0]; i++;
+        char c = b[0];
+        //if ( c==10)
+        //printf( "%c", c);
+        if ( c == '\n' )
+        {
+            if ( idx != 0 )
+            {
+                buffer[idx++] = 0;
+                logf( (char*)buffer );
+            }
+            idx = 0;
+        }
+        else
+        {
+            buffer[idx++] = c;
+        }
+        b[0] = 0;
+        //if ( c < 20 )   printf( "%d-%c,", (int)c, c );
+        
+    } while( true );
 
-    buf[i] = 0;  // null terminate the string
-    return 0;
+    logf( (char*)"FIN   Serial::read_thread" );
 }
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::start_thread()
+{
+    if ( fd != -1 )             
+    {
+        th_serial = std::thread(&Serial::read_thread, this);
+        th_serial.detach();
+    }
+    else                        logf( (char*)"Port deja ouvert !! " );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 // takes the string name of the serial port (e.g. "/dev/tty.usbserial","COM1")
 // and a baud rate (bps) and connects to that port at that speed and 8N1.
 // opens the port in fully raw mode so you can send binary data.
 // returns valid fd, or -1 on error
-void Serial::serialport_init(const char* serialport, int baud)
+void Serial::sopen()
 {
+    if (fd != -1)
+    {        
+        logf( (char*)"sopen fd != -1 !! " );
+        return;
+    }
+    
+    
+    int baud = 115200;
     struct termios toptions;
     
     //fprintf(stderr,"init_serialport: opening port %s @ %d bps\n",
     //        serialport,baud);
 
-    fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(dev_name.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1)  {
-        perror("init_serialport: Unable to open port ");
+        logf("init_serialport: Unable to open port ");
         fd = -1;
         return;
     }
     
     if (tcgetattr(fd, &toptions) < 0) {
-        perror("init_serialport: Couldn't get term attributes");
+        logf("init_serialport: Couldn't get term attributes");
         fd = -1;
         return;
     }
@@ -98,10 +179,28 @@ void Serial::serialport_init(const char* serialport, int baud)
     toptions.c_cc[VTIME] = 20;
     
     if( tcsetattr(fd, TCSANOW, &toptions) < 0) {
-        perror("init_serialport: Couldn't set term attributes");
+        logf("init_serialport: Couldn't set term attributes");
         fd = -1;
         return;
     }
 
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+// takes the string name of the serial port (e.g. "/dev/tty.usbserial","COM1")
+// and a baud rate (bps) and connects to that port at that speed and 8N1.
+// opens the port in fully raw mode so you can send binary data.
+// returns valid fd, or -1 on error
+void Serial::sclose()
+{
+    close( fd );
+    fd = -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
 
