@@ -12,7 +12,7 @@
 #define SIZEPT  20
 
 
-using namespace std;
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -43,10 +43,6 @@ PanelText *         pErr;
 char                background[]="frame-0.raw";
 GLenum err;
 float               prevTime    = -1.0f;
-char                sPleiade[]  = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
-//                                 0123456789012345678901234567890123456789012345678901234567890123456789
-//                                 00        10        20        30        40        50        60        -
-int                 count_png   = 30;
 
 int                 width  = 1422;
 int                 height = 800;
@@ -61,7 +57,6 @@ int                 yPos;
 GLdouble            fov = 60.0;
 
 char                dev_name[] = "/dev/video0000";
-int                 nVisible = 0;
 
 bool                bPrintLum = true;
 
@@ -77,22 +72,14 @@ bool                bPanelResultat = false;
 bool                bPanelCourbe   = false;
 bool                bPanelStdOut   = false;
 
-struct readBackground       readB;
-struct readBackground       readCamera;
 
-GLubyte*            ptr;
-bool                bFreePtr;
-
-ivec2               vCameraSize;
 int                 wImg;
 int                 hImg;
 int                 nPlanesImg;
 
-bool                bChargingPleiades=true;
-bool                bChargingCamera=true;
-
-thread*             pthread_chargement_pleiades;
-thread*             pthread_chargement_camera;
+ivec2               vCameraSize;
+GLubyte*             ptr;
+vector<string>      exclude;
 
 int                 _r[256];
 int                 _g[256];
@@ -131,7 +118,7 @@ int             nCalibre = 0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-static const char short_options[] = "d:hfs:lp";
+static const char short_options[] = "d:hfs:lpe:";
 static const struct option
 long_options[] = {
         { "device", required_argument, NULL, 'd' },
@@ -140,6 +127,7 @@ long_options[] = {
         { "size",   required_argument, NULL, 's' },
         { "log",    no_argument,       NULL, 'l' },
         { "pleiade",no_argument,       NULL, 'p' },
+        { "exclude",required_argument, NULL, 'e' },
         { 0, 0, 0, 0 }
 };
 //--------------------------------------------------------------------------------------------------------------------
@@ -155,8 +143,16 @@ static void usage(FILE *fp, int argc, char **argv)
                  "-h | --help          Print this message\n"
                  "-f | --full          Full size windows\n"
                  "-l | --log           Affiche les logs\n"
+                 "-e | --exc           Exclude device\n"
                  "",
                  argv[0] );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+std::vector<string>& getExclude()
+{
+    return exclude;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -935,6 +931,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    logf( (char*)"    l=%d rgb=%d,%d,%d\n" , r,g,b,  l );
 
 	} 
+
+    Camera_mgr::getInstance().onBottom();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1253,6 +1251,11 @@ void parse_option( int argc, char**argv )
                     Camera_mgr::getInstance().add(dev_name);
                     //log((char*)"Fin**");
                     bPng = false;
+                    break;
+
+            case 'e':
+                    strncpy( dev_name, optarg, sizeof(dev_name));
+                    exclude.push_back( dev_name );
                     break;
 
             case 'h':

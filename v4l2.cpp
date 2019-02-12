@@ -923,7 +923,7 @@ int Device_cam::open_device()
 {
     struct stat st;
 
-    if ( dev_name.find("/dev/video0")!=string::npos )
+    if ( dev_name.find("/dev/video1")!=string::npos )
     {
         fd = -1;
         return;

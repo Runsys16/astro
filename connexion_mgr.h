@@ -36,11 +36,11 @@ public:
     void                        pooling();
     void                        threadPooling();
     std::thread                 startThread();
+    bool                        isExclude(string);    
     void                        add_port();
     void                        sup_port();
     
     void                        print_list();
-    
    
 private:
     std::thread                 th_poll_connexion;

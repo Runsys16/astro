@@ -22,6 +22,19 @@ void Connexion_mgr::start()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+bool Connexion_mgr::isExclude(string st)
+{
+    vector<string>& exclude = getExclude();
+    int nb = exclude.size();
+    for( int i=0; i<nb; i++ )
+    {
+        if ( st.find(exclude[i]) != string::npos )      return true;
+    }
+    return false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Connexion_mgr::add_port()
 {
     int nb0 = t_port_polling.size();
@@ -40,12 +53,14 @@ void Connexion_mgr::add_port()
             }
         }
         if ( !bFound ){
+            if ( isExclude(t_port_polling[i])  )    return;
+
             sleep( 1 );
             if ( t_port_polling[i].find("video") != string::npos )
             {
                 logf( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
-                //if ( t_port_polling[i].find("video0") == string::npos )
-                    Camera_mgr::getInstance().add( t_port_polling[i] );
+                //if ( !isExclude(t_port_polling[i])  )
+                Camera_mgr::getInstance().add( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
             }
             else if ( t_port_polling[i].find("ttyACM") != string::npos )

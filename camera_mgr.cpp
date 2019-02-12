@@ -145,12 +145,13 @@ void Camera_mgr::onBottom()
     if ( pCurrent )            
         WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
 
-
+    /*
     for( int i=0; i<pCameras.size(); i++ )
     {
         if ( pCameras[i] != pCurrent )
             WindowsManager::getInstance().onBottom( pCameras[i]->getPanelPreview() );
     }
+    */
     
 }
 //--------------------------------------------------------------------------------------------------------------------

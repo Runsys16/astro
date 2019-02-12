@@ -17,6 +17,7 @@
 
 #include <WindowsManager.h>
 
+using namespace std;
 
 struct hms
 {
@@ -53,7 +54,7 @@ struct readBackground
     GLubyte*        ptr;
 };
 
-
+vector<string>&     getExclude();
 float               hms2rad( struct hms& );
 float               dms2rad( struct dms& );
 
