@@ -34,7 +34,7 @@ Camera::~Camera()
 Camera::Camera()
 {
     logf((char*)"----------- Constructeur Camera() -------------" );
-    Device_cam();
+    //Device_cam();
 
     init();
 
@@ -46,11 +46,11 @@ Camera::Camera()
 Camera::Camera(int w, int h)
 {
     logf((char*)"----------- Constructeur Camera(%d, %d) -------------", w, h);
-    Device_cam();
+    //Device_cam();
     
     init();
-    setWidth(w);
-    setHeight(h);
+    //setWidth(w);
+    //setHeight(h);
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -552,6 +552,13 @@ int Camera::get_dxCam()
 int Camera::get_dyCam()
 {
     return dyCam;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+ivec2 Camera::get_vCameraSize()
+{
+    return vCameraSize;
 }
 
 

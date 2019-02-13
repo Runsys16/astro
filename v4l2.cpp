@@ -23,6 +23,7 @@ struct v4l2_querymenu querymenu;
 //--------------------------------------------------------------------------------------------------------------------
 Device_cam::Device_cam()
 {
+    logf((char*)"----------- Constructeur Device_cam() -------------" );
     dev_name        = "";
     io              = IO_METHOD_USERPTR;
     fd              = -1;
@@ -228,6 +229,7 @@ void Device_cam::enum_format_size(int pf)
             logf( (char*)"%d- %dx%d",  i, tSize[i].width, tSize[i].height );
         }
     //}
+    logf( (char*)"Resolution courante %dx%d",  width, height );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

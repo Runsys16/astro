@@ -578,6 +578,7 @@ void getSuiviParameter(void)
 
     vCameraSize.x = 1920.0;
     vCameraSize.y = 1080;
+    vCameraSize = cam_mgr.get_vCameraSize();
 
     //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
     //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
@@ -691,12 +692,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     
         vCameraSize.x = 1920.0;
         vCameraSize.y = 1080;
+        vCameraSize = cam_mgr.get_vCameraSize();
 
         //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
         //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
         rw = (float)vCameraSize.x/(float)dxCam;
         rh = (float)vCameraSize.y/(float)dyCam;
 		
+	    logf( (char*)"vCameraSize.x=%d vCameraSize.y=%d" , vCameraSize.x, vCameraSize.y );
 	    logf( (char*)"width=%d height=%d" , width, height );
 	    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d", xCam, yCam, dxCam, dyCam );
 	    logf( (char*)"rw=%0.2f rh=%0.2f" , rw, rh );
@@ -853,7 +856,6 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 
 	//if ( bPause && button == 0 && state == 0 )	{
 	if ( button == 0 && state == 0 )	{
-	    logf( (char*)"---------------------- Click x=%d y=%d\n" , x, y );
 
         getSuiviParameter();
 
@@ -863,6 +865,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    int Y = y;
 	    
 	    screen2tex(X,Y);
+	    logf( (char*)"---------------------- Click x=%d y=%d  X=%d Y=%d vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
 	    
         ptr = Camera_mgr::getInstance().getPtr();
         int N = getOffset(X, Y, vCameraSize.x);

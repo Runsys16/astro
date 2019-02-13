@@ -41,6 +41,7 @@ public:
     int                         get_yCam();
     int                         get_dxCam();
     int                         get_dyCam();
+    ivec2                       get_vCameraSize();
     
     int                         getSize();
     int                         getNum(Camera *);
