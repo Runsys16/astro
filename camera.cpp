@@ -391,6 +391,8 @@ void Camera::change_background_camera(void)
     {
         vCameraSize.x = getWidth();
         vCameraSize.y = getHeight();
+        vCameraSize = get_vCameraSize();
+
         logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
     }
     //bFreePtr = false;

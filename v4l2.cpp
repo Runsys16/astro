@@ -914,6 +914,7 @@ void Device_cam::close_device(void)
 int Device_cam::open_device(char * name)
 {
     if ( name == NULL )       { fd = -1; return(EXIT_FAILURE); }
+    logf((char*)"Device_cam::open_device(%s)", name );
 
     dev_name = name;
     return open_device();
@@ -925,12 +926,13 @@ int Device_cam::open_device()
 {
     struct stat st;
 
+    /*
     if ( dev_name.find("/dev/video1")!=string::npos )
     {
         fd = -1;
         return;
     }
-
+    */
     if (-1 == stat(dev_name.c_str(), &st)) {
         sprintf(strErr, "Cannot identify '%s': %d, %s", dev_name.c_str(), errno, strerror(errno));
         fprintf(stderr, "%s\n", strErr);
