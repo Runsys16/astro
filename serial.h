@@ -36,6 +36,7 @@ protected:
     int             idx;
     int             nbZero;
 
+
 public :
     Serial();
 

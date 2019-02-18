@@ -54,6 +54,7 @@ struct readBackground
     GLubyte*        ptr;
 };
 
+
 vector<string>&     getExclude();
 float               hms2rad( struct hms& );
 float               dms2rad( struct dms& );

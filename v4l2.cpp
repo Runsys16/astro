@@ -97,7 +97,7 @@ void Device_cam::getIOName()
         if ( n>0 )      s[n] = 0;
         //logf("n = %d", n );
         name = string(s);
-        logf("\n************* Name: '%s' ***********************\n", name.c_str() );
+        logf( (char*)"************* Name: '%s' ***********************\n", name.c_str() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -292,7 +292,7 @@ void Device_cam::process_image(const void *p, int size)
     
     sprintf(filename, "frame-%d.raw", frame_number);
     
-    logf("Enregistre : %s", filename);
+    logf( (char*)"Enregistre : %s", filename);
     
     FILE *fp=fopen(filename,"wb");
     
@@ -358,7 +358,7 @@ int Device_cam::read_frame(void)
 
         assert(buf.index < n_buffers);
 
-        jpg_buffer = (unsigned char*)buf.index;
+        jpg_buffer = (unsigned char*)buffers[buf.index].start;
         jpg_size = buf.bytesused;
 
         decompressJpeg();

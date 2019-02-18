@@ -30,7 +30,7 @@ void Serial::init( string dev)
 //--------------------------------------------------------------------------------------------------------------------
 int Serial::write_byte( char b)
 {
-    if ( fd ==-1 )      return;
+    if ( fd ==-1 )      return -1;
 
     int n = write(fd,&b,1);
     if( n!=1)
@@ -42,7 +42,7 @@ int Serial::write_byte( char b)
 //--------------------------------------------------------------------------------------------------------------------
 int Serial::write_string( const char* str)
 {
-    if ( fd ==-1 )      return;
+    if ( fd ==-1 )      return -1;
 
     int len = strlen(str);
     int n = write(fd, str, len);
@@ -136,13 +136,13 @@ void Serial::sopen()
 
     fd = open(dev_name.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1)  {
-        logf("init_serialport: Unable to open port ");
+        logf( (char*)"init_serialport: Unable to open port ");
         fd = -1;
         return;
     }
     
     if (tcgetattr(fd, &toptions) < 0) {
-        logf("init_serialport: Couldn't get term attributes");
+        logf( (char*)"init_serialport: Couldn't get term attributes");
         fd = -1;
         return;
     }
@@ -183,7 +183,7 @@ void Serial::sopen()
     toptions.c_cc[VTIME] = 20;
     
     if( tcsetattr(fd, TCSANOW, &toptions) < 0) {
-        logf("init_serialport: Couldn't set term attributes");
+        logf( (char*)"init_serialport: Couldn't set term attributes");
         fd = -1;
         return;
     }

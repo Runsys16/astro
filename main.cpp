@@ -6,6 +6,7 @@
 #include "Mathlib.h"
 #include "timer.h"
 #include "pleiade.h"
+#include "panel_console_serial.h"
 
 
 //#define DEBUG 1
@@ -16,7 +17,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-//PanelWindow *       panelControl;
+PanelConsole *      pConsoleSerial;
 PanelWindow *       panelHelp;
 PanelWindow *       panelResultat;
 PanelWindow *       panelCourbe;
@@ -1438,6 +1439,7 @@ int main(int argc, char **argv)
     
     Camera_mgr::getInstance().reOrder();
     Connexion_mgr::getInstance().start();
+    PanelConsoleSerial::getInstance();
 
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
