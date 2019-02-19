@@ -9,8 +9,15 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
+#include <stdio.h>
+
 #include <WindowsManager.h>
 #include "Singleton.h"
+#include "serial.h"
+#include "main.h"
+
+using namespace std;
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -42,9 +49,15 @@ SINGLETON_BEGIN( PanelConsoleSerial )
 
 public :
     PanelConsoleSerial();
+
+    void                            afficheHelp();    
+    bool                            keyboard(char key, int x, int y);
+    void                            writeln( char * );
+inline PanelConsole*                getConsole()                { return pc; }
     
 protected:
 
+    PanelWindow*                    pw;
     PanelConsole*                   pc;
     Callback*                       cb;
 

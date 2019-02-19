@@ -1,5 +1,5 @@
 #include "serial.h"    /* Standard input/output definitions */
-    
+#include "panel_console_serial.h"    
 
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -86,6 +86,7 @@ void Serial::read_thread()
             {
                 buffer[idx++] = 0;
                 logf( (char*)buffer );
+                PanelConsoleSerial::getInstance().writeln( (char*)buffer );
             }
             idx = 0;
         }

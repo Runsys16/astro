@@ -554,7 +554,7 @@ void suivi(void)
     vec2 v;
     v.x = xx;
     v.y = yy;
-    t_vResultat.push_back(v);
+    //t_vResultat.push_back(v);
     
     
     //printf( "3-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
@@ -674,6 +674,13 @@ static void rotateVisible()
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //std::cout << (int)key << std::endl;
+    
+    if ( PanelConsoleSerial::getInstance().keyboard(key, x, y) )      return;;
+
+    //WindowsManager::getInstance().keyboardFunc( key, x, y);
+
+
+
 	Control* pControl;
 	
 	switch(key){ 
@@ -733,12 +740,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {            
         Connexion_mgr::getInstance().print_list();
         Camera_mgr::getInstance().print_list();
-        }
-        break;
-
-    case 'g':
-        {            
-        Serial::getInstance().write_string( "g" );
         }
         break;
 
