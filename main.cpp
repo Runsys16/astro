@@ -72,6 +72,7 @@ bool                bPanelHelp     = false;
 bool                bPanelResultat = false;
 bool                bPanelCourbe   = false;
 bool                bPanelStdOut   = false;
+bool                bPanelSerial   = true;
 
 
 int                 wImg;
@@ -773,6 +774,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         bPanelStdOut = !bPanelStdOut;
         panelStdOut->setVisible(bPanelStdOut);
         log( (char*)"Toggle panelStdOut !!!" );
+        break;
+    case '6':
+        PanelConsoleSerial::getInstance().setVisible( !PanelConsoleSerial::getInstance().getVisible() );
+        log( (char*)"Toggle serial !!!" );
         break;
     case ' ':
         bPng = !bPng;
