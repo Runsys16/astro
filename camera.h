@@ -57,6 +57,7 @@ public :
     std::thread                 memberThread();
     
     void                        setVisible(bool b);
+    void                        togglePanel();
     
     inline PanelWindow *        getPanelPreview()               { return panelPreview; }
     inline float                getHertz()                      { return hz; }

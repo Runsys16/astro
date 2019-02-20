@@ -79,7 +79,11 @@ static void         reshapeGL(int newWidth, int newHeight);
 
 void                reset_camera(void);
 void                write_image(void);
+
 void                change_hertz(float);
+void                change_arduino(bool);
+void                change_ad(float);
+void                change_dc(float);
 
 void                getSuiviParameter();
 

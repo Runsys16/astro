@@ -19,11 +19,9 @@ void Serial::init( string dev)
     dev_name = dev;
     idx = 0;
     nbZero = 0;
-    logf( (char*)"DEBUG" );
+
     sopen();
-    logf( (char*)"DEBUG" );
     start_thread();
-    logf( (char*)"DEBUG" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -85,7 +83,6 @@ void Serial::read_thread()
             if ( idx != 0 )
             {
                 buffer[idx++] = 0;
-                logf( (char*)buffer );
                 PanelConsoleSerial::getInstance().writeln( (char*)buffer );
             }
             idx = 0;

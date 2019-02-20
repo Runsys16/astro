@@ -58,7 +58,11 @@ panel_console_serial.o: panel_console_serial.cpp panel_console_serial.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o serial.o connexion_mgr.o panel_console_serial.o
+console.o: console.cpp console.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o serial.o connexion_mgr.o panel_console_serial.o console.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 

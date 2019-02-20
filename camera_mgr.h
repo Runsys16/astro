@@ -34,6 +34,7 @@ public:
     void                        resize( int, int );
     void                        active();
     void                        reOrder();
+    void                        togglePanel();
 
     GLubyte*                    getPtr();
 

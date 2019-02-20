@@ -21,6 +21,7 @@ PanelConsole *      pConsoleSerial;
 PanelWindow *       panelHelp;
 PanelWindow *       panelResultat;
 PanelWindow *       panelCourbe;
+PanelWindow *       panelStdOutW;
 
 //PanelSimple *       panelPreView;
 PanelSimple *       panelStatus;
@@ -33,11 +34,16 @@ PanelText*          G;
 PanelText*          B;
 PanelText*          L;
 PanelText*          SP;
+PanelText*          pArduino;
+PanelText*          pAD;
+PanelText*          pDC;
 
 PanelText*          pHertz;
 PanelText*          pFPS;
 PanelText *         pErr;
 
+float               ac;
+float               dc;
 
 //Device_cam          camera      = Device_cam();
 
@@ -65,13 +71,13 @@ bool                bPng    = false;
 bool                bFull   = false;
 bool                bPause  = false;
 bool                bSuivi  = false;
-bool                bAutorisationSuivi = true;
+bool                bAutorisationSuivi = false;
 
 bool                bPanelControl  = true;
 bool                bPanelHelp     = false;
 bool                bPanelResultat = false;
 bool                bPanelCourbe   = false;
-bool                bPanelStdOut   = false;
+bool                bPanelStdOut   = true;
 bool                bPanelSerial   = true;
 
 
@@ -112,11 +118,20 @@ float               offset_y;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-struct etoile   atlas   = { 3, 49, 9.7425852,  24, 3, 12.300277 };
-struct etoile   electre = { 3, 44, 52.5368818, 24, 6, 48.011217 };
+struct etoile       atlas   = { 3, 49, 9.7425852,  24, 3, 12.300277 };
+struct etoile       electre = { 3, 44, 52.5368818, 24, 6, 48.011217 };
 
-vec2            calibre[2];
-int             nCalibre = 0;
+ivec2               calibreAD[2];
+vec3                vAD;
+ivec2               calibreDC[2];
+vec3                vDC;
+int                 xClick;
+int                 yClick;
+float               pas = 4000;
+float               cAD;
+ivec2               calibreMove[2];
+mat3                mChange;
+vec2                vRef;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -180,6 +195,7 @@ void rad2hms(struct hms& HMS, float r)
     HMS.h = H;
     
     float m = (h-H) * 60.0;
+    if ( h < 0.0 )  m *= -1.0;
     int M = m;
     HMS.m = M;
     
@@ -196,6 +212,7 @@ void rad2dms(struct dms& DMS, float r)
     DMS.d = D;
     
     float m = (d-D) * 60.0;
+    if ( d < 0.0 )  m *= -1.0;
     int M = m;
     DMS.m = M;
     
@@ -512,7 +529,44 @@ void change_hertz(float hz)
     pHertz->changeText(sHz);
     //camera.mainloop();
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void change_arduino(bool b)
+{
+    if ( b )    pArduino->changeText((char*)"Arduino");
+    else        pArduino->changeText((char*)"");
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void change_ad(float ad)
+{
+    ad = DEG2RAD(ad);
+    struct hms HMS;
+    rad2hms( HMS, ad);
+    
+    char    buff[255];
+    sprintf( buff, "AsDr : %02d:%02d:%0.2f", (int)HMS.h, (int)HMS.m, HMS.s );
+    
+    pAD->changeText( buff );
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void change_dc(float dc)
+{
+    dc = DEG2RAD(dc);
+    struct dms DMS;
+    rad2dms( DMS, dc);
+    
+    char    buff[255];
+    sprintf( buff, "Decl : %02d:%02d:%0.2f", (int)DMS.d, (int)DMS.m, DMS.s );
+    
+    pDC->changeText( buff );
+
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -755,6 +809,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case '1':
+        Camera_mgr::getInstance().togglePanel();
+        log( (char*)"Toggle panelCamera !!!" );
+        break;
     case '2':
         bPanelHelp = !bPanelHelp;
         panelHelp->setVisible(bPanelHelp);
@@ -772,7 +830,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case '5':
         bPanelStdOut = !bPanelStdOut;
-        panelStdOut->setVisible(bPanelStdOut);
+        panelStdOutW->setVisible(bPanelStdOut);
         log( (char*)"Toggle panelStdOut !!!" );
         break;
     case '6':
@@ -795,32 +853,95 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
     case 'A':
-        if ( nCalibre == 0 )
         {
-            logf( (char*)"Atlas :    AD %.0fh%.0fm%0.2fs  %frad", atlas.ad.h,  atlas.ad.m,  atlas.ad.s,  hms2rad(atlas.ad) );
-            logf( (char*)"          DEC %.0fd%.0fm%0.2fs  %frad", atlas.dec.d, atlas.dec.m, atlas.dec.s, dms2rad(atlas.dec) );
-            calibre[0].x = hms2rad(atlas.ad);
-            calibre[0].y = dms2rad(atlas.dec);
+        calibreAD[1].x = xClick;
+        calibreAD[1].y = yClick;
+
+        vec3 v0 = vec3( calibreAD[0].x, calibreAD[0].y, 0.0 );
+        vec3 v1 = vec3( calibreAD[1].x, calibreAD[1].y, 0.0 );
+        vec3 v2;
+        
+        vAD = v1 - v0;
+        
+        v0 = vAD;
+        v1 = vec3( vAD.y, -vAD.x, 0.0);
+        v2 = vec3( 0.0, 0.0, 1.0 );
+        
+        v0.normalize();
+        v1.normalize();
+        
+        //mat3 m = mat3( v0, v1, v2 );
+        //mChange = m.inverse();
+        logf( (char*)"AD (%d,%d)  (%d,%d)", calibreAD[0].x, calibreAD[0].y, calibreAD[1].x, calibreAD[1].y );
         }
-        else
-        {
-            logf( (char*)"Electre :  AD %.0fh%.0fm%0.2fs  %frad", electre.ad.h,  electre.ad.m,  electre.ad.s,  hms2rad(electre.ad) );
-            logf( (char*)"          DEC %.0fd%.0fm%0.2fs  %frad", electre.dec.d, electre.dec.m, electre.dec.s, dms2rad(electre.dec) );
-            calibre[1].x = hms2rad(electre.ad);
-            calibre[1].y = dms2rad(electre.dec);
-        }
-        nCalibre = ++nCalibre % 2;
         break;
     case 'a':
         {
-        vec2 r;
-        //r.x =  calibre[1].x - calibre[0].x;
-        //r.y =  calibre[1].y - calibre[0].y;
-        r =  calibre[1] - calibre[0];
-        float l = r.length();
-        struct dms DMS;
-        rad2dms( DMS, l );
-        logf( (char*)"Longueur : %f   %.0fd%.0fm%.2fs", l, DMS.d, DMS.m, DMS.s );
+        calibreAD[0].x = xClick;
+        calibreAD[0].y = yClick;
+        logf( (char*)"AD (%d,%d)", calibreAD[0].x, calibreAD[0].y );
+        }
+        break;
+
+    case 'D':
+        {
+        calibreDC[1].x = xClick;
+        calibreDC[1].y = yClick;
+        vec3 v1 = vec3( calibreDC[1].x, calibreDC[1].y, 0.0 );
+        vec3 v0 = vec3( calibreDC[0].x, calibreDC[0].y, 0.0 );
+        vec3 v2;
+        
+        vDC = v1 - v0;
+
+        v0 = vAD;
+        v1 = vDC;
+        v2 = vec3( 0.0, 0.0, 1.0 );
+        
+        //mat3 m = mat3( v0, v1, v2 );
+        logf( (char*)"DC (%d,%d)  (%d,%d)", calibreDC[0].x, calibreDC[0].y, calibreDC[1].x, calibreDC[1].y );
+        }
+        break;
+    case 'd':
+        {
+        calibreDC[0].x = xClick;
+        calibreDC[0].y = yClick;
+        logf( (char*)"DC (%d,%d)", calibreDC[0].x, calibreDC[0].y );
+        }
+        break;
+
+    case 'M':
+        {
+        calibreMove[1].x = xClick;
+        calibreMove[1].y = yClick;
+        vec3 v1 = vec3( calibreMove[1].x, calibreMove[1].y, 0.0 );
+        vec3 v0 = vec3( calibreMove[0].x, calibreMove[0].y, 0.0  );
+        
+        vec2 v2 = v1 - v0;
+
+        //vec3 v3 = vec3( v2.x, v2.y, 0.0 );
+        //vec3 v = mChange * v3;
+        
+        float ad = pas * v2.x / vAD.x;
+        float dc = pas * v2.y / vDC.y;
+        
+        logf( (char*)"deplacement ad %0.2f", ad );
+        logf( (char*)"deplacement dc %0.2f", dc );
+        char cmd[255];
+        sprintf( cmd, "a%dp;d%dp", (int)ad, (int)dc );
+        Serial::getInstance().write_string( cmd );
+        }
+        break;
+    case 'r':
+        {
+        vRef.x = xSuivi;
+        vRef.y = ySuivi;
+        logf( (char*)"x: %0.2f , %0.2f", vRef.x, vRef.y );
+        }
+        break;
+    case 'm':
+        {
+        calibreMove[0].x = xClick;
+        calibreMove[0].y = yClick;
         }
         break;
 
@@ -862,7 +983,23 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     //WindowsManager::getInstance().onBottom(panelPreView);
 
 	//if ( bPause && button == 0 && state == 0 )	{
-	if ( button == 0 && state == 0 )	{
+    if ( !bAutorisationSuivi && button == 0 && state == 0 )	{
+        getSuiviParameter();
+
+        Camera_mgr::getInstance().onBottom();
+        
+	    int X = x;
+	    int Y = y;
+	    
+	    screen2tex(X,Y);
+	    
+	    xClick = X;
+	    yClick = Y;
+	    logf( (char*)"Click x=%d y=%d  X=%d Y=%d vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
+	    
+	} 
+    else
+	if ( bAutorisationSuivi && button == 0 && state == 0 )	{
 
         getSuiviParameter();
 
@@ -1130,6 +1267,15 @@ static void CreateStatus()	{
     pHertz = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-150, 5 );
 	panelStatus->add( pHertz );
 
+    pArduino = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-300, 5 );
+	panelStatus->add( pArduino );
+
+    pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 150, 5 );
+	panelStatus->add( pAD );
+    pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 300, 5 );
+	panelStatus->add( pDC );
+
+
 	string sErr = "Status !!!";
 
  	wm.add( panelStatus );
@@ -1148,12 +1294,17 @@ static void CreateStdOut()	{
 	int dx=350;
 	int dy=400;
 
+	panelStdOutW = new PanelWindow();
 	panelStdOut = new PanelScrollText(dy/13,50);
 	panelStdOut->setPrompt(string(">"));
-	panelStdOut->setPosAndSize( x, y, dx, dy );
+
+	panelStdOutW->setPosAndSize( x, y, dx, dy );
+	panelStdOut->setPosAndSize( 0, 0, dx, dy );
 
 
- 	wm.add( panelStdOut );
+ 	wm.add( panelStdOutW );
+ 	panelStdOutW->add( panelStdOut );
+
  	panelStdOut->setBackground((char*)"background.tga");
  	panelStdOut->setVisible(bPanelStdOut);
  	panelStdOut->setTabSize(20);

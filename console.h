@@ -1,8 +1,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-#ifndef PANELCONSOLE_SERIAL_H
-#define PANELCONSOLE_SERIAL_H  1
+#ifndef CONSOLE_H
+#define CONSOLE_H  1
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -12,44 +12,46 @@
 #include <stdio.h>
 
 #include <WindowsManager.h>
-#include "Singleton.h"
+#include "panel_console_serial.h"
 #include "serial.h"
 #include "main.h"
-#include "console.h"
 
 using namespace std;
 
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Console;
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-SINGLETON_BEGIN( PanelConsoleSerial )
-
-public :
-    PanelConsoleSerial();
-
-    bool                            keyboard(char key, int x, int y);
-    void                            writeln( char * );
-inline PanelConsole*                getConsole()                { return pc; }
-
-inline bool                         getVisible()                { return pw->getVisible(); }
-inline void                         setVisible(bool b)          { bVisible=b;  pw->setVisible(b); }
+class Console : public PanelConsoleCallBack
+{
+public:
+    Console();
     
+    void                            initMap();
+	virtual void					callback_cmd(std::string);
+	
+	void                            cmd_null();
+	void                            cmd_help();
+	void                            cmd_quit();
+	void                            commande(string);
+
 protected:
+	std::string						option;
 
-    PanelWindow*                    pw;
-    PanelConsole*                   pc;
-    Console*                        cb;
-    bool                            bVisible;
+	typedef void(Console::*ConsoleFonction)(void);
+	typedef std::map<std::string, ConsoleFonction> ConsoleFonctionMap;
 
+	ConsoleFonctionMap				FonctionMap;
 
-    
-SINGLETON_END()
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+//          MACRO
+//--------------------------------------------------------------------------------------------------------------------
+#define CONSOLE_MAP_CMD(str,f)						{FonctionMap[str] = &Console::f;}
 
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+
+
 #endif

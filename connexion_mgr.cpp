@@ -68,6 +68,7 @@ void Connexion_mgr::add_port()
                 logf( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
                 Serial::getInstance().init( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
+                change_arduino(true);
             }
             return;
         }
@@ -106,6 +107,7 @@ void Connexion_mgr::sup_port()
                 logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
                 Serial::getInstance().sclose();
                 t_port_current.erase(  t_port_current.begin() + i );
+                change_arduino(false);
             }
             return;
         }
