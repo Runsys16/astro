@@ -71,14 +71,15 @@ bool                bPng    = false;
 bool                bFull   = false;
 bool                bPause  = false;
 bool                bSuivi  = false;
-bool                bAutorisationSuivi = false;
+bool                bAutorisationSuivi = true;
 
 bool                bPanelControl  = true;
 bool                bPanelHelp     = false;
 bool                bPanelResultat = false;
 bool                bPanelCourbe   = false;
-bool                bPanelStdOut   = true;
-bool                bPanelSerial   = true;
+bool                bPanelStdOut   = false;
+bool                bPanelSerial   = false;
+bool                bAfficheVec    = false;
 
 
 int                 wImg;
@@ -132,8 +133,11 @@ int                 yClick;
 float               pas = 4000;
 float               cAD;
 ivec2               calibreMove[2];
-mat3                mChange;
 vec2                vRef;
+vec3                vecAD[2];
+vec3                vecDC[2];
+mat3                mChange;
+vec3                vOrigine;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -224,6 +228,48 @@ void rad2dms(struct dms& DMS, float r)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void glVecAD()
+{
+    float gris = 0.0;
+    glColor4f( 1.0, gris, gris, 1.0 );
+    
+    glBegin(GL_LINES);
+        int x = vecAD[0].x;
+        int y = vecAD[0].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        x = vecAD[1].x;
+        y = vecAD[1].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        glVertex2i( vecAD[1].x, vecAD[1].y );
+    glEnd();        
+}
+void glVecDC()
+{
+    float gris = 0.0;
+    glColor4f( gris, 1.0, gris, 1.0 );
+    
+    glBegin(GL_LINES);
+        vec3 v = vecAD[1] - vecAD[0];
+
+        int x = vecAD[0].x;
+        int y = vecAD[0].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        x = vecAD[0].x - v.y;
+        y = vecAD[0].y + v.x;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+    glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void glCercle(int x, int y, int rayon)
 {
 	glBegin(GL_LINE_LOOP);
@@ -280,10 +326,12 @@ void displayGL_cb(void)
 
 		    glCroix(x, y, 50, 50);
             glCarre(x, y, SIZEPT, SIZEPT);
-            //glCercle(xSuivi, ySuivi, SIZEPT-10);
-            //glCercle(xSuivi, ySuivi, SIZEPT-5);
-            //glCercle(xSuivi, ySuivi, SIZEPT+10);
-
+            
+            if ( bAfficheVec)
+            {
+                glVecAD();
+                glVecDC();
+            }
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -687,7 +735,7 @@ static void idleGL(void)
 		WindowsManager::getInstance().idleGL( elapsedTime );
 	}
 
-    //WindowsManager::getInstance().onBottom(panelPreView);
+    PanelConsoleSerial::getInstance().idleGL();
 
     //Camera_mgr::getInstance().idleGL();
 	glutPostRedisplay();
@@ -840,7 +888,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         log( (char*)"Toggle panelStdOut !!!" );
         break;
     case '6':
-        PanelConsoleSerial::getInstance().setVisible( !PanelConsoleSerial::getInstance().getVisible() );
+        bPanelSerial = !bPanelSerial;
+        PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
         log( (char*)"Toggle serial !!!" );
         break;
     case ' ':
@@ -883,6 +932,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'a':
         {
+        logf( (char*)"x: %0.2f , %0.2f", xSuivi, ySuivi );
         calibreAD[0].x = xClick;
         calibreAD[0].y = yClick;
         logf( (char*)"AD (%d,%d)", calibreAD[0].x, calibreAD[0].y );
@@ -935,6 +985,56 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         char cmd[255];
         sprintf( cmd, "a%dp;d%dp", (int)ad, (int)dc );
         Serial::getInstance().write_string( cmd );
+        }
+        break;
+    case 'w':
+        {
+        bAfficheVec = !bAfficheVec;
+        }
+        break;
+    case 'V':
+        {
+        vecAD[1].x = xSuivi;
+        vecAD[1].y = ySuivi;
+        vecAD[1].z = 0.0;
+        logf( (char*)"AD[1] (%0.2f,%0.2f)", vecAD[1].x, vecAD[1].y );
+
+        vec3 v0 = vec3( vecAD[0].x, vecAD[0].y, 0.0 );
+        vec3 v1 = vec3( vecAD[1].x, vecAD[1].y, 0.0 );
+        vec3 v2 = vec3( 0.0, 0.0, 1.0 );
+        
+        
+        vec3 v = v1 - v0;
+        logf( (char*)"v1-v0 (%0.2f,%0.2f)", v.x, v.y );
+        
+        
+        v0 = v;
+        v1 = vec3( -v.y, v.x, 0.0);
+        v2 = vec3( 0.0, 0.0, 1.0 );
+        
+        //v0.normalize();
+        //v1.normalize();
+        
+        mat3 m = mat3( v0, v1, v2 );
+        //vOrigine = vec3( vecAD[0] );
+        //v1 = vecAD[1]; 
+        //v0 = v1 - vOrigine;
+        //v0 *= 2.0;
+        v = m * v0;
+        logf( (char*)"v (%0.2f,%0.2f)", v.x, v.y );
+
+        m.inverse();
+        v1 = m * v0;
+        
+        logf( (char*)"v (%0.2f,%0.2f)", v1.x, v1.y );
+        }
+        break;
+    case 'v':
+        {
+        vecAD[0].x = xSuivi;
+        vecAD[0].y = ySuivi;
+        vecAD[0].z = 0.0;
+        logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
         }
         break;
     case 'r':
@@ -1091,7 +1191,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	        ySuivi = yy;
 	        offset_x = xx;
 	        offset_y = yy;
-	        t_vResultat.clear();
+	        //t_vResultat.clear();
         }
         else {
             sprintf( skyPoint, "Rien");
@@ -1324,6 +1424,7 @@ static void CreateStdOut()	{
 	panelStdOut->setPrompt(string(">"));
 
 	panelStdOutW->setPosAndSize( x, y, dx, dy );
+ 	panelStdOutW->setVisible(bPanelStdOut);
 	panelStdOut->setPosAndSize( 0, 0, dx, dy );
 
 
@@ -1331,7 +1432,6 @@ static void CreateStdOut()	{
  	panelStdOutW->add( panelStdOut );
 
  	panelStdOut->setBackground((char*)"background.tga");
- 	panelStdOut->setVisible(bPanelStdOut);
  	panelStdOut->setTabSize(20);
 
     string st = string("Bonjour\n");
@@ -1553,6 +1653,7 @@ void getX11Screen()
         widthScreen = screen->width;
         heightScreen = screen->height;
     }
+    //glVecAD();
 
     // close the display
     XCloseDisplay(display);
@@ -1622,6 +1723,7 @@ int main(int argc, char **argv)
     Camera_mgr::getInstance().reOrder();
     Connexion_mgr::getInstance().start();
     PanelConsoleSerial::getInstance();
+    PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
 
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);

@@ -57,6 +57,7 @@ public :
     std::thread                 memberThread();
     
     void                        setVisible(bool b);
+    void                        setControlVisible(bool b);
     void                        togglePanel();
     
     inline PanelWindow *        getPanelPreview()               { return panelPreview; }
@@ -70,6 +71,7 @@ public :
     int                         get_dyCam();
     ivec2                       get_vCameraSize();
 
+    //inline int                  getFd()                         { return getFd
 };
 
 #endif

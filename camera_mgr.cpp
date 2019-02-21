@@ -50,12 +50,12 @@ void Camera_mgr::add( string sdev_name )
     pCamera->capability_list();
     pCamera->start_capturing();
     //pCamera->addControl();
-    
+
     pCamera->CreatePreview();
     pCamera->CreateControl();
 
     pCameras.push_back( pCamera );
-
+    
     active();
     onBottom();
 
@@ -72,6 +72,12 @@ void Camera_mgr::add( Camera* p )
 
     p->CreatePreview();
     p->CreateControl();
+
+    if ( p->getFd() == -1 ) 
+    {
+        p->setControlVisible(false);
+        logf( (char*)"Ce n'est pas une camera" );
+    }
 
     active();
     onBottom();

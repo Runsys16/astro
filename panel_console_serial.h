@@ -33,6 +33,9 @@ public :
 
     bool                            keyboard(char key, int x, int y);
     void                            writeln( char * );
+    void                            idleGL();
+    
+    
 inline PanelConsole*                getConsole()                { return pc; }
 
 inline bool                         getVisible()                { return pw->getVisible(); }
@@ -44,6 +47,10 @@ protected:
     PanelConsole*                   pc;
     Console*                        cb;
     bool                            bVisible;
+    float                           ad;
+    float                           dc;
+    float                           ad_change;
+    float                           dc_change;
 
 
     

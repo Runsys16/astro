@@ -23,6 +23,11 @@ PanelConsoleSerial::PanelConsoleSerial()
     pc->setBackground((char*)"background.tga");
 
     WindowsManager::getInstance().add(pw);
+    
+    ad = -1.0;
+    dc = -1.0;
+    ad_change = -1.0;
+    dc_change = -1.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -68,20 +73,35 @@ void PanelConsoleSerial::writeln(char* str)
     {
         if ( str[1] == 'a' )
         {
-            float ad = strtod(&str[2],NULL);
-            change_ad( ad );
+            ad_change = strtod(&str[2],NULL);
             //logf( (char*)"AD" );
         }
         else if ( str[1] == 'd' )
         {
-            float dc = strtod(&str[2],NULL);
-            change_dc( dc );
+            dc_change = strtod(&str[2],NULL);
             //logf( (char*)"DEC" );
         }
         return;
     }
     pc->affiche( str );
     logf( (char*)str );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelConsoleSerial::idleGL()
+{
+    if ( ad != ad_change )
+    {
+        ad = ad_change;
+        change_ad( ad );
+    }
+
+    if ( dc != dc_change )
+    {
+        dc = dc_change;
+        change_dc( dc );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
