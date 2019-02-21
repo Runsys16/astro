@@ -115,6 +115,8 @@ float               zoom;
 vector<vec2>        t_vResultat;
 float               offset_x;
 float               offset_y;
+float               courbe1 = 1.0;
+float               courbe2 = 1.0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -350,7 +352,7 @@ void displayCourbeGL_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
-            int y = 1.0*(t_vResultat[i].x-offset_x) + 100.0;
+            int y = courbe1*(t_vResultat[i].x-offset_x) + 100.0;
             int x = (n-i)*1;
 
             panelCourbe->x2Screen(x);
@@ -366,7 +368,7 @@ void displayCourbeGL_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
-            int y = 1.0*(t_vResultat[i].y-offset_y) + 200.0;
+            int y = courbe2*(t_vResultat[i].y-offset_y) + 200.0;
             int x = (n-i)*1;
 
             panelCourbe->x2Screen(x);
@@ -609,7 +611,11 @@ void suivi(void)
     vec2 v;
     v.x = xx;
     v.y = yy;
-    //t_vResultat.push_back(v);
+    if ( t_vResultat.size() > 2000 )
+    {
+        t_vResultat.erase ( t_vResultat.begin()+0);
+    }
+    t_vResultat.push_back(v);
     
     
     //printf( "3-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
@@ -944,7 +950,26 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         calibreMove[0].y = yClick;
         }
         break;
-
+    case 'b':
+        {
+        courbe1 *= 0.8;
+        }
+        break;
+    case 'B':
+        {
+        courbe1 /= 0.8;
+        }
+        break;
+    case 'n':
+        {
+        courbe2 *= 0.8;
+        }
+        break;
+    case 'N':
+        {
+        courbe2 /= 0.8;
+        }
+        break;
     default:
         {
         logf((char*)"key: %d", key);

@@ -40,6 +40,7 @@ int Serial::write_byte( char b)
 //--------------------------------------------------------------------------------------------------------------------
 int Serial::write_string( const char* str)
 {
+    logf( (char*)"Serial::write_string('%s')", str );
     if ( fd ==-1 )      return -1;
 
     int len = strlen(str);

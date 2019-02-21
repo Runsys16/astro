@@ -32,7 +32,8 @@ public:
 	void                            cmd_null();
 	void                            cmd_help();
 	void                            cmd_quit();
-	void                            commande(string);
+	void                            cmd_clear();
+	bool                            commande(string);
 
 protected:
 	std::string						option;

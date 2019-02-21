@@ -18,6 +18,7 @@ PanelConsoleSerial::PanelConsoleSerial()
 	pc->setPrompt( "arduino> " );
 
     pc->setCallBackCmd( cb );
+    pc->setTabSize( 60 );
     
     pc->setBackground((char*)"background.tga");
 

@@ -12,51 +12,52 @@ string tHelp[] =
 "",
 "Raccourci Serveur",
 "-----------------",
-"    w : commande 'n' : stop la monture",
-"    P : Active/desactive l'affichage de la position (5 fois par seconde)",
-"      : ('p' arduino)",
-"    c : Efface la cosole",
-"    I : La monture attend les coordonnées de référence",
+"    w \t: commande 'n' : stop la monture",
+"    P \t: Active/desactive l'affichage de la position (5 fois par seconde)",
+"      \t: ('p' arduino)",
+"    c \t: Efface la cosole",
+"    I \t: La monture attend les coordonnées de référence",
 "        via Stellarium Ctrl+1",
-"    B : Change la couleur du fond",
-"    C : Spirale de recherche autour de la position actuelle",
+"    B \t: Change la couleur du fond",
+"    C \t: Spirale de recherche autour de la position actuelle",
 "",
 "Raccourci Monture",
 "-----------------",
-"    n : stop la monture",
-"    g : Affiche les positions de la monture et son etat",
-"    S : Active/Désactive le suivi rotation terre",
-"    j : Active/Désactive le joystick",
-"    M : Mode relatif/absolu",
-"    m : Affiche le mode",
-"    r : Reset des valeurs courantes (asc. droite , déclinaison)",
+"    n \t: stop la monture",
+"    g \t: Affiche les positions de la monture et son etat",
+"    S \t: Active/Désactive le suivi rotation terre",
+"    j \t: Active/Désactive le joystick",
+"    M \t: Mode relatif/absolu",
+"    m \t: Affiche le mode",
+"    r \t: Reset des valeurs courantes (asc. droite , déclinaison)",
+"    Dn\t: Change la vitesse par",
 "    z1, z2, z3, z4",
-"      : Coefficient vitesse joystick",
+"      \t: Coefficient vitesse joystick",
 "        1x 1/5x 1/10x 1/20x",
 "",
 "Commande à envoyer avec 'retour chariot'",
 "----------------------------------------",
-"    xxxx : Emulation joystick en asc. droite de xxx",
-"    yxxx : Emulation joystick en déclinaison de xxx",
+"    xxxx \t: Emulation joystick en asc. droite de xxx",
+"    yxxx \t: Emulation joystick en déclinaison de xxx",
 "",    
-"    iaxxx : Valeur courante en asc. droite de xxx degrés",
-"    idxxx : Valeur courante en déclinaison de xxx degrés",
+"    iaxxx \t: Valeur courante en asc. droite de xxx degrés",
+"    idxxx \t: Valeur courante en déclinaison de xxx degrés",
 "",    
-"    axxx  : Deplace la monture de xxx degrés en asc. droite",
-"    axxxp : Deplace la monture de xxx pas    en asc. droite",
+"    axxx  \t: Deplace la monture de xxx degrés en asc. droite",
+"    axxxp \t: Deplace la monture de xxx pas    en asc. droite",
 "",    
-"    dxxx  : Deplace la monture de xxx degrés en déclinaison",
-"    dxxxp : Deplace la monture de xxx pas    en déclinaison",
+"    dxxx  \t: Deplace la monture de xxx degrés en déclinaison",
+"    dxxxp \t: Deplace la monture de xxx pas    en déclinaison",
 "",    
-"    v     : Affiche la vitesse siderale",
-"    vxxx  : Changement de la vitesse par defaut",
+"    v     \t: Affiche la vitesse siderale",
+"    vxxx  \t: Changement de la vitesse par defaut",
 "",    
-"    sa    : Change sens en ascension droite",
-"    sd    : Change le sens en declinaison",
-"    sA    : Change sens en ascension droite du joystick ",
-"    sD    : Change sens en declinaison du joystick",
+"    sa    \t: Change sens en ascension droite",
+"    sd    \t: Change le sens en declinaison",
+"    sA    \t: Change sens en ascension droite du joystick ",
+"    sD    \t: Change sens en declinaison du joystick",
 "",
-"    ss    : Change le sens en suivi de rotation",
+"    ss    \t: Change le sens en suivi de rotation",
 "END"
 };
 //--------------------------------------------------------------------------------------------------------------------
@@ -72,18 +73,19 @@ Console::Console()
 void Console::initMap()
 {
 	CONSOLE_MAP_CMD("aide",			cmd_help )
+	CONSOLE_MAP_CMD("clear",		cmd_clear )
 	CONSOLE_MAP_CMD("exit",			cmd_quit )
-	CONSOLE_MAP_CMD("g",			cmd_null )
+	//CONSOLE_MAP_CMD("g",			cmd_null )
 	CONSOLE_MAP_CMD("help",			cmd_help )
-	CONSOLE_MAP_CMD("j",			cmd_null )
-	CONSOLE_MAP_CMD("p",			cmd_null )
-	CONSOLE_MAP_CMD("m",			cmd_null )
-	CONSOLE_MAP_CMD("M",			cmd_null )
-	CONSOLE_MAP_CMD("n",			cmd_null )
+	//CONSOLE_MAP_CMD("j",			cmd_null )
+	//CONSOLE_MAP_CMD("p",			cmd_null )
+	//CONSOLE_MAP_CMD("m",			cmd_null )
+	//CONSOLE_MAP_CMD("M",			cmd_null )
+	//CONSOLE_MAP_CMD("n",			cmd_null )
 	CONSOLE_MAP_CMD("quit",			cmd_quit )
-	CONSOLE_MAP_CMD("r",			cmd_null )
-	CONSOLE_MAP_CMD("S",			cmd_null )
-	CONSOLE_MAP_CMD("v",			cmd_null )
+	//CONSOLE_MAP_CMD("r",			cmd_null )
+	//CONSOLE_MAP_CMD("S",			cmd_null )
+	//CONSOLE_MAP_CMD("v",			cmd_null )
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -94,16 +96,30 @@ void    Console::callback_cmd(std::string str)
 
     if ( str.length() == 0 )                        return;
 
-    commande( str );
-    
-    Serial::getInstance().write_string( str.c_str() );
-
+    if (!commande( str ) )
+    {
+        Serial::getInstance().write_string( str.c_str() );
+        /*
+        string ardui = "DjpmMnrSvad";
+        for( int i=0; i<ardui.length(); i++ )
+        {
+            //logf( (char*)"%c != %c", str[0], ardui[i] );
+            if ( str[0] == ardui[i] )
+            {
+                Serial::getInstance().write_string( str.c_str() );
+                break;
+            }
+        }
+        */
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Console::cmd_null()
 {
+    //Serial::getInstance().write_string( str.c_str() );
+    logf( (char*)"Cmd : %s", option.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -130,7 +146,14 @@ void Console::cmd_quit()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Console::commande( string cmd )
+void Console::cmd_clear()
+{
+    PanelConsoleSerial::getInstance().getConsole()->clear();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool Console::commande( string cmd )
 {
     PanelConsole*   pc = PanelConsoleSerial::getInstance().getConsole();
 	// Split la fonciton si ';'	
@@ -142,8 +165,7 @@ void Console::commande( string cmd )
 		
 		NewCmd = "" + cmd.substr(i+1,cmd.length());
 		pc->affiche( NewCmd.c_str() );
-		commande( NewCmd );
-		return;
+        return commande( NewCmd );
 	}
 		
 	//cout<<"Console::commande()   cmd=" << cmd.c_str() <<endl;
@@ -169,8 +191,13 @@ void Console::commande( string cmd )
 	}
 	else	{
 		if ( str.find_first_of("#") != 0 )
+		{
 			pc->affiche( "commande inconnu .... \"" + str + "\"" );
+			return false;
+	    }
 	}
+	
+	return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
