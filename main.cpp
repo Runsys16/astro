@@ -124,10 +124,6 @@ float               courbe2 = 1.0;
 struct etoile       atlas   = { 3, 49, 9.7425852,  24, 3, 12.300277 };
 struct etoile       electre = { 3, 44, 52.5368818, 24, 6, 48.011217 };
 
-ivec2               calibreAD[2];
-vec3                vAD;
-ivec2               calibreDC[2];
-vec3                vDC;
 int                 xClick;
 int                 yClick;
 float               pas = 4000;
@@ -333,6 +329,8 @@ void displayGL_cb(void)
                 glVecDC();
             }
     }
+
+    glColor4f( 1.0, 1.0, 1.0, 1.0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -892,99 +890,49 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
         log( (char*)"Toggle serial !!!" );
         break;
-    case ' ':
-        bPng = !bPng;
-        if ( bPng )
-        {
-            log( (char*)"Affiche le suivi sauvegarde" );
-            //pthread_chargement_camera->join();
-            //camera.stop_capturing();
-        }
-        else
-        {
-            log( (char*)"Affiche la camera" );
-            //pthread_chargement_pleiades->join();
-            //camera.start_capturing();
-        }
-        break;
     case 'A':
         {
-        calibreAD[1].x = xClick;
-        calibreAD[1].y = yClick;
-
-        vec3 v0 = vec3( calibreAD[0].x, calibreAD[0].y, 0.0 );
-        vec3 v1 = vec3( calibreAD[1].x, calibreAD[1].y, 0.0 );
-        vec3 v2;
-        
-        vAD = v1 - v0;
-        
-        v0 = vAD;
-        v1 = vec3( vAD.y, -vAD.x, 0.0);
-        v2 = vec3( 0.0, 0.0, 1.0 );
-        
-        v0.normalize();
-        v1.normalize();
-        
-        //mat3 m = mat3( v0, v1, v2 );
-        //mChange = m.inverse();
-        logf( (char*)"AD (%d,%d)  (%d,%d)", calibreAD[0].x, calibreAD[0].y, calibreAD[1].x, calibreAD[1].y );
+        vecAD[1].x = xClick;
+        vecAD[1].y = yClick;
+        vecAD[1].z = 0.0;
+        logf( (char*)"AD[1] (%0.2f,%0.2f)", vecAD[1].x, vecAD[1].y );
         }
         break;
     case 'a':
         {
-        logf( (char*)"x: %0.2f , %0.2f", xSuivi, ySuivi );
-        calibreAD[0].x = xClick;
-        calibreAD[0].y = yClick;
-        logf( (char*)"AD (%d,%d)", calibreAD[0].x, calibreAD[0].y );
+        vecAD[0].x = xClick;
+        vecAD[0].y = yClick;
+        vecAD[0].z = 0.0;
+        logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
         }
         break;
 
     case 'D':
         {
-        calibreDC[1].x = xClick;
-        calibreDC[1].y = yClick;
-        vec3 v1 = vec3( calibreDC[1].x, calibreDC[1].y, 0.0 );
-        vec3 v0 = vec3( calibreDC[0].x, calibreDC[0].y, 0.0 );
-        vec3 v2;
-        
-        vDC = v1 - v0;
-
-        v0 = vAD;
-        v1 = vDC;
-        v2 = vec3( 0.0, 0.0, 1.0 );
-        
-        //mat3 m = mat3( v0, v1, v2 );
-        logf( (char*)"DC (%d,%d)  (%d,%d)", calibreDC[0].x, calibreDC[0].y, calibreDC[1].x, calibreDC[1].y );
+        vecDC[1].x = xClick;
+        vecDC[1].y = yClick;
+        vecDC[1].z = 0.0;
+        logf( (char*)"DC[1] (%0.2f,%0.2f)", vecDC[1].x, vecDC[1].y );
         }
         break;
     case 'd':
         {
-        calibreDC[0].x = xClick;
-        calibreDC[0].y = yClick;
-        logf( (char*)"DC (%d,%d)", calibreDC[0].x, calibreDC[0].y );
+        vecDC[0].x = xClick;
+        vecDC[0].y = yClick;
+        vecDC[0].z = 0.0;
+        logf( (char*)"DC[0] (%0.2f,%0.2f)", vecDC[0].x, vecDC[0].y );
         }
         break;
 
     case 'M':
         {
-        calibreMove[1].x = xClick;
-        calibreMove[1].y = yClick;
-        vec3 v1 = vec3( calibreMove[1].x, calibreMove[1].y, 0.0 );
-        vec3 v0 = vec3( calibreMove[0].x, calibreMove[0].y, 0.0  );
-        
-        vec2 v2 = v1 - v0;
-
-        //vec3 v3 = vec3( v2.x, v2.y, 0.0 );
-        //vec3 v = mChange * v3;
-        
-        float ad = pas * v2.x / vAD.x;
-        float dc = pas * v2.y / vDC.y;
-        
-        logf( (char*)"deplacement ad %0.2f", ad );
-        logf( (char*)"deplacement dc %0.2f", dc );
-        char cmd[255];
-        sprintf( cmd, "a%dp;d%dp", (int)ad, (int)dc );
-        Serial::getInstance().write_string( cmd );
+        vec3 v0 = vecAD[1] - vecAD[0];
+        vec3 v1 = vecDC[1] - vecDC[0];
+        vec3 v2 = vec3( 0.0, 0.0, 1.0 );
+        mat3 m = mat3( v0, v1, v2 );
+        mat3 mi = m.inverse();
+        mChange = m;
+        vOrigine = vecAD[0];
         }
         break;
     case 'w':
@@ -1012,19 +960,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         v1 = vec3( -v.y, v.x, 0.0);
         v2 = vec3( 0.0, 0.0, 1.0 );
         
-        //v0.normalize();
-        //v1.normalize();
-        
-        mat3 m = mat3( v0, v1, v2 );
-        //vOrigine = vec3( vecAD[0] );
-        //v1 = vecAD[1]; 
-        //v0 = v1 - vOrigine;
-        //v0 *= 2.0;
-        v = m * v0;
-        logf( (char*)"v (%0.2f,%0.2f)", v.x, v.y );
 
-        m.inverse();
-        v1 = m * v0;
+        mat3 m = mat3( v0, v1, v2 );
+        mat3 mi = m.inverse();
+        vOrigine = vecAD[0];
+
+        v0 = vecAD[1];
+        v0 -= vOrigine;
+        v0 *= 2.0;
+        v1 = mi * v0;
         
         logf( (char*)"v (%0.2f,%0.2f)", v1.x, v1.y );
         }
@@ -1042,12 +986,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         vRef.x = xSuivi;
         vRef.y = ySuivi;
         logf( (char*)"x: %0.2f , %0.2f", vRef.x, vRef.y );
-        }
-        break;
-    case 'm':
-        {
-        calibreMove[0].x = xClick;
-        calibreMove[0].y = yClick;
         }
         break;
     case 'b':
@@ -1118,8 +1056,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    
 	    screen2tex(X,Y);
 	    
-	    xClick = X;
-	    yClick = Y;
+	    xClick = x;
+	    yClick = y;
 	    logf( (char*)"Click x=%d y=%d  X=%d Y=%d vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
 	    
 	} 
