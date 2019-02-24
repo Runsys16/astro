@@ -50,14 +50,14 @@ void Serveur_mgr::decode( struct stellarium& ss, unsigned char* buffer )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::traite_connexion2(int sock)
+void Serveur_mgr::traite_connexion2()
 {
     unsigned char buffer[255];
     int n;
 
     while( 1)
     {
-        n = read(sock,buffer,255);
+        n = read(sock_stellarium,buffer,255);
 
         if (n <= 0)
         {
@@ -110,21 +110,21 @@ void Serveur_mgr::traite_connexion2(int sock)
 
     }
     
-    logf( (char*)"Fermeture du socket %d", sock);
-    close(sock);
+    logf( (char*)"Fermeture du sock_stellarium %d", sock_stellarium );
+    close(sock_stellarium);
+
+    sock_stellarium = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_2()
 {
-	int                sock;
-	int                sock_2;
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
 
 
-	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((sock_2 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
@@ -136,13 +136,13 @@ void Serveur_mgr::thread_listen_2()
 	
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
-	if (bind(sock, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
+	if (bind(sock_2, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
 		perror("bind");
 		exit(EXIT_FAILURE);
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
-	if (getsockname(sock, (struct sockaddr *) & adresse, & longueur) < 0) {
+	if (getsockname(sock_2, (struct sockaddr *) & adresse, & longueur) < 0) {
 		perror("getsockname");
 		exit(EXIT_FAILURE);
 	}
@@ -150,21 +150,22 @@ void Serveur_mgr::thread_listen_2()
 	logf( (char*)"Mon adresse : IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf( (char*)"---------------------------------------------------------------");
 
-	listen(sock, 5);
+	listen(sock_2, 5);
 	while (1) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_stellarium = accept(sock, (struct sockaddr *) & adresse, & longueur);
+		sock_stellarium = accept(sock_2, (struct sockaddr *) & adresse, & longueur);
 
-		if (sock_2 < 0)			continue;
+		if (sock_stellarium < 0)			continue;
 		
 		logf( (char*)"********** SOCKET 2*************" );
-		logf( (char*)"       sock = %d  sock_2 = %d", sock, sock_stellarium );
+		logf( (char*)"       sock = %d  sock_2 = %d", sock_2, sock_stellarium );
 		logf( (char*)"********** SUCCES 2*************" );
 		//exit(EXIT_SUCCESS);
-		traite_connexion2(sock_stellarium);
+		traite_connexion2();
 	}
-	close(sock);
-	return EXIT_SUCCESS;
+    logf( (char*)"** Fermeture de sock_2" );
+	close(sock_2);
+	sock_2 = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -177,14 +178,14 @@ void Serveur_mgr::start_2()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::traite_connexion1(int sock)
+void Serveur_mgr::traite_connexion1()
 {
     unsigned char buffer[255];
     int n;
 
     while( 1)
     {
-        n = read(sock,buffer,255);
+        n = read(sock_ref,buffer,255);
 
         if (n <= 0)
         {
@@ -237,21 +238,21 @@ void Serveur_mgr::traite_connexion1(int sock)
 
     }
     
-    logf( (char*)"Fermeture du socket %d", sock);
-    close(sock);
+    logf( (char*)"Fermeture du sock_ref %d", sock_ref);
+    close(sock_ref);
+
+    sock_ref = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_1()
 {
-	int                sock;
-	int                sock_2;
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
 
 
-	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((sock_1 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
@@ -263,13 +264,13 @@ void Serveur_mgr::thread_listen_1()
 	
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
-	if (bind(sock, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
+	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
 		perror("bind");
 		exit(EXIT_FAILURE);
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
-	if (getsockname(sock, (struct sockaddr *) & adresse, & longueur) < 0) {
+	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
 		perror("getsockname");
 		exit(EXIT_FAILURE);
 	}
@@ -277,21 +278,24 @@ void Serveur_mgr::thread_listen_1()
 	logf( (char*)"Mon adresse : IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf( (char*)"---------------------------------------------------------------");
 
-	listen(sock, 5);
+	listen(sock_1, 5);
 	while (1) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_2 = accept(sock, (struct sockaddr *) & adresse, & longueur);
+		sock_ref = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
 
-		if (sock_2 < 0)			continue;
+		if (sock_ref < 0)			continue;
 		
 		logf( (char*)"********** SOCKET 1*************" );
-		logf( (char*)"       sock = %d  sock_2 = %d", sock, sock_2 );
+		logf( (char*)"       sock = %d  sock_2 = %d", sock_1, sock_ref );
 		logf( (char*)"********** SUCCES 1*************" );
 		//exit(EXIT_SUCCESS);
-		traite_connexion1(sock_2);
+		traite_connexion1();
+		
+		
 	}
-	close(sock);
-	return EXIT_SUCCESS;
+    logf( (char*)"** Fermeture de sock_1" );
+	close(sock_1);
+	sock_1 = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -307,6 +311,26 @@ void Serveur_mgr::start_1()
 void Serveur_mgr::write_stellarium(char* s)
 {
     write( sock_stellarium, s, 24 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::close_all()
+{
+    logf( (char*)"** Fermeture de tous les sockets ..." );
+
+    if ( sock_stellarium!= -1 )         close(sock_stellarium);
+    if ( sock_ref!= -1 )                close(sock_ref);
+
+    if ( sock_1!= -1 )                  close(sock_1);
+    if ( sock_2!= -1 )                  close(sock_2);
+    
+    sock_1          = -1;
+    sock_2          = -1;
+    sock_stellarium = -1;
+    sock_ref        = -1;
+
+    sleep(1);
 }
 
 

@@ -56,15 +56,17 @@ public:
     float                       com2rad( int);
     void                        decode(struct stellarium& ss, unsigned char* buffer);
 
-    void                        traite_connexion1(int);
+    void                        traite_connexion1();
     void                        thread_listen_1();
     void                        start_1();
 
-    void                        traite_connexion2(int);
+    void                        traite_connexion2();
     void                        thread_listen_2();
     void                        start_2();
    
     void                        write_stellarium( char* s);
+    
+    void                        close_all();
     
     
 protected:
@@ -72,8 +74,13 @@ protected:
     std::thread                 th_2;
 
     std::thread                 connect_1;
+
     int                         sock_stellarium;
+    int                         sock_ref;
     
+    int                         sock_1;
+    int                         sock_2;
+
 SINGLETON_END()
 
 #endif
