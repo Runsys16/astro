@@ -60,10 +60,13 @@ public :
     void                        setControlVisible(bool b);
     void                        togglePanel();
     
+    
     inline PanelWindow *        getPanelPreview()               { return panelPreview; }
     inline float                getHertz()                      { return hz; }
 
     virtual GLubyte*            getPtr();
+    virtual bool                haveNewFrame();
+    virtual void                haveUseFrame(bool);
 
     int                         get_xCam();
     int                         get_yCam();

@@ -45,6 +45,8 @@ Device_cam::Device_cam()
     bCapture        = false;
     bmp_buffer      = NULL;
     
+    bHaveNew        = false;
+    
     name ="";
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -420,7 +422,7 @@ int Device_cam::read_frame(void)
         if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))       errno_exit("VIDIOC_QBUF");
         break;
     }
-
+    bHaveNew = true;
     return 1;
 }
 //--------------------------------------------------------------------------------------------------------------------

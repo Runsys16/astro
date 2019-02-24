@@ -71,7 +71,7 @@ bool                bPng    = false;
 bool                bFull   = false;
 bool                bPause  = false;
 bool                bSuivi  = false;
-bool                bAutorisationSuivi = true;
+bool                bAutorisationSuivi = false;
 
 bool                bPanelControl  = true;
 bool                bPanelHelp     = false;
@@ -80,6 +80,7 @@ bool                bPanelCourbe   = false;
 bool                bPanelStdOut   = false;
 bool                bPanelSerial   = false;
 bool                bAfficheVec    = false;
+bool                bMouseDeplace  = false;
 
 
 int                 wImg;
@@ -116,6 +117,8 @@ float               zoom;
 vector<vec2>        t_vResultat;
 float               offset_x;
 float               offset_y;
+float               delta_courbe1 = 1.0;
+float               delta_courbe2 = 1.0;
 float               courbe1 = 1.0;
 float               courbe2 = 1.0;
 //--------------------------------------------------------------------------------------------------------------------
@@ -132,8 +135,12 @@ ivec2               calibreMove[2];
 vec2                vRef;
 vec3                vecAD[2];
 vec3                vecDC[2];
+vec3                vDepl[2];
 mat3                mChange;
 vec3                vOrigine;
+vec3                vTr;
+bool                bCorrection = false;
+float               fTimeCorrection = 0.0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -249,8 +256,9 @@ void glVecDC()
     glColor4f( gris, 1.0, gris, 1.0 );
     
     glBegin(GL_LINES);
+        /*
         vec3 v = vecAD[1] - vecAD[0];
-
+        
         int x = vecAD[0].x;
         int y = vecAD[0].y;
         tex2screen(x, y);
@@ -260,6 +268,18 @@ void glVecDC()
         y = vecAD[0].y + v.x;
         tex2screen(x, y);
         glVertex2i( x, y );
+        */
+        int x = vecDC[0].x;
+        int y = vecDC[0].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        x = vecDC[1].x;
+        y = vecDC[1].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        glVertex2i( vecDC[1].x, vecDC[1].y );
 
     glEnd();        
 }
@@ -313,22 +333,37 @@ void glCroix( int x,  int y,  int dx,  int dy )
 void displayGL_cb(void)
 {
     if ( bSuivi && bAutorisationSuivi )   {
-		    glColor4f( 0.0, 1.0, 0.0, 0.2 );
-		    
-		    int x = round(xSuivi+0.5);
-		    int y = round(ySuivi+0.5);
-		    
-		    tex2screen(x,y);
+	    glColor4f( 0.0, 1.0, 0.0, 0.2 );
+	    
+	    int x = round(xSuivi+0.5);
+	    int y = round(ySuivi+0.5);
+	    
+	    tex2screen(x,y);
 
-		    glCroix(x, y, 50, 50);
-            glCarre(x, y, SIZEPT, SIZEPT);
+	    glCroix(x, y, 50, 50);
+        glCarre(x, y, SIZEPT, SIZEPT);
             
-            if ( bAfficheVec)
-            {
-                glVecAD();
-                glVecDC();
-            }
     }
+    if ( !bAutorisationSuivi )
+    {
+	    glColor4f( 0.0, 1.0, 0.0, 0.2 );
+	    
+	    int x = xClick;
+	    int y = yClick;
+	    
+	    tex2screen(x,y);
+
+	    glCroix(x, y, 50, 50);
+        glCercle(x, y, 25);
+
+    }
+
+    if ( bAfficheVec)
+    {
+        glVecAD();
+        glVecDC();
+    }
+
 
     glColor4f( 1.0, 1.0, 1.0, 1.0 );
 }
@@ -398,8 +433,10 @@ void displayCourbeGL_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
-            int y = courbe1*(t_vResultat[i].x-offset_x) + 100.0;
-            int x = (n-i)*1;
+            if ( bCorrection )          offset_x = vOrigine.x;
+
+            int y = (float)(delta_courbe1*(t_vResultat[i].x-offset_x) + 100.0);
+            int x = (n-i)*courbe1;
 
             panelCourbe->x2Screen(x);
             panelCourbe->y2Screen(y);
@@ -414,8 +451,10 @@ void displayCourbeGL_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
-            int y = courbe2*(t_vResultat[i].y-offset_y) + 200.0;
-            int x = (n-i)*1;
+            if ( bCorrection )          offset_y = vOrigine.y;
+
+            int y = (float)(delta_courbe2*(t_vResultat[i].y-offset_y) + 200.0);
+            int x = (n-i)*courbe2;
 
             panelCourbe->x2Screen(x);
             panelCourbe->y2Screen(y);
@@ -620,6 +659,12 @@ void change_dc(float dc)
 //--------------------------------------------------------------------------------------------------------------------
 void suivi(void)
 {
+    if ( Camera_mgr::getInstance().haveNewFrame() )
+    {
+        Camera_mgr::getInstance().haveUseFrame(false);
+    }
+    else
+        return;
     //change_background_pleiade();
     getSuiviParameter();   
     
@@ -721,16 +766,57 @@ static void idleGL(void)
         Camera_mgr::getInstance().change_background_camera();
     }
 
-    if (bSuivi)    suivi();
+    if (bAutorisationSuivi & bSuivi)    suivi();
+
+    if (!bAutorisationSuivi)
+    {
+        char   s[100];
+
+        int x = xClick;
+        int y = yClick;
+        tex2screen(x,y);
+
+        sprintf( s, "x=%d, y=%d", x, y);
+        SP->changeText(s);
+        //panelResultat->setVisible(true);
+        panelResultat->setPos(x+20 , y+20);
+    }
 
 	
+    float elapsedTime = -1;
 	if ( prevTime < 0 )	{
 		prevTime = time;
 	}
 	else 	{
-		float elapsedTime = time - prevTime;
+		elapsedTime = time - prevTime;
 		prevTime = time;
 		WindowsManager::getInstance().idleGL( elapsedTime );
+	}
+	
+	if ( elapsedTime != -1 )
+	{
+	    fTimeCorrection += elapsedTime;
+	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCorrection );
+	    if ( bCorrection && fTimeCorrection >= 2.0 )
+	    {
+            fTimeCorrection -= 5.0;
+
+	        float dx = xSuivi - vOrigine.x;
+	        float dy = ySuivi - vOrigine.y;
+	        if ( fabs(dx) > 2.0 || fabs(dy) > 2.0 )
+	        {
+	            vec3 w = vec3( xSuivi, ySuivi, 0.0);
+	            vec3 v = vOrigine - w;
+
+                vec3 res = mChange * v;
+                int ad = (int) (res.x * -1000.0);
+                int dc = (int) (res.y * 1000.0);
+                char cmd[255];
+                sprintf( cmd, "a%dp;d%dp", ad, dc );
+                logf( (char*)"Envoi de la commande",  cmd );
+                Serial::getInstance().write_string(cmd);
+	        }
+	    }
 	}
 
     PanelConsoleSerial::getInstance().idleGL();
@@ -892,35 +978,92 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'A':
         {
-        vecAD[1].x = xClick;
-        vecAD[1].y = yClick;
-        vecAD[1].z = 0.0;
+        if ( bAutorisationSuivi )
+        {
+            vecAD[1].x = xSuivi;
+            vecAD[1].y = ySuivi;
+            vecAD[1].z = 0.0;
+        }
+        else
+        {
+            vecAD[1].x = xClick;
+            vecAD[1].y = yClick;
+            vecAD[1].z = 0.0;
+        }
         logf( (char*)"AD[1] (%0.2f,%0.2f)", vecAD[1].x, vecAD[1].y );
         }
         break;
     case 'a':
         {
-        vecAD[0].x = xClick;
-        vecAD[0].y = yClick;
-        vecAD[0].z = 0.0;
+        if ( bAutorisationSuivi )
+        {
+            vecAD[0].x = xSuivi;
+            vecAD[0].y = ySuivi;
+            vecAD[0].z = 0.0;
+        }
+        else
+        {
+            vecAD[0].x = xClick;
+            vecAD[0].y = yClick;
+            vecAD[0].z = 0.0;
+        }
         logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
+
+        char cmd[255];
+        sprintf( cmd, "a-1000p" );
+        logf( (char*)"Envoi de la commande",  cmd );
+        Serial::getInstance().write_string(cmd);
         }
         break;
 
     case 'D':
         {
-        vecDC[1].x = xClick;
-        vecDC[1].y = yClick;
-        vecDC[1].z = 0.0;
+        if ( bAutorisationSuivi )
+        {
+            vecDC[1].x = xSuivi;
+            vecDC[1].y = ySuivi;
+            vecDC[1].z = 0.0;
+        }
+        else
+        {
+            vecDC[1].x = xClick;
+            vecDC[1].y = yClick;
+            vecDC[1].z = 0.0;
+        }
         logf( (char*)"DC[1] (%0.2f,%0.2f)", vecDC[1].x, vecDC[1].y );
+
+        vec3 v0 = vecAD[1] - vecAD[0];
+        vec3 v1 = vecDC[1] - vecDC[0];
+        vec3 v2 = vec3( 0.0, 0.0, 1.0 );
+        mat3 m = mat3( v0, v1, v2 );
+        mat3 mi = m.inverse();
+        mChange = mi;
+
+        logf( (char*)"Compute matrice de changement de repere...");
+        bMouseDeplace = true;
         }
         break;
     case 'd':
         {
-        vecDC[0].x = xClick;
-        vecDC[0].y = yClick;
-        vecDC[0].z = 0.0;
+        
+        if ( bAutorisationSuivi )
+        {
+            vecDC[0].x = xSuivi;
+            vecDC[0].y = ySuivi;
+            vecDC[0].z = 0.0;
+        }
+        else
+        {
+            vecDC[0].x = xClick;
+            vecDC[0].y = yClick;
+            vecDC[0].z = 0.0;
+        }
         logf( (char*)"DC[0] (%0.2f,%0.2f)", vecDC[0].x, vecDC[0].y );
+
+        char cmd[255];
+        sprintf( cmd, "d1000p" );
+        logf( (char*)"Envoi de la commande",  cmd );
+        Serial::getInstance().write_string(cmd);
         }
         break;
 
@@ -931,81 +1074,91 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         vec3 v2 = vec3( 0.0, 0.0, 1.0 );
         mat3 m = mat3( v0, v1, v2 );
         mat3 mi = m.inverse();
-        mChange = m;
-        vOrigine = vecAD[0];
+        mChange = mi;
+
+        logf( (char*)"Compute matrice de changement de repere...");
+        bMouseDeplace = true;
         }
         break;
-    case 'w':
+    case 'm':
+        {
+        logf( (char*)"interdit le deplcament ...");
+        bMouseDeplace = false;
+        }
+        break;
+    case 'y':
         {
         bAfficheVec = !bAfficheVec;
         }
         break;
-    case 'V':
-        {
-        vecAD[1].x = xSuivi;
-        vecAD[1].y = ySuivi;
-        vecAD[1].z = 0.0;
-        logf( (char*)"AD[1] (%0.2f,%0.2f)", vecAD[1].x, vecAD[1].y );
-
-        vec3 v0 = vec3( vecAD[0].x, vecAD[0].y, 0.0 );
-        vec3 v1 = vec3( vecAD[1].x, vecAD[1].y, 0.0 );
-        vec3 v2 = vec3( 0.0, 0.0, 1.0 );
-        
-        
-        vec3 v = v1 - v0;
-        logf( (char*)"v1-v0 (%0.2f,%0.2f)", v.x, v.y );
-        
-        
-        v0 = v;
-        v1 = vec3( -v.y, v.x, 0.0);
-        v2 = vec3( 0.0, 0.0, 1.0 );
-        
-
-        mat3 m = mat3( v0, v1, v2 );
-        mat3 mi = m.inverse();
-        vOrigine = vecAD[0];
-
-        v0 = vecAD[1];
-        v0 -= vOrigine;
-        v0 *= 2.0;
-        v1 = mi * v0;
-        
-        logf( (char*)"v (%0.2f,%0.2f)", v1.x, v1.y );
-        }
-        break;
-    case 'v':
-        {
-        vecAD[0].x = xSuivi;
-        vecAD[0].y = ySuivi;
-        vecAD[0].z = 0.0;
-        logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
-        }
-        break;
     case 'r':
         {
-        vRef.x = xSuivi;
-        vRef.y = ySuivi;
-        logf( (char*)"x: %0.2f , %0.2f", vRef.x, vRef.y );
+        vDepl[0].x = xClick;
+        vDepl[0].y = yClick;
+        vDepl[0].z = 0.0;
+        logf( (char*)"vDepl[0](%0.2f, %0.2f)", vDepl[0].x, vDepl[0].y );
         }
         break;
-    case 'b':
+    case 'R':
+        {
+        vDepl[1].x = xClick;
+        vDepl[1].y = yClick;
+        vDepl[1].z = 0.0;
+        logf( (char*)"vDepl[1](%0.2f, %0.2f)",  vDepl[1].x, vDepl[1].y );
+        }
+        break;
+    case 'u':
         {
         courbe1 *= 0.8;
         }
         break;
-    case 'B':
+    case 'U':
         {
         courbe1 /= 0.8;
         }
         break;
-    case 'n':
+    case 'j':
+        {
+        delta_courbe1 *= 0.8;
+        }
+        break;
+    case 'J':
+        {
+        delta_courbe1 /= 0.8;
+        }
+        break;
+    case 'i':
         {
         courbe2 *= 0.8;
         }
         break;
-    case 'N':
+    case 'I':
         {
         courbe2 /= 0.8;
+        }
+        break;
+    case 'k':
+        {
+        delta_courbe2 *= 0.8;
+        }
+        break;
+    case 'K':
+        {
+        delta_courbe2 /= 0.8;
+        }
+        break;
+    case 'H':
+        {
+        bCorrection = true; 
+        fTimeCorrection = 0.0; 
+        vOrigine.x = xSuivi;
+        vOrigine.y = ySuivi;
+        vOrigine.z = 0.0;
+        }
+        break;
+    case 'N':
+        {
+        bCorrection = false; 
         }
         break;
     default:
@@ -1044,6 +1197,57 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 static void glutMouseFunc(int button, int state, int x, int y)	{
 	WindowsManager::getInstance().mouseFunc(button, state, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 0 )
+	{
+        getSuiviParameter();
+
+        Camera_mgr::getInstance().onBottom();
+        
+	    int X = x;
+	    int Y = y;
+	    
+	    screen2tex(X,Y);
+	    
+	    xClick = X;
+	    yClick = Y;
+
+        vDepl[0].x = xClick;
+        vDepl[0].y = yClick;
+        vDepl[0].z = 0.0;
+        logf( (char*)"vDepl[0](%0.2f, %0.2f)", vDepl[0].x, vDepl[0].y );
+
+	    logf( (char*)"state = 0" );
+	}
+	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 1 )
+	{
+        getSuiviParameter();
+
+        Camera_mgr::getInstance().onBottom();
+        
+	    int X = x;
+	    int Y = y;
+	    
+	    screen2tex(X,Y);
+	    
+	    xClick = X;
+	    yClick = Y;
+
+        vDepl[1].x = xClick;
+        vDepl[1].y = yClick;
+        vDepl[1].z = 0.0;
+        logf( (char*)"vDepl[1](%0.2f, %0.2f)",  vDepl[1].x, vDepl[1].y );
+
+	    logf( (char*)"state = 1" );
+
+        vec3 v = vDepl[1] - vDepl[0];
+        vTr = mChange * v;
+        int ad = (int) (vTr.x * -1000.0);
+        int dc = (int) (vTr.y * 1000.0);
+        char cmd[255];
+        sprintf( cmd, "a%dp;d%dp", ad, dc );
+        logf( (char*)"Envoi de la commande",  cmd );
+        Serial::getInstance().write_string(cmd);
+	}
 
 	//if ( bPause && button == 0 && state == 0 )	{
     if ( !bAutorisationSuivi && button == 0 && state == 0 )	{
@@ -1056,8 +1260,9 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    
 	    screen2tex(X,Y);
 	    
-	    xClick = x;
-	    yClick = y;
+	    xClick = X;
+	    yClick = Y;
+
 	    logf( (char*)"Click x=%d y=%d  X=%d Y=%d vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
 	    
 	} 

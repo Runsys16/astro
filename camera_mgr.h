@@ -49,7 +49,10 @@ public:
     Camera*                     getCamera(string dev);
     
     void                        print_list();
-    
+ 
+    bool                        haveNewFrame();
+    void                        haveUseFrame(bool);
+   
    
 private:
     vector<Camera*>     pCameras;

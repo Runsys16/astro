@@ -27,7 +27,7 @@ Pleiade::Pleiade()
     bChargingPleiades=false;
     count_png = 0;
     plus = 1;
- 
+    bNewBackground = false; 
     thread_chargement_pleiade = startThread();
     thread_chargement_pleiade.detach();
 }
@@ -96,7 +96,7 @@ void Pleiade::change_background_camera(void)
         d   = readB.d;
         
         panelPreview->setBackground( ptr, w, h, d);
-
+        bNewBackground = true;
 
         //panelPreView->setBackground( (char*)sPleiade);
         //unsigned int w,h,d;
@@ -126,5 +126,21 @@ GLubyte* Pleiade::getPtr()
 {
     return (GLubyte*)ptr;
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool  Pleiade::haveNewFrame()
+{
+    return bNewBackground;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Pleiade::haveUseFrame(bool b)
+{
+    bNewBackground = false;
+}
+
+
 
 

@@ -120,6 +120,7 @@ private:
 
     bool                    bEnregistre;
     bool                    bCapture;
+    bool                    bHaveNew;
 
 
 public :
@@ -166,6 +167,8 @@ public :
     inline  int             getFd()                 { return fd; }
 
     inline  unsigned char*  getBuffer()             { return bmp_buffer; }
+    inline  bool            getHaveNew()            { return bHaveNew; }
+    inline  void            setHaveNew(bool b)      { bHaveNew = b; }
 
     inline  void            setName( char * s)      { name = s; }
     inline  char*           getName()               { return (char*)name.c_str(); }

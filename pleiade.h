@@ -21,6 +21,7 @@ protected:
 
     int                         plus;
     int                         count_png;
+    bool                        bNewBackground;
 
 public :
     Pleiade();
@@ -30,6 +31,8 @@ public :
     void                        threadExtractImgPleiade();
     std::thread                 startThread();
     virtual GLubyte*            getPtr();
+    virtual bool                haveNewFrame();
+    virtual void                haveUseFrame(bool);
 
 
 };
