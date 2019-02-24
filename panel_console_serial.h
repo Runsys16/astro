@@ -16,6 +16,7 @@
 #include "serial.h"
 #include "main.h"
 #include "console.h"
+#include "serveur_mgr.h"
 
 using namespace std;
 

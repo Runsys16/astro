@@ -7,11 +7,13 @@
 #include "timer.h"
 #include "pleiade.h"
 #include "panel_console_serial.h"
+#include "serveur_mgr.h"
 
 
 //#define DEBUG 1
 #define SIZEPT  20
-
+#define AXE_X   (300.0/4.0)
+#define AXE_Y   (3.0*300.0/4.0)
 
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -39,6 +41,10 @@ PanelText*          pAD;
 PanelText*          pDC;
 PanelText*          pMode;
 PanelText*          pAsservi;
+PanelText*          pXMax;
+PanelText*          pXMin;
+PanelText*          pYMax;
+PanelText*          pYMin;
 
 PanelText*          pHertz;
 PanelText*          pFPS;
@@ -143,6 +149,7 @@ vec3                vOrigine;
 vec3                vTr;
 bool                bCorrection = false;
 float               fTimeCorrection = 0.0;
+#define ERR         1.5
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -201,34 +208,51 @@ float dms2rad(struct dms& DMS)
 //--------------------------------------------------------------------------------------------------------------------
 void rad2hms(struct hms& HMS, float r)
 {
+    float sign = 1.0;
+    if ( r<0.0 )
+    {
+        sign = -1.0;
+        r *=-1.0;
+    }
     float h = r / M_PI * 12.0;
     int H = h;
     HMS.h = H;
     
     float m = (h-H) * 60.0;
-    if ( h < 0.0 )  m *= -1.0;
+    //if ( h < 0.0 )  m *= -1.0;
     int M = m;
     HMS.m = M;
     
     float s = (m-M) * 60.0;
     HMS.s = s;
+    
+    HMS.h *= sign;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void rad2dms(struct dms& DMS, float r)
 {
+    float sign = 1.0;
+    if ( r<0.0 )
+    {
+        sign = -1.0;
+        r *=-1.0;
+    }
+
     float d = r / M_PI * 180.0;
     int D = d;
     DMS.d = D;
     
     float m = (d-D) * 60.0;
-    if ( d < 0.0 )  m *= -1.0;
+    //if ( d < 0.0 )  m *= -1.0;
     int M = m;
     DMS.m = M;
     
     float s = (m-M) * 60.0;
     DMS.s = s;
+
+    DMS.d *= sign;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -378,7 +402,7 @@ void glEchelle()
     glColor4f( gris, gris, gris, 1.0 );
     
     glBegin(GL_LINES);
-        int y = 100.0;
+        int y = AXE_X;
         int x = 0;
 
         panelCourbe->x2Screen(x);
@@ -390,7 +414,7 @@ void glEchelle()
 
         glVertex2i( x, y );
      
-        y = 200.0;
+        y = AXE_Y;
         x = 0;
 
         panelCourbe->x2Screen(x);
@@ -403,6 +427,33 @@ void glEchelle()
 
         glVertex2i( x, y );
 
+        float dxMax = ERR;
+        y = (float)(delta_courbe1*(dxMax) + AXE_X);
+        pXMax->setPos( 5, y );
+        panelCourbe->y2Screen(y);
+        glVertex2i( 0, y );
+        glVertex2i( x, y );
+
+        float dxMin = -ERR;
+        y = (float)(delta_courbe1*(dxMin) + AXE_X);
+        pXMin->setPos( 5, y -15 );
+        panelCourbe->y2Screen(y);
+        glVertex2i( 0, y );
+        glVertex2i( x, y );
+
+        float dyMax = ERR;
+        y = (float)(delta_courbe2*(dyMax) + AXE_Y);
+        pYMax->setPos( 5, y );
+        panelCourbe->y2Screen(y);
+        glVertex2i( 0, y );
+        glVertex2i( x, y );
+
+        float dyMin = -ERR;
+        y = (float)(delta_courbe2*(dyMin) + AXE_Y);
+        pYMin->setPos( 5, y -15 );
+        panelCourbe->y2Screen(y);
+        glVertex2i( 0, y );
+        glVertex2i( x, y );
 
         for( int i=0; i<2000; i+=60)
         {
@@ -426,6 +477,12 @@ void displayCourbeGL_cb(void)
     int DY = panelCourbe->getY();
     int n = t_vResultat.size();
     
+    if ( bCorrection )
+    {
+        offset_x = vOrigine.x;
+        offset_y = vOrigine.y;
+    }
+
     glEchelle();
     
     if ( n != 0  )
@@ -435,9 +492,7 @@ void displayCourbeGL_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
-            if ( bCorrection )          offset_x = vOrigine.x;
-
-            int y = (float)(delta_courbe1*(t_vResultat[i].x-offset_x) + 100.0);
+            int y = (float)(delta_courbe1*(t_vResultat[i].x-offset_x) + AXE_X);
             int x = (n-i)*courbe1;
 
             panelCourbe->x2Screen(x);
@@ -453,9 +508,7 @@ void displayCourbeGL_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
-            if ( bCorrection )          offset_y = vOrigine.y;
-
-            int y = (float)(delta_courbe2*(t_vResultat[i].y-offset_y) + 200.0);
+            int y = (float)(delta_courbe2*(t_vResultat[i].y-offset_y) + AXE_Y);
             int x = (n-i)*courbe2;
 
             panelCourbe->x2Screen(x);
@@ -799,13 +852,13 @@ static void idleGL(void)
 	{
 	    fTimeCorrection += elapsedTime;
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCorrection );
-	    if ( bCorrection && fTimeCorrection >= 2.0 )
+	    if ( bCorrection && fTimeCorrection >= 1.0 )
 	    {
-            fTimeCorrection -= 5.0;
+            fTimeCorrection -= 3.0;
 
 	        float dx = xSuivi - vOrigine.x;
 	        float dy = ySuivi - vOrigine.y;
-	        if ( fabs(dx) > 2.0 || fabs(dy) > 2.0 )
+	        if ( fabs(dx) > ERR || fabs(dy) > ERR )
 	        {
 	            vec3 w = vec3( xSuivi, ySuivi, 0.0);
 	            vec3 v = vOrigine - w;
@@ -814,8 +867,8 @@ static void idleGL(void)
                 int ad = (int) (res.x * -1000.0);
                 int dc = (int) (res.y * 1000.0);
                 char cmd[255];
-                sprintf( cmd, "a%dp;d%dp", ad, dc );
-                logf( (char*)"Envoi de la commande",  cmd );
+                sprintf( cmd, "Mr;a%dp;d%dp", ad, dc );
+                logf( (char*)"**** Asservissement -> '%s'",  cmd );
                 Serial::getInstance().write_string(cmd);
 	        }
 	    }
@@ -1016,8 +1069,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
 
         char cmd[255];
-        sprintf( cmd, "a-1000p" );
-        logf( (char*)"Envoi de la commande",  cmd );
+        sprintf( cmd, "Mr;a-1000p" );
+        //logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
         }
         break;
@@ -1067,8 +1120,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"DC[0] (%0.2f,%0.2f)", vecDC[0].x, vecDC[0].y );
 
         char cmd[255];
-        sprintf( cmd, "d1000p" );
-        logf( (char*)"Envoi de la commande",  cmd );
+        sprintf( cmd, "Mr;d1000p" );
+        //logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
         }
         break;
@@ -1252,8 +1305,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
         int ad = (int) (vTr.x * -1000.0);
         int dc = (int) (vTr.y * 1000.0);
         char cmd[255];
-        sprintf( cmd, "a%dp;d%dp", ad, dc );
-        logf( (char*)"Envoi de la commande",  cmd );
+        sprintf( cmd, "Mr;a%dp;d%dp", ad, dc );
+        //logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
 	}
 
@@ -1412,6 +1465,19 @@ static void CreateCourbe()	{
     panelCourbe->setVisible(bPanelCourbe);
  	panelCourbe->setBackground((char*)"background.tga");
     panelCourbe->setDisplayGL( displayCourbeGL_cb );
+
+    pXMax = new PanelText( (char*)"+ERR",		PanelText::NORMAL_FONT, 5, 50 );
+	panelCourbe->add( pXMax );
+
+    pXMin = new PanelText( (char*)"-ERR",		PanelText::NORMAL_FONT, 5, 60 );
+	panelCourbe->add( pXMin );
+
+    pYMax = new PanelText( (char*)"+ERR",		PanelText::NORMAL_FONT, 5, 70 );
+	panelCourbe->add( pYMax );
+
+    pYMin = new PanelText( (char*)"-ERR",		PanelText::NORMAL_FONT, 5, 80 );
+	panelCourbe->add( pYMin );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1559,6 +1625,9 @@ static void CreateStatus()	{
     pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 600, 5 );
 	panelStatus->add( pAsservi );
     if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
+
+
+
 
 	string sErr = "Status !!!";
 
@@ -1883,9 +1952,13 @@ int main(int argc, char **argv)
     Connexion_mgr::getInstance().start();
     PanelConsoleSerial::getInstance();
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
+    Serveur_mgr::getInstance().start_1();
+    Serveur_mgr::getInstance().start_2();
 
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
+    
+
     glutMainLoop();
 
 

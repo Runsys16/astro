@@ -1,6 +1,7 @@
 #include "panel_console_serial.h"
 
 
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -81,10 +82,82 @@ void PanelConsoleSerial::writeln(char* str)
             dc_change = strtod(&str[2],NULL);
             //logf( (char*)"DEC" );
         }
+
+        time_t t = time(0);
+        //cout << t << endl;
+        //long long tl = (unsigned long long)t * 1000000LL;
+        long long tl = (unsigned long long)t;
+        
+        unsigned char buff[24];
+        memset( buff, 0, 24);
+        buff[0] = 24;
+        
+        unsigned char *          conv = (unsigned char*)&tl;
+        
+        
+        buff[4] = conv[0];
+        buff[5] = conv[1];
+        buff[6] = conv[2];
+        buff[7] = conv[3];
+        buff[8] = conv[4];
+        buff[9] = conv[5];
+        buff[10] = conv[6];
+        buff[11] = conv[7];
+        
+        
+        float fa, fd;
+        
+        fa = ad_change;// / M_PI * 2147483648;
+        fd = dc_change;//) / M_PI * 2147483648;
+
+/*
+        if self.ad <0.0:      
+            self.ad = 180.0 + self.ad
+            self.dc = 180.0 - self.dc
+
+        if self.dc >180.0:      
+            self.dc = -self.dc  + 180.0
+            if self.ad < 180.0:
+                self.ad = -180.0 + self.ad
+*/        
+        if ( fa <0.0 )
+        {      
+            fa = 180.0 + fa;
+            fd = 180.0 - fd;
+        }
+        
+        if ( fd >180.0)
+        {      
+            fd = -fd + 180.0;
+            if ( fa < 180.0 )       fa = -180.0 + fa;
+        }
+        
+        fa = DEG2RAD(fa) / M_PI * 2147483648;
+        fd = DEG2RAD(fd) / M_PI * 2147483648;
+
+        int a, d;
+        
+        a = fa;
+        d = fd;
+        
+        conv = (unsigned char*)&a;
+        buff[12] = conv[0];
+        buff[13] = conv[1];
+        buff[14] = conv[2];
+        buff[15] = conv[3];
+
+        conv = (unsigned char*)&d;
+        buff[16] = conv[0];
+        buff[17] = conv[1];
+        buff[18] = conv[2];
+        buff[19] = conv[3];
+
+        Serveur_mgr::getInstance().write_stellarium( buff );
+
         return;
     }
     pc->affiche( str );
-    logf( (char*)str );
+    //logf( (char*)str );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -62,7 +62,11 @@ console.o: console.cpp console.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o serial.o connexion_mgr.o panel_console_serial.o console.o
+serveur_mgr.o: serveur_mgr.cpp serveur_mgr.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o serial.o connexion_mgr.o panel_console_serial.o console.o serveur_mgr.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 
