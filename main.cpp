@@ -37,6 +37,8 @@ PanelText*          SP;
 PanelText*          pArduino;
 PanelText*          pAD;
 PanelText*          pDC;
+PanelText*          pMode;
+PanelText*          pAsservi;
 
 PanelText*          pHertz;
 PanelText*          pFPS;
@@ -447,7 +449,7 @@ void displayCourbeGL_cb(void)
         glEnd();        
 
         
-        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+        glColor4f( 1.0, 1.0, 0.0, 1.0 );
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
@@ -927,6 +929,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	break;
     case 'O':
     	bAutorisationSuivi = !bAutorisationSuivi;
+
+        if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
+        else                            pMode->changeText((char*)"Mode souris");
+
     	break;
 
     case 'l':
@@ -1154,11 +1160,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         vOrigine.x = xSuivi;
         vOrigine.y = ySuivi;
         vOrigine.z = 0.0;
+        pAsservi->changeText((char*)"Asservissemnent");
         }
         break;
     case 'N':
         {
         bCorrection = false; 
+        pAsservi->changeText((char*)" ");
         }
         break;
     default:
@@ -1543,6 +1551,14 @@ static void CreateStatus()	{
     pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 300, 5 );
 	panelStatus->add( pDC );
 
+    pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 450, 5 );
+	panelStatus->add( pMode );
+	if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
+    else                            pMode->changeText((char*)"Mode souris");
+ 
+    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 600, 5 );
+	panelStatus->add( pAsservi );
+    if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
 
 	string sErr = "Status !!!";
 
