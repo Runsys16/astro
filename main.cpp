@@ -56,7 +56,6 @@ float               dc;
 //Device_cam          camera      = Device_cam();
 
 char                background[]="frame-0.raw";
-GLenum err;
 float               prevTime    = -1.0f;
 
 int                 width  = 1422;
@@ -149,7 +148,8 @@ vec3                vOrigine;
 vec3                vTr;
 bool                bCorrection = false;
 float               fTimeCorrection = 0.0;
-#define ERR         1.5
+float               err = 2.0;
+#define ERR         err
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1514,6 +1514,15 @@ static void CreateCourbe()	{
     pYMin = new PanelText( (char*)"-ERR",		PanelText::NORMAL_FONT, 5, 80 );
 	panelCourbe->add( pYMin );
 
+    char s[20];
+    sprintf( s, "+%0.2f", err );
+    pXMax->changeText( (char*)s );
+    pYMax->changeText( (char*)s );
+
+    sprintf( s, "-%0.2f", err );
+    pXMin->changeText( (char*)s );
+    pYMin->changeText( (char*)s );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1650,17 +1659,17 @@ static void CreateStatus()	{
     pArduino = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-300, 2 );
 	panelStatus->add( pArduino );
 
-    pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 150, 2 );
+    pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 80, 2 );
 	panelStatus->add( pAD );
-    pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 300, 2 );
+    pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 200, 2 );
 	panelStatus->add( pDC );
 
-    pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 450, 2 );
+    pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 350, 2 );
 	panelStatus->add( pMode );
 	if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
     else                            pMode->changeText((char*)"Mode souris");
  
-    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 600, 2 );
+    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 650, 2 );
 	panelStatus->add( pAsservi );
     if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
 

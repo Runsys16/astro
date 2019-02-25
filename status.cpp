@@ -5,6 +5,9 @@ PanelButton *       pButtonHelp;
 PanelButton *       pButtonResultat;
 PanelButton *       pButtonCourbe;
 
+PanelButton *       pFlecheHaut;
+PanelButton *       pFlecheBas;
+
 PanelButton *       pButtonMode;
 PanelButton *       pButtonAsserv;
 
@@ -14,26 +17,55 @@ void call_back_over(PanelButton* pPanel)	{
 }
 
 
-void inverse_texture(PanelButton * pButton, bool b )
+void inverse_texture(PanelButton * pButton, bool b, string tex )
 {
+    
+    if ( tex.length() == 0 )    tex = "window";
+        
+    string down = tex + "_down.tga";
+    string over = tex + "_over.tga";
+    
     logf( (char*)"inverse_texture()" );
     if ( !b )
     {
-        pButton->setUp( (char*) "window_over.tga" );
-        pButton->setDown( (char*) "window_over.tga" );
-        pButton->setOver( (char*) "window_down.tga" );
+        pButton->setUp(   (char*)over.c_str() );
+        pButton->setDown( (char*)over.c_str() );
+        pButton->setOver( (char*)down.c_str() );
     }
     else
     {
-	    pButton->setUp( (char*) "window_down.tga" );
-	    pButton->setDown( (char*) "window_down.tga" );
-	    pButton->setOver( (char*) "window_over.tga" );
+        pButton->setUp(   (char*)down.c_str() );
+        pButton->setDown( (char*)down.c_str() );
+        pButton->setOver( (char*)over.c_str() );
     }
 }
 
 
+void cb_up_fleche_haut(PanelButton* pPanel)
+{
+    char s[20];
+    if ( pPanel == pFlecheHaut )
+    {
+        err /= 0.9;
+    }
+    else
+    {
+        err *= 0.9;
+    }
 
-void call_back_up(PanelButton* pPanel)	{
+    sprintf( s, "+%0.2f", err );
+    pXMax->changeText( (char*)s );
+    pYMax->changeText( (char*)s );
+
+    sprintf( s, "-%0.2f", err );
+    pXMin->changeText( (char*)s );
+    pYMin->changeText( (char*)s );
+
+	logf( (char*)"Button fleche up() : err=%0.2f", err );
+}
+
+void call_back_up(PanelButton* pPanel)
+{
 	cout << "Button CallBack up()" << endl;
 	
 	if ( pPanel == pButtonSerial )
@@ -42,7 +74,7 @@ void call_back_up(PanelButton* pPanel)	{
         PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
         logf( (char*)"Toggle serial !!!" );
 
-        inverse_texture( pPanel, bPanelSerial );
+        inverse_texture( pPanel, bPanelSerial, "arduino" );
 	}
 	else
 	if ( pPanel == pButtonStdOut )
@@ -51,7 +83,7 @@ void call_back_up(PanelButton* pPanel)	{
         panelStdOutW->setVisible(bPanelStdOut);
         logf( (char*)"Toggle panelStdOut !!!" );
 
-        inverse_texture( pPanel, bPanelStdOut );
+        inverse_texture( pPanel, bPanelStdOut, "" );
 	}
 	else
 	if ( pPanel == pButtonControl )
@@ -63,7 +95,7 @@ void call_back_up(PanelButton* pPanel)	{
         if ( p )
         {
             bool b = p->getControlVisible();
-            inverse_texture( pButtonControl, b );
+            inverse_texture( pButtonControl, b, "camera" );
         }
 	}
 	else
@@ -73,7 +105,7 @@ void call_back_up(PanelButton* pPanel)	{
         panelHelp->setVisible(bPanelHelp);
         log( (char*)"Toggle panelHelp !!!" );
 
-        inverse_texture( pPanel, bPanelHelp );
+        inverse_texture( pPanel, bPanelHelp, "help" );
 	}
 	else
 	if ( pPanel == pButtonResultat )
@@ -82,7 +114,7 @@ void call_back_up(PanelButton* pPanel)	{
         panelResultat->setVisible(bPanelResultat);
         log( (char*)"Toggle panelResultat !!!" );
 
-        inverse_texture( pPanel, bPanelResultat );
+        inverse_texture( pPanel, bPanelResultat, "cible" );
 	}
 	else
 	if ( pPanel == pButtonCourbe )
@@ -91,7 +123,7 @@ void call_back_up(PanelButton* pPanel)	{
         panelCourbe->setVisible(bPanelCourbe);
         log( (char*)"Toggle panelCourbe !!!" );
 
-        inverse_texture( pPanel, bPanelCourbe );
+        inverse_texture( pPanel, bPanelCourbe, "courbe" );
 	}
 	else
 	if ( pPanel == pButtonMode )
@@ -101,7 +133,7 @@ void call_back_up(PanelButton* pPanel)	{
         if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
         else                            pMode->changeText((char*)"Mode souris");
 
-        inverse_texture( pPanel, bAutorisationSuivi );
+        inverse_texture( pPanel, bAutorisationSuivi, "cible" );
 
 	}
 	else
@@ -115,7 +147,7 @@ void call_back_up(PanelButton* pPanel)	{
         if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
         else                        pAsservi->changeText((char*)" ");
         
-        inverse_texture( pPanel, bCorrection );
+        inverse_texture( pPanel, bCorrection, "" );
 	}
 }
 
@@ -125,15 +157,22 @@ void call_back_down(PanelButton* pPanel)	{
 }
 
 
-PanelButton* create_window_button( PanelButton* pButton, int i)
+PanelButton* create_window_button( PanelButton* pButton, int i, string tex)
 {
     pButton = new PanelButton();
     panelStatus->add(pButton);
     
-    pButton->setPosAndSize( 800+ i*18, 2, 16, 16 );
-	pButton ->setUp( (char*) "window_over.tga" );
-	pButton ->setDown( (char*) "window_over.tga" );
-	pButton ->setOver( (char*) "window_down.tga" );
+    pButton->setPosAndSize( 450+ i*18, 2, 16, 16 );
+    
+    
+    if ( tex.length() == 0 )    tex = "window";
+        
+    string down = tex + "_down.tga";
+    string over = tex + "_over.tga";
+
+    pButton->setUp(   (char*)over.c_str() );
+    pButton->setDown( (char*)over.c_str() );
+    pButton->setOver( (char*)down.c_str() );
 
 	pButton->setCallBackOver( call_back_over );
 	pButton->setCallBackUp( call_back_up );
@@ -142,18 +181,45 @@ PanelButton* create_window_button( PanelButton* pButton, int i)
 	return pButton;
 }
 
+void create_fleches()
+{
+    pFlecheHaut = new PanelButton();
+    panelStatus->add(pFlecheHaut);
+    
+    pFlecheHaut->setPosAndSize( 800, 2, 16, 8 );
+
+    pFlecheHaut->setUp(   (char*)"fleche_haut.tga" );
+    pFlecheHaut->setDown( (char*)"fleche_haut.tga" );
+    pFlecheHaut->setOver( (char*)"fleche_haut.tga" );
+
+	pFlecheHaut->setCallBackUp(   cb_up_fleche_haut );
+
+
+    pFlecheBas = new PanelButton();
+    panelStatus->add(pFlecheBas);
+
+    pFlecheBas->setPosAndSize( 800, 2+8, 16, 8 );
+
+    pFlecheBas->setUp(   (char*)"fleche_bas.tga" );
+    pFlecheBas->setDown( (char*)"fleche_bas.tga" );
+    pFlecheBas->setOver( (char*)"fleche_bas.tga" );
+
+	pFlecheBas->setCallBackUp(   cb_up_fleche_haut );
+}
 
 void create_windows_button()
 {
-    pButtonControl  = create_window_button( pButtonControl,  0 );
-    pButtonHelp     = create_window_button( pButtonHelp,     1 );
-    pButtonResultat = create_window_button( pButtonResultat, 2 );
-    pButtonCourbe   = create_window_button( pButtonCourbe,   3 );
-    pButtonStdOut   = create_window_button( pButtonStdOut,   4 );
-    pButtonSerial   = create_window_button( pButtonSerial,   5 );
+    pButtonControl  = create_window_button( pButtonControl,  0, "camera" );
+    pButtonHelp     = create_window_button( pButtonHelp,     1, "help" );
+    pButtonResultat = create_window_button( pButtonResultat, 2, "cible" );
+    pButtonCourbe   = create_window_button( pButtonCourbe,   3, "courbe" );
+    pButtonStdOut   = create_window_button( pButtonStdOut,   4, "" );
+    pButtonSerial   = create_window_button( pButtonSerial,   5, "arduino" );
 
-    pButtonMode     = create_window_button( pButtonMode,     7 );
-    pButtonAsserv   = create_window_button( pButtonAsserv,   8 );
+    pButtonMode     = create_window_button( pButtonMode,     7, "cible" );
+    pButtonAsserv   = create_window_button( pButtonAsserv,   8, "" );
+    
+    create_fleches();
 }
 
 
