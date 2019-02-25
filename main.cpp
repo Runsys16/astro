@@ -545,6 +545,7 @@ void tex2screen( int& x, int& y )
     x = (float)x / rw + xCam;
     y = (float)y / rh + yCam;
 }
+#include <malloc.h>
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -557,13 +558,32 @@ void getSkyPointLine(struct sky_point* point, int x, int y, int size)
     
     //printf( "getPointLine x%d y%d\n", x, y);
     ptr = Camera_mgr::getInstance().getPtr();
+    size_t size_ptr = malloc_usable_size ( (void*) ptr);
+    
     for( x=min; x<max; x++) 
     {
         int offset = getOffset(x,y,vCameraSize.x);
+        if ( offset+4 > size_ptr )
+        {
+            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
+            return;
+        }
+        
+        float r;
+        float g;
+        float b;
 
-        float r = ptr[offset+0]; 
-        float g = ptr[offset+1]; 
-        float b = ptr[offset+2]; 
+        try
+        {
+            r = ptr[offset+0]; 
+            g = ptr[offset+1]; 
+            b = ptr[offset+2]; 
+        }
+        catch ( const std::exception& e )
+        {
+            std::cout << e.what() << std::endl;
+            return;
+        }
 
         float l = 0.33 * r + 0.5 * g  + 0.16 * b;
         if ( l<20.0 )       l = 0.0;
@@ -1258,6 +1278,12 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 static void glutMouseFunc(int button, int state, int x, int y)	{
 	WindowsManager::getInstance().mouseFunc(button, state, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+    if ( panelStatus->isMouseOver(x, y) )
+    {
+        logf( (char*)"Souris sur la barre de status" );
+        return;
+    }
+    
 	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 0 )
 	{
         getSuiviParameter();
@@ -1342,6 +1368,16 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    
         ptr = Camera_mgr::getInstance().getPtr();
         int N = getOffset(X, Y, vCameraSize.x);
+
+
+        size_t size_ptr = malloc_usable_size ( (void*) ptr);
+        if ( N+4 > size_ptr )
+        {
+            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) N );
+            return;
+        }
+
+
 	    int r = ptr[N];
 	    int g = ptr[N+1];
 	    int b = ptr[N+2];
@@ -1588,6 +1624,8 @@ static void CreateHelp()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+#include "status.cpp"
+
 static void CreateStatus()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( width, height );
@@ -1600,29 +1638,29 @@ static void CreateStatus()	{
 	panelStatus = new PanelSimple();
 	panelStatus->setPosAndSize( x, y, dx, dy );
 
-	pErr = new PanelText( (char*)"Status",		PanelText::NORMAL_FONT, 10, 5 );
+	pErr = new PanelText( (char*)"Status",		PanelText::NORMAL_FONT, 10, 2 );
 	panelStatus->add( pErr );
 
-    pFPS = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-100, 5 );
+    pFPS = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-100, 2 );
 	panelStatus->add( pFPS );
 
-    pHertz = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-150, 5 );
+    pHertz = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-150, 2 );
 	panelStatus->add( pHertz );
 
-    pArduino = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-300, 5 );
+    pArduino = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-300, 2 );
 	panelStatus->add( pArduino );
 
-    pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 150, 5 );
+    pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 150, 2 );
 	panelStatus->add( pAD );
-    pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 300, 5 );
+    pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 300, 2 );
 	panelStatus->add( pDC );
 
-    pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 450, 5 );
+    pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 450, 2 );
 	panelStatus->add( pMode );
 	if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
     else                            pMode->changeText((char*)"Mode souris");
  
-    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 600, 5 );
+    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 600, 2 );
 	panelStatus->add( pAsservi );
     if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
 
@@ -1633,6 +1671,8 @@ static void CreateStatus()	{
 
  	wm.add( panelStatus );
  	panelStatus->setBackground((char*)"background.tga");
+ 	
+ 	create_windows_button();
 
     logf((char*)"** CreateStatus()  panelSatuts  %d,%d %dx%d", x, y, dx, dy);
 }

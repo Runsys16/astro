@@ -132,7 +132,7 @@ void Serveur_mgr::thread_listen_2()
 	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
 	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
-	adresse.sin_port = htons(10003);
+	adresse.sin_port = htons(10002);
 	
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
@@ -234,6 +234,7 @@ void Serveur_mgr::traite_connexion1()
         
         char cmd[255];
         sprintf( cmd, "Ma;a%f;d%f", RAD2DEG(ra), RAD2DEG(dc) );
+        //sprintf( cmd, "a%f;d%f", RAD2DEG(ra), RAD2DEG(dc) );
         Serial::getInstance().write_string(cmd);
 
     }

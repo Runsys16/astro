@@ -52,7 +52,8 @@ public:
  
     bool                        haveNewFrame();
     void                        haveUseFrame(bool);
-   
+
+    inline Camera*              getCurrent()                                { return pCurrent; }   
    
 private:
     vector<Camera*>     pCameras;

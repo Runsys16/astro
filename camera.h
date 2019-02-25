@@ -61,6 +61,7 @@ public :
     void                        togglePanel();
     
     
+    inline bool                 getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
     inline PanelWindow *        getPanelPreview()               { return panelPreview; }
     inline float                getHertz()                      { return hz; }
 

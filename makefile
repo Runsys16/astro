@@ -18,7 +18,7 @@ clean:
 	rm -f *.o
 	rm -f $(BIN_NAME)
 
-main.o: main.cpp v4l2.h control.h timer.h
+main.o: main.cpp v4l2.h control.h timer.h status.cpp
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 		
