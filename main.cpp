@@ -95,7 +95,7 @@ bool                bPanelStdOut   = false;
 bool                bPanelSerial   = false;
 bool                bAfficheVec    = false;
 bool                bMouseDeplace  = false;
-
+bool                bRestauration  = false;
 
 int                 wImg;
 int                 hImg;
@@ -129,6 +129,7 @@ float               zoom;
 //
 //--------------------------------------------------------------------------------------------------------------------
 vector<vec2>        t_vResultat;
+vector<vec2>        t_vSauve;
 float               offset_x;
 float               offset_y;
 float               delta_courbe1 = 1.0;
@@ -490,7 +491,7 @@ void displayCourbeGL_cb(void)
     int DY = panelCourbe->getY();
     int n = t_vResultat.size();
     
-    if ( bCorrection )
+    if ( bCorrection || bRestauration )
     {
         offset_x = vOrigine.x;
         offset_y = vOrigine.y;
@@ -764,6 +765,94 @@ void compute_matrix()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void charge_fichier(void)
+{
+    string filename = "/home/rene/.astropilot/betelgeuse.text";
+    logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
+    
+    std::ifstream fichier;
+    fichier.open(filename, std::ios_base::app);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+    }
+
+    
+    char output[255];
+    int n = 1;
+
+    vOrigine.x = 0.0;
+    vOrigine.y = 0.0;
+    
+    while (!fichier.eof()) {
+        fichier >> output;
+        fichier >> output;
+        string x = string(output);
+        cout<< n++ << " - ";// << endl;;
+        cout<< x;// << endl;;
+        
+        fichier >> output;
+        fichier >> output;
+        string y = string(output);
+        cout<<" , "<< y << endl;;
+        
+        if ( n > 500 && n < 3000 )
+        {
+            float X = stof( x );
+            float Y = stof( y );
+
+            vOrigine.x += X;
+            vOrigine.y += Y;
+            
+            t_vResultat.push_back( vec2(X,Y) );
+        }        //set( key, stof(val) );
+            
+        
+        fichier >> output;
+        
+    }
+
+    vOrigine.x /= (float)t_vResultat.size();
+    vOrigine.y /= (float)t_vResultat.size();
+
+    cout << vOrigine.x << " , " << vOrigine.y << endl;
+
+    fichier.close();
+    
+
+    fichier.close();
+    
+    t_vSauve.clear();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void sauve(void)
+{
+    string filename = "/home/rene/.astropilot/sauvegarde.text";
+    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filename.c_str() );
+    
+    std::ofstream fichier;
+    fichier.open(filename, std::ios_base::app);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+    }
+
+    for(int i=0; i<t_vSauve.size(); i++)
+    {
+        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " )\n";
+    }
+
+    fichier.close();
+    
+    t_vSauve.clear();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void suivi(void)
 {
     if ( Camera_mgr::getInstance().haveNewFrame() )
@@ -795,7 +884,7 @@ void suivi(void)
         xx = point.xAverage / point.ponderation;
         yy = point.yAverage / point.ponderation;
         
-        sprintf( sSkyPoint, "x=%0.2f, y=%0.2f, pond=%0.2f", xx, yy, point.ponderation);
+        sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, point.ponderation);
         SP->changeText(sSkyPoint);
         //panelResultat->setVisible(true);
 
@@ -814,6 +903,11 @@ void suivi(void)
         t_vResultat.erase ( t_vResultat.begin()+0);
     }
     t_vResultat.push_back(v);
+
+    //if ( t_vSauve.size() > 200 )       sauve();
+    if ( t_vSauve.size() > 200 )       t_vSauve.clear();
+    
+    t_vSauve.push_back(v);
     
     
     //printf( "3-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
@@ -867,6 +961,15 @@ static void idleGL(void)
 	timer.Idle();
 
 
+    if ( panelStdOutW->getHaveMove() )
+    {
+        panelStdOutW->resetHaveMove();
+
+        var.set("xPanelStdOut",  panelStdOutW->getX() );
+        var.set("yPanelStdOut",  panelStdOutW->getY() );
+        var.set("dxPanelStdOut", panelStdOutW->getDX() );
+        var.set("dyPanelStdOut", panelStdOutW->getDY() );
+    }
 
 
     if (!bPause)    {
@@ -1255,22 +1358,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         var.set("bAfficheVec", bAfficheVec);
         }
         break;
-    case 'r':
-        {
-        vDepl[0].x = xClick;
-        vDepl[0].y = yClick;
-        vDepl[0].z = 0.0;
-        logf( (char*)"vDepl[0](%0.2f, %0.2f)", vDepl[0].x, vDepl[0].y );
-        }
-        break;
-    case 'R':
-        {
-        vDepl[1].x = xClick;
-        vDepl[1].y = yClick;
-        vDepl[1].z = 0.0;
-        logf( (char*)"vDepl[1](%0.2f, %0.2f)",  vDepl[1].x, vDepl[1].y );
-        }
-        break;
     case 'u':
         {
         courbe1 *= 0.8;
@@ -1322,6 +1409,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'H':
         {
         bCorrection = true; 
+        var.set( "bCorrection", bCorrection);
+
         fTimeCorrection = 0.0; 
 
         vOrigine.x = xSuivi;
@@ -1338,11 +1427,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bNuit = !bNuit;
         var.set("bNuit", bNuit);
+        
         if (bNuit)  PanelConsoleSerial::getInstance().getConsole()->setColor(0xFFFF0000);
         else        PanelConsoleSerial::getInstance().getConsole()->setColor(0xFFFFFFFF);
 
         if (bNuit)  panelStdOut->setColor(0xFFFF0000);
         else        panelStdOut->setColor(0xFFFFFFFF);
+        }
+        break;
+    case 'r' :
+        {
+        bRestauration = !bRestauration;
+        if ( bRestauration )    charge_fichier();
         }
         break;
     default:
@@ -1813,12 +1909,23 @@ static void CreateStdOut()	{
 	int dx=350;
 	int dy=400;
 
+    x = var.geti("xPanelStdOut");
+    y = var.geti("yPanelStdOut");
+    dx = var.geti("dxPanelStdOut");
+    dy = var.geti("dyPanelStdOut");
+
+    if ( x<= 0 )        x = 10;
+    if ( dx<= 1000 )    dx = 350;
+    if ( y<= 0 )        y = 10;
+    if ( dy<= 100 )     dy = 400;
+
 	panelStdOutW = new PanelWindow();
 	panelStdOut = new PanelScrollText(dy/13,50);
 	panelStdOut->setPrompt(string(">"));
 
 	panelStdOutW->setPosAndSize( x, y, dx, dy );
  	panelStdOutW->setVisible(bPanelStdOut);
+
 	panelStdOut->setPosAndSize( 0, 0, dx, dy );
 
 
@@ -2074,6 +2181,7 @@ void init_var()
 
     var.set("bPause", bPause);
     var.set("bFull", bFull);
+    var.set("bNuit", bNuit);
 
     var.set("courbe1", courbe1);
     var.set("delta_courbe1", delta_courbe1);
@@ -2085,16 +2193,21 @@ void init_var()
     var.set("vecAD[1].x", vecAD[1].x);
     var.set("vecAD[1].y", vecAD[1].y);
 
-    var.set("vecDC[0].x", vecAD[0].x);
-    var.set("vecDC[0].y", vecAD[0].y);
-    var.set("vecDC[1].x", vecAD[1].x);
-    var.set("vecDC[1].y", vecAD[1].y);
+    var.set("vecDC[0].x", vecDC[0].x);
+    var.set("vecDC[0].y", vecDC[0].y);
+    var.set("vecDC[1].x", vecDC[1].x);
+    var.set("vecDC[1].y", vecDC[1].y);
 
     var.set("vOrigine.x", vOrigine.x);
     var.set("vOrigine.y", vOrigine.y);
 
     var.set("xSuivi", xSuivi);
     var.set("ySuivi", ySuivi);
+    
+    var.set("xPanelStdOut",  panelStdOutW->getX() );
+    var.set("yPanelStdOut",  panelStdOutW->getY() );
+    var.set("dxPanelStdOut", panelStdOutW->getDX() );
+    var.set("dyPanelStdOut", panelStdOutW->getDY() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2157,7 +2270,12 @@ void charge_var()
     vecDC[1].z          = 0.0;
     
     compute_matrix();
-    logf( (char*)"%02f", mChange.mat[0] );
+    logf( (char*)"vecAD[0] (%02f,%0.2f)", vecAD[0].x, vecAD[0].y );
+    logf( (char*)"vecAD[1] (%02f,%0.2f)", vecAD[1].x, vecAD[1].y );
+    logf( (char*)"vecDC[0] (%02f,%0.2f)", vecDC[0].x, vecDC[0].y );
+    logf( (char*)"vecDC[1] (%02f,%0.2f)", vecDC[1].x, vecDC[1].y );
+
+    logf( (char*)"MATRIX %02f", mChange.mat[0] );
 
     vOrigine.x          = var.getf("vOrigine.x");
     vOrigine.y          = var.getf("vOrigine.y");
@@ -2216,6 +2334,8 @@ void exit_handler()
 //--------------------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
+    //var.setSauve();
+    //init_var();
     atexit(exit_handler);
     //parse_option_size(argc, argv);
     
@@ -2268,6 +2388,7 @@ int main(int argc, char **argv)
     glewInit();
     
     charge_var();
+
     CreateAllWindows();
 
     getX11Screen();

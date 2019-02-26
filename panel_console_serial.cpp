@@ -15,7 +15,14 @@ PanelConsoleSerial::PanelConsoleSerial()
     pw->add(pc);
     
 	pw->setPosAndSize( 10, 10, 500, 700);
-	pc->setPosAndSize( 0, 0, 500, 700);
+    VarManager& var= VarManager::getInstance();
+    int x = var.geti("xPanelSerial");
+    int y = var.geti("yPanelSerial");
+    int dx = var.geti("dxPanelSerial");
+    int dy = var.geti("dyPanelSerial");
+	pw->setPosAndSize( x, y, dx, dy );
+	
+	pc->setPosAndSize( 0, 0, dx, dy);
 	pc->setPrompt( "arduino> " );
 
     pc->setCallBackCmd( cb );
@@ -30,7 +37,7 @@ PanelConsoleSerial::PanelConsoleSerial()
     ad_change = -1.0;
     dc_change = -1.0;
 
-    VarManager& var = VarManager::getInstance(); 
+
     if ( var.getb("bNuit") )    pc->setColor( 0xffff0000 );
     else                        pc->setColor( 0xffffffff );
 }
@@ -168,6 +175,18 @@ void PanelConsoleSerial::writeln(char* str)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelConsoleSerial::idleGL()
 {
+    if ( pw->getHaveMove() )
+    {
+        pw->resetHaveMove();
+        VarManager& var= VarManager::getInstance();
+
+        var.set("xPanelSerial",  pw->getX() );
+        var.set("yPanelSerial",  pw->getY() );
+        var.set("dxPanelSerial", pw->getDX() );
+        var.set("dyPanelSerial", pw->getDY() );
+    }
+    
+    
     if ( ad != ad_change )
     {
         ad = ad_change;

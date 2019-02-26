@@ -76,7 +76,7 @@ void VarManager::sauve()
         
         else if ( c == (int)'i' )
         {
-            int i = p->second.fval;
+            int i = p->second.ival;
             //logf( (char*)"  integer : %d", i );
             
             fichier << "int "<< key << " = " << i << "\n";
