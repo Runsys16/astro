@@ -378,7 +378,7 @@ void Camera::threadExtractImg()
 std::thread Camera::memberThread()
 {
     //logf((char*)"Camera::memberThread() %s", (char*) getName() );
-    return std::thread(&Camera::threadExtractImg, this); 
+    return thread(&Camera::threadExtractImg, this); 
 }    
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -415,7 +415,8 @@ void Camera::change_background_camera(void)
 
         pCharging = &bChargingCamera;
         startThread = true;
-        thread_chargement_camera = memberThread();
+        thread_chargement_camera = thread(&Camera::threadExtractImg, this);
+        //thread_chargement_camera = memberThread();
         thread_chargement_camera.detach();
         
         float t = Timer::getInstance().getCurrentTime();

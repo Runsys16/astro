@@ -29,6 +29,10 @@ PanelConsoleSerial::PanelConsoleSerial()
     dc = -1.0;
     ad_change = -1.0;
     dc_change = -1.0;
+
+    VarManager& var = VarManager::getInstance(); 
+    if ( var.getb("bNuit") )    pc->setColor( 0xffff0000 );
+    else                        pc->setColor( 0xffffffff );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

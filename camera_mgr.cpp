@@ -86,6 +86,30 @@ void Camera_mgr::add( Camera* p )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::addImages( Camera* p )
+{
+    logf((char*)"----------- Camera_mgr::addImages() -------------" );
+
+
+    pCameras.push_back( p );
+
+    p->CreatePreview();
+    p->CreateControl();
+    p->change_background_camera();
+
+    if ( p->getFd() == -1 ) 
+    {
+        p->setControlVisible(false);
+        logf( (char*)"Ce n'est pas une camera" );
+    }
+
+    active();
+    onBottom();
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::sup( string name )
 {
     logf((char*)"----------- Camera_mgr::sup() -------------" );
@@ -98,6 +122,30 @@ void Camera_mgr::sup( string name )
         pCameras.erase(pCameras.begin()+i);
         logf((char*)"  Camera_mgr::sup() %s OK", pCamera->getDevName() );
         delete pCamera;
+    }
+
+    pCurrent = NULL;
+
+    active();
+    onBottom();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::sup( Camera * p )
+{
+    logf((char*)"----------- Camera_mgr::sup() -------------" );
+
+
+    for( int i=0; i<pCameras.size(); i++ )
+    {
+        if ( pCameras[i] == p )
+        {
+            int i = getNum( p );
+            pCameras.erase(pCameras.begin()+i);
+            logf((char*)"  Camera_mgr::sup() %s OK", p->getDevName() );
+            delete p;
+        }
     }
 
     pCurrent = NULL;
@@ -182,6 +230,8 @@ void Camera_mgr::active()
 
     nActive++;
     int n = pCameras.size();
+    if ( n== 0 )    return;
+
     nActive = nActive % n;
     
     pCurrent = pCameras[nActive];

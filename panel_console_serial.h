@@ -17,6 +17,7 @@
 #include "main.h"
 #include "console.h"
 #include "serveur_mgr.h"
+#include "var_mgr.h"
 
 using namespace std;
 

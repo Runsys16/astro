@@ -48,10 +48,10 @@ struct sky_point
 
 struct readBackground
 {
-    unsigned int             w;
-    unsigned int             h;
-    unsigned int             d;
-    GLubyte*        ptr;
+    unsigned int            w;
+    unsigned int            h;
+    unsigned int            d;
+    GLubyte*                ptr;
 };
 
 
@@ -84,6 +84,7 @@ void                change_hertz(float);
 void                change_arduino(bool);
 void                change_ad(float);
 void                change_dc(float);
+void                compute_matrix();
 
 void                getSuiviParameter();
 

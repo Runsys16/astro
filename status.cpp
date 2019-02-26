@@ -53,6 +53,8 @@ void cb_up_fleche_haut(PanelButton* pPanel)
         err *= 0.9;
     }
 
+    var.set( "err", err );
+
     sprintf( s, "+%0.2f", err );
     pXMax->changeText( (char*)s );
     pYMax->changeText( (char*)s );
@@ -66,11 +68,12 @@ void cb_up_fleche_haut(PanelButton* pPanel)
 
 void call_back_up(PanelButton* pPanel)
 {
-	cout << "Button CallBack up()" << endl;
+	logf( (char*) "Button CallBack up()" );
 	
 	if ( pPanel == pButtonSerial )
 	{
         bPanelSerial = !bPanelSerial;
+        var.set("bPanelSerial", bPanelSerial);
         PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
         logf( (char*)"Toggle serial !!!" );
 
@@ -80,6 +83,7 @@ void call_back_up(PanelButton* pPanel)
 	if ( pPanel == pButtonStdOut )
 	{
         bPanelStdOut = !bPanelStdOut;
+        var.set("bPanelStdOut", bPanelStdOut);
         panelStdOutW->setVisible(bPanelStdOut);
         logf( (char*)"Toggle panelStdOut !!!" );
 
@@ -102,6 +106,7 @@ void call_back_up(PanelButton* pPanel)
 	if ( pPanel == pButtonHelp )
 	{
         bPanelHelp = !bPanelHelp;
+        var.set("bPanelHelp", bPanelHelp);
         panelHelp->setVisible(bPanelHelp);
         log( (char*)"Toggle panelHelp !!!" );
 
@@ -111,6 +116,7 @@ void call_back_up(PanelButton* pPanel)
 	if ( pPanel == pButtonResultat )
 	{
         bPanelResultat = !bPanelResultat;
+        var.set("bPanelResultat", bPanelResultat);
         panelResultat->setVisible(bPanelResultat);
         log( (char*)"Toggle panelResultat !!!" );
 
@@ -120,6 +126,7 @@ void call_back_up(PanelButton* pPanel)
 	if ( pPanel == pButtonCourbe )
 	{
         bPanelCourbe = !bPanelCourbe;
+        var.set("bPanelCourbe", bPanelCourbe);
         panelCourbe->setVisible(bPanelCourbe);
         log( (char*)"Toggle panelCourbe !!!" );
 
@@ -129,6 +136,7 @@ void call_back_up(PanelButton* pPanel)
 	if ( pPanel == pButtonMode )
 	{
     	bAutorisationSuivi = !bAutorisationSuivi;
+        var.set("bAutorisationSuivi", bAutorisationSuivi);
 
         if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
         else                            pMode->changeText((char*)"Mode souris");
@@ -140,10 +148,15 @@ void call_back_up(PanelButton* pPanel)
 	if ( pPanel == pButtonAsserv )
 	{
         bCorrection = !bCorrection; 
+        var.set("bCorrection", bCorrection);
         fTimeCorrection = 0.0; 
         vOrigine.x = xSuivi;
         vOrigine.y = ySuivi;
         vOrigine.z = 0.0;
+
+        var.set("vOrigine.x", vOrigine.x);
+        var.set("vOrigine.y", vOrigine.y);
+
         if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
         else                        pAsservi->changeText((char*)" ");
         

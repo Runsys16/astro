@@ -8,6 +8,8 @@
 #include "pleiade.h"
 #include "panel_console_serial.h"
 #include "serveur_mgr.h"
+#include "capture.h"
+#include "var_mgr.h"
 
 
 //#define DEBUG 1
@@ -19,7 +21,11 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-PanelConsole *      pConsoleSerial;
+VarManager& var = VarManager::getInstance();
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+//PanelConsole *      pConsoleSerial;
 PanelWindow *       panelHelp;
 PanelWindow *       panelResultat;
 PanelWindow *       panelCourbe;
@@ -79,6 +85,7 @@ bool                bFull   = false;
 bool                bPause  = false;
 bool                bSuivi  = false;
 bool                bAutorisationSuivi = false;
+bool                bNuit   = false;
 
 bool                bPanelControl  = true;
 bool                bPanelHelp     = false;
@@ -149,7 +156,7 @@ vec3                vTr;
 bool                bCorrection = false;
 float               fTimeCorrection = 0.0;
 float               err = 2.0;
-#define ERR         err
+#define err         err
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -260,7 +267,8 @@ void rad2dms(struct dms& DMS, float r)
 void glVecAD()
 {
     float gris = 0.0;
-    glColor4f( 1.0, gris, gris, 1.0 );
+    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
+    else                            glColor4f( 1.0, gris, gris, 1.0 );
     
     glBegin(GL_LINES);
         int x = vecAD[0].x;
@@ -279,7 +287,8 @@ void glVecAD()
 void glVecDC()
 {
     float gris = 0.0;
-    glColor4f( gris, 1.0, gris, 1.0 );
+    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
+    else                            glColor4f( gris, 1.0, gris, 1.0 );
     
     glBegin(GL_LINES);
         /*
@@ -359,7 +368,8 @@ void glCroix( int x,  int y,  int dx,  int dy )
 void displayGL_cb(void)
 {
     if ( bSuivi && bAutorisationSuivi )   {
-	    glColor4f( 0.0, 1.0, 0.0, 0.2 );
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
+	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
 	    
 	    int x = round(xSuivi+0.5);
 	    int y = round(ySuivi+0.5);
@@ -372,7 +382,8 @@ void displayGL_cb(void)
     }
     if ( !bAutorisationSuivi )
     {
-	    glColor4f( 0.0, 1.0, 0.0, 0.2 );
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
+	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
 	    
 	    int x = xClick;
 	    int y = yClick;
@@ -391,7 +402,8 @@ void displayGL_cb(void)
     }
 
 
-    glColor4f( 1.0, 1.0, 1.0, 1.0 );
+    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -399,7 +411,8 @@ void displayGL_cb(void)
 void glEchelle()
 {
     float gris = 0.3;
-    glColor4f( gris, gris, gris, 1.0 );
+    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
+    else                            glColor4f( gris, gris, gris, 1.0 );
     
     glBegin(GL_LINES);
         int y = AXE_X;
@@ -427,28 +440,28 @@ void glEchelle()
 
         glVertex2i( x, y );
 
-        float dxMax = ERR;
+        float dxMax = err;
         y = (float)(delta_courbe1*(dxMax) + AXE_X);
         pXMax->setPos( 5, y );
         panelCourbe->y2Screen(y);
         glVertex2i( 0, y );
         glVertex2i( x, y );
 
-        float dxMin = -ERR;
+        float dxMin = -err;
         y = (float)(delta_courbe1*(dxMin) + AXE_X);
         pXMin->setPos( 5, y -15 );
         panelCourbe->y2Screen(y);
         glVertex2i( 0, y );
         glVertex2i( x, y );
 
-        float dyMax = ERR;
+        float dyMax = err;
         y = (float)(delta_courbe2*(dyMax) + AXE_Y);
         pYMax->setPos( 5, y );
         panelCourbe->y2Screen(y);
         glVertex2i( 0, y );
         glVertex2i( x, y );
 
-        float dyMin = -ERR;
+        float dyMin = -err;
         y = (float)(delta_courbe2*(dyMin) + AXE_Y);
         pYMin->setPos( 5, y -15 );
         panelCourbe->y2Screen(y);
@@ -487,7 +500,8 @@ void displayCourbeGL_cb(void)
     
     if ( n != 0  )
     {
-        glColor4f( 0.0, 0.0, 1.0, 1.0 );
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+        else                            glColor4f( 0.0, 0.0, 1.0, 1.0 );
         
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
@@ -504,7 +518,8 @@ void displayCourbeGL_cb(void)
         glEnd();        
 
         
-        glColor4f( 1.0, 1.0, 0.0, 1.0 );
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+        else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
         glBegin(GL_LINE_STRIP);
         for( int i=0; i<t_vResultat.size(); i++ )
         {
@@ -520,7 +535,8 @@ void displayCourbeGL_cb(void)
         
     }     
     
-    glColor4f( 1.0, 1.0, 1.0, 1.0 );
+    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -637,7 +653,9 @@ static void displayGL(void)
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
-    glColor4f( 0.0, 0.0, 0.0, 1.0 );
+    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
+    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
+
 	WindowsManager::getInstance().displayGL();
 
 	glutSwapBuffers();
@@ -728,6 +746,20 @@ void change_dc(float dc)
     
     pDC->changeText( buff );
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void compute_matrix()
+{
+    vec3 v0 = vecAD[1] - vecAD[0];
+    vec3 v1 = vecDC[1] - vecDC[0];
+    vec3 v2 = vec3( 0.0, 0.0, 1.0 );
+    mat3 m = mat3( v0, v1, v2 );
+    mat3 mi = m.inverse();
+    mChange = mi;
+
+    logf( (char*)"Compute matrice de changement de repere...");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -872,13 +904,14 @@ static void idleGL(void)
 	{
 	    fTimeCorrection += elapsedTime;
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCorrection );
-	    if ( bCorrection && fTimeCorrection >= 1.0 )
+	    if ( bCorrection && fTimeCorrection >= 1.0 && bAutorisationSuivi)
 	    {
             fTimeCorrection -= 2.0;
+            if ( fTimeCorrection > 0.0 )    fTimeCorrection = -2.0;
 
 	        float dx = xSuivi - vOrigine.x;
 	        float dy = ySuivi - vOrigine.y;
-	        if ( fabs(dx) > ERR || fabs(dy) > ERR )
+	        if ( fabs(dx) > err || fabs(dy) > err )
 	        {
 	            vec3 w = vec3( xSuivi, ySuivi, 0.0);
 	            vec3 v = vOrigine - w;
@@ -888,7 +921,7 @@ static void idleGL(void)
                 int dc = (int) (res.y * 1000.0);
                 char cmd[255];
                 sprintf( cmd, "Mr;a%dp;d%dp", ad, dc );
-                logf( (char*)"**** Asservissement -> '%s'",  cmd );
+                //logf( (char*)"**** Asservissement -> '%s'",  cmd );
                 Serial::getInstance().write_string(cmd);
 	        }
 	    }
@@ -961,6 +994,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 		cam_mgr.active();
 
+        getSuiviParameter();
+        /*
         xCam = cam_mgr.get_xCam();
         yCam = cam_mgr.get_yCam();
         dxCam = cam_mgr.get_dxCam();
@@ -979,6 +1014,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    logf( (char*)"width=%d height=%d" , width, height );
 	    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d", xCam, yCam, dxCam, dyCam );
 	    logf( (char*)"rw=%0.2f rh=%0.2f" , rw, rh );
+	    */
 		//change_cam();
         }
 		break;
@@ -986,6 +1022,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		break;
 	case 13:
 	    bFull = !bFull;
+        var.set("bFull", bFull);
 
         if (bFull ){
      		glutFullScreen();
@@ -1002,6 +1039,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	break;
     case 'O':
     	bAutorisationSuivi = !bAutorisationSuivi;
+        var.set("bAutorisationSuivi", bAutorisationSuivi);
 
         if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
         else                            pMode->changeText((char*)"Mode souris");
@@ -1015,14 +1053,51 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'L':
+        {            
+        VarManager::dbMap & db = var.getDB();
+        VarManager::dbMap::iterator p;
+        
+        for(p = db.begin(); p!=db.end(); ++p)
+        {
+            switch(p->second.type)
+            {
+            case 'f':
+                {
+                float f = var.getf(p->first);
+                logf( (char*)"%s -> %f", p->first.c_str(), f );
+                }
+                break;
+            case 'i':
+                {
+                int i = var.geti(p->first);
+                logf( (char*)"%s -> %d", p->first.c_str(), i );
+                }
+                break;
+            case 'b':
+                {
+                bool b = var.getb(p->first);
+                if (b)                      logf( (char*)"%s -> %s", p->first.c_str(), (char*)"TRUE" );
+                else                        logf( (char*)"%s -> %s", p->first.c_str(), (char*)"FALSE" );
+                break;
+                }
+             }
+        }
+            
+        }
+        break;
+
     case 'p':  // '-'
+        {
         bPause = !bPause;
+        var.set("bPause", bPause);
 
         if ( bPause )   {
             pErr->changeText((char*)"Pause" );
         }
         else {
             pErr->changeText((char*)"" );
+        }
         }
         break;
 
@@ -1032,28 +1107,42 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case '2':
         bPanelHelp = !bPanelHelp;
+        var.set("bPanelHelp", bPanelHelp);
         panelHelp->setVisible(bPanelHelp);
         log( (char*)"Toggle panelHelp !!!" );
         break;
     case '3':
         bPanelResultat = !bPanelResultat;
+        var.set("bPanelResultat", bPanelResultat);
         panelResultat->setVisible(bPanelResultat);
         log( (char*)"Toggle panelResultat !!!" );
         break;
     case '4':
         bPanelCourbe = !bPanelCourbe;
+        var.set("bPanelCourbe", bPanelCourbe);
         panelCourbe->setVisible(bPanelCourbe);
         log( (char*)"Toggle panelCourbe !!!" );
         break;
     case '5':
         bPanelStdOut = !bPanelStdOut;
+        var.set("bPanelStdOut", bPanelStdOut);
         panelStdOutW->setVisible(bPanelStdOut);
         log( (char*)"Toggle panelStdOut !!!" );
         break;
     case '6':
         bPanelSerial = !bPanelSerial;
+        var.set("bPanelSerial", bPanelSerial);
         PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
         log( (char*)"Toggle serial !!!" );
+        break;
+    case '7':
+        Camera_mgr::getInstance().addImages( new Capture() );
+        break;
+    case '8':
+        {
+        Camera *  p = Camera_mgr::getInstance().getCurrent();
+        Camera_mgr::getInstance().sup( p );
+        }
         break;
     case 'A':
         {
@@ -1069,6 +1158,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vecAD[1].y = yClick;
             vecAD[1].z = 0.0;
         }
+        var.set("vecAD[1].x", vecAD[1].x);
+        var.set("vecAD[1].y", vecAD[1].y);
         logf( (char*)"AD[1] (%0.2f,%0.2f)", vecAD[1].x, vecAD[1].y );
         }
         break;
@@ -1086,6 +1177,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vecAD[0].y = yClick;
             vecAD[0].z = 0.0;
         }
+        var.set("vecAD[0].x", vecAD[0].x);
+        var.set("vecAD[0].y", vecAD[0].y);
         logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
 
         char cmd[255];
@@ -1109,16 +1202,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vecDC[1].y = yClick;
             vecDC[1].z = 0.0;
         }
+        var.set("vecDC[1].x", vecDC[1].x);
+        var.set("vecDC[1].y", vecDC[1].y);
         logf( (char*)"DC[1] (%0.2f,%0.2f)", vecDC[1].x, vecDC[1].y );
 
-        vec3 v0 = vecAD[1] - vecAD[0];
-        vec3 v1 = vecDC[1] - vecDC[0];
-        vec3 v2 = vec3( 0.0, 0.0, 1.0 );
-        mat3 m = mat3( v0, v1, v2 );
-        mat3 mi = m.inverse();
-        mChange = mi;
-
-        logf( (char*)"Compute matrice de changement de repere...");
+        compute_matrix();
+        
         bMouseDeplace = true;
         }
         break;
@@ -1137,6 +1226,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vecDC[0].y = yClick;
             vecDC[0].z = 0.0;
         }
+        var.set("vecDC[0].x", vecDC[0].x);
+        var.set("vecDC[0].y", vecDC[0].y);
         logf( (char*)"DC[0] (%0.2f,%0.2f)", vecDC[0].x, vecDC[0].y );
 
         char cmd[255];
@@ -1148,14 +1239,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'M':
         {
-        vec3 v0 = vecAD[1] - vecAD[0];
-        vec3 v1 = vecDC[1] - vecDC[0];
-        vec3 v2 = vec3( 0.0, 0.0, 1.0 );
-        mat3 m = mat3( v0, v1, v2 );
-        mat3 mi = m.inverse();
-        mChange = mi;
-
-        logf( (char*)"Compute matrice de changement de repere...");
+        compute_matrix();
         bMouseDeplace = true;
         }
         break;
@@ -1168,6 +1252,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'y':
         {
         bAfficheVec = !bAfficheVec;
+        var.set("bAfficheVec", bAfficheVec);
         }
         break;
     case 'r':
@@ -1189,57 +1274,75 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'u':
         {
         courbe1 *= 0.8;
+        var.set("courbe1", courbe1);
         }
         break;
     case 'U':
         {
         courbe1 /= 0.8;
+        var.set("courbe1", courbe1);
         }
         break;
     case 'j':
         {
         delta_courbe1 *= 0.8;
+        var.set("delta_courbe1", delta_courbe1);
         }
         break;
     case 'J':
         {
         delta_courbe1 /= 0.8;
+        var.set("delta_courbe1", delta_courbe1);
         }
         break;
     case 'i':
         {
         courbe2 *= 0.8;
+        var.set("courbe2", courbe2);
         }
         break;
     case 'I':
         {
         courbe2 /= 0.8;
+        var.set("courbe2", courbe2);
         }
         break;
     case 'k':
         {
         delta_courbe2 *= 0.8;
+        var.set("delta_courbe2", delta_courbe2);
         }
         break;
     case 'K':
         {
         delta_courbe2 /= 0.8;
+        var.set("delta_courbe2", delta_courbe2);
         }
         break;
     case 'H':
         {
         bCorrection = true; 
         fTimeCorrection = 0.0; 
+
         vOrigine.x = xSuivi;
         vOrigine.y = ySuivi;
         vOrigine.z = 0.0;
+
+        var.set("vOrigine.x", vOrigine.x);
+        var.set("vOrigine.y", vOrigine.y);
+
         pAsservi->changeText((char*)"Asservissemnent");
         }
         break;
     case 'N':
         {
-        bCorrection = false; 
-        pAsservi->changeText((char*)" ");
+        bNuit = !bNuit;
+        var.set("bNuit", bNuit);
+        if (bNuit)  PanelConsoleSerial::getInstance().getConsole()->setColor(0xFFFF0000);
+        else        PanelConsoleSerial::getInstance().getConsole()->setColor(0xFFFFFFFF);
+
+        if (bNuit)  panelStdOut->setColor(0xFFFF0000);
+        else        panelStdOut->setColor(0xFFFFFFFF);
         }
         break;
     default:
@@ -1426,7 +1529,12 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 
 	        //printf( "%s", skyPoint);
 	        
-	        if ( bAutorisationSuivi)    bSuivi = true;
+	        if ( bAutorisationSuivi)
+	        {
+	            bSuivi = true;
+                var.set( "bSuivi", bSuivi );
+            }
+            	            
 	        xSuivi = xx;
 	        ySuivi = yy;
 	        offset_x = xx;
@@ -1437,6 +1545,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
             sprintf( skyPoint, "Rien");
 	        SP->changeText(skyPoint);
 	        bSuivi = false;
+            var.set( "bSuivi", bSuivi );
         }
 
 	    logf( (char*)"xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
@@ -1490,6 +1599,20 @@ void resizeCourbe(int width, int height)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void update_err()
+{
+    char s[20];
+    sprintf( s, "+%0.2f", err );
+    pXMax->changeText( (char*)s );
+    pYMax->changeText( (char*)s );
+
+    sprintf( s, "-%0.2f", err );
+    pXMin->changeText( (char*)s );
+    pYMin->changeText( (char*)s );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void CreateCourbe()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 
@@ -1502,27 +1625,19 @@ static void CreateCourbe()	{
  	panelCourbe->setBackground((char*)"background.tga");
     panelCourbe->setDisplayGL( displayCourbeGL_cb );
 
-    pXMax = new PanelText( (char*)"+ERR",		PanelText::NORMAL_FONT, 5, 50 );
+    pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
 	panelCourbe->add( pXMax );
 
-    pXMin = new PanelText( (char*)"-ERR",		PanelText::NORMAL_FONT, 5, 60 );
+    pXMin = new PanelText( (char*)"-err",		PanelText::NORMAL_FONT, 5, 60 );
 	panelCourbe->add( pXMin );
 
-    pYMax = new PanelText( (char*)"+ERR",		PanelText::NORMAL_FONT, 5, 70 );
+    pYMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 70 );
 	panelCourbe->add( pYMax );
 
-    pYMin = new PanelText( (char*)"-ERR",		PanelText::NORMAL_FONT, 5, 80 );
+    pYMin = new PanelText( (char*)"-err",		PanelText::NORMAL_FONT, 5, 80 );
 	panelCourbe->add( pYMin );
 
-    char s[20];
-    sprintf( s, "+%0.2f", err );
-    pXMax->changeText( (char*)s );
-    pYMax->changeText( (char*)s );
-
-    sprintf( s, "-%0.2f", err );
-    pXMin->changeText( (char*)s );
-    pYMin->changeText( (char*)s );
-
+    update_err();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1671,7 +1786,9 @@ static void CreateStatus()	{
  
     pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 650, 2 );
 	panelStatus->add( pAsservi );
+
     if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
+    else                        pAsservi->changeText((char*)" ");
 
 
 
@@ -1938,6 +2055,158 @@ void getX11Screen()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void init_var()
+{
+    //VarManager& var = VarManager::getInstance();
+
+    var.set( "bAutorisationSuivi", bAutorisationSuivi );
+    var.set( "bSuivi", bSuivi );
+    var.set( "bPanelControl", bPanelControl );
+    var.set( "bPanelHelp", bPanelHelp );
+    var.set( "bPanelResultat", bPanelResultat );
+    var.set( "bPanelCourbe", bPanelCourbe );
+    var.set( "bPanelStdOut", bPanelStdOut );
+    var.set( "bPanelSerial", bPanelSerial );
+    var.set( "bAfficheVec", bAfficheVec);
+    var.set( "bCorrection", bCorrection);
+
+    var.set( "err", err );
+
+    var.set("bPause", bPause);
+    var.set("bFull", bFull);
+
+    var.set("courbe1", courbe1);
+    var.set("delta_courbe1", delta_courbe1);
+    var.set("courbe2", courbe2);
+    var.set("delta_courbe2", delta_courbe2);
+
+    var.set("vecAD[0].x", vecAD[0].x);
+    var.set("vecAD[0].y", vecAD[0].y);
+    var.set("vecAD[1].x", vecAD[1].x);
+    var.set("vecAD[1].y", vecAD[1].y);
+
+    var.set("vecDC[0].x", vecAD[0].x);
+    var.set("vecDC[0].y", vecAD[0].y);
+    var.set("vecDC[1].x", vecAD[1].x);
+    var.set("vecDC[1].y", vecAD[1].y);
+
+    var.set("vOrigine.x", vOrigine.x);
+    var.set("vOrigine.y", vOrigine.y);
+
+    var.set("xSuivi", xSuivi);
+    var.set("ySuivi", ySuivi);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void charge_var()
+{
+    var.charge();
+
+    bAutorisationSuivi  = var.getb( "bAutorisationSuivi" );
+    //bSuivi              = var.getb( "bSuivi" );
+
+    bPanelCourbe        = var.getb( "bPanelCourbe" );
+    if ( panelCourbe )      panelCourbe->setVisible(bPanelCourbe);
+    
+    bPanelHelp          = var.getb( "bPanelHelp" );
+    if (panelHelp)      panelHelp->setVisible( bPanelHelp );
+    
+    bPanelResultat      = var.getb( "bPanelResultat" );
+    if (panelResultat)  panelResultat->setVisible( bPanelResultat );
+    
+    bPanelStdOut        = var.getb( "bPanelStdOut" );
+    if (panelStdOutW)   panelStdOutW->setVisible( bPanelStdOut );
+    
+    
+    bPanelSerial        = var.getb( "bPanelSerial" );
+    PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
+    
+    bAfficheVec         = var.getb("bAfficheVec");
+
+    bPause              = var.getb("bPause");
+    bFull               = var.getb("bFull");
+    if ( bFull )        glutFullScreen();
+
+    bCorrection         = var.getb("bCorrection");
+    bNuit               = var.getb("bNuit");
+
+
+    err                 = var.getf("err");
+    //update_err();
+    
+    courbe1             = var.getf("courbe1");
+    delta_courbe1       = var.getf("delta_courbe1");
+    courbe2             = var.getf("courbe2");
+    delta_courbe2       = var.getf("delta_courbe2");
+
+    vecAD[0].x          = var.getf("vecAD[0].x");
+    vecAD[0].y          = var.getf("vecAD[0].y");
+    vecAD[0].z          = 0.0;
+
+    vecAD[1].x          = var.getf("vecAD[1].x");
+    vecAD[1].y          = var.getf("vecAD[1].y");
+    vecAD[1].z          = 0.0;
+
+    vecDC[0].x          = var.getf("vecDC[0].x");
+    vecDC[0].y          = var.getf("vecDC[0].y");
+    vecDC[0].z          = 0.0;
+
+    vecDC[1].x          = var.getf("vecDC[1].x");
+    vecDC[1].y          = var.getf("vecDC[1].y");
+    vecDC[1].z          = 0.0;
+    
+    compute_matrix();
+    logf( (char*)"%02f", mChange.mat[0] );
+
+    vOrigine.x          = var.getf("vOrigine.x");
+    vOrigine.y          = var.getf("vOrigine.y");
+    vOrigine.z          = 0.0;
+
+    xSuivi              = var.getf("xSuivi");
+    ySuivi              = var.getf("ySuivi");
+    
+    xSuivi              = vOrigine.x;
+    ySuivi              = vOrigine.y;
+
+	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+	cam_mgr.active();
+
+    getSuiviParameter();
+
+
+    /*    
+    var.set( "bPanelControl", bPanelControl );
+    var.set( "bPanelHelp", bPanelHelp );
+    var.set( "bPanelResultat", bPanelResultat );
+    var.set( "bPanelStdOut", bPanelStdOut );
+    var.set( "bPanelSerial", bPanelSerial );
+    var.set("bAfficheVec", bAfficheVec);
+
+    var.set( "err", err );
+
+    var.set("bPause", bPause);
+    var.set("bFull", bFull);
+
+    var.set("courbe1", courbe1);
+    var.set("delta_courbe1", delta_courbe1);
+    var.set("courbe2", courbe2);
+    var.set("delta_courbe2", delta_courbe2);
+
+    var.set("vecAD[0].x", vecAD[0].x);
+    var.set("vecAD[0].y", vecAD[0].y);
+    var.set("vecAD[1].x", vecAD[1].x);
+    var.set("vecAD[1].y", vecAD[1].y);
+
+    var.set("vecDC[0].x", vecAD[0].x);
+    var.set("vecDC[0].y", vecAD[0].y);
+    var.set("vecDC[1].x", vecAD[1].x);
+    var.set("vecDC[1].y", vecAD[1].y);
+    */
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void exit_handler()
 {
     Serveur_mgr::getInstance().close_all();
@@ -1976,6 +2245,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+
 	glutReshapeFunc(reshapeGL);
 	glutDisplayFunc(displayGL);
 	glutIdleFunc(idleGL);
@@ -1997,6 +2267,7 @@ int main(int argc, char **argv)
 	initGL(argc, argv);
     glewInit();
     
+    charge_var();
     CreateAllWindows();
 
     getX11Screen();
@@ -2012,10 +2283,16 @@ int main(int argc, char **argv)
     Serveur_mgr::getInstance().start_1();
     Serveur_mgr::getInstance().start_2();
 
+    init_var();
+    var.setSauve();
+    
+    if ( var.getb("bNuit") )    panelStdOut->setColor( 0xffff0000 );
+    else                        panelStdOut->setColor( 0xffffffff );
+    
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
     
-
+    compute_matrix();
     glutMainLoop();
 
 

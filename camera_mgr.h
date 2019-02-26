@@ -23,7 +23,9 @@ public:
     bool                        camera_exist( string dev_name );
     void                        add( string dev_name );
     void                        add( Camera* );
+    void                        addImages( Camera* );
     void                        sup( string );
+    void                        sup( Camera * );
 
     void                        change_background_camera();
     void                        start_camera();
