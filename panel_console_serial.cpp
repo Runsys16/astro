@@ -152,7 +152,7 @@ void PanelConsoleSerial::writeln(char* str)
         buff[18] = conv[2];
         buff[19] = conv[3];
 
-        Serveur_mgr::getInstance().write_stellarium( buff );
+        Serveur_mgr::getInstance().write_stellarium( (char*)buff );
 
         return;
     }

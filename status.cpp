@@ -147,7 +147,7 @@ void call_back_up(PanelButton* pPanel)
         if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
         else                        pAsservi->changeText((char*)" ");
         
-        inverse_texture( pPanel, bCorrection, "" );
+        inverse_texture( pPanel, bCorrection, "cadena" );
 	}
 }
 
@@ -217,7 +217,7 @@ void create_windows_button()
     pButtonSerial   = create_window_button( pButtonSerial,   5, "arduino" );
 
     pButtonMode     = create_window_button( pButtonMode,     7, "cible" );
-    pButtonAsserv   = create_window_button( pButtonAsserv,   8, "" );
+    pButtonAsserv   = create_window_button( pButtonAsserv,   8, "cadena" );
     
     create_fleches();
 }

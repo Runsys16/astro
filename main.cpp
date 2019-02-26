@@ -588,14 +588,14 @@ void getSkyPointLine(struct sky_point* point, int x, int y, int size)
         float l = 0.33 * r + 0.5 * g  + 0.16 * b;
         if ( l<20.0 )       l = 0.0;
         
-        if (bPrintLum)      printf( "%-3d-", (int)l);
+        //if (bPrintLum)      printf( "%-3d-", (int)l);
         
         point->xAverage    += l * (float)x;
         point->yAverage    += l * (float)y;
         point->ponderation += l;
     }  
 
-    if (bPrintLum)      printf( "\n" );
+    //if (bPrintLum)      printf( "\n" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -813,7 +813,7 @@ void getSuiviParameter(void)
     rw = (float)vCameraSize.x/(float)dxCam;
     rh = (float)vCameraSize.y/(float)dyCam;
 
-    /*
+    /* 
     logf( (char*)"-------------------------------------" );
     logf( (char*)"width=%d height=%d" , width, height );
     logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d", xCam, yCam, dxCam, dyCam );
@@ -874,7 +874,7 @@ static void idleGL(void)
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCorrection );
 	    if ( bCorrection && fTimeCorrection >= 1.0 )
 	    {
-            fTimeCorrection -= 3.0;
+            fTimeCorrection -= 2.0;
 
 	        float dx = xSuivi - vOrigine.x;
 	        float dy = ySuivi - vOrigine.y;
@@ -990,11 +990,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         if (bFull ){
      		glutFullScreen();
             //reshapeGL(vCameraSize.x,1200);
-            logf( (char*)"w=%d h=%d\n", width, height );
+            logf( (char*)"w=%d h=%d", width, height );
             log( (char*)"FullScreen !!!" );
         }
         else    {
-            logf( (char*)"w=%d h=%d\n", width, height );
+            logf( (char*)"w=%d h=%d", width, height );
 		    glutPositionWindow( (glutGet(GLUT_SCREEN_WIDTH)-width)/2, (glutGet(GLUT_SCREEN_HEIGHT)-height)/2  );
 		    glutReshapeWindow( width, height );
             log( (char*)"NormalScreen !!!" );
@@ -1364,7 +1364,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    int Y = y;
 	    
 	    screen2tex(X,Y);
-	    logf( (char*)"---------------------- Click x=%d y=%d  X=%d Y=%d vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
+	    logf( (char*)"---------------------- Click (%d, %d)  (%d, %d) vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
 	    
         ptr = Camera_mgr::getInstance().getPtr();
         int N = getOffset(X, Y, vCameraSize.x);
@@ -1424,7 +1424,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	        SP->changeText(skyPoint);
 	        //panelResultat->setVisible(true);
 
-	        printf( "%s\n", skyPoint);
+	        //printf( "%s", skyPoint);
 	        
 	        if ( bAutorisationSuivi)    bSuivi = true;
 	        xSuivi = xx;
@@ -1440,7 +1440,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
         }
 
 	    logf( (char*)"xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
-	    logf( (char*)"    l=%d rgb=%d,%d,%d\n" , r,g,b,  l );
+	    logf( (char*)"    l=%d rgb=%d,%d,%d" , r,g,b,  l );
 
 	} 
 
