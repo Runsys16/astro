@@ -81,6 +81,11 @@ protected:
     int                         sock_1;
     int                         sock_2;
 
+    bool                        listen_1;
+    bool                        listen_2;
+    bool                        traite_1;
+    bool                        traite_2;
+
 SINGLETON_END()
 
 #endif

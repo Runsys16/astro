@@ -6,6 +6,11 @@
 Serveur_mgr::Serveur_mgr()
 {
     logf((char*)"----------- Constructeur Serveur_mgr() -------------" );
+    listen_1 = true;
+    listen_2 = true;
+    traite_1 = true;
+    traite_2 = true;
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -55,7 +60,7 @@ void Serveur_mgr::traite_connexion2()
     unsigned char buffer[255];
     int n;
 
-    while( 1)
+    while( traite_2 )
     {
         n = read(sock_ref,buffer,255);
 
@@ -151,7 +156,7 @@ void Serveur_mgr::thread_listen_2()
     logf( (char*)"---------------------------------------------------------------");
 
 	listen(sock_2, 5);
-	while (1) {
+	while (listen_2) {
 		longueur = sizeof(struct sockaddr_in);
 		sock_ref = accept(sock_2, (struct sockaddr *) & adresse, & longueur);
 
@@ -183,7 +188,7 @@ void Serveur_mgr::traite_connexion1()
     unsigned char buffer[255];
     int n;
 
-    while( 1)
+    while( traite_1 )
     {
         n = read(sock_stellarium,buffer,255);
 
@@ -280,7 +285,7 @@ void Serveur_mgr::thread_listen_1()
     logf( (char*)"---------------------------------------------------------------");
 
 	listen(sock_1, 5);
-	while (1) {
+	while ( listen_1 ) {
 		longueur = sizeof(struct sockaddr_in);
 		sock_stellarium = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
 
@@ -321,11 +326,20 @@ void Serveur_mgr::close_all()
 {
     logf( (char*)"** Fermeture de tous les sockets ..." );
 
+    listen_1 = false;
+    listen_2 = false;
+    traite_1 = false;
+    traite_2 = false;
+
+    //sleep(10);
+
     if ( sock_stellarium!= -1 )         close(sock_stellarium);
     if ( sock_ref!= -1 )                close(sock_ref);
 
     if ( sock_1!= -1 )                  close(sock_1);
     if ( sock_2!= -1 )                  close(sock_2);
+    
+    //sleep(1);
     
     sock_1          = -1;
     sock_2          = -1;
