@@ -64,8 +64,8 @@ float               dc;
 char                background[]="frame-0.raw";
 float               prevTime    = -1.0f;
 
-int                 width  = 1422;
-int                 height = 800;
+int                 width  = 1600;
+int                 height = 900;
 //int                 width  = 950;
 //int                 height = 534;
 int                 widthScreen  = 0;
@@ -785,6 +785,8 @@ void charge_fichier(void)
     vOrigine.x = 0.0;
     vOrigine.y = 0.0;
     
+    t_vResultat.clear();
+    
     while (!fichier.eof()) {
         fichier >> output;
         fichier >> output;
@@ -884,7 +886,10 @@ void suivi(void)
         xx = point.xAverage / point.ponderation;
         yy = point.yAverage / point.ponderation;
         
-        sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, point.ponderation);
+        float mag = -(log(point.ponderation ) / log(2.0)) + 17.0;
+        //float mag = point.ponderation;
+
+        sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, mag );
         SP->changeText(sSkyPoint);
         //panelResultat->setVisible(true);
 
@@ -2353,6 +2358,9 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
+    width = glutGet(GLUT_SCREEN_WIDTH);
+    height = glutGet(GLUT_SCREEN_HEIGHT);
+    
     cout <<"Screen size "<< glutGet(GLUT_SCREEN_WIDTH) <<"x"<< glutGet(GLUT_SCREEN_HEIGHT) << endl;
 
 	xPos = (glutGet(GLUT_SCREEN_WIDTH)-width)/2;

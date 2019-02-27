@@ -56,7 +56,7 @@ public :
     
     void                        keyboard( char );
     
-    std::thread                 memberThread();
+    //std::thread                 memberThread();
     
     void                        setVisible(bool b);
     void                        setControlVisible(bool b);
