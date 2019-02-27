@@ -28,7 +28,9 @@ Pleiade::Pleiade()
     count_png = 0;
     plus = 1;
     bNewBackground = false; 
-    thread_chargement_pleiade = startThread();
+
+    thread_chargement_pleiade = std::thread(&Pleiade::threadExtractImgPleiade, this);
+    //thread_chargement_pleiade = startThread();
     thread_chargement_pleiade.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -110,7 +112,8 @@ void Pleiade::change_background_camera(void)
 
 
 
-        thread_chargement_pleiade = startThread();
+        //thread_chargement_pleiade = startThread();
+        thread_chargement_pleiade = std::thread(&Pleiade::threadExtractImgPleiade, this);
         thread_chargement_pleiade.detach();
 
         bChargingPleiades = false;

@@ -2,27 +2,34 @@
 #define CAPtuRE_H  1
 
 #include "camera.h"
+#include <dirent.h>
 
 #include <WindowsManager.h>
+#include "main.h"
 
 
 
-class Capture : public Camera
+using namespace std;
+
+class Capture
 {
 protected:
     bool                        bNewBackground;
     bool                        bFirst;
+    vector<string>              filenames;
+    string                      filename;
+    
+    PanelWindow*                panelPreview;
+    PanelText*                  pTitre;
+    
+    struct readBackground       readBgr;
 
 public :
     Capture();
-
-    virtual void                change_background_camera();
-
-    void                        threadExtractImgPleiade();
-    std::thread                 startThread();
-    virtual GLubyte*            getPtr();
-    virtual bool                haveNewFrame();
-    virtual void                haveUseFrame(bool);
+    ~Capture();
+    
+    void                        pooling();
+    void                        create_preview();
 
 
 };

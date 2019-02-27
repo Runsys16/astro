@@ -20,6 +20,10 @@ PanelConsoleSerial::PanelConsoleSerial()
     int y = var.geti("yPanelSerial");
     int dx = var.geti("dxPanelSerial");
     int dy = var.geti("dyPanelSerial");
+    if ( x<= 0 )        x = 10;
+    if ( dx<= 1000 )    dx = 500;
+    if ( y<= 0 )        y = 10;
+    if ( dy<= 100 )     dy = 700;
 	pw->setPosAndSize( x, y, dx, dy );
 	
 	pc->setPosAndSize( 0, 0, dx, dy);
@@ -64,6 +68,7 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
 	case 27:
 	    {
         logf( (char*)"Echappe" );
+        return false;
 	    }
 	    break;
 

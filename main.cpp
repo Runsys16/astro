@@ -10,6 +10,7 @@
 #include "serveur_mgr.h"
 #include "capture.h"
 #include "var_mgr.h"
+#include "alert_box.h"
 
 
 //#define DEBUG 1
@@ -54,7 +55,7 @@ PanelText*          pYMin;
 
 PanelText*          pHertz;
 PanelText*          pFPS;
-PanelText *         pErr;
+PanelText *         pStatus;
 
 float               ac;
 float               dc;
@@ -86,6 +87,8 @@ bool                bPause  = false;
 bool                bSuivi  = false;
 bool                bAutorisationSuivi = false;
 bool                bNuit   = false;
+bool                bQuit;
+
 
 bool                bPanelControl  = true;
 bool                bPanelHelp     = false;
@@ -161,8 +164,19 @@ float               err = 2.0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+vector<AlertBox*>   tAlert;
+bool                bAlert = false;
+string              sAlert;
+
+vector<Capture*>    captures;
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static const char short_options[] = "d:hfs:lpe:";
 static const struct option
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 long_options[] = {
         { "device", required_argument, NULL, 'd' },
         { "help",   no_argument,       NULL, 'h' },
@@ -189,6 +203,59 @@ static void usage(FILE *fp, int argc, char **argv)
                  "-e | --exc           Exclude device\n"
                  "",
                  argv[0] );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void alertBox( string mes )
+{
+    bAlert = true;
+    sAlert = mes;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void alertBoxQuit()
+{
+    int n = tAlert.size();
+    if ( n <= 0 )           return;
+    
+    AlertBox*   p;
+    p = tAlert[n-1];
+    p->quit();
+    delete p;
+    tAlert.pop_back();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int getScreenDX()
+{
+    int dx = glutGet(GLUT_SCREEN_WIDTH);
+    if (dx==3200)            dx = 1920;
+    return dx;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int getWidth()
+{
+    return width;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int getHeight()
+{
+    return height;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int getScreenDY()
+{
+    int dy = glutGet(GLUT_SCREEN_HEIGHT);
+    return dy;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -965,6 +1032,12 @@ static void idleGL(void)
     
 	timer.Idle();
 
+    if ( bAlert )
+    {
+        bAlert = false;
+        tAlert.push_back( new AlertBox( sAlert ) );
+    }
+    
 
     if ( panelStdOutW->getHaveMove() )
     {
@@ -974,6 +1047,8 @@ static void idleGL(void)
         var.set("yPanelStdOut",  panelStdOutW->getY() );
         var.set("dxPanelStdOut", panelStdOutW->getDX() );
         var.set("dyPanelStdOut", panelStdOutW->getDY() );
+        
+        if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
 
 
@@ -1083,6 +1158,17 @@ static void rotateVisible()
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //std::cout << (int)key << std::endl;
+
+    if (tAlert.size() != 0 )
+    {
+        if ( bQuit )   
+        {
+            if (key == 27 )     { quit(); return; }
+        }
+        bQuit = false;
+        alertBoxQuit();
+        return;
+    }
     
     if ( PanelConsoleSerial::getInstance().keyboard(key, x, y) )      return;;
 
@@ -1094,7 +1180,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	
 	switch(key){ 
 	
-	case 27: quit(); break;
+	case 27:
+	    {
+	    alertBox( "Confirmez la sortie du programme 'ESC'" );
+	    bQuit = true;
+	    }
+	     break;
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
@@ -1140,7 +1231,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         else    {
             logf( (char*)"w=%d h=%d", width, height );
-		    glutPositionWindow( (glutGet(GLUT_SCREEN_WIDTH)-width)/2, (glutGet(GLUT_SCREEN_HEIGHT)-height)/2  );
+		    glutPositionWindow( (getScreenDX()-width)/2, (getScreenDY()-height)/2  );
 		    glutReshapeWindow( width, height );
             log( (char*)"NormalScreen !!!" );
 		}
@@ -1200,12 +1291,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         bPause = !bPause;
         var.set("bPause", bPause);
 
-        if ( bPause )   {
-            pErr->changeText((char*)"Pause" );
-        }
-        else {
-            pErr->changeText((char*)"" );
-        }
+        if ( bPause )   pStatus->changeText((char*)"Pause" );
+        else            pStatus->changeText((char*)"-----" );
         }
         break;
 
@@ -1244,12 +1331,17 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         log( (char*)"Toggle serial !!!" );
         break;
     case '7':
-        Camera_mgr::getInstance().addImages( new Capture() );
+        captures.push_back( new Capture() );
         break;
     case '8':
         {
-        Camera *  p = Camera_mgr::getInstance().getCurrent();
-        Camera_mgr::getInstance().sup( p );
+        int n = captures.size();
+        if ( n!= 0 )
+        {
+            Capture* p = captures[n-1];
+            delete p;
+            captures.pop_back();
+        }
         }
         break;
     case 'A':
@@ -1444,6 +1536,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bRestauration = !bRestauration;
         if ( bRestauration )    charge_fichier();
+        }
+        break;
+    case 'R' :
+        {
+        bAlert = !bAlert;
+        alertBox( "TEST ALERT BOX" );
         }
         break;
     default:
@@ -1863,8 +1961,10 @@ static void CreateStatus()	{
 	panelStatus = new PanelSimple();
 	panelStatus->setPosAndSize( x, y, dx, dy );
 
-	pErr = new PanelText( (char*)"Status",		PanelText::NORMAL_FONT, 10, 2 );
-	panelStatus->add( pErr );
+	pStatus = new PanelText( (char*)"Status",		PanelText::NORMAL_FONT, 10, 2 );
+	panelStatus->add( pStatus );
+    if ( bPause )   pStatus->changeText((char*)"Pause" );
+    else            pStatus->changeText((char*)"-----" );
 
     pFPS = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-100, 2 );
 	panelStatus->add( pFPS );
@@ -1872,7 +1972,8 @@ static void CreateStatus()	{
     pHertz = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-150, 2 );
 	panelStatus->add( pHertz );
 
-    pArduino = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-300, 2 );
+    logf((char*)"** CreateStatus()  panelSatuts  %d", width);
+    pArduino = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-300, 2 );
 	panelStatus->add( pArduino );
 
     pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 80, 2 );
@@ -2209,10 +2310,14 @@ void init_var()
     var.set("xSuivi", xSuivi);
     var.set("ySuivi", ySuivi);
     
+    /*
     var.set("xPanelStdOut",  panelStdOutW->getX() );
     var.set("yPanelStdOut",  panelStdOutW->getY() );
     var.set("dxPanelStdOut", panelStdOutW->getDX() );
     var.set("dyPanelStdOut", panelStdOutW->getDY() );
+    */
+    //if ( panelStdOutW->getX() == 0 )    bAlert = true;
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2296,36 +2401,6 @@ void charge_var()
 	cam_mgr.active();
 
     getSuiviParameter();
-
-
-    /*    
-    var.set( "bPanelControl", bPanelControl );
-    var.set( "bPanelHelp", bPanelHelp );
-    var.set( "bPanelResultat", bPanelResultat );
-    var.set( "bPanelStdOut", bPanelStdOut );
-    var.set( "bPanelSerial", bPanelSerial );
-    var.set("bAfficheVec", bAfficheVec);
-
-    var.set( "err", err );
-
-    var.set("bPause", bPause);
-    var.set("bFull", bFull);
-
-    var.set("courbe1", courbe1);
-    var.set("delta_courbe1", delta_courbe1);
-    var.set("courbe2", courbe2);
-    var.set("delta_courbe2", delta_courbe2);
-
-    var.set("vecAD[0].x", vecAD[0].x);
-    var.set("vecAD[0].y", vecAD[0].y);
-    var.set("vecAD[1].x", vecAD[1].x);
-    var.set("vecAD[1].y", vecAD[1].y);
-
-    var.set("vecDC[0].x", vecAD[0].x);
-    var.set("vecDC[0].y", vecAD[0].y);
-    var.set("vecDC[1].x", vecAD[1].x);
-    var.set("vecDC[1].y", vecAD[1].y);
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2358,13 +2433,13 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    width = glutGet(GLUT_SCREEN_WIDTH);
-    height = glutGet(GLUT_SCREEN_HEIGHT);
+    width = getScreenDX() - 100;
+    height = getScreenDY() - 40;
     
-    cout <<"Screen size "<< glutGet(GLUT_SCREEN_WIDTH) <<"x"<< glutGet(GLUT_SCREEN_HEIGHT) << endl;
+    cout <<"Screen size "<< getScreenDX() <<"x"<< getScreenDY() << endl;
 
-	xPos = (glutGet(GLUT_SCREEN_WIDTH)-width)/2;
-	yPos = (glutGet(GLUT_SCREEN_HEIGHT)-height)/2;
+	xPos = 1200 + (getScreenDX()-width)/2;
+	yPos = (getScreenDY()-height)/2;
 
 	glutInitWindowPosition(xPos, yPos);
 	glutInitWindowSize( width, height );
@@ -2379,7 +2454,7 @@ int main(int argc, char **argv)
 	glutIdleFunc(idleGL);
 
 	
-	cout << "Ecran   wxh " << glutGet(GLUT_SCREEN_WIDTH) << "x" << glutGet(GLUT_SCREEN_HEIGHT) << endl;
+	cout << "Ecran   wxh " << getScreenDX() << "x" << getScreenDY() << endl;
 	cout << "Fenetre x,y wxh "<< xPos <<","<< yPos <<" " << width << "x" << height << endl;
 
 	glutKeyboardFunc(glutKeyboardFunc);

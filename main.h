@@ -55,6 +55,15 @@ struct readBackground
 };
 
 
+void                alertBox( string mes );
+void                alertBoxQuit();
+
+int                 getScreenDX();
+int                 getScreenDY();
+
+int                 getWidth();
+int                 getHeight();
+
 vector<string>&     getExclude();
 float               hms2rad( struct hms& );
 float               dms2rad( struct dms& );

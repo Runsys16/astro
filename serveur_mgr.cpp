@@ -57,7 +57,7 @@ void Serveur_mgr::traite_connexion2()
 
     while( 1)
     {
-        n = read(sock_stellarium,buffer,255);
+        n = read(sock_ref,buffer,255);
 
         if (n <= 0)
         {
@@ -110,10 +110,10 @@ void Serveur_mgr::traite_connexion2()
 
     }
     
-    logf( (char*)"Fermeture du sock_stellarium %d", sock_stellarium );
-    close(sock_stellarium);
+    logf( (char*)"Fermeture du sock_ref %d", sock_ref );
+    close(sock_ref);
 
-    sock_stellarium = -1;
+    sock_ref = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -153,12 +153,12 @@ void Serveur_mgr::thread_listen_2()
 	listen(sock_2, 5);
 	while (1) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_stellarium = accept(sock_2, (struct sockaddr *) & adresse, & longueur);
+		sock_ref = accept(sock_2, (struct sockaddr *) & adresse, & longueur);
 
-		if (sock_stellarium < 0)			continue;
+		if (sock_ref < 0)			continue;
 		
 		logf( (char*)"********** SOCKET 2*************" );
-		logf( (char*)"       sock = %d  sock_2 = %d", sock_2, sock_stellarium );
+		logf( (char*)"       sock = %d  sock_2 = %d", sock_2, sock_ref );
 		logf( (char*)"********** SUCCES 2*************" );
 		//exit(EXIT_SUCCESS);
 		traite_connexion2();
@@ -185,7 +185,7 @@ void Serveur_mgr::traite_connexion1()
 
     while( 1)
     {
-        n = read(sock_ref,buffer,255);
+        n = read(sock_stellarium,buffer,255);
 
         if (n <= 0)
         {
@@ -239,10 +239,10 @@ void Serveur_mgr::traite_connexion1()
 
     }
     
-    logf( (char*)"Fermeture du sock_ref %d", sock_ref);
-    close(sock_ref);
+    logf( (char*)"Fermeture du sock_stellarium %d", sock_stellarium);
+    close(sock_stellarium);
 
-    sock_ref = -1;
+    sock_stellarium = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -282,12 +282,12 @@ void Serveur_mgr::thread_listen_1()
 	listen(sock_1, 5);
 	while (1) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_ref = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
+		sock_stellarium = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
 
-		if (sock_ref < 0)			continue;
+		if (sock_stellarium < 0)			continue;
 		
 		logf( (char*)"********** SOCKET 1*************" );
-		logf( (char*)"       sock = %d  sock_2 = %d", sock_1, sock_ref );
+		logf( (char*)"       sock = %d  sock_2 = %d", sock_1, sock_stellarium );
 		logf( (char*)"********** SUCCES 1*************" );
 		//exit(EXIT_SUCCESS);
 		traite_connexion1();
@@ -311,7 +311,8 @@ void Serveur_mgr::start_1()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::write_stellarium(char* s)
 {
-    write( sock_stellarium, s, 24 );
+    if ( sock_stellarium != -1 )
+        write( sock_stellarium, s, 24 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
