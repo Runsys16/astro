@@ -390,6 +390,7 @@ void Camera::change_background_camera(void)
     //bFreePtr = false;
     if ( bChargingCamera )
     {
+        //log((char*)"START Camera::change_background_camera()");
         panelPreview->deleteBackground();
         try
         {

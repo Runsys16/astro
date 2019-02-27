@@ -116,6 +116,47 @@ void Connexion_mgr::sup_port()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+/*
+void Connexion_mgr::sup_port(string)
+{
+    int nb0 = t_port_polling.size();
+    int nb1 = t_port_current.size();
+    
+    bool bFound = false;
+    
+    for( int i=0; i<nb1; i++ )
+    {
+        bFound = false;
+        for( int j=0; j<nb0; j++ )
+        {
+            if ( t_port_current[i].find( t_port_polling[j] ) != std::string::npos )
+            {
+                bFound = true;
+            }
+        }
+        if ( !bFound )
+        {
+            if ( t_port_current[i].find("video") != string::npos )
+            {
+                logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
+                Camera_mgr::getInstance().sup( t_port_current[i] );
+                t_port_current.erase(  t_port_current.begin() + i );
+            }
+            else if ( t_port_current[i].find("ttyACM") != string::npos )
+            {
+                logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
+                Serial::getInstance().sclose();
+                t_port_current.erase(  t_port_current.begin() + i );
+                change_arduino(false);
+            }
+            return;
+        }
+    }
+}
+*/
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Connexion_mgr::pooling()
 {
     sleep(1);

@@ -44,7 +44,7 @@ void Capture::pooling()
     
     struct dirent *lecture;
     DIR *rep;
-    string dirname = "/home/rene/Documents/astronomie/capture/2019-02-25/m45/";
+    string dirname = "/home/rene/Documents/astronomie/capture/2019-02-27/ic434/final/";
     rep = opendir( dirname.c_str() );
     filenames.clear();
     
@@ -78,8 +78,8 @@ void Capture::create_preview()	{
 	panelPreview = new PanelWindow();
 
     int x, y, dx, dy;
-    dx = getWidth() - 100;
-    dy = getHeight()- 100;
+    dx = getWidth() - 20;
+    dy = getHeight()- 20;
 
     readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
     panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);

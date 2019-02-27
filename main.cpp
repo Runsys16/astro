@@ -1048,7 +1048,7 @@ static void idleGL(void)
         var.set("dxPanelStdOut", panelStdOutW->getDX() );
         var.set("dyPanelStdOut", panelStdOutW->getDY() );
         
-        if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
+        //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
 
 
@@ -1296,6 +1296,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case '0':
+        Camera_mgr::getInstance().sup("video1");
+        log( (char*)"Sup camera !!!" );
+        break;
     case '1':
         Camera_mgr::getInstance().togglePanel();
         log( (char*)"Toggle panelCamera !!!" );
