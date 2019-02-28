@@ -3,7 +3,6 @@
 
 
 static int                      num;
-
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -15,12 +14,18 @@ Capture::Capture()
     pooling();
 
     if ( filenames.size() != 0 )
+    {
         num = ++num % filenames.size();
+        filename = string( filenames[num] );
+    }
     else
-        num = 0;
+    {
+        filename = "";
+        num = -1;
+    }
 
-    filename = string( filenames[num] );
     create_preview();
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -39,12 +44,9 @@ Capture::~Capture()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::pooling()
 {
-    sleep(1);
-    //logf( (char*)"Connexion_mgr::pooling()" );
-    
     struct dirent *lecture;
     DIR *rep;
-    string dirname = "/home/rene/Documents/astronomie/capture/2019-02-27/ic434/final/";
+    string dirname = getCurrentDirectory();
     rep = opendir( dirname.c_str() );
     filenames.clear();
     
@@ -81,22 +83,31 @@ void Capture::create_preview()	{
     dx = getWidth() - 20;
     dy = getHeight()- 20;
 
-    readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
-    panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
-	
-    float ratioX = (float)dx / (float)readBgr.w;
-    float ratioY = (float)dy / (float)readBgr.h;
-    if  ( ratioX < ratioY ) 
+    if ( filename.length() !=  0 )
     {
-        dx = readBgr.w * ratioX;
-        dy = readBgr.h * ratioX;
+        readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+        panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+    
+	
+        float ratioX = (float)dx / (float)readBgr.w;
+        float ratioY = (float)dy / (float)readBgr.h;
+        if  ( ratioX < ratioY ) 
+        {
+            dx = readBgr.w * ratioX;
+            dy = readBgr.h * ratioX;
+        }
+        else
+        {
+            dx = readBgr.w * ratioY;
+            dy = readBgr.h * ratioY;
+        }
     }
     else
     {
-        dx = readBgr.w * ratioY;
-        dy = readBgr.h * ratioY;
+        dx = 800;
+        dy = 30;
+        filename = "pas de fichier dans " + getCurrentDirectory();
     }
-    
     x = (getWidth()-dx)/2;
     y = (getHeight()-dy)/2;
     

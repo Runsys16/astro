@@ -78,7 +78,12 @@ alert_box.o: alert_box.cpp alert_box.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o serial.o connexion_mgr.o panel_console_serial.o console.o serveur_mgr.o  capture.o var_mgr.o alert_box.o
+file_browser.o: file_browser.cpp file_browser.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+
+$(BIN_NAME): main.o v4l2.o control.o timer.o camera.o camera_mgr.o pleiade.o serial.o connexion_mgr.o panel_console_serial.o console.o serveur_mgr.o  capture.o var_mgr.o alert_box.o file_browser.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 

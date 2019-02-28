@@ -11,7 +11,7 @@
 #include "capture.h"
 #include "var_mgr.h"
 #include "alert_box.h"
-
+#include "file_browser.h"
 
 //#define DEBUG 1
 #define SIZEPT  20
@@ -23,6 +23,10 @@
 //
 //--------------------------------------------------------------------------------------------------------------------
 VarManager& var = VarManager::getInstance();
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+string              currentDirectory;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -99,6 +103,7 @@ bool                bPanelSerial   = false;
 bool                bAfficheVec    = false;
 bool                bMouseDeplace  = false;
 bool                bRestauration  = false;
+bool                bFileBrowser   = false;
 
 int                 wImg;
 int                 hImg;
@@ -203,6 +208,20 @@ static void usage(FILE *fp, int argc, char **argv)
                  "-e | --exc           Exclude device\n"
                  "",
                  argv[0] );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+string getCurrentDirectory()
+{
+    return currentDirectory;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void setCurrentDirectory( string mes )
+{
+    currentDirectory = mes;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1285,6 +1304,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             
         }
         break;
+
+    case 'f':  // '-'
+        {
+        bFileBrowser = !bFileBrowser;
+        
+        if ( bFileBrowser )         FileBrowser::getInstance().affiche();
+        else                        FileBrowser::getInstance().cache();
+        }
+        break;
+
 
     case 'p':  // '-'
         {
@@ -2499,6 +2528,8 @@ int main(int argc, char **argv)
     
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
+    
+    FileBrowser::getInstance();
     
     compute_matrix();
     glutMainLoop();

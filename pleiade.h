@@ -14,7 +14,9 @@ protected:
     bool                        bChargingPleiades;
     bool                        bFreePtr;
     bool                        bFirst;
-    char                        sPleiade[255];
+    //char                        sPleiade[255];
+    string                      sPleiade;
+    string                      sPleiades;
     struct readBackground       readB;
     
     GLubyte*                    ptr;

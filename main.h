@@ -55,6 +55,9 @@ struct readBackground
 };
 
 
+string              getCurrentDirectory();
+void                setCurrentDirectory(string);
+
 void                alertBox( string mes );
 void                alertBoxQuit();
 

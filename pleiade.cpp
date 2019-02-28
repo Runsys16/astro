@@ -9,11 +9,14 @@ Pleiade::Pleiade()
     logf((char*)"----------- Constructeur Pleiade() -----------" );
     
     bChargingPleiades = true;
-    char  sTmp[] = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
     
-    sprintf( sPleiade, "%s", sTmp );
+    //char  sTmp[] = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
 //                      0123456789012345678901234567890123456789012345678901234567890123456789
 //                      00        10        20        30        40        50        60        -
+    //sprintf( sPleiade, "%s", sTmp );
+
+    sPleiades = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-";
+    sPleiade = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
 
     ptr = NULL;
 
@@ -80,16 +83,6 @@ void Pleiade::change_background_camera(void)
         if (bFreePtr && ptr!=NULL)   free(ptr);
         //bFreePtr = false;
 
-        char num[] = "000";
-        
-        sprintf( num, "%03d", count_png );
-        pCamFilename->changeText( num );
-        //logf((char*)" num =  %s", (char*)num );
-        //logf((char*)" namefile =  %s", (char*)sPleiade );
-        sPleiade[56] = num[0];
-        sPleiade[57] = num[1];
-        sPleiade[58] = num[2];
-
         unsigned int w, h, d;
 
 
@@ -113,6 +106,19 @@ void Pleiade::change_background_camera(void)
 
 
         //thread_chargement_pleiade = startThread();
+
+        char num[] = "000";
+        
+        sprintf( num, "%03d", count_png );
+        pCamFilename->changeText( num );
+        //logf((char*)" num =  %s", (char*)num );
+        //logf((char*)" namefile =  %s", (char*)sPleiade );
+        //sPleiade[56] = num[0];
+        //sPleiade[57] = num[1];
+        //sPleiade[58] = num[2];
+        sPleiade = sPleiades + string(num) + ".png";
+        
+
         thread_chargement_pleiade = std::thread(&Pleiade::threadExtractImgPleiade, this);
         thread_chargement_pleiade.detach();
 
