@@ -55,6 +55,8 @@ struct readBackground
 };
 
 
+void                photo();
+
 string              getCurrentDirectory();
 void                setCurrentDirectory(string);
 

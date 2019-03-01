@@ -27,6 +27,7 @@ protected:
     vector<string>              tDirNames;
     vector<string>              tFileNames;
     
+    string                      workingDir;
     string                      currentDir;
  
     int                         x, y, dx, dy;
@@ -46,10 +47,14 @@ public :
     vector<string>&             getFilesNames()                     { return tFileNames; }
     
     inline string               getCurrentDir()                     { return currentDir; }
+    inline string               getWorkingDir()                     { return workingDir; }
+    inline string               setCurrentDir(string s)             { currentDir = s; }
     
     void                        addImage( string, PanelSimple*, int, int);
+    
     inline void                 affiche()                           { pW->setVisible(true); }
     inline void                 cache()                             { pW->setVisible(false); }
+    inline bool                 getVisible()                        { return pW->getVisible(); }
     
     //void                        quit();
 

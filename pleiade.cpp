@@ -8,7 +8,7 @@ Pleiade::Pleiade()
 {
     logf((char*)"----------- Constructeur Pleiade() -----------" );
     
-    bChargingPleiades = true;
+    bCharged = true;
     
     //char  sTmp[] = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
 //                      0123456789012345678901234567890123456789012345678901234567890123456789
@@ -27,24 +27,24 @@ Pleiade::Pleiade()
     vCameraSize.y = 1080;
     bFreePtr = false;
     bFirst = true;
-    bChargingPleiades=false;
+    bCharged=false;
     count_png = 0;
     plus = 1;
     bNewBackground = false; 
 
-    thread_chargement_pleiade = std::thread(&Pleiade::threadExtractImgPleiade, this);
-    //thread_chargement_pleiade = startThread();
-    thread_chargement_pleiade.detach();
+    charge_background();
+    change_background_camera();
+    //bFreePtr = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Pleiade::threadExtractImgPleiade()
+void Pleiade::charge_background()
 {
-    //logf((char*)"Pleiade::threadExtractImgPleiade() start %s", (char*)getName());
+    //logf((char*)"Pleiade::charge_background() start %s", (char*)getName());
     readB.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, readB.w, readB.h, readB.d );
 
-    bChargingPleiades = true;
+    bCharged = true;
     bFreePtr = true;
     //logf((char*)"Camera::threadExtractImg()  stop %ld", readB.ptr);
 }
@@ -54,7 +54,7 @@ void Pleiade::threadExtractImgPleiade()
 std::thread Pleiade::startThread()
 {
     //logf((char*)"Pleiade::startThread() %s", (char*) getName() );
-    return std::thread(&Pleiade::threadExtractImgPleiade, this); 
+    return std::thread(&Pleiade::charge_background, this); 
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -65,7 +65,7 @@ void Pleiade::change_background_camera(void)
     
    //if ( pthread_chargement )   delete pthread_chargement;
 
-    if ( bChargingPleiades && !bFirst ) 
+    if ( bCharged && !bFirst ) 
     {
         panelPreview->deleteBackground();
         
@@ -119,10 +119,10 @@ void Pleiade::change_background_camera(void)
         sPleiade = sPleiades + string(num) + ".png";
         
 
-        thread_chargement_pleiade = std::thread(&Pleiade::threadExtractImgPleiade, this);
+        thread_chargement_pleiade = std::thread(&Pleiade::charge_background, this);
         thread_chargement_pleiade.detach();
 
-        bChargingPleiades = false;
+        bCharged = false;
 
         //log((char*)"***************************change_background_pleiade()");
     }

@@ -11,7 +11,7 @@ class Pleiade : public Camera
 {
 protected:
     thread                      thread_chargement_pleiade;
-    bool                        bChargingPleiades;
+    bool                        bCharged;
     bool                        bFreePtr;
     bool                        bFirst;
     //char                        sPleiade[255];
@@ -30,7 +30,7 @@ public :
 
     virtual void                change_background_camera();
 
-    void                        threadExtractImgPleiade();
+    void                        charge_background();
     std::thread                 startThread();
     virtual GLubyte*            getPtr();
     virtual bool                haveNewFrame();

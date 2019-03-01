@@ -6,17 +6,32 @@ static int                      num;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+bool fct_tri_capture(string i, string j)
+{
+    return (i.compare(j) < 0);
+}
+string old_dir = "";
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 Capture::Capture()
 {
     logf((char*)"----------- Constructeur Capture() -----------" );
 
 
+    if ( old_dir != getCurrentDirectory() )
+    {
+        old_dir = getCurrentDirectory();
+        num = 0;
+    }
+    
     pooling();
 
     if ( filenames.size() != 0 )
     {
-        num = ++num % filenames.size();
+        num = num % filenames.size();
         filename = string( filenames[num] );
+        num++;
     }
     else
     {
@@ -48,6 +63,12 @@ void Capture::pooling()
     DIR *rep;
     string dirname = getCurrentDirectory();
     rep = opendir( dirname.c_str() );
+    if ( rep == NULL )
+    {
+        logf( (char*)"[Erreur] Impossible de charger le repertoire : " );
+        logf( (char*)"[Erreur] %s", (char*)dirname.c_str() );
+    }
+    
     filenames.clear();
     
     
@@ -65,6 +86,8 @@ void Capture::pooling()
         }
         
     }
+
+    sort( filenames.begin(), filenames.end(), fct_tri_capture );
 
     closedir(rep);    
 }

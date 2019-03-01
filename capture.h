@@ -3,6 +3,7 @@
 
 #include "camera.h"
 #include <dirent.h>
+#include <algorithm>
 
 #include <WindowsManager.h>
 #include "main.h"

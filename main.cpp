@@ -212,6 +212,13 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void photo()
+{
+    system( "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli -o test -t 1");
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 string getCurrentDirectory()
 {
     return currentDirectory;
@@ -1307,6 +1314,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'f':  // '-'
         {
+        bFileBrowser = FileBrowser::getInstance().getVisible();
         bFileBrowser = !bFileBrowser;
         
         if ( bFileBrowser )         FileBrowser::getInstance().affiche();
@@ -1322,6 +1330,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         if ( bPause )   pStatus->changeText((char*)"Pause" );
         else            pStatus->changeText((char*)"-----" );
+        }
+        break;
+    case 'P':  // '-'
+        {
+        photo();
         }
         break;
 

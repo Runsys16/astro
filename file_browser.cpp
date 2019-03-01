@@ -57,6 +57,18 @@ void cb_file_release_left( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 void cb_ok_release_left( int x, int y )
 {
+    logf( (char*)"Nouveau repertoire d'image : " );
+    FileBrowser& fb = FileBrowser::getInstance();
+    fb.setCurrentDir( fb.getWorkingDir() );
+    logf( (char*)"  %s", (char*)fb.getCurrentDir().c_str() );
+    setCurrentDirectory( fb.getCurrentDir() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void cb_quit_release_left( int x, int y )
+{
+    FileBrowser::getInstance().cache();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -65,7 +77,7 @@ vector<string> explode(const string& s, const char& c)
 {
 	string buff = "";
 	vector<string> v;
-	cout << "expplode" << endl;
+	//cout << "explode" << endl;
 	for(int i=0; i<s.size(); i++)
 	{
 		if(s[i] != c)
@@ -76,7 +88,7 @@ vector<string> explode(const string& s, const char& c)
 
 		if(s[i] == c && buff != "")
 		{
-		    cout << buff << endl;
+		    //cout << buff << endl;
 		    v.push_back(buff);
 		    buff = "";
 		}
@@ -92,10 +104,11 @@ FileBrowser::FileBrowser()
 {
     logf( (char*)"----------- Constructeur filebrowser() -----------" );
 
-    currentDir = "/home/rene/Documents/astronomie/logiciel/script/image/";
+    workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/";
+    currentDir = string(workingDir);
 
     pW              = new PanelWindow();
-	panelDirName    = new PanelText( (char*)currentDir.c_str(),		PanelText::NORMAL_FONT, 20, 10 );
+	panelDirName    = new PanelText( (char*)workingDir.c_str(),		PanelText::NORMAL_FONT, 20, 10 );
     panelDir        = new PanelSimple();
     panelFile       = new PanelSimple();
     panelOK         = new PanelButton();
@@ -118,24 +131,31 @@ FileBrowser::FileBrowser()
 	pW->add(panelQuit);
     
     panelDirName->setPosAndSize( 0, 0, dx, DY);
-    panelDir->setPosAndSize( 0, 20, 150, dy-20-50);
-    panelFile->setPosAndSize( 150, 20, dx-150, dy-20-20);
-    panelOK->setPosAndSize( 10, dy-20, 100, 20);
-    panelQuit->setPosAndSize( 200, dy-20, 100, 20);
+    panelDir->setPosAndSize( 0, 20, 150, dy-25-50);
+    panelFile->setPosAndSize( 150, 20, dx-150, dy-25-20);
     
-    panelOK->setUp(   (char*)"over.tga" );
-    panelOK->setDown( (char*)"over.tga" );
-    panelOK->setOver( (char*)"down.tga" );
+    panelOK->setPosAndSize( (dx)/3-54/2, dy-20, 54, 20);
+    panelQuit->setPosAndSize( 2*(dx)/3-54/2, dy-20, 54, 20);
+    
+    panelDir->setScissor(true);
+    panelFile->setScissor(true);
+    
+    panelOK->setUp(   (char*)"ok_over.tga" );
+    panelOK->setDown( (char*)"ok_over.tga" );
+    panelOK->setOver( (char*)"ok_down.tga" );
 
-    panelQuit->setUp(   (char*)"over.tga" );
-    panelQuit->setDown( (char*)"over.tga" );
-    panelQuit->setOver( (char*)"down.tga" );
+    panelQuit->setUp(   (char*)"quit_over.tga" );
+    panelQuit->setDown( (char*)"quit_over.tga" );
+    panelQuit->setOver( (char*)"quit_down.tga" );
 
     panelDir->setClickLeft( (click_left_cb_t) &cb_dir_click_left );
     panelDir->setReleaseLeft( (click_left_cb_t) &cb_dir_release_left );
     panelFile->setReleaseLeft( (click_left_cb_t) &cb_file_release_left );
     
-    explore_dir( currentDir );
+    panelQuit->setReleaseLeft( (release_left_cb_t) &cb_quit_release_left );
+    panelOK->setReleaseLeft( (release_left_cb_t) &cb_ok_release_left );
+
+    explore_dir( workingDir );
     
     WindowsManager::getInstance().add( pW );
     
@@ -149,8 +169,8 @@ void FileBrowser::explore_dir( string dirname )
     DIR *rep;
     PanelText *     pT;
 
-    currentDir = dirname;
-    setCurrentDirectory( dirname );
+    workingDir = dirname;
+    //setWorkingDire( dirname );
     panelDirName->changeText( dirname );
     rep = opendir( dirname.c_str() );
 
@@ -220,7 +240,7 @@ void FileBrowser::change_dir( int n )
     {
         string s = tDirNames[n];
         
-        vector<string> split = explode(currentDir, '/');
+        vector<string> split = explode(workingDir, '/');
 
         dirname = "";
         for( int i=0; i<split.size()-1; i++ ) { dirname = dirname + "/" + split[i]; cout <<  dirname << endl;}
@@ -228,7 +248,7 @@ void FileBrowser::change_dir( int n )
         
     }
     else
-        dirname = currentDir + dirname + "/";
+        dirname = workingDir + dirname + "/";
     
     logf( (char*)"'%s'", (char*)dirname.c_str() );
 
