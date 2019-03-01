@@ -48,6 +48,7 @@ PanelText*          B;
 PanelText*          L;
 PanelText*          SP;
 PanelText*          pArduino;
+PanelText*          pStellarium;
 PanelText*          pAD;
 PanelText*          pDC;
 PanelText*          pMode;
@@ -104,6 +105,7 @@ bool                bAfficheVec    = false;
 bool                bMouseDeplace  = false;
 bool                bRestauration  = false;
 bool                bFileBrowser   = false;
+bool                bStellarium    = false;
 
 int                 wImg;
 int                 hImg;
@@ -214,7 +216,24 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 void photo()
 {
-    system( "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli -o test -t 1");
+    string filename = " -o /home/rene/Documents/astronomie/logiciel/k200d/test";
+    string iso = " -i 100";
+    string time = " -t 1";
+    string frames = " -F 2";
+    string timeout = " --timeout=3";
+    string focus = " -f";
+    string command = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli";
+    //command = command + filename + iso + time + timeout;
+    command = command + focus + timeout + filename;
+    logf( (char*) command.c_str() );
+    
+    int ret = system( (char*) command.c_str() );
+    if ( ret != 0 )
+    {
+        string mes = "Erreur de commande Pentax Valeur retourne : " +  to_string(ret);
+        alertBox(mes);
+        logf( (char*)mes.c_str() );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1061,7 +1080,20 @@ static void idleGL(void)
     if ( bAlert )
     {
         bAlert = false;
-        tAlert.push_back( new AlertBox( sAlert ) );
+        AlertBox* p = new AlertBox( sAlert );
+        tAlert.push_back( p );
+        p->onTop();
+    }
+    
+    if ( Serveur_mgr::getInstance().isConnect() )
+    {
+       bStellarium = true;
+       pStellarium->changeText( (char*)"Stellarium" );
+    }
+    else
+    {
+       bStellarium = false;
+       pStellarium->changeText( (char*)"---" );
     }
     
 
@@ -1388,6 +1420,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             delete p;
             captures.pop_back();
         }
+        }
+        break;
+    case 'Q':
+        {
+            Serveur_mgr::getInstance().close_all();
         }
         break;
     case 'A':
@@ -2022,6 +2059,9 @@ static void CreateStatus()	{
     pArduino = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-300, 2 );
 	panelStatus->add( pArduino );
 
+    pStellarium = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-230, 2 );
+	panelStatus->add( pStellarium );
+
     pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 80, 2 );
 	panelStatus->add( pAD );
     pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 200, 2 );
@@ -2038,6 +2078,8 @@ static void CreateStatus()	{
     if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
     else                        pAsservi->changeText((char*)" ");
 
+    if ( bStellarium )          pStellarium->changeText( (char*)"Stellarium" );
+    else                        pStellarium->changeText( (char*)"---" );
 
 
 
@@ -2067,7 +2109,7 @@ static void CreateStdOut()	{
     dy = var.geti("dyPanelStdOut");
 
     if ( x<= 0 )        x = 10;
-    if ( dx<= 1000 )    dx = 350;
+    if ( dx<= 100 )     dx = 350;
     if ( y<= 0 )        y = 10;
     if ( dy<= 100 )     dy = 400;
 
@@ -2542,6 +2584,9 @@ int main(int argc, char **argv)
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
     
+    // Pre-Charge la texture pour eviter un bug
+    WindowsManager::getInstance().loadResourceImage( "file.png" );
+    WindowsManager::getInstance().loadResourceImage( "dir.png" );
     FileBrowser::getInstance();
     
     compute_matrix();

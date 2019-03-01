@@ -17,7 +17,15 @@ string old_dir = "";
 Capture::Capture()
 {
     logf((char*)"----------- Constructeur Capture() -----------" );
+    logf((char*)"  old_dir : %s", (char*)old_dir.c_str() );
 
+    if ( getCurrentDirectory() == "" )
+    {
+        logf( (char*)"[Erreur] Impossible de charger le repertoire : " );
+        logf( (char*)"[Erreur] Veuillez fermer la fenetre touch'8'" );
+        create_preview();
+        return;
+    }
 
     if ( old_dir != getCurrentDirectory() )
     {
@@ -95,7 +103,8 @@ void Capture::pooling()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::create_preview()	{
-    logf((char*)"----------- CreatePreview ------------- %s", (char*)filename.c_str() );
+    logf((char*)"----------- CreatePreview -------------" );
+    logf((char*)"-- %s", (char*)filename.c_str() );
 
 	WindowsManager& wm = WindowsManager::getInstance();
 

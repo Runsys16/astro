@@ -21,7 +21,7 @@ PanelConsoleSerial::PanelConsoleSerial()
     int dx = var.geti("dxPanelSerial");
     int dy = var.geti("dyPanelSerial");
     if ( x<= 0 )        x = 10;
-    if ( dx<= 1000 )    dx = 500;
+    if ( dx<= 100 )     dx = 500;
     if ( y<= 0 )        y = 10;
     if ( dy<= 100 )     dy = 700;
 	pw->setPosAndSize( x, y, dx, dy );

@@ -196,7 +196,7 @@ void Camera_mgr::resize(int width, int height)
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::onBottom()
 {
-    if ( pCurrent )            
+    if ( pCurrent && pCurrent->getPanelPreview() )            
         WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
 
     /*

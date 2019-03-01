@@ -37,7 +37,7 @@ protected:
 public :
     FileBrowser();
 
-    void                        explore_dir( string );
+    void                        explore_dir();
     void                        change_dir( int );
     
     bool                        isInsideDir(int, int);
@@ -48,11 +48,11 @@ public :
     
     inline string               getCurrentDir()                     { return currentDir; }
     inline string               getWorkingDir()                     { return workingDir; }
-    inline string               setCurrentDir(string s)             { currentDir = s; }
+    inline string               setCurrentDir(string s)             { currentDir = string(s); }
     
     void                        addImage( string, PanelSimple*, int, int);
     
-    inline void                 affiche()                           { pW->setVisible(true); }
+    void                        affiche();
     inline void                 cache()                             { pW->setVisible(false); }
     inline bool                 getVisible()                        { return pW->getVisible(); }
     

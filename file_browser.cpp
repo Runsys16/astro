@@ -58,10 +58,16 @@ void cb_file_release_left( int x, int y )
 void cb_ok_release_left( int x, int y )
 {
     logf( (char*)"Nouveau repertoire d'image : " );
+    
     FileBrowser& fb = FileBrowser::getInstance();
-    fb.setCurrentDir( fb.getWorkingDir() );
-    logf( (char*)"  %s", (char*)fb.getCurrentDir().c_str() );
-    setCurrentDirectory( fb.getCurrentDir() );
+    
+    string s = fb.getWorkingDir();
+    //fb.setCurrentDir( s );
+    
+    logf( (char*)"  %s", (char*)s.c_str() );
+    setCurrentDirectory( s );
+    
+    fb.cache();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -105,6 +111,7 @@ FileBrowser::FileBrowser()
     logf( (char*)"----------- Constructeur filebrowser() -----------" );
 
     workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/";
+    //workingDir = "/home/rene/programmes/";
     currentDir = string(workingDir);
 
     pW              = new PanelWindow();
@@ -129,10 +136,15 @@ FileBrowser::FileBrowser()
     pW->add(panelFile);
 	pW->add(panelOK);
 	pW->add(panelQuit);
+
+	pW->add( new PanelText( (char*)"Filename : ",		PanelText::NORMAL_FONT, 5, 0 ) );
+	pW->add( new PanelText( (char*)"Directory : ",		PanelText::NORMAL_FONT, 5, 15 ) );
+
+
     
-    panelDirName->setPosAndSize( 0, 0, dx, DY);
-    panelDir->setPosAndSize( 0, 20, 150, dy-25-50);
-    panelFile->setPosAndSize( 150, 20, dx-150, dy-25-20);
+    panelDirName->setPosAndSize( 80, 15, dx, DY);
+    panelDir->setPosAndSize( 0, 20+30, 150, dy-25-50-30);
+    panelFile->setPosAndSize( 150, 20+30, dx-150, dy-25-20-30);
     
     panelOK->setPosAndSize( (dx)/3-54/2, dy-20, 54, 20);
     panelQuit->setPosAndSize( 2*(dx)/3-54/2, dy-20, 54, 20);
@@ -155,7 +167,7 @@ FileBrowser::FileBrowser()
     panelQuit->setReleaseLeft( (release_left_cb_t) &cb_quit_release_left );
     panelOK->setReleaseLeft( (release_left_cb_t) &cb_ok_release_left );
 
-    explore_dir( workingDir );
+    explore_dir();
     
     WindowsManager::getInstance().add( pW );
     
@@ -163,16 +175,14 @@ FileBrowser::FileBrowser()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void FileBrowser::explore_dir( string dirname )
+void FileBrowser::explore_dir()
 {
     struct dirent *lecture;
     DIR *rep;
     PanelText *     pT;
 
-    workingDir = dirname;
-    //setWorkingDire( dirname );
-    panelDirName->changeText( dirname );
-    rep = opendir( dirname.c_str() );
+    rep = opendir( (char*)workingDir.c_str() );
+    panelDirName->changeText( string(workingDir) );
 
     int xd, yd, xf, yf;
     xd = xf = 8+16;
@@ -263,7 +273,8 @@ void FileBrowser::change_dir( int n )
     tFileNames.clear();
         
     logf( (char*)" Explore %s", (char*)dirname.c_str() );
-    explore_dir( dirname );
+    workingDir = dirname;
+    explore_dir(  );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -309,16 +320,14 @@ void FileBrowser::addImage( string s, PanelSimple* p, int x, int y)
     pImage->setBackground( (char*)s.c_str() );
     p->add(pImage);
 }
-
-
-
-
-
-
-
-
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::affiche()
+{
+    pW->setVisible(true);
+    WindowsManager::getInstance().onTop( pW );
+}
 
 
 

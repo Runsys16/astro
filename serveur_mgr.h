@@ -68,6 +68,8 @@ public:
     
     void                        close_all();
     
+inline bool                     isConnect()                             { return sock_stellarium!=-1; }
+    
     
 protected:
     std::thread                 th_1;

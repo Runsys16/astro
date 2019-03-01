@@ -18,7 +18,8 @@ protected:
 
 public :
     AlertBox(string);
-
+    
+    void                        onTop();
     void                        quit();
 
 };

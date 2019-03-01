@@ -11,6 +11,7 @@ Serveur_mgr::Serveur_mgr()
     traite_1 = true;
     traite_2 = true;
 
+    sock_stellarium = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -151,6 +152,18 @@ void Serveur_mgr::thread_listen_2()
 		perror("getsockname");
 		exit(EXIT_FAILURE);
 	}
+
+
+    int option = 1;
+    if(setsockopt(sock_2,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
+    {
+        printf("setsockopt failed\n");
+        close(sock_2);
+        exit(2);
+
+    }
+
+
     logf( (char*)"---------------------------------------------------------------");
 	logf( (char*)"Mon adresse : IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf( (char*)"---------------------------------------------------------------");
@@ -280,6 +293,17 @@ void Serveur_mgr::thread_listen_1()
 		perror("getsockname");
 		exit(EXIT_FAILURE);
 	}
+
+    int option = 1;
+    if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
+    {
+        printf("setsockopt failed\n");
+        close(sock_1);
+        exit(2);
+
+    }
+
+
     logf( (char*)"---------------------------------------------------------------");
 	logf( (char*)"Mon adresse : IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf( (char*)"---------------------------------------------------------------");
@@ -331,14 +355,15 @@ void Serveur_mgr::close_all()
     traite_1 = false;
     traite_2 = false;
 
-    //sleep(10);
 
-    if ( sock_stellarium!= -1 )         close(sock_stellarium);
-    if ( sock_ref!= -1 )                close(sock_ref);
+    sleep(1);
 
-    if ( sock_1!= -1 )                  close(sock_1);
-    if ( sock_2!= -1 )                  close(sock_2);
+    if ( sock_stellarium!= -1 )         shutdown(sock_stellarium, 2);
+    if ( sock_ref!= -1 )                shutdown(sock_ref, 2);
+
     
+    if ( sock_1!= -1 )                  shutdown(sock_1, 2);
+    if ( sock_2!= -1 )                  shutdown(sock_2, 2);
     //sleep(1);
     
     sock_1          = -1;
