@@ -106,6 +106,7 @@ static void         idleGL(void);
 static void         quit(void);
 static void         initGL(int argc, char **argv);
 static void         rotateVisible();
+static void         rotate_capture();
 
 static void         glutKeyboardFunc(unsigned char key, int x, int y);
 static void         glutKeyboardUpFunc(unsigned char key, int x, int y);

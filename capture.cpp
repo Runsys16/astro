@@ -111,15 +111,30 @@ void Capture::create_preview()	{
 	//panelPreview = new PanelSimple();
 	panelPreview = new PanelWindow();
 
+    readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+    panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+
+    resize( getWidth(), getHeight() );
+
+	pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
+	panelPreview->add( pTitre );
+	
+	
+ 	wm.add( panelPreview );
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::resize(int w, int h )
+{
     int x, y, dx, dy;
-    dx = getWidth() - 20;
-    dy = getHeight()- 20;
+
+    dx = w - 20;
+    dy = h - 20;
 
     if ( filename.length() !=  0 )
     {
-        readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
-        panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
-    
 	
         float ratioX = (float)dx / (float)readBgr.w;
         float ratioY = (float)dy / (float)readBgr.h;
@@ -144,18 +159,58 @@ void Capture::create_preview()	{
     y = (getHeight()-dy)/2;
     
     panelPreview->setPosAndSize( x, y, dx, dy );
-
-
-	pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
-	panelPreview->add( pTitre );
-	
-	
- 	wm.add( panelPreview );
-
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Capture::resize(int x, int y, int w, int h )
+{
+    int dx, dy;
+
+    dx = w;
+    dy = h;
+
+    if ( filename.length() !=  0 )
+    {
+        float ratioX = (float)dx / (float)readBgr.w;
+        float ratioY = (float)dy / (float)readBgr.h;
+        if  ( ratioX < ratioY ) 
+        {
+            dx = (float)readBgr.w * ratioX;
+            dy = (float)readBgr.h * ratioX;
+
+            //dx = readBgr.w * ratioX;
+            //dy = readBgr.h * ratioX;
+        }
+        else
+        {
+            dx = (float)readBgr.w * ratioY;
+            dy = (float)readBgr.h * ratioY;
+        }
+    }
+    else
+    {
+        dx = 800;
+        dy = 30;
+        filename = "pas de fichier dans " + getCurrentDirectory();
+    }
+    
+    panelPreview->setPosAndSize( x, y, dx, dy );
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::onTop()
+{
+    WindowsManager::getInstance().onTop( panelPreview );
+}
+
+
 
 
 

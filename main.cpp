@@ -176,6 +176,7 @@ bool                bAlert = false;
 string              sAlert;
 
 vector<Capture*>    captures;
+int                 current_capture;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -802,6 +803,11 @@ static void reshapeGL(int newWidth, int newHeight)
 	    width = newWidth;
 	    height = newHeight;
     }
+    else
+    {
+        width = getScreenDX();
+        height = getScreenDY();
+    }
     Camera_mgr::getInstance().resize( newWidth, newHeight );
     //cout << "reshapeGL("<< newWidth <<" "<< newHeight <<")"<< endl;
 }
@@ -1138,9 +1144,14 @@ static void idleGL(void)
 	else 	{
 		elapsedTime = time - prevTime;
 		prevTime = time;
-		WindowsManager::getInstance().idleGL( elapsedTime );
 	}
+    WindowsManager::getInstance().idleGL( elapsedTime );
 	
+    //------------------------------------------------------
+    //------------------------------------------------------
+	// CALCUL DE L' ASSERVISSEMENT
+    //------------------------------------------------------
+    //------------------------------------------------------
 	if ( elapsedTime != -1 )
 	{
 	    fTimeCorrection += elapsedTime;
@@ -1167,8 +1178,12 @@ static void idleGL(void)
 	        }
 	    }
 	}
-
+    //------------------------------------------------------
+    //------------------------------------------------------
     PanelConsoleSerial::getInstance().idleGL();
+    WindowsManager::getInstance().onTop(panelStatus);
+    WindowsManager::getInstance().idleGL( elapsedTime );
+    
 
     //Camera_mgr::getInstance().idleGL();
 	glutPostRedisplay();
@@ -1214,9 +1229,55 @@ static void rotateVisible()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+static void rotate_capture()
+{
+    int n = captures.size();
+
+    if ( n == 0 )           return;
+    
+    WindowsManager& wm = WindowsManager::getInstance();
+    
+    current_capture = ++current_capture % n;
+    int dx, dy, dxi, dyi;
+    float ratio = (float)width/(float)height;
+    
+    dxi = width / 6;
+    dyi = height / 6;
+
+    dx = width - dxi;
+    dy = height; 
+
+
+    int DY;
+    if ( n>1 )      DY = height / (n-1);    
+    else            DY = height / (n);    
+    int y=10;
+
+    for (int i=0; i<n; i++ )
+    {
+        Capture* p = captures[i];
+        
+        if ( i==current_capture )
+        {
+            p->resize(10,10,dx-20,dy-20);
+            p->onTop();
+        }
+        else
+        {
+            p->resize(dx+10,y+10,dxi-20,dyi-20);
+            p->onTop();
+            y += DY;
+        }
+    } 
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //std::cout << (int)key << std::endl;
-
+	int modifier = glutGetModifiers();
+    
     if (tAlert.size() != 0 )
     {
         if ( bQuit )   
@@ -1247,6 +1308,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
+    	if (modifier == GLUT_ACTIVE_CTRL)
+    	{
+    	    rotate_capture();
+    	    break;
+    	}
 	    logf( (char*)"-------------- Touche 'TAB'" );
 		Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 		cam_mgr.active();
@@ -1371,45 +1437,67 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 
     case '0':
+        {
         Camera_mgr::getInstance().sup("video1");
         log( (char*)"Sup camera !!!" );
+        }
         break;
     case '1':
+        {
         Camera_mgr::getInstance().togglePanel();
         log( (char*)"Toggle panelCamera !!!" );
+        }
         break;
     case '2':
+        {
         bPanelHelp = !bPanelHelp;
         var.set("bPanelHelp", bPanelHelp);
         panelHelp->setVisible(bPanelHelp);
+        WindowsManager::getInstance().onTop(panelHelp);
         log( (char*)"Toggle panelHelp !!!" );
+        }
         break;
     case '3':
+        {
         bPanelResultat = !bPanelResultat;
         var.set("bPanelResultat", bPanelResultat);
         panelResultat->setVisible(bPanelResultat);
+        WindowsManager::getInstance().onTop(panelResultat);
         log( (char*)"Toggle panelResultat !!!" );
+        }
         break;
     case '4':
+        {
         bPanelCourbe = !bPanelCourbe;
         var.set("bPanelCourbe", bPanelCourbe);
         panelCourbe->setVisible(bPanelCourbe);
+        WindowsManager::getInstance().onTop(panelCourbe);
         log( (char*)"Toggle panelCourbe !!!" );
+        }
         break;
     case '5':
+        {
         bPanelStdOut = !bPanelStdOut;
         var.set("bPanelStdOut", bPanelStdOut);
         panelStdOutW->setVisible(bPanelStdOut);
+        WindowsManager::getInstance().onTop(panelStdOutW);
         log( (char*)"Toggle panelStdOut !!!" );
+        }
         break;
     case '6':
+        {
         bPanelSerial = !bPanelSerial;
         var.set("bPanelSerial", bPanelSerial);
-        PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
+        PanelWindow* p = PanelConsoleSerial::getInstance().getWindow();
+        p->setVisible( bPanelSerial );
+        WindowsManager::getInstance().onTop(p);
         log( (char*)"Toggle serial !!!" );
+        }
         break;
     case '7':
+        {
         captures.push_back( new Capture() );
+        }
         break;
     case '8':
         {

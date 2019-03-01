@@ -31,8 +31,10 @@ public :
     
     void                        pooling();
     void                        create_preview();
+    void                        resize(int,int);
+    void                        resize(int,int,int,int);
 
-
+    void                        onTop();
 };
 
 

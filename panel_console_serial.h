@@ -42,6 +42,7 @@ inline PanelConsole*                getConsole()                { return pc; }
 
 inline bool                         getVisible()                { return pw->getVisible(); }
 inline void                         setVisible(bool b)          { bVisible=b;  pw->setVisible(b); }
+inline PanelWindow*                 getWindow()                 { return pw; }
     
 protected:
 
@@ -54,8 +55,7 @@ protected:
     float                           ad_change;
     float                           dc_change;
 
-
-    
+   
 SINGLETON_END()
 
 //--------------------------------------------------------------------------------------------------------------------
