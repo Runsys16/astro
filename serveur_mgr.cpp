@@ -251,7 +251,7 @@ void Serveur_mgr::traite_connexion1()
         logf( (char*)"  Declin : %02d:%02d:%0.2f (%0.4f)", (int)DMS.d, (int)DMS.m, DMS.s, dc);
         
         char cmd[255];
-        sprintf( cmd, "Ma;a%f;d%f", RAD2DEG(ra), RAD2DEG(dc) );
+        sprintf( cmd, "A%f;D%f", RAD2DEG(ra), RAD2DEG(dc) );
         //sprintf( cmd, "a%f;d%f", RAD2DEG(ra), RAD2DEG(dc) );
         Serial::getInstance().write_string(cmd);
 

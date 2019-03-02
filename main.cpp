@@ -1172,7 +1172,7 @@ static void idleGL(void)
                 int ad = (int) (res.x * -1000.0);
                 int dc = (int) (res.y * 1000.0);
                 char cmd[255];
-                sprintf( cmd, "Mr;a%dp;d%dp", ad, dc );
+                sprintf( cmd, "a%dp;d%dp", ad, dc );
                 //logf( (char*)"**** Asservissement -> '%s'",  cmd );
                 Serial::getInstance().write_string(cmd);
 	        }
@@ -1180,8 +1180,8 @@ static void idleGL(void)
 	}
     //------------------------------------------------------
     //------------------------------------------------------
-    PanelConsoleSerial::getInstance().idleGL();
     WindowsManager::getInstance().onTop(panelStatus);
+    PanelConsoleSerial::getInstance().idleGL();
     WindowsManager::getInstance().idleGL( elapsedTime );
     
 
@@ -1229,38 +1229,53 @@ static void rotateVisible()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-static void rotate_capture()
+static void rotate_capture(bool bIcones)
 {
     int n = captures.size();
 
     if ( n == 0 )           return;
-    
+       
     WindowsManager& wm = WindowsManager::getInstance();
     
     current_capture = ++current_capture % n;
     int dx, dy, dxi, dyi;
     float ratio = (float)width/(float)height;
     
-    dxi = width / 6;
-    dyi = height / 6;
+    dxi = width / 8;
+    dyi = height  / 6;
 
     dx = width - dxi;
     dy = height; 
 
-
+    int j = current_capture;
     int DY;
+
+    if ( !bIcones )         n++;
+
     if ( n>1 )      DY = height / (n-1);    
     else            DY = height / (n);    
+
+    if ( !bIcones )         n--;
+
     int y=10;
 
     for (int i=0; i<n; i++ )
     {
-        Capture* p = captures[i];
+        Capture* p = captures[j];
         
-        if ( i==current_capture )
+        if ( j==current_capture )
         {
-            p->resize(10,10,dx-20,dy-20);
-            p->onTop();
+            if ( bIcones )
+            {
+                p->resize(10,10,dx-20,dy-20);
+                p->onTop();
+            }
+            else
+            {
+                p->resize(dx+10,y+10,dxi-20,dyi-20);
+                p->onTop();
+                y += DY;
+            }
         }
         else
         {
@@ -1268,6 +1283,7 @@ static void rotate_capture()
             p->onTop();
             y += DY;
         }
+        j = ++j % n;
     } 
     
 }
@@ -1310,7 +1326,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		{
     	if (modifier == GLUT_ACTIVE_CTRL)
     	{
-    	    rotate_capture();
+    	    rotate_capture(true);
     	    break;
     	}
 	    logf( (char*)"-------------- Touche 'TAB'" );
@@ -1360,6 +1376,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             log( (char*)"NormalScreen !!!" );
 		}
     	break;
+    case 'q':
+    	{
+	    rotate_capture(false);
+    	}
+	    break;
+    
     case 'O':
     	bAutorisationSuivi = !bAutorisationSuivi;
         var.set("bAutorisationSuivi", bAutorisationSuivi);
@@ -1553,7 +1575,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
 
         char cmd[255];
-        sprintf( cmd, "Mr;a-1000p" );
+        sprintf( cmd, "a-1000p" );
         //logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
         }
@@ -1602,7 +1624,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"DC[0] (%0.2f,%0.2f)", vecDC[0].x, vecDC[0].y );
 
         char cmd[255];
-        sprintf( cmd, "Mr;d1000p" );
+        sprintf( cmd, "d1000p" );
         //logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
         }
@@ -1804,7 +1826,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
         int ad = (int) (vTr.x * -1000.0);
         int dc = (int) (vTr.y * 1000.0);
         char cmd[255];
-        sprintf( cmd, "Mr;a%dp;d%dp", ad, dc );
+        sprintf( cmd, "a%dp;d%dp", ad, dc );
         //logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
 	}
