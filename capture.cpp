@@ -130,8 +130,8 @@ void Capture::resize(int w, int h )
 {
     int x, y, dx, dy;
 
-    dx = w - 20;
-    dy = h - 20;
+    dx = w ;
+    dy = h ;
 
     if ( filename.length() !=  0 )
     {

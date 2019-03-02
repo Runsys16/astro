@@ -62,6 +62,8 @@ PanelText*          pHertz;
 PanelText*          pFPS;
 PanelText *         pStatus;
 
+Pleiade*            pPleiade;
+
 float               ac;
 float               dc;
 
@@ -106,6 +108,7 @@ bool                bMouseDeplace  = false;
 bool                bRestauration  = false;
 bool                bFileBrowser   = false;
 bool                bStellarium    = false;
+bool                bPleiade       = false;
 
 int                 wImg;
 int                 hImg;
@@ -757,6 +760,7 @@ void change_fov( void )
 //--------------------------------------------------------------------------------------------------------------------
 static void displayGL(void)
 {
+    //logf( (char*)"*** DISPLAY GL ***" );
 	WindowsManager::getInstance().clearBufferGL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	
@@ -1074,6 +1078,7 @@ void getSuiviParameter(void)
 //--------------------------------------------------------------------------------------------------------------------
 static void idleGL(void)
 {
+    //logf( (char*)"*** IDLE GL ***" );
     Timer&          timer = Timer::getInstance();
 	float time = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
 
@@ -1250,12 +1255,12 @@ static void rotate_capture(bool bIcones)
     int j = current_capture;
     int DY;
 
-    if ( !bIcones )         n++;
+    if ( bIcones )         n++;
 
     if ( n>1 )      DY = height / (n-1);    
     else            DY = height / (n);    
 
-    if ( !bIcones )         n--;
+    if ( bIcones )         n--;
 
     int y=10;
 
@@ -1265,7 +1270,7 @@ static void rotate_capture(bool bIcones)
         
         if ( j==current_capture )
         {
-            if ( bIcones )
+            if ( !bIcones )
             {
                 p->resize(10,10,dx-20,dy-20);
                 p->onTop();
@@ -1292,7 +1297,9 @@ static void rotate_capture(bool bIcones)
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //std::cout << (int)key << std::endl;
+    //logf( (char*)"*** KEYBOARD GL ***" );
 	int modifier = glutGetModifiers();
+        bFileBrowser = FileBrowser::getInstance().getVisible();
     
     if (tAlert.size() != 0 )
     {
@@ -1307,7 +1314,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     
     if ( PanelConsoleSerial::getInstance().keyboard(key, x, y) )      return;;
 
-    //WindowsManager::getInstance().keyboardFunc( key, x, y);
+    if ( bFileBrowser )
+    {
+        FileBrowser::getInstance().keyboard( key, x, y);
+        return;
+    }
 
 
 
@@ -1326,35 +1337,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		{
     	if (modifier == GLUT_ACTIVE_CTRL)
     	{
-    	    rotate_capture(true);
-    	    break;
+	        logf( (char*)"-------------- Touche 'TAB'" );
+		    Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+		    cam_mgr.active();
+
+            getSuiviParameter();
+            break;
     	}
-	    logf( (char*)"-------------- Touche 'TAB'" );
-		Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
-		cam_mgr.active();
 
-        getSuiviParameter();
-        /*
-        xCam = cam_mgr.get_xCam();
-        yCam = cam_mgr.get_yCam();
-        dxCam = cam_mgr.get_dxCam();
-        dyCam = cam_mgr.get_dyCam();
-    
-        vCameraSize.x = 1920.0;
-        vCameraSize.y = 1080;
-        vCameraSize = cam_mgr.get_vCameraSize();
 
-        //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
-        //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
-        rw = (float)vCameraSize.x/(float)dxCam;
-        rh = (float)vCameraSize.y/(float)dyCam;
-		
-	    logf( (char*)"vCameraSize.x=%d vCameraSize.y=%d" , vCameraSize.x, vCameraSize.y );
-	    logf( (char*)"width=%d height=%d" , width, height );
-	    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d", xCam, yCam, dxCam, dyCam );
-	    logf( (char*)"rw=%0.2f rh=%0.2f" , rw, rh );
-	    */
-		//change_cam();
+	    rotate_capture(false);
         }
 		break;
 	case 10:
@@ -1378,17 +1370,38 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	break;
     case 'q':
     	{
-	    rotate_capture(false);
+	    rotate_capture(true);
     	}
 	    break;
     
+    case 'o':
+        {
+        if ( !bPleiade )
+        {
+            if ( pPleiade == NULL )             pPleiade = new Pleiade();
+            Camera_mgr::getInstance().add( pPleiade );
+            bPleiade = true;
+        }
+        else
+        {
+            //*
+            Camera_mgr::getInstance().sup( pPleiade );
+            bPleiade = false;
+            pPleiade = NULL;
+            //delete pPleiade;
+            //*/
+        }
+        }
+    	break;
+
     case 'O':
+        {
     	bAutorisationSuivi = !bAutorisationSuivi;
         var.set("bAutorisationSuivi", bAutorisationSuivi);
 
         if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
         else                            pMode->changeText((char*)"Mode souris");
-
+        }
     	break;
 
     case 'l':
@@ -2368,7 +2381,9 @@ void parse_option( int argc, char**argv )
                     break;
             case 'p':
                 {
-                Camera_mgr::getInstance().add( new Pleiade() );
+                pPleiade = new Pleiade();
+                Camera_mgr::getInstance().add( pPleiade );
+                bPleiade = true;
                 }
                 break;
     

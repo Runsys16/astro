@@ -120,7 +120,10 @@ FileBrowser::FileBrowser()
     panelFile       = new PanelSimple();
     panelOK         = new PanelButton();
     panelQuit       = new PanelButton();
+    panelFilename   = new PanelEditText();
     
+    //WindowsManager::getInstance().call_back_keyboard( panelFilename );
+
     
     dx = 700;
     dy = 600;
@@ -136,6 +139,7 @@ FileBrowser::FileBrowser()
     pW->add(panelFile);
 	pW->add(panelOK);
 	pW->add(panelQuit);
+	pW->add(panelFilename);
 
 	pW->add( new PanelText( (char*)"Filename : ",		PanelText::NORMAL_FONT, 5, 0 ) );
 	pW->add( new PanelText( (char*)"Directory : ",		PanelText::NORMAL_FONT, 5, 15 ) );
@@ -149,6 +153,8 @@ FileBrowser::FileBrowser()
     panelOK->setPosAndSize( (dx)/3-54/2, dy-20, 54, 20);
     panelQuit->setPosAndSize( 2*(dx)/3-54/2, dy-20, 54, 20);
     
+    panelFilename->setPosAndSize( 80, 0, 400, 20);
+
     panelDir->setScissor(true);
     panelFile->setScissor(true);
     
@@ -327,6 +333,52 @@ void FileBrowser::affiche()
 {
     pW->setVisible(true);
     WindowsManager::getInstance().onTop( pW );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool FileBrowser::keyboard(char key, int x, int y)
+{
+    logf( (char*)"Traitement FileBrowser::keyboard()" );
+    WindowsManager& wm = WindowsManager::getInstance();
+
+    /*
+    if ( wm.getFocus() != pW )
+    {
+        wm.stopKeyboard();
+        //logf( (char*)"PAS Traitement PanelConsoleSerial::keyboard()" );
+        return false;
+    }
+    */
+    
+    wm.startKeyboard();
+    WindowsManager::getInstance().keyboardFunc( key, x, y);
+    //logf( (char*)"Traitement PanelConsoleSerial::keyboard()" );
+    
+	switch(key){ 
+	
+	case 27:
+	    {
+        logf( (char*)"Echappe" );
+        cache();
+        return false;
+	    }
+	    break;
+	case 13:
+	    {
+        logf( (char*)"Echappe" );
+        cb_ok_release_left(0,0);
+	    }
+	    break;
+
+    default:
+        {
+        //logf((char*)"key: %d", key);
+        }
+        break;
+	}
+    
+    return true;
 }
 
 

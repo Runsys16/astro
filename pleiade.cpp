@@ -28,6 +28,7 @@ Pleiade::Pleiade()
     bFreePtr = false;
     bFirst = true;
     bCharged=false;
+    bCharging = false;
     count_png = 0;
     plus = 1;
     bNewBackground = false; 
@@ -39,15 +40,29 @@ Pleiade::Pleiade()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+Pleiade::~Pleiade()
+{
+    logf( (char*)"----------- Destructeur ~Pleiade() -----------" );
+    //if ( thread_chargement_pleiade )  
+    //while( bCharging );
+         
+    //thread_chargement_pleiade.join();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Pleiade::charge_background()
 {
+    bCharging = true;
     //logf((char*)"Pleiade::charge_background() start %s", (char*)getName());
     readB.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, readB.w, readB.h, readB.d );
 
+    bCharging = false;
     bCharged = true;
     bFreePtr = true;
     //logf((char*)"Camera::threadExtractImg()  stop %ld", readB.ptr);
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -56,6 +71,7 @@ std::thread Pleiade::startThread()
     //logf((char*)"Pleiade::startThread() %s", (char*) getName() );
     return std::thread(&Pleiade::charge_background, this); 
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

@@ -12,6 +12,7 @@ class Pleiade : public Camera
 protected:
     thread                      thread_chargement_pleiade;
     bool                        bCharged;
+    bool                        bCharging;
     bool                        bFreePtr;
     bool                        bFirst;
     //char                        sPleiade[255];
@@ -27,6 +28,7 @@ protected:
 
 public :
     Pleiade();
+    ~Pleiade();
 
     virtual void                change_background_camera();
 

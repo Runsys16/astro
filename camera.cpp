@@ -20,7 +20,7 @@ Camera::~Camera()
     
     WindowsManager& vm = WindowsManager::getInstance();
 
-    panelPreview->deleteBackground();
+    //panelPreview->deleteBackground();
 
     vm.sup( panelPreview );
     vm.sup( panelControl );

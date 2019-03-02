@@ -33,7 +33,7 @@ protected:
     ivec2                        vCameraSize;
 
 public :
-    ~Camera();
+virtual    ~Camera();
     Camera();
     Camera(int, int);
     

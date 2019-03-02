@@ -21,6 +21,8 @@ protected:
     PanelButton*                panelOK;
     PanelButton*                panelQuit;
 
+    PanelEditText*              panelFilename;
+    
     vector<PanelText*>          lDirs;
     vector<PanelText*>          lFile;
     
@@ -53,6 +55,10 @@ public :
     void                        addImage( string, PanelSimple*, int, int);
     
     void                        affiche();
+    bool                        keyboard(char key, int x, int y);
+
+
+
     inline void                 cache()                             { pW->setVisible(false); }
     inline bool                 getVisible()                        { return pW->getVisible(); }
     
