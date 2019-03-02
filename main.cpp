@@ -1322,7 +1322,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
 
 
-	Control* pControl;
 	
 	switch(key){ 
 	

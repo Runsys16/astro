@@ -175,7 +175,9 @@ FileBrowser::FileBrowser()
 
     explore_dir();
     
-    WindowsManager::getInstance().add( pW );
+    WindowsManager& wm = WindowsManager::getInstance();
+    wm.add( pW );
+    wm.sup_call_back_keyboard( panelFilename );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -331,8 +333,30 @@ void FileBrowser::addImage( string s, PanelSimple* p, int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::affiche()
 {
+    WindowsManager& wm = WindowsManager::getInstance();
+
     pW->setVisible(true);
-    WindowsManager::getInstance().onTop( pW );
+    wm.onTop( pW );
+    wm.changeFocus( panelFilename );
+
+    if ( !wm.is_call_back_keyboard( panelFilename ) )
+    {
+        logf( (char*)"Ajout callback" );
+        wm.call_back_keyboard( panelFilename );
+        wm.startKeyboard();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::cache()
+{
+    WindowsManager& wm = WindowsManager::getInstance();
+
+    pW->setVisible(false);
+
+    while ( wm.is_call_back_keyboard(panelFilename) )
+        wm.sup_call_back_keyboard( panelFilename );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -342,14 +366,23 @@ bool FileBrowser::keyboard(char key, int x, int y)
     logf( (char*)"Traitement FileBrowser::keyboard()" );
     WindowsManager& wm = WindowsManager::getInstance();
 
-    /*
-    if ( wm.getFocus() != pW )
+    if ( !wm.is_call_back_keyboard( panelFilename ) )
     {
-        wm.stopKeyboard();
-        //logf( (char*)"PAS Traitement PanelConsoleSerial::keyboard()" );
+        logf( (char*)"Ajout callback" );
+        wm.call_back_keyboard( panelFilename );
+        wm.startKeyboard();
+    }
+
+    Panel* p = wm.getFocus();
+    
+    if ( p != panelFilename )
+    {
+        //wm.stopKeyboard();
+        while ( wm.is_call_back_keyboard(panelFilename) )
+            wm.sup_call_back_keyboard( panelFilename );
+        logf( (char*)"PAS Traitement PanelConsoleSerial::keyboard()" );
         return false;
     }
-    */
     
     wm.startKeyboard();
     WindowsManager::getInstance().keyboardFunc( key, x, y);
@@ -366,7 +399,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
 	    break;
 	case 13:
 	    {
-        logf( (char*)"Echappe" );
+        logf( (char*)"ENTRE" );
         cb_ok_release_left(0,0);
 	    }
 	    break;
@@ -377,7 +410,6 @@ bool FileBrowser::keyboard(char key, int x, int y)
         }
         break;
 	}
-    
     return true;
 }
 

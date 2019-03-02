@@ -55,11 +55,9 @@ public :
     void                        addImage( string, PanelSimple*, int, int);
     
     void                        affiche();
+    void                        cache();
     bool                        keyboard(char key, int x, int y);
 
-
-
-    inline void                 cache()                             { pW->setVisible(false); }
     inline bool                 getVisible()                        { return pW->getVisible(); }
     
     //void                        quit();

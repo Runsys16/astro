@@ -34,7 +34,10 @@ PanelConsoleSerial::PanelConsoleSerial()
     
     pc->setBackground((char*)"background.tga");
 
-    WindowsManager::getInstance().add(pw);
+    WindowsManager& wm = WindowsManager::getInstance();
+    
+    wm.add(pw);
+    wm.sup_call_back_keyboard( pc );
     
     ad = -1.0;
     dc = -1.0;
@@ -52,13 +55,22 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
 {
     WindowsManager& wm = WindowsManager::getInstance();
 
-    if ( wm.getFocus() != pc )
+    if ( !wm.is_call_back_keyboard( pc ) )
     {
-        wm.stopKeyboard();
-        //logf( (char*)"PAS Traitement PanelConsoleSerial::keyboard()" );
+        logf( (char*)"Ajout callback" );
+        wm.call_back_keyboard( pc );
+        wm.startKeyboard();
+    }
+
+    Panel* p = wm.getFocus();
+    if ( p != pc )
+    {
+        //wm.stopKeyboard();
+        wm.sup_call_back_keyboard( pc );
+        logf( (char*)"PAS Traitement PanelConsoleSerial::keyboard()" );
         return false;
     }
-    
+
     wm.startKeyboard();
     WindowsManager::getInstance().keyboardFunc( key, x, y);
     //logf( (char*)"Traitement PanelConsoleSerial::keyboard()" );
@@ -68,6 +80,7 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
 	case 27:
 	    {
         logf( (char*)"Echappe" );
+        wm.sup_call_back_keyboard( pc );
         return false;
 	    }
 	    break;
