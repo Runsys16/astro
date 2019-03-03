@@ -1756,6 +1756,24 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         alertBox( "TEST ALERT BOX" );
         }
         break;
+    case 'e' :
+        {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            captures[n-1]->setEchelle( 0.8*captures[n-1]->getEchelle() );
+        }
+        }
+        break;
+    case 'E' :
+        {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            captures[n-1]->setEchelle( 1.0/0.8*captures[n-1]->getEchelle() );
+        }
+        }
+        break;
     default:
         {
         logf((char*)"key: %d", key);

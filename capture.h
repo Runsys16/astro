@@ -7,6 +7,7 @@
 
 #include <WindowsManager.h>
 #include "main.h"
+#include "panel_capture.h"
 
 
 
@@ -20,7 +21,8 @@ protected:
     vector<string>              filenames;
     string                      filename;
     
-    PanelWindow*                panelPreview;
+    PanelWindow*                pW;
+    PanelCapture*               panelPreview;
     PanelText*                  pTitre;
     
     struct readBackground       readBgr;
@@ -36,6 +38,10 @@ public :
     void                        resize(int,int,int,int);
 
     void                        onTop();
+
+inline void             setEchelle(float f)                         { panelPreview->setEchelle(f); }
+inline float            getEchelle()                                { return panelPreview->getEchelle(); }
+
 };
 
 

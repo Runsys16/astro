@@ -69,9 +69,10 @@ Capture::~Capture()
 {
     logf((char*)"----------- Destructeur Capture() -----------" );
 
-	WindowsManager::getInstance().sup( panelPreview );
+	WindowsManager::getInstance().sup( pW );
 	delete pTitre;
 	delete panelPreview;
+	delete pW;
 	filenames.clear();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -121,7 +122,9 @@ void Capture::create_preview()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	//panelPreview = new PanelSimple();
-	panelPreview = new PanelWindow();
+	//panelPreview = new PanelWindow();
+    pW = new PanelWindow();
+	panelPreview = new PanelCapture();
 
     readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
     panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
@@ -132,7 +135,8 @@ void Capture::create_preview()	{
 	panelPreview->add( pTitre );
 	
 	
- 	wm.add( panelPreview );
+    pW->add(panelPreview);
+ 	wm.add( pW );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -170,7 +174,8 @@ void Capture::resize(int w, int h )
     x = (getWidth()-dx)/2;
     y = (getHeight()-dy)/2;
     
-    panelPreview->setPosAndSize( x, y, dx, dy );
+    pW->setPosAndSize( x, y, dx, dy );
+    panelPreview->setPosAndSize( 0, 0, dx, dy );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -208,7 +213,8 @@ void Capture::resize(int x, int y, int w, int h )
         filename = "pas de fichier dans " + getCurrentDirectory();
     }
     
-    panelPreview->setPosAndSize( x, y, dx, dy );
+    pW->setPosAndSize( x, y, dx, dy );
+    panelPreview->setPosAndSize( 0, 0, dx, dy );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -219,7 +225,7 @@ void Capture::resize(int x, int y, int w, int h )
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::onTop()
 {
-    WindowsManager::getInstance().onTop( panelPreview );
+    WindowsManager::getInstance().onTop( pW );
 }
 
 
