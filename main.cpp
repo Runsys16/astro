@@ -1551,11 +1551,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         }
         break;
-    case 'Q':
-        {
-            Serveur_mgr::getInstance().close_all();
-        }
-        break;
     case 'A':
         {
         if ( bAutorisationSuivi )
@@ -1756,26 +1751,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         alertBox( "TEST ALERT BOX" );
         }
         break;
-    case 'e' :
-        {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            captures[n-1]->setEchelle( 0.5*captures[n-1]->getEchelle() );
-            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
-        }
-        }
-        break;
-    case 'E' :
-        {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            captures[n-1]->setEchelle( 1.0/0.5*captures[n-1]->getEchelle() );
-            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
-        }
-        }
-        break;
     default:
         {
         logf((char*)"key: %d", key);
@@ -1802,10 +1777,12 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// right
 	case 102:	
 	    {
+	    logf( (char*)"Touche right !!" );
         int n = captures.size();
         if ( n != 0 )
         {
-            captures[n-1]->setEchelle( captures[n-1]->getEchelle() + 10 );
+            float m = captures[n-1]->getDX() + 10.0;
+            captures[n-1]->setDX( m );
         }
 		}
 		break;
@@ -1815,19 +1792,59 @@ static void glutSpecialFunc(int key, int x, int y)	{
         int n = captures.size();
         if ( n != 0 )
         {
-            captures[n-1]->setEchelle( captures[n-1]->getEchelle() - 10 );
+            float m = captures[n-1]->getDX() - 10.0;
+            captures[n-1]->setDX( m );
         }
 	    }
 		break;
 	// up
 	case 101:	
 	    {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            float m = captures[n-1]->getDY() - 10.0;
+            captures[n-1]->setDY( m );
+        }
 		}
 		break;
 	// down
 	case 103:	
 	    {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            float m = captures[n-1]->getDY() + 10.0;
+            captures[n-1]->setDY( m );
+        }
 		}	
+		break;
+	// pgup
+	case 104:	
+	    {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            captures[n-1]->setEchelle( 1.0/0.8*captures[n-1]->getEchelle() );
+            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
+        }
+		}
+		break;
+	// pgdown
+	case 105:	
+	    {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            captures[n-1]->setEchelle( 0.8*captures[n-1]->getEchelle() );
+            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
+        }
+		}	
+		break;
+	// home
+	case 106:	
+	    {
+		}
 		break;
     }
 

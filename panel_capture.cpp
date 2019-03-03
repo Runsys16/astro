@@ -21,8 +21,8 @@ void PanelCapture::displayGL()
     float x = getParent()->getX();
     float y = getParent()->getY();
 
-    x = x - x*echelle - 100;
-    y = y - y*echelle - 100;
+    x = x - x*echelle + dx;
+    y = y - y*echelle + dy;
 
     glTranslatef( x, y, 0.0 );
     glScalef( echelle, echelle, 1.0 );
