@@ -1761,7 +1761,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         int n = captures.size();
         if ( n != 0 )
         {
-            captures[n-1]->setEchelle( 0.8*captures[n-1]->getEchelle() );
+            captures[n-1]->setEchelle( 0.5*captures[n-1]->getEchelle() );
+            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
         }
         }
         break;
@@ -1770,7 +1771,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         int n = captures.size();
         if ( n != 0 )
         {
-            captures[n-1]->setEchelle( 1.0/0.8*captures[n-1]->getEchelle() );
+            captures[n-1]->setEchelle( 1.0/0.5*captures[n-1]->getEchelle() );
+            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
         }
         }
         break;
@@ -1794,6 +1796,43 @@ static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialFunc(int key, int x, int y)	{
+
+    switch( key)
+    {
+	// right
+	case 102:	
+	    {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            captures[n-1]->setEchelle( captures[n-1]->getEchelle() + 10 );
+        }
+		}
+		break;
+	// left
+	case 100:	
+	    {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            captures[n-1]->setEchelle( captures[n-1]->getEchelle() - 10 );
+        }
+	    }
+		break;
+	// up
+	case 101:	
+	    {
+		}
+		break;
+	// down
+	case 103:	
+	    {
+		}	
+		break;
+    }
+
+
+
 	WindowsManager::getInstance().keyboardSpecialFunc( key, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
 }

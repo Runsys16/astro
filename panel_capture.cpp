@@ -6,6 +6,8 @@
 PanelCapture::PanelCapture()
 {
     echelle = 1.0;
+    dx      = 0.0;
+    dy      = 0.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -19,13 +21,11 @@ void PanelCapture::displayGL()
     float x = getParent()->getX();
     float y = getParent()->getY();
 
-    
-    glScalef( echelle, echelle, 1.0 );
-    
-    x = x - x*echelle;
-    y = y - y*echelle;
+    x = x - x*echelle - 100;
+    y = y - y*echelle - 100;
 
     glTranslatef( x, y, 0.0 );
+    glScalef( echelle, echelle, 1.0 );
     
     PanelSimple::displayGL();
 

@@ -128,14 +128,14 @@ void Capture::create_preview()	{
 
     readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
     panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+    pW->add(panelPreview);
 
     resize( getWidth(), getHeight() );
 
 	pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
-	panelPreview->add( pTitre );
+	pW->add( pTitre );
 	
 	
-    pW->add(panelPreview);
  	wm.add( pW );
 
 }
