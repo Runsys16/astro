@@ -59,6 +59,7 @@ void                photo();
 
 string              getCurrentDirectory();
 void                setCurrentDirectory(string);
+void                change_file( string, string );
 
 void                alertBox( string mes );
 void                alertBoxQuit();

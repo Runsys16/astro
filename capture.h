@@ -27,6 +27,7 @@ protected:
 
 public :
     Capture();
+    Capture(string, string);
     ~Capture();
     
     void                        pooling();

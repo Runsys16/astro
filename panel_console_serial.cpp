@@ -55,21 +55,25 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
 {
     WindowsManager& wm = WindowsManager::getInstance();
 
+    Panel* p = wm.getFocus();
+    if ( p != pc )
+    {
+        while ( wm.is_call_back_keyboard(pc) )
+        {
+            logf( (char*)"PanelConsoleSerial::keyboard() suppression callback" );
+            wm.sup_call_back_keyboard( pc );
+        }    
+        wm.sup_call_back_keyboard( pc );
+        return false;
+    }
+
     if ( !wm.is_call_back_keyboard( pc ) )
     {
-        logf( (char*)"Ajout callback" );
+        logf( (char*)"PanelConsoleSerial::keyboard()   Ajout callback" );
         wm.call_back_keyboard( pc );
         wm.startKeyboard();
     }
 
-    Panel* p = wm.getFocus();
-    if ( p != pc )
-    {
-        //wm.stopKeyboard();
-        wm.sup_call_back_keyboard( pc );
-        logf( (char*)"PAS Traitement PanelConsoleSerial::keyboard()" );
-        return false;
-    }
 
     wm.startKeyboard();
     WindowsManager::getInstance().keyboardFunc( key, x, y);

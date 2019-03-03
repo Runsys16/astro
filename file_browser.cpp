@@ -5,6 +5,7 @@
 
 
 #define DY  15
+#define DXFile  250
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -232,7 +233,7 @@ void FileBrowser::explore_dir()
         addImage( "file.png", panelFile, xf-4-16, yf );
         
         yf += DY;
-        if ( yf > dy )      { xf += 250; yf = 0; }
+        if ( yf > dy )      { xf += DXFile; yf = 0; }
     }
             
     for( int i=0; i<tDirNames.size(); i++ )
@@ -316,6 +317,9 @@ bool FileBrowser::isInsideFile( int x, int y )
         return false;
     }
     logf( (char*)"OK %s ", (char*)tFileNames[n].c_str() );
+    
+    change_file( workingDir, tFileNames[n] );
+    WindowsManager::getInstance().onTop(pW);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -363,27 +367,28 @@ void FileBrowser::cache()
 //--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::keyboard(char key, int x, int y)
 {
-    logf( (char*)"Traitement FileBrowser::keyboard()" );
+    //logf( (char*)"Traitement FileBrowser::keyboard()" );
     WindowsManager& wm = WindowsManager::getInstance();
-
-    if ( !wm.is_call_back_keyboard( panelFilename ) )
-    {
-        logf( (char*)"Ajout callback" );
-        wm.call_back_keyboard( panelFilename );
-        wm.startKeyboard();
-    }
-
     Panel* p = wm.getFocus();
     
     if ( p != panelFilename )
     {
         //wm.stopKeyboard();
         while ( wm.is_call_back_keyboard(panelFilename) )
+        {
             wm.sup_call_back_keyboard( panelFilename );
-        logf( (char*)"PAS Traitement PanelConsoleSerial::keyboard()" );
+            logf( (char*)"FileBrowser::keyboard() Suppression callback" );
+        }
         return false;
     }
     
+    if ( !wm.is_call_back_keyboard( panelFilename ) )
+    {
+        logf( (char*)"FileBrowser::keyboard() Ajout callback" );
+        wm.call_back_keyboard( panelFilename );
+        wm.startKeyboard();
+    }
+
     wm.startKeyboard();
     WindowsManager::getInstance().keyboardFunc( key, x, y);
     //logf( (char*)"Traitement PanelConsoleSerial::keyboard()" );
