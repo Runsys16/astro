@@ -67,6 +67,9 @@ public:
     void                        write_stellarium( char* s);
     
     void                        close_all();
+
+inline bool                     is_running_1()                          { return sock_1 != -1; }
+inline bool                     is_running_2()                          { return sock_2 != -1; }
     
 inline bool                     isConnect()                             { return sock_stellarium!=-1; }
     

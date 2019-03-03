@@ -143,23 +143,25 @@ void Serveur_mgr::thread_listen_2()
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
 	if (bind(sock_2, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		perror("bind");
-		exit(EXIT_FAILURE);
+		logf( (char*) "[ERREUR] bind (sock_2)");
+		sock_2 = -1;
+		//exit(EXIT_FAILURE);
+		return;
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
 	if (getsockname(sock_2, (struct sockaddr *) & adresse, & longueur) < 0) {
-		perror("getsockname");
-		exit(EXIT_FAILURE);
+		logf( (char*) "[ERREUR] getsockname (sock_2)");
+		return;
 	}
 
 
     int option = 1;
     if(setsockopt(sock_2,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-        printf("setsockopt failed\n");
+		logf( (char*) "[ERREUR] setsockopt (sock_2)");
         close(sock_2);
-        exit(2);
+		return;
 
     }
 
@@ -284,23 +286,23 @@ void Serveur_mgr::thread_listen_1()
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
 	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		perror("bind");
-		exit(EXIT_FAILURE);
+		logf( (char*) "[ERREUR] bind (sock_1)");
+		sock_1 = -1;
+		return;
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
 	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
-		perror("getsockname");
-		exit(EXIT_FAILURE);
+		logf( (char*) "[ERREUR] getsockname (sock_1)");
+		return;
 	}
 
     int option = 1;
     if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-        printf("setsockopt failed\n");
+		logf( (char*) "[ERREUR] setsockopt (sock_1)");
         close(sock_1);
-        exit(2);
-
+		return;
     }
 
 

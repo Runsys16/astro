@@ -199,7 +199,13 @@ void Connexion_mgr::pooling()
     closedir(rep);    
 
     add_port();
-    sup_port();    
+    sup_port();
+    
+    /*
+    Serveur_mgr& serv = Serveur_mgr::getInstance();
+    if ( !serv.is_running_1() )             serv.start_1();
+    if ( !serv.is_running_2() )             serv.start_2();
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
