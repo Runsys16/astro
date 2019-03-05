@@ -101,6 +101,7 @@ void Capture::pooling()
         
         if (        s.find(".png") != string::npos
                ||   s.find(".jpg") != string::npos
+               ||   s.find(".tga") != string::npos
                ||   s.find(".raw") != string::npos)
         {
             string  f =  dirname + s;
