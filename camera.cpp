@@ -66,6 +66,8 @@ void Camera::init()
     
     previousTime = -1;
     startThread = false;
+
+    nb_images   = 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -134,7 +136,7 @@ void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
 
     int x = width - dx - 20;
 
-    int nb = Camera_mgr::getInstance().getNum(this);
+    int nb = Camera_mgr::getInstance().getSize();
     int y = 10+nb * (20+dy);
 
     logf((char*) "Camera::resizeControlFirst x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
@@ -186,8 +188,8 @@ void Camera::resizePreview(int width, int height)	{
 	} 
 
     
-    dxCam /= 4;
-    dyCam /= 4;
+    dxCam /= 8;
+    dyCam /= 8;
 
     logf((char*) "   Screen  : %dx%d", wsc, hsc);
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
@@ -415,10 +417,16 @@ void Camera::change_background_camera(void)
         float t = Timer::getInstance().getCurrentTime();
         if ( previousTime != -1 )
         {
-            hz = 1.0 / (t - previousTime);
+            if ( nb_images++ >= 10 )
+            {
+                hz = 10.0 / (t - previousTime);
+                previousTime = t;
+                nb_images = 0;
+            }
             //logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName() );
         }
-        previousTime = t;
+        else
+            previousTime = t;
         
         bChargingCamera = false;
      }

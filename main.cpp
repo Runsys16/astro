@@ -49,6 +49,7 @@ PanelText*          L;
 PanelText*          SP;
 PanelText*          pArduino;
 PanelText*          pStellarium;
+PanelText*          pDeplacement;
 PanelText*          pAD;
 PanelText*          pDC;
 PanelText*          pMode;
@@ -319,6 +320,13 @@ int getScreenDY()
 std::vector<string>& getExclude()
 {
     return exclude;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+float pond2mag( float ponderation )
+{
+    return  -(log( ponderation ) / log(2.0)) + 17.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -845,7 +853,7 @@ void change_hertz(float hz)
 void change_arduino(bool b)
 {
     if ( b )    pArduino->changeText((char*)"Arduino");
-    else        pArduino->changeText((char*)"");
+    else        pArduino->changeText((char*)"----");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1015,10 +1023,10 @@ void suivi(void)
         xx = point.xAverage / point.ponderation;
         yy = point.yAverage / point.ponderation;
         
-        float mag = -(log(point.ponderation ) / log(2.0)) + 17.0;
+        //float mag = -(log(point.ponderation ) / log(2.0)) + 17.0;
         //float mag = point.ponderation;
 
-        sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, mag );
+        sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, pond2mag(point.ponderation) );
         SP->changeText(sSkyPoint);
         //panelResultat->setVisible(true);
 
@@ -1111,7 +1119,7 @@ static void idleGL(void)
     else
     {
        bStellarium = false;
-       pStellarium->changeText( (char*)"---" );
+       pStellarium->changeText( (char*)"----" );
     }
     
 
@@ -1468,7 +1476,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         var.set("bPause", bPause);
 
         if ( bPause )   pStatus->changeText((char*)"Pause" );
-        else            pStatus->changeText((char*)"-----" );
+        else            pStatus->changeText((char*)"----" );
         }
         break;
     case 'P':  // '-'
@@ -1647,13 +1655,17 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'M':
         {
         compute_matrix();
-        bMouseDeplace = true;
         }
         break;
     case 'm':
         {
-        logf( (char*)"interdit le deplcament ...");
-        bMouseDeplace = false;
+        bMouseDeplace = !bMouseDeplace;
+        if ( bMouseDeplace )
+        {
+            logf( (char*)"Autorisation du deplcament par la souris (bouton du milieu) ...");
+        }
+	    if (bMouseDeplace)              pDeplacement->changeText((char*)"Deplacement");
+        else                            pDeplacement->changeText((char*)"----");
         }
         break;
     case 'y':
@@ -1708,6 +1720,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         delta_courbe2 /= 0.8;
         var.set("delta_courbe2", delta_courbe2);
+        }
+        break;
+    case 'h':
+        {
+        Camera* p = Camera_mgr::getInstance().getCurrent();
+        if ( p!=NULL )
+        {
+            p->enregistre();
+    	    logf( (char*)"Enregistre  une photo de la camera courante !!" );
+        }
         }
         break;
     case 'H':
@@ -1844,6 +1866,13 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// home
 	case 106:	
 	    {
+        int n = captures.size();
+        if ( n != 0 )
+        {
+            captures[n-1]->setEchelle( 1.0 );
+            captures[n-1]->setDX( 0.0 );
+            captures[n-1]->setDY( 0.0 );
+        }
 		}
 		break;
     }
@@ -2008,7 +2037,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
             float xx = point.xAverage / point.ponderation;
             float yy = point.yAverage / point.ponderation;
             
-            sprintf( skyPoint, "x=%0.2f, y=%0.2f, pond=%0.2f", xx, yy, point.ponderation);
+            sprintf( skyPoint, "x=%0.2f, y=%0.2f, mag=%0.2f", xx, yy, pond2mag(point.ponderation) );
 	        SP->changeText(skyPoint);
 	        //panelResultat->setVisible(true);
 
@@ -2272,17 +2301,25 @@ static void CreateStatus()	{
 
     pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 350, 2 );
 	panelStatus->add( pMode );
-	if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
-    else                            pMode->changeText((char*)"Mode souris");
  
     pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 650, 2 );
 	panelStatus->add( pAsservi );
 
-    if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
-    else                        pAsservi->changeText((char*)" ");
+    pDeplacement = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, width-410, 2 );
+	panelStatus->add( pDeplacement );
 
-    if ( bStellarium )          pStellarium->changeText( (char*)"Stellarium" );
-    else                        pStellarium->changeText( (char*)"---" );
+
+	if (bMouseDeplace)              pDeplacement->changeText((char*)"Deplacement");
+    else                            pDeplacement->changeText((char*)"----");
+
+	if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
+    else                            pMode->changeText((char*)"Mode souris");
+
+    if (bCorrection)                pAsservi->changeText((char*)"Asservissemnent");
+    else                            pAsservi->changeText((char*)" ");
+
+    if ( bStellarium )              pStellarium->changeText( (char*)"Stellarium" );
+    else                            pStellarium->changeText( (char*)"----" );
 
 
 

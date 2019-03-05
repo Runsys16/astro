@@ -2,6 +2,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+FileBrowser* FileBrowser::s_pInstance;	// Instance de la classe
 
 
 #define DY  15
@@ -111,8 +112,9 @@ FileBrowser::FileBrowser()
 {
     logf( (char*)"----------- Constructeur filebrowser() -----------" );
 
+    workingDir = "/home/rene/programmes/";
     workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/";
-    //workingDir = "/home/rene/programmes/";
+    workingDir = "/home/rene/programmes/opengl/";
     currentDir = string(workingDir);
 
     pW              = new PanelWindow();
@@ -223,11 +225,11 @@ void FileBrowser::explore_dir()
     sort( tFileNames.begin(), tFileNames.end(), fct_tri );
     sort( tDirNames.begin(), tDirNames.end(), fct_tri );
     
-    logf( (char*)"------ tFileNames -------"  );
+    //logf( (char*)"------ tFileNames -------"  );
 
     for( int i=0; i<tFileNames.size(); i++ )
     {
-        logf( (char*)"%s", (char*)tFileNames[i].c_str() );
+        //logf( (char*)"%s", (char*)tFileNames[i].c_str() );
         pT = new PanelText( (char*)tFileNames[i].c_str(),		PanelText::NORMAL_FONT, xf, yf );
         panelFile->add( pT );
         addImage( "file.png", panelFile, xf-4-16, yf );
@@ -252,7 +254,7 @@ void FileBrowser::explore_dir()
 void FileBrowser::change_dir( int n )
 {
     
-    logf( (char*)" Numero %d -> '%s'", n, (char*)tDirNames[n].c_str() );
+    //logf( (char*)" Numero %d -> '%s'", n, (char*)tDirNames[n].c_str() );
     string dirname = tDirNames[n];
     
     if ( tDirNames[n].size() ==2 && tDirNames[n][0] == '.' && tDirNames[n][1] == '.' )
@@ -262,14 +264,14 @@ void FileBrowser::change_dir( int n )
         vector<string> split = explode(workingDir, '/');
 
         dirname = "";
-        for( int i=0; i<split.size()-1; i++ ) { dirname = dirname + "/" + split[i]; cout <<  dirname << endl;}
+        for( int i=0; i<split.size()-1; i++ ) { dirname = dirname + "/" + split[i]; }
         dirname = dirname + "/";
         
     }
     else
         dirname = workingDir + dirname + "/";
     
-    logf( (char*)"'%s'", (char*)dirname.c_str() );
+    logf( (char*)"nouveau repertoire '%s'", (char*)dirname.c_str() );
 
     //-----------------------------------------    
        

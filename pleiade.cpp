@@ -141,6 +141,24 @@ void Pleiade::change_background_camera(void)
         bCharged = false;
 
         //log((char*)"***************************change_background_pleiade()");
+
+        //-------------------------------------------------------
+        // Calcul du temps
+        //-------------------------------------------------------
+        float t = Timer::getInstance().getCurrentTime();
+        if ( previousTime != -1 )
+        {
+            if ( nb_images++ >= 10 )
+            {
+                hz = 10.0 / (t - previousTime);
+                previousTime = t;
+                nb_images = 0;
+            }
+            //logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName() );
+        }
+        else
+            previousTime = t;
+        //-------------------------------------------------------
     }
     //log((char*)"change_background_pleiade()");
     if ( bFirst )       bFirst = false;

@@ -7,6 +7,7 @@
 
 #include <WindowsManager.h>
 #include "main.h"
+#include "var_mgr.h"
 
 
 

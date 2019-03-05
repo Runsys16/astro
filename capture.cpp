@@ -99,7 +99,9 @@ void Capture::pooling()
         int found;
         s = lecture->d_name;
         
-        if ( s.find(".png") != string::npos || s.find(".jpg") != string::npos)
+        if (        s.find(".png") != string::npos
+               ||   s.find(".jpg") != string::npos
+               ||   s.find(".raw") != string::npos)
         {
             string  f =  dirname + s;
             //logf( (char*)"%s", (char*)f.c_str() );

@@ -28,9 +28,9 @@ protected:
     
     float                       hz;
     float                       previousTime;
+    int                         nb_images;
 
-protected:
-    ivec2                        vCameraSize;
+    ivec2                       vCameraSize;
 
 public :
 virtual    ~Camera();
@@ -63,9 +63,6 @@ virtual    ~Camera();
     void                        togglePanel();
     
     
-    inline bool                 getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
-    inline PanelWindow *        getPanelPreview()               { return panelPreview; }
-    inline float                getHertz()                      { return hz; }
 
     virtual GLubyte*            getPtr();
     virtual bool                haveNewFrame();
@@ -76,6 +73,10 @@ virtual    ~Camera();
     int                         get_dxCam();
     int                         get_dyCam();
     ivec2                       get_vCameraSize();
+
+inline bool                     getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
+inline PanelWindow *            getPanelPreview()               { return panelPreview; }
+inline float                    getHertz()                      { return hz; }
 
     //inline int                  getFd()                         { return getFd
 };

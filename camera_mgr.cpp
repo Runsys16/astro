@@ -178,7 +178,7 @@ void Camera_mgr::keyboard( char key )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::resize(int width, int height)
 {
-
+    logf((char*)"----------- Camera_mgr::resize(%d, %d) -------------", width, height);
     for( int i=0; i<pCameras.size(); i++ )
     {
         pCameras[i]->resizeControl( width, height );
