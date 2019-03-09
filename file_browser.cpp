@@ -50,8 +50,6 @@ void cb_file_release_left( int x, int y )
     logf( (char*)"Click (%d,%d)", x, y );
     FileBrowser& fb = FileBrowser::getInstance();
     
-    int n = y/DY;
-
     fb.isInsideFile(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -113,8 +111,8 @@ FileBrowser::FileBrowser()
     logf( (char*)"----------- Constructeur filebrowser() -----------" );
 
     workingDir = "/home/rene/programmes/";
-    workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/";
     workingDir = "/home/rene/programmes/opengl/";
+    workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/";
     currentDir = string(workingDir);
 
     pW              = new PanelWindow();
@@ -226,7 +224,8 @@ void FileBrowser::explore_dir()
     sort( tDirNames.begin(), tDirNames.end(), fct_tri );
     
     //logf( (char*)"------ tFileNames -------"  );
-
+    dy = panelFile->getPosDY();
+     
     for( int i=0; i<tFileNames.size(); i++ )
     {
         //logf( (char*)"%s", (char*)tFileNames[i].c_str() );
@@ -235,7 +234,7 @@ void FileBrowser::explore_dir()
         addImage( "file.png", panelFile, xf-4-16, yf );
         
         yf += DY;
-        if ( yf > dy )      { xf += DXFile; yf = 0; }
+        if ( yf >= dy )      { xf += DXFile; yf = 0; }
     }
             
     for( int i=0; i<tDirNames.size(); i++ )
@@ -310,12 +309,17 @@ bool FileBrowser::isInsideDir( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::isInsideFile( int x, int y )
 {
-    int Y = panelFile->Screen2y(y);
-    int n = Y / DY;
+    int Y = panelFile->Screen2y(y) / DY;
+    int X = panelFile->Screen2x(x) / DXFile; 
+    
+    int m = panelFile->getPosDY() / DY;
+    int n = m*X + Y;
+
+    logf( (char*)"--- X=%d Y=%d m=%d n=%d", X, Y, m, n );
     
     if ( n >= tFileNames.size() )
     {
-        logf( (char*)"NOK" );
+        logf( (char*)"NOK X=%s Y=%d m=%d n=%d", X, Y, m, n );
         return false;
     }
     logf( (char*)"OK %s ", (char*)tFileNames[n].c_str() );
@@ -411,9 +415,35 @@ bool FileBrowser::keyboard(char key, int x, int y)
 	    }
 	    break;
 
+	case 'a':
+	    {
+	    vector<Panel*>& childs = panelDir->getChilds();
+	    for ( int i=0; i<childs.size(); i++ )
+	    {
+	        int x = childs[i]->getPosX();
+	        int y = childs[i]->getPosY() + DY;
+	        childs[i]->setPos( x, y );
+	        //logf( (char*)"Changement %d,%d", x, y );
+	    }
+	    }
+	    break;
+
+	case 'A':
+	    {
+	    vector<Panel*>& childs = panelDir->getChilds();
+	    for ( int i=0; i<childs.size(); i++ )
+	    {
+	        int x = childs[i]->getPosX();
+	        int y = childs[i]->getPosY() - DY;
+	        childs[i]->setPos( x, y );
+	        //logf( (char*)"Changement %d,%d", x, y );
+	    }
+	    }
+	    break;
+
     default:
         {
-        //logf((char*)"key: %d", key);
+        logf((char*)"FileBrowser key: %d", key);
         }
         break;
 	}
