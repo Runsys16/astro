@@ -403,51 +403,95 @@ bool FileBrowser::keyboard(char key, int x, int y)
 	
 	case 27:
 	    {
-        logf( (char*)"Echappe" );
-        cache();
+            logf( (char*)"Echappe" );
+            cache();
         return false;
 	    }
 	    break;
 	case 13:
 	    {
-        logf( (char*)"ENTRE" );
-        cb_ok_release_left(0,0);
+            logf( (char*)"ENTRE" );
+            cb_ok_release_left(0,0);
 	    }
 	    break;
 
 	case 'a':
 	    {
-	    vector<Panel*>& childs = panelDir->getChilds();
-	    for ( int i=0; i<childs.size(); i++ )
-	    {
-	        int x = childs[i]->getPosX();
-	        int y = childs[i]->getPosY() + DY;
-	        childs[i]->setPos( x, y );
-	        //logf( (char*)"Changement %d,%d", x, y );
-	    }
+            scrollDir( 1 );
 	    }
 	    break;
 
 	case 'A':
 	    {
-	    vector<Panel*>& childs = panelDir->getChilds();
-	    for ( int i=0; i<childs.size(); i++ )
-	    {
-	        int x = childs[i]->getPosX();
-	        int y = childs[i]->getPosY() - DY;
-	        childs[i]->setPos( x, y );
-	        //logf( (char*)"Changement %d,%d", x, y );
+            scrollDir( -1 );
 	    }
+	    break;
+
+	case 'b':
+	    {
+            scrollFile( 1 );
+	    }
+	    break;
+
+	case 'B':
+	    {
+            scrollFile( -1 );
 	    }
 	    break;
 
     default:
         {
-        logf((char*)"FileBrowser key: %d", key);
+            logf((char*)"FileBrowser key: %d", key);
         }
         break;
 	}
     return true;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::scrollDir( int n )
+{
+    if ( n!=1 && n!=-1 )            return;
+    
+    vector<Panel*>& childs = panelDir->getChilds();
+    for ( int i=0; i<childs.size(); i++ )
+    {
+        int x = childs[i]->getPosX();
+        int y = childs[i]->getPosY() + n * DY;
+        childs[i]->setPos( x, y );
+        logf( (char*)"Changement %d,%d", x, y );
+    }
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::scrollFile( int n )
+{
+    if ( n!=1 && n!=-1 )            return;
+    
+    vector<Panel*>& childs = panelFile->getChilds();
+    int max =  panelFile->getPosDY() / DY - 1;
+
+    for ( int i=0; i<childs.size(); i++ )
+    {
+        int x = childs[i]->getPosX();
+        int y = childs[i]->getPosY() + n * DY;
+        if ( y < 0 )
+        {
+            y = max * DY;
+            x -= DXFile;
+        }
+        if ( y > (max*DY) )
+        {
+            y = 0;
+            x += DXFile;
+        }
+        
+        childs[i]->setPos( x, y );
+        logf( (char*)"Changement %d,%d", x, y );
+    }
 }
 
 

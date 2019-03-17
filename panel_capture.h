@@ -22,10 +22,10 @@ public:
 inline void             setEchelle(float f)                         { echelle = f; }
 inline float            getEchelle()                                { return echelle; }
 
-inline void             setDX(float f)                              { dx = f; }
-inline void             setDY(float f)                              { dy = f; }
-inline float            getDX()                                     { return dx; }
-inline float            getDY()                                     { return dy; }
+inline void             setCentX(float f)                              { dx = f; }
+inline void             setCentY(float f)                              { dy = f; }
+inline float            getCentX()                                     { return dx; }
+inline float            getCentY()                                     { return dy; }
 
 protected:
     float               echelle;

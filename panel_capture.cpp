@@ -17,20 +17,29 @@ void PanelCapture::displayGL()
     //mat4 m = scale( 2.0, 2.0, 1.0 );
     float gris = 0.3;
     VarManager& var = VarManager::getInstance();
-    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
-    else                            glColor4f( gris, gris, gris, 0.2 );
+    //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
+    //else                            glColor4f( gris, gris, gris, 0.2 );
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
-    float x = getParent()->getX();
-    float y = getParent()->getY();
+    //float x = getParent()->getX();
+    //float y = getParent()->getY();
 
-    x = x - x*echelle + dx;
-    y = y - y*echelle + dy;
+    float x = getX();
+    float y = getY();
 
+    float X = -dx;
+    float Y = -dy;
+
+    glTranslatef( X, Y, 0.0 );
     glTranslatef( x, y, 0.0 );
     glScalef( echelle, echelle, 1.0 );
+    glTranslatef( -x, -y, 0.0 );
+    glTranslatef( -X, -Y, 0.0 );
+    //x = x/2;
+    //y = y/2;
+
 
     glColor4f( gris, gris, gris, 0.2 );    
     PanelSimple::displayGL();

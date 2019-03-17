@@ -40,10 +40,10 @@ public :
 
 inline void                     setEchelle(float f)                         { panelPreview->setEchelle(f); }
 inline float                    getEchelle()                                { return panelPreview->getEchelle(); }
-inline void                     setDX(float f)                              { panelPreview->setDX(f); }
-inline void                     setDY(float f)                              { panelPreview->setDY(f); }
-inline float                    getDX()                                     { return panelPreview->getDX(); }
-inline float                    getDY()                                     { return panelPreview->getDY(); }
+inline void                     setCentX(float f)                           { panelPreview->setCentX(f); }
+inline void                     setCentY(float f)                           { panelPreview->setCentY(f); }
+inline float                    getCentX()                                  { return panelPreview->getCentX(); }
+inline float                    getCentY()                                  { return panelPreview->getCentY(); }
 
 };
 

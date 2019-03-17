@@ -180,7 +180,7 @@ bool                bAlert = false;
 string              sAlert;
 
 vector<Capture*>    captures;
-int                 current_capture;
+int                 current_capture = -1;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -928,13 +928,14 @@ void charge_fichier(void)
         fichier >> output;
         fichier >> output;
         string x = string(output);
-        cout<< n++ << " - ";// << endl;;
-        cout<< x;// << endl;;
+        n++;
+        //cout<< n << " - ";// << endl;;
+        //cout<< x;// << endl;;
         
         fichier >> output;
         fichier >> output;
         string y = string(output);
-        cout<<" , "<< y << endl;;
+        //cout<<" , "<< y << endl;;
         
         if ( n > 500 && n < 3000 )
         {
@@ -1346,21 +1347,34 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    bQuit = true;
 	    }
 	     break;
+
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
-    	if (modifier == GLUT_ACTIVE_CTRL)
-    	{
-	        logf( (char*)"-------------- Touche 'TAB'" );
-		    Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
-		    cam_mgr.active();
+        	if (modifier == GLUT_ACTIVE_CTRL)
+        	{
+	            logf( (char*)"-------------- Touche CTRL+TAB" );
+		        Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+		        cam_mgr.active();
 
-            getSuiviParameter();
-            break;
-    	}
+                getSuiviParameter();
+                break;
+        	}
+        	else if (modifier == GLUT_ACTIVE_SHIFT)
+        	{
+	            static int cursor;
+	            cursor = ++cursor % 20;
+	            logf( (char*)"-------------- Touche SHIFT+TAB %04X", cursor );
+	            glutSetCursor(cursor);
+                break;
+        	}
+        	else if (modifier == GLUT_ACTIVE_ALT)
+        	{
+	            logf( (char*)"-------------- Touche ALT+TAB" );
+                break;
+        	}
 
-
-	    rotate_capture(false);
+	        rotate_capture(false);
         }
 		break;
 	case 10:
@@ -1546,6 +1560,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case '7':
         {
         captures.push_back( new Capture() );
+        current_capture = captures.size() - 1;
         }
         break;
     case '8':
@@ -1557,6 +1572,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             delete p;
             captures.pop_back();
         }
+        else
+            current_capture = -1;
         }
         break;
     case 'A':
@@ -1794,85 +1811,94 @@ static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialFunc(int key, int x, int y)	{
 
+    int n = current_capture;
+    if ( n == -1 )          return;
+
+
+    Capture&  c = *captures[n];
+    
+    
     switch( key)
     {
 	// right
 	case 102:	
 	    {
+
 	    logf( (char*)"Touche right !!" );
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            float m = captures[n-1]->getDX() + 10.0;
-            captures[n-1]->setDX( m );
-        }
+        float m = c.getCentX() + 10.0;
+        c.setCentX( m );
+
+        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+
 		}
 		break;
 	// left
 	case 100:	
 	    {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            float m = captures[n-1]->getDX() - 10.0;
-            captures[n-1]->setDX( m );
-        }
+
+        float m = c.getCentX() - 10.0;
+        c.setCentX( m );
+
+        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+
 	    }
 		break;
 	// up
 	case 101:	
 	    {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            float m = captures[n-1]->getDY() - 10.0;
-            captures[n-1]->setDY( m );
-        }
+
+        float m = c.getCentY() - 10.0;
+        c.setCentY( m );
+
+        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+
 		}
 		break;
 	// down
 	case 103:	
 	    {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            float m = captures[n-1]->getDY() + 10.0;
-            captures[n-1]->setDY( m );
-        }
+
+        float m = c.getCentY() + 10.0;
+        c.setCentY( m );
+
+        float e = c.getEchelle();
+
+        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+
 		}	
 		break;
 	// pgup
 	case 104:	
 	    {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            captures[n-1]->setEchelle( 1.0/0.8*captures[n-1]->getEchelle() );
-            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
-        }
+
+        float e = c.getEchelle() + 0.2;
+        c.setEchelle(e);
+        
+        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+
 		}
 		break;
 	// pgdown
 	case 105:	
 	    {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            captures[n-1]->setEchelle( 0.8*captures[n-1]->getEchelle() );
-            logf( (char*)"Echelle : %0.2f", captures[n-1]->getEchelle() );
+
+        float e = c.getEchelle() - 0.2;
+        c.setEchelle(e);
+        
+        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+
         }
-		}	
 		break;
 	// home
 	case 106:	
 	    {
-        int n = captures.size();
-        if ( n != 0 )
-        {
-            captures[n-1]->setEchelle( 1.0 );
-            captures[n-1]->setDX( 0.0 );
-            captures[n-1]->setDY( 0.0 );
-        }
+
+        c.setEchelle( 1.0 );
+        c.setCentX( 0.0 );
+        c.setCentY( 0.0 );
+
+        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+
 		}
 		break;
     }

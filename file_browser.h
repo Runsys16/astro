@@ -39,20 +39,21 @@ public :
     vector<string>&             getDirNames()                       { return tDirNames; }
     vector<string>&             getFilesNames()                     { return tFileNames; }
     
-    inline string               getCurrentDir()                     { return currentDir; }
-    inline string               getWorkingDir()                     { return workingDir; }
-    inline string               setCurrentDir(string s)             { currentDir = string(s); }
     
     void                        addImage( string, PanelSimple*, int, int);
     
     void                        affiche();
     void                        cache();
     bool                        keyboard(char key, int x, int y);
-
-    inline bool                 getVisible()                        { return pW->getVisible(); }
     
-    //void                        quit();
+    void                        scrollDir( int );
+    void                        scrollFile( int );
 
+inline bool                     getVisible()                        { return pW->getVisible(); }
+
+inline string                   getCurrentDir()                     { return currentDir; }
+inline string                   getWorkingDir()                     { return workingDir; }
+inline string                   setCurrentDir(string s)             { currentDir = string(s); }
 
 protected:
     PanelWindow*                pW;
@@ -75,6 +76,9 @@ protected:
     string                      currentDir;
  
     int                         x, y, dx, dy;
+
+    int                         dirScroll;
+    int                         fileScroll;
    
 
 private :
