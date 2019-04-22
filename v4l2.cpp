@@ -289,10 +289,11 @@ int Device_cam::xioctl(int fh, int request, void *arg)
 void Device_cam::process_image(const void *p, int size)
 {
     if (fd == -1)       return;
-    //frame_number++;
-    char filename[15];
-    
-    sprintf(filename, "frame-%d.raw", frame_number);
+
+    char filename[155];
+     
+    sprintf(filename, "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame-%d.raw", frame_number);
+    frame_number++;
     
     logf( (char*)"Enregistre : %s", filename);
     

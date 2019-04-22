@@ -2222,6 +2222,7 @@ int x_help = 0;
 int y_help = 0;
 static void addString( string s )
 {
+    if ( s.size() == 0 )       { y_help += 15; return; }
 	panelHelp->add( new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help ) );
 	y_help += 15;
 }	
@@ -2233,7 +2234,7 @@ static void CreateHelp()
     int X = width - 50;
     int Y = 50;
     int DX = 400;
-    int DY = 300;
+    int DY = 600;
     panelHelp = new PanelWindow();
 	panelHelp->setPosAndSize( X, Y, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
@@ -2242,20 +2243,45 @@ static void CreateHelp()
     
 	int y = 10;
 	int dy = 15;
-	int l=20;
+	int l=40;
 
 	
+	addString( "   --- Touche de fonction  DU LOGICIEL ---" );
 	addString( "Brightness      B/b" );
 	addString( "Contrast        C/c" );
 	addString( "Saturation      S/s" );
 	addString( "Hue             H/h" );
-	addString( "Gamme           G/g" );
+	addString( "Gamma           G/g" );
 	addString( "Sharpness       Z/z" );
 	addString( "Exposure        E/e" );
 	addString( "White balance   W/w" );
 	
-	addString( " " );
-	addString( "Fin de l'aide" );
+	addString( "" );
+	addString( "ctrl+TAB: camera suivante" );
+	addString( "f: Ouvrir un fichier image");
+	addString( "p: Pause de l'affichage de pleiades");
+	addString( "TAB: Change l'affichage des fichiers" );
+	addString( "o: Toutes les images sont affichees en icones");
+
+	addString( "");
+	addString( "a: Lance l'etalonnage en ascension droite");
+	addString( "A: Fini l'etalonnage en ascension droite");
+	addString( "d: Lance l'etalonnage en declinaison");
+	addString( "D: Fini l'etalonnage en declinaison");
+
+	addString( "");
+	addString( "h: Enregistre une image de la camera courante");
+	addString( "j/J: Echelle en y sur la courbe 1");
+	addString( "u/U: Echelle en x sur la courbe 1");
+	addString( "k/K: Echelle en y sur la courbe 2");
+	addString( "i/I: Echelle en x sur la courbe 2");
+	addString( "r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
+	addString( "R: Test alert BOX");
+	addString( "l: List les ports /dev/ +  les controles ");
+	addString( "L: List les variables");
+	
+	addString( "");
+	addString( "ESC: --- SORTIE DU LOGICIEL ---" );
 
 	WindowsManager::getInstance().add(panelHelp);
 	
