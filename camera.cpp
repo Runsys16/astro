@@ -343,7 +343,7 @@ void Camera::CreateControl()	{
     
     ///home/rene/programmes/opengl/video/essai
     wm.add(panelControl);
-    panelControl->setBackground((char*)"background.tga");
+    panelControl->setBackground((char*)"images/background.tga");
     
     dy = addControl();
     resizeControlFirst(wsc, hsc, dx, dy);

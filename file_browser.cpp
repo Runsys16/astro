@@ -132,7 +132,7 @@ FileBrowser::FileBrowser()
     y = (getScreenDY()-dy)/2;
     
     pW->setPosAndSize(x, y, dx, dy);
-    pW->setBackground( (char*)"background.tga" );
+    pW->setBackground( (char*)"images/background.tga" );
     cache();
     
 	pW->add(panelDirName);
@@ -159,13 +159,13 @@ FileBrowser::FileBrowser()
     panelDir->setScissor(true);
     panelFile->setScissor(true);
     
-    panelOK->setUp(   (char*)"ok_over.tga" );
-    panelOK->setDown( (char*)"ok_over.tga" );
-    panelOK->setOver( (char*)"ok_down.tga" );
+    panelOK->setUp(   (char*)"images/ok_over.tga" );
+    panelOK->setDown( (char*)"images/ok_over.tga" );
+    panelOK->setOver( (char*)"images/ok_down.tga" );
 
-    panelQuit->setUp(   (char*)"quit_over.tga" );
-    panelQuit->setDown( (char*)"quit_over.tga" );
-    panelQuit->setOver( (char*)"quit_down.tga" );
+    panelQuit->setUp(   (char*)"images/quit_over.tga" );
+    panelQuit->setDown( (char*)"images/quit_over.tga" );
+    panelQuit->setOver( (char*)"images/quit_down.tga" );
 
     panelDir->setClickLeft( (click_left_cb_t) &cb_dir_click_left );
     panelDir->setReleaseLeft( (click_left_cb_t) &cb_dir_release_left );
@@ -231,7 +231,7 @@ void FileBrowser::explore_dir()
         //logf( (char*)"%s", (char*)tFileNames[i].c_str() );
         pT = new PanelText( (char*)tFileNames[i].c_str(),		PanelText::NORMAL_FONT, xf, yf );
         panelFile->add( pT );
-        addImage( "file.png", panelFile, xf-4-16, yf );
+        addImage( "images/file.png", panelFile, xf-4-16, yf );
         
         yf += DY;
         if ( yf >= dy )      { xf += DXFile; yf = 0; }
@@ -241,7 +241,7 @@ void FileBrowser::explore_dir()
     {
         pT = new PanelText( (char*)tDirNames[i].c_str(),		PanelText::NORMAL_FONT, xd, yd );
         panelDir->add( pT );
-        addImage( "dir.png", panelDir, 4, yd );
+        addImage( "images/dir.png", panelDir, 4, yd );
         yd += DY;
     }
         

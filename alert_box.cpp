@@ -31,7 +31,7 @@ AlertBox::AlertBox(string m)
     y = (getHeight() - dy) / 2;
     
     pW->setPosAndSize( x, y, dx, dy );
- 	pW->setBackground((char*)"background.tga");
+ 	pW->setBackground((char*)"images/background.tga");
 	pW->add( pT );
 	pW->add( pRetour );
 

@@ -2162,7 +2162,7 @@ static void CreateCourbe()	{
     wm.add(panelCourbe);
     
     panelCourbe->setVisible(bPanelCourbe);
- 	panelCourbe->setBackground((char*)"background.tga");
+ 	panelCourbe->setBackground((char*)"images/background.tga");
     panelCourbe->setDisplayGL( displayCourbeGL_cb );
 
     pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
@@ -2212,9 +2212,19 @@ static void CreateResultat()	{
 	panelResultat->add( SP ); 
 
     panelResultat->setSize( x0 + l*dx0+100, dy+16);
-    panelResultat->setBackground((char*)"background.tga");
+    panelResultat->setBackground((char*)"images/background.tga");
     panelResultat->setVisible(bPanelResultat);
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int x_help = 0;
+int y_help = 0;
+static void addString( string s )
+{
+	panelHelp->add( new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help ) );
+	y_help += 15;
+}	
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -2222,56 +2232,30 @@ static void CreateHelp()
 {
     int X = width - 50;
     int Y = 50;
-    int DX = 150;
+    int DX = 400;
     int DY = 300;
     panelHelp = new PanelWindow();
 	panelHelp->setPosAndSize( X, Y, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
-	//panelHelp->setBackground( (char*)"/home/rene/programmes/opengl/video/background.tga");
-	panelHelp->setBackground( (char*)"background.tga");
+	//panelHelp->setBackground( (char*)"/home/rene/programmes/opengl/video/images/background.tga");
+	panelHelp->setBackground( (char*)"images/background.tga");
     
 	int y = 10;
 	int dy = 15;
-	int l=0;
+	int l=20;
 
-	panelHelp->add( new PanelTextOmbre( (char*)"Brightness",  		PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche B/b",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
 	
-	panelHelp->add( new PanelTextOmbre( (char*)"Contrast",  		PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche C/c",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
+	addString( "Brightness      B/b" );
+	addString( "Contrast        C/c" );
+	addString( "Saturation      S/s" );
+	addString( "Hue             H/h" );
+	addString( "Gamme           G/g" );
+	addString( "Sharpness       Z/z" );
+	addString( "Exposure        E/e" );
+	addString( "White balance   W/w" );
 	
-	panelHelp->add( new PanelTextOmbre( (char*)"Saturation",  		PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche S/s",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"Hue",  		    PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche H/h",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"Gamma",  		    PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche G/g",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"Sharpness",  		PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche Z/z",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"Exposure",  		PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche E/e",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"WhiteBalance",  	PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche W/w",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"Camera",  	PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche P/' '",		    PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"Visibilite Controle",PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche 1",		        PanelText::NORMAL_FONT,20, y + l++*dy ) );
-	
-	panelHelp->add( new PanelTextOmbre( (char*)"Visibilite Help",PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche 2",		        PanelText::NORMAL_FONT,20, y + l++*dy ) );
-
-	panelHelp->add( new PanelTextOmbre( (char*)"Pause",PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche p",		        PanelText::NORMAL_FONT,20, y + l++*dy ) );
-
-	panelHelp->add( new PanelTextOmbre( (char*)"Suivi (o/n)",PanelText::LARGE_FONT, 5, y + l++*dy ) );
-	panelHelp->add( new PanelText( (char*)"touche O",		        PanelText::NORMAL_FONT,20, y + l++*dy ) );
+	addString( " " );
+	addString( "Fin de l'aide" );
 
 	WindowsManager::getInstance().add(panelHelp);
 	
@@ -2282,6 +2266,7 @@ static void CreateHelp()
     X = width - 20 - DX;
     Y = 20 + 20 + 192;
 	panelHelp->setPos(X, Y);
+
 
     logf((char*)"** CreateHelp()  panelHelp  %d,%d %dx%d", X, Y, DX, DY);
 }
@@ -2352,7 +2337,7 @@ static void CreateStatus()	{
 	string sErr = "Status !!!";
 
  	wm.add( panelStatus );
- 	panelStatus->setBackground((char*)"background.tga");
+ 	panelStatus->setBackground((char*)"images/background.tga");
  	
  	create_windows_button();
 
@@ -2392,7 +2377,7 @@ static void CreateStdOut()	{
  	wm.add( panelStdOutW );
  	panelStdOutW->add( panelStdOut );
 
- 	panelStdOut->setBackground((char*)"background.tga");
+ 	panelStdOut->setBackground((char*)"images/background.tga");
  	panelStdOut->setTabSize(20);
 
     string st = string("Bonjour\n");
@@ -2853,8 +2838,8 @@ int main(int argc, char **argv)
     glClearColor( gris, gris, gris,1.0);
     
     // Pre-Charge la texture pour eviter un bug
-    WindowsManager::getInstance().loadResourceImage( "file.png" );
-    WindowsManager::getInstance().loadResourceImage( "dir.png" );
+    WindowsManager::getInstance().loadResourceImage( "images/file.png" );
+    WindowsManager::getInstance().loadResourceImage( "images/dir.png" );
     FileBrowser::getInstance();
     
     compute_matrix();

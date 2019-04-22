@@ -180,8 +180,8 @@ PanelButton* create_window_button( PanelButton* pButton, int i, string tex)
     
     if ( tex.length() == 0 )    tex = "window";
         
-    string down = tex + "_down.tga";
-    string over = tex + "_over.tga";
+    string down = "images/" + tex + "_down.tga";
+    string over = "images/" + tex + "_over.tga";
 
     pButton->setUp(   (char*)over.c_str() );
     pButton->setDown( (char*)over.c_str() );
@@ -201,9 +201,9 @@ void create_fleches()
     
     pFlecheHaut->setPosAndSize( 800, 2, 16, 8 );
 
-    pFlecheHaut->setUp(   (char*)"fleche_haut.tga" );
-    pFlecheHaut->setDown( (char*)"fleche_haut.tga" );
-    pFlecheHaut->setOver( (char*)"fleche_haut.tga" );
+    pFlecheHaut->setUp(   (char*)"images/fleche_haut.tga" );
+    pFlecheHaut->setDown( (char*)"images/fleche_haut.tga" );
+    pFlecheHaut->setOver( (char*)"images/fleche_haut.tga" );
 
 	pFlecheHaut->setCallBackUp(   cb_up_fleche_haut );
 
@@ -213,9 +213,9 @@ void create_fleches()
 
     pFlecheBas->setPosAndSize( 800, 2+8, 16, 8 );
 
-    pFlecheBas->setUp(   (char*)"fleche_bas.tga" );
-    pFlecheBas->setDown( (char*)"fleche_bas.tga" );
-    pFlecheBas->setOver( (char*)"fleche_bas.tga" );
+    pFlecheBas->setUp(   (char*)"images/fleche_bas.tga" );
+    pFlecheBas->setDown( (char*)"images/fleche_bas.tga" );
+    pFlecheBas->setOver( (char*)"images/fleche_bas.tga" );
 
 	pFlecheBas->setCallBackUp(   cb_up_fleche_haut );
 }

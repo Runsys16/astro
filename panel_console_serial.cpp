@@ -32,7 +32,7 @@ PanelConsoleSerial::PanelConsoleSerial()
     pc->setCallBackCmd( cb );
     pc->setTabSize( 60 );
     
-    pc->setBackground((char*)"background.tga");
+    pc->setBackground((char*)"images/background.tga");
 
     WindowsManager& wm = WindowsManager::getInstance();
     
