@@ -47,6 +47,7 @@ Capture::Capture()
         num = -1;
     }
 
+    logf( (char*)"image : %s", filename.c_str() );
     create_preview();
 
 }
@@ -59,6 +60,7 @@ Capture::Capture(string dirname, string name)
 
     filename = dirname + name;
 
+    logf( (char*)"image : %s", filename.c_str() );
     create_preview();
 
 }

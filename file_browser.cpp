@@ -19,7 +19,7 @@ bool fct_tri(string i, string j)
 //--------------------------------------------------------------------------------------------------------------------
 void cb_dir_click_left( int x, int y )
 {
-    logf( (char*)"Click (%d,%d)", x, y );
+    //logf( (char*)"Click (%d,%d)", x, y );
     FileBrowser& fb = FileBrowser::getInstance();
 
     int n = y/DY;
@@ -35,7 +35,7 @@ void cb_dir_click_left( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 void cb_dir_release_left( int x, int y )
 {
-    logf( (char*)"Click (%d,%d)", x, y );
+    //logf( (char*)"Click (%d,%d)", x, y );
     FileBrowser& fb = FileBrowser::getInstance();
     
     int n = y/DY;
@@ -47,7 +47,7 @@ void cb_dir_release_left( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 void cb_file_release_left( int x, int y )
 {
-    logf( (char*)"Click (%d,%d)", x, y );
+    //logf( (char*)"Click (%d,%d)", x, y );
     FileBrowser& fb = FileBrowser::getInstance();
     
     fb.isInsideFile(x, y);
@@ -57,7 +57,7 @@ void cb_file_release_left( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 void cb_ok_release_left( int x, int y )
 {
-    logf( (char*)"Nouveau repertoire d'image : " );
+    //logf( (char*)"Nouveau repertoire d'image : " );
     
     FileBrowser& fb = FileBrowser::getInstance();
     
@@ -315,14 +315,14 @@ bool FileBrowser::isInsideFile( int x, int y )
     int m = panelFile->getPosDY() / DY;
     int n = m*X + Y;
 
-    logf( (char*)"--- X=%d Y=%d m=%d n=%d", X, Y, m, n );
+    //logf( (char*)"--- X=%d Y=%d m=%d n=%d", X, Y, m, n );
     
     if ( n >= tFileNames.size() )
     {
         logf( (char*)"NOK X=%s Y=%d m=%d n=%d", X, Y, m, n );
         return false;
     }
-    logf( (char*)"OK %s ", (char*)tFileNames[n].c_str() );
+    //logf( (char*)"OK %s ", (char*)tFileNames[n].c_str() );
     
     change_file( workingDir, tFileNames[n] );
     WindowsManager::getInstance().onTop(pW);

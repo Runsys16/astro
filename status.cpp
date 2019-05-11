@@ -22,8 +22,12 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
     
     if ( tex.length() == 0 )    tex = "window";
         
-    string down = tex + "_down.tga";
-    string over = tex + "_over.tga";
+    //string down = tex + "_down.tga";
+    //string over = tex + "_over.tga";
+
+
+    string down = "images/" + tex + "_down.tga";
+    string over = "images/" + tex + "_over.tga";
     
     logf( (char*)"inverse_texture()" );
     if ( !b )

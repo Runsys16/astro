@@ -260,6 +260,7 @@ void setCurrentDirectory( string mes )
 void change_file( string dirname, string filename )
 {
     captures.push_back( new Capture(dirname, filename) );
+    logf ( (char*)"main.c::change_file()  Chargement du fichier %s%s", dirname.c_str(), filename.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1341,6 +1342,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	
 	switch(key){ 
 	
+	// touche escape
 	case 27:
 	    {
 	    alertBox( "Confirmez la sortie du programme 'ESC'" );
@@ -1348,6 +1350,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    }
 	     break;
 
+    // touche tab
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
@@ -2264,17 +2267,19 @@ static void CreateHelp()
 	addString( "o: Toutes les images sont affichees en icones");
 
 	addString( "");
-	addString( "a: Lance l'etalonnage en ascension droite");
-	addString( "A: Fini l'etalonnage en ascension droite");
-	addString( "d: Lance l'etalonnage en declinaison");
-	addString( "D: Fini l'etalonnage en declinaison");
+	addString( "a/A: Vecteur en ascension droite");
+	addString( "  a: Debut");
+	addString( "  A: Fin");
+	addString( "d/D: Vecteur en declinaison");
+	addString( "  d: Debut");
+	addString( "  D: Fin");
 
 	addString( "");
 	addString( "h: Enregistre une image de la camera courante");
-	addString( "j/J: Echelle en y sur la courbe 1");
 	addString( "u/U: Echelle en x sur la courbe 1");
-	addString( "k/K: Echelle en y sur la courbe 2");
 	addString( "i/I: Echelle en x sur la courbe 2");
+	addString( "j/J: Echelle en y sur la courbe 1");
+	addString( "k/K: Echelle en y sur la courbe 2");
 	addString( "r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
 	addString( "R: Test alert BOX");
 	addString( "l: List les ports /dev/ +  les controles ");

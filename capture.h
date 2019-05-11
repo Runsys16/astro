@@ -44,6 +44,7 @@ inline void                     setCentX(float f)                           { pa
 inline void                     setCentY(float f)                           { panelPreview->setCentY(f); }
 inline float                    getCentX()                                  { return panelPreview->getCentX(); }
 inline float                    getCentY()                                  { return panelPreview->getCentY(); }
+inline string                   getFilenName()                              { return filename; }
 
 };
 

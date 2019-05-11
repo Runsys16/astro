@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <WindowsManager.h>
 #include "Singleton.h"
+#include "var_mgr.h"
 
 
 //SINGLETON_BEGIN(  FileBrowser )
