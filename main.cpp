@@ -2261,10 +2261,14 @@ static void CreateHelp()
 	
 	addString( "" );
 	addString( "ctrl+TAB: camera suivante" );
-	addString( "f: Ouvrir un fichier image");
+	addString( "o: Ouvre/Ferme la fenetre pleiades");
 	addString( "p: Pause de l'affichage de pleiades");
+	addString( "" );
+	addString( "f:   Ouvrir un fichier image");
 	addString( "TAB: Change l'affichage des fichiers" );
-	addString( "o: Toutes les images sont affichees en icones");
+	addString( "q:   Toutes les images sont affichees en icones");
+	addString( "7:   Charge la prochaine image");
+	addString( "8:   Efface la derniere image");
 
 	addString( "");
 	addString( "a/A: Vecteur en ascension droite");
@@ -2273,6 +2277,9 @@ static void CreateHelp()
 	addString( "d/D: Vecteur en declinaison");
 	addString( "  d: Debut");
 	addString( "  D: Fin");
+	addString( "M  : Calcul la matrice de transformation");
+	addString( "y  : Affiche les vecteurs");
+	addString( "m  : Deplacement à la souris");
 
 	addString( "");
 	addString( "h: Enregistre une image de la camera courante");
