@@ -110,6 +110,7 @@ bool                bRestauration  = false;
 bool                bFileBrowser   = false;
 bool                bStellarium    = false;
 bool                bPleiade       = false;
+bool                bSauve         = false;
 
 int                 wImg;
 int                 hImg;
@@ -169,7 +170,8 @@ mat3                mChange;
 vec3                vOrigine;
 vec3                vTr;
 bool                bCorrection = false;
-float               fTimeCorrection = 0.0;
+float               fTimeCorrection = 3.0;
+float               fTimeCpt = 0.0;
 float               err = 2.0;
 #define err         err
 //--------------------------------------------------------------------------------------------------------------------
@@ -628,6 +630,8 @@ void displayCourbeGL_cb(void)
         offset_x = vOrigine.x;
         offset_y = vOrigine.y;
     }
+        offset_x = vOrigine.x;
+        offset_y = vOrigine.y;
 
     glEchelle();
     
@@ -905,7 +909,8 @@ void compute_matrix()
 //--------------------------------------------------------------------------------------------------------------------
 void charge_fichier(void)
 {
-    string filename = "/home/rene/.astropilot/betelgeuse.text";
+    //string filename = "/home/rene/.astropilot/svg.text";
+    string filename = "/home/rene/.astropilot/sauvegarde.text";
     logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
     
     std::ifstream fichier;
@@ -917,51 +922,31 @@ void charge_fichier(void)
     }
 
     
-    char output[255];
-    int n = 1;
-
     vOrigine.x = 0.0;
     vOrigine.y = 0.0;
     
     t_vResultat.clear();
     
-    while (!fichier.eof()) {
-        fichier >> output;
-        fichier >> output;
-        string x = string(output);
-        n++;
-        //cout<< n << " - ";// << endl;;
-        //cout<< x;// << endl;;
-        
-        fichier >> output;
-        fichier >> output;
-        string y = string(output);
-        //cout<<" , "<< y << endl;;
-        
-        if ( n > 500 && n < 3000 )
-        {
-            float X = stof( x );
-            float Y = stof( y );
 
-            vOrigine.x += X;
-            vOrigine.y += Y;
-            
-            t_vResultat.push_back( vec2(X,Y) );
-        }        //set( key, stof(val) );
-            
-        
-        fichier >> output;
-        
-    }
-
-    vOrigine.x /= (float)t_vResultat.size();
-    vOrigine.y /= (float)t_vResultat.size();
-
-    cout << vOrigine.x << " , " << vOrigine.y << endl;
-
-    fichier.close();
+    string line;
     
+    
+    while ( getline (fichier, line) )
+    {
+        //cout << line << '\n';
+        float rx, ry, ox, oy;
 
+        logf( (char*) line.c_str() );
+        sscanf( line.c_str(), "( %f , %f ) / ( %f , %f )", &rx, &ry, &ox, &oy );
+
+        vOrigine.x = ox;
+        vOrigine.y = oy;
+
+        t_vResultat.push_back( vec2(rx,ry) );
+    }    
+    int n = t_vResultat.size();
+    logf( (char*)"%0.2f, %0.2f", t_vResultat[n-1].x, t_vResultat[n-1].y );
+    
     fichier.close();
     
     t_vSauve.clear();
@@ -984,7 +969,8 @@ void sauve(void)
 
     for(int i=0; i<t_vSauve.size(); i++)
     {
-        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " )\n";
+        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " ) / ";
+        fichier << "( " << vOrigine.x << " , " <<  vOrigine.y << " )\n";
     }
 
     fichier.close();
@@ -1048,9 +1034,15 @@ void suivi(void)
     }
     t_vResultat.push_back(v);
 
-    //if ( t_vSauve.size() > 200 )       sauve();
-    if ( t_vSauve.size() > 200 )       t_vSauve.clear();
-    
+    if ( bSauve )
+    {
+        if ( t_vSauve.size() > 200 )       sauve();
+    }
+    else 
+    {
+        if ( t_vSauve.size() > 200 )       t_vSauve.clear();
+    }
+
     t_vSauve.push_back(v);
     
     
@@ -1152,7 +1144,8 @@ static void idleGL(void)
         int y = yClick;
         tex2screen(x,y);
 
-        sprintf( s, "x=%d, y=%d", x, y);
+        //sprintf( s, "x=%d, y=%d", x, y);
+        sprintf( s, "(%0.2f,%0.2f) / (%0.2f,%0.2f)", (float)x, (float)y, vOrigine.x, vOrigine.y );
         SP->changeText(s);
         //panelResultat->setVisible(true);
         panelResultat->setPos(x+20 , y+20);
@@ -1176,12 +1169,12 @@ static void idleGL(void)
     //------------------------------------------------------
 	if ( elapsedTime != -1 )
 	{
-	    fTimeCorrection += elapsedTime;
-	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCorrection );
-	    if ( bCorrection && fTimeCorrection >= 1.0 && bAutorisationSuivi)
+	    fTimeCpt += elapsedTime;
+	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCpt );
+	    if ( bCorrection && fTimeCpt > 0.0 && bAutorisationSuivi)
 	    {
-            fTimeCorrection -= 2.0;
-            if ( fTimeCorrection > 0.0 )    fTimeCorrection = -2.0;
+            fTimeCpt -= fTimeCorrection;
+            if ( fTimeCpt > 0.0 )    fTimeCpt = 0.0;//-= fTimeCorrection;
 
 	        float dx = xSuivi - vOrigine.x;
 	        float dy = ySuivi - vOrigine.y;
@@ -1197,6 +1190,7 @@ static void idleGL(void)
                 sprintf( cmd, "a%dp;d%dp", ad, dc );
                 //logf( (char*)"**** Asservissement -> '%s'",  cmd );
                 Serial::getInstance().write_string(cmd);
+                //fTimeCpt += 1.0;
 	        }
 	    }
 	}
@@ -1405,6 +1399,20 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	}
 	    break;
     
+	case 't':
+		{;
+    		fTimeCorrection *= 0.9f;
+    		fTimeCpt = 0.0;
+            logf( (char*)"Augmente de temps : %0.2f", fTimeCorrection );
+        }
+		break;
+	case 'T':
+		{
+    		fTimeCorrection /= 0.9f;
+    		fTimeCpt = 0.0;
+            logf( (char*)"Diminue de temps : %0.2f", fTimeCorrection );
+        }
+		break;
     case 'o':
         {
         if ( !bPleiade )
@@ -1487,6 +1495,33 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 
 
+    case 'v':  // '-'
+        {
+        bSauve = !bSauve;
+        if ( bSauve )       logf( (char*)"Sauvegarde !!!" );
+        else                logf( (char*)"Arret sauvegarde !!!" );
+        }
+        break;
+    case 'V':  // '-'
+        {
+        if (!bAutorisationSuivi)
+        {
+            int x = xClick;
+            int y = yClick;
+            tex2screen(x,y);
+
+            vOrigine.x = x;
+            vOrigine.y = y;
+            vOrigine.z = 0.0;
+        }
+        else
+        {
+            vOrigine.x = xSuivi;
+            vOrigine.y = ySuivi;
+            vOrigine.z = 0.0;
+        }
+        }
+        break;
     case 'p':  // '-'
         {
         bPause = !bPause;
@@ -1752,21 +1787,23 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         }
         break;
-    case 'H':
+    case 'Y':
         {
-        bCorrection = true; 
+        bCorrection = !bCorrection; 
         var.set( "bCorrection", bCorrection);
 
-        fTimeCorrection = 0.0; 
+        fTimeCpt = 0.0; 
 
+        /*
         vOrigine.x = xSuivi;
         vOrigine.y = ySuivi;
         vOrigine.z = 0.0;
-
+        */
         var.set("vOrigine.x", vOrigine.x);
         var.set("vOrigine.y", vOrigine.y);
 
-        pAsservi->changeText((char*)"Asservissemnent");
+        if ( bCorrection )      pAsservi->changeText((char*)"Asservissemnent");
+        else                    pAsservi->changeText((char*)"");
         }
         break;
     case 'N':
@@ -2122,7 +2159,7 @@ void resizeHelp(int width, int height)	{
     if ( dx==0)     return;
 
     int x = width - dx - 20;
-    int y = 20 + 200 + 20 ;
+    int y = 20 + 20 ;
 
     panelHelp->setPos( x,  y );
 }
@@ -2237,7 +2274,7 @@ static void CreateHelp()
     int X = width - 50;
     int Y = 50;
     int DX = 400;
-    int DY = 600;
+    int DY = 700;
     panelHelp = new PanelWindow();
 	panelHelp->setPosAndSize( X, Y, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
@@ -2246,7 +2283,7 @@ static void CreateHelp()
     
 	int y = 10;
 	int dy = 15;
-	int l=40;
+	int l=50;
 
 	
 	addString( "   --- Touche de fonction  DU LOGICIEL ---" );
@@ -2280,6 +2317,7 @@ static void CreateHelp()
 	addString( "M  : Calcul la matrice de transformation");
 	addString( "y  : Affiche les vecteurs");
 	addString( "m  : Deplacement à la souris");
+	addString( "O  : Mode souris / mode suivi");
 
 	addString( "");
 	addString( "h: Enregistre une image de la camera courante");
@@ -2293,6 +2331,10 @@ static void CreateHelp()
 	addString( "L: List les variables");
 	
 	addString( "");
+	addString( "t/T: change le temps de correction");
+	addString( "Y: Lance l' asservissement");
+	addString( "V: Initialise les coordonnees de suivi");
+	addString( "v: Sauvegarde des coordonnees dans le fichier .astropilot/sauvegarde.text");
 	addString( "ESC: --- SORTIE DU LOGICIEL ---" );
 
 	WindowsManager::getInstance().add(panelHelp);
@@ -2302,7 +2344,7 @@ static void CreateHelp()
     resizeHelp(width, height);
 
     X = width - 20 - DX;
-    Y = 20 + 20 + 192;
+    Y = 20 + 20 ;
 	panelHelp->setPos(X, Y);
 
 

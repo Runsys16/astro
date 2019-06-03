@@ -12,7 +12,7 @@ VarManager::VarManager()
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, float val)
 {
-    logf((char*)"set float");
+    //logf((char*)"set float");
     m_VarDB[name].type = 'f';
     m_VarDB[name].fval = val;
     sauve();
@@ -22,7 +22,7 @@ void VarManager::set(const std::string& name, float val)
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, int val)
 {
-    logf((char*)"set integer");
+    //logf((char*)"set integer");
     m_VarDB[name].type = 'i';
     m_VarDB[name].ival = val;
     sauve();
@@ -32,7 +32,7 @@ void VarManager::set(const std::string& name, int val)
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, bool val)
 {
-    logf((char*)"set boolean");
+    //logf((char*)"set boolean");
     m_VarDB[name].type = 'b';
     m_VarDB[name].bval = val;
     sauve();
@@ -45,7 +45,7 @@ void VarManager::sauve()
     if (!bSauve)        return;
 
     string filename = "/home/rene/.astropilot/var.ini";
-    logf( (char*)"Sauvegarde des variables dans '%s'", (char*)filename.c_str() );
+    //logf( (char*)"Sauvegarde des variables dans '%s'", (char*)filename.c_str() );
     
     std::ofstream fichier;
     fichier.open(filename);

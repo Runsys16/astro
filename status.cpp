@@ -153,10 +153,12 @@ void call_back_up(PanelButton* pPanel)
 	{
         bCorrection = !bCorrection; 
         var.set("bCorrection", bCorrection);
-        fTimeCorrection = 0.0; 
+        fTimeCpt = 0.0; 
+        /*
         vOrigine.x = xSuivi;
         vOrigine.y = ySuivi;
         vOrigine.z = 0.0;
+        */
 
         var.set("vOrigine.x", vOrigine.x);
         var.set("vOrigine.y", vOrigine.y);
