@@ -708,6 +708,106 @@ void tex2screen( int& x, int& y )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+float getSkyPoint_colorR(int offset)
+{
+    float r;
+
+    try
+    {
+        r = ptr[offset+0]; 
+    }
+    catch ( const std::exception& e )
+    {
+        std::cout << e.what() << std::endl;
+        return -1;
+    }
+    return r;
+}
+float getSkyPoint_colorG(int offset)
+{
+    float r;
+
+    try
+    {
+        r = ptr[offset+1]; 
+    }
+    catch ( const std::exception& e )
+    {
+        std::cout << e.what() << std::endl;
+        return -1;
+    }
+    return r;
+}
+float getSkyPoint_colorB(int offset)
+{
+    float r;
+
+    try
+    {
+        r = ptr[offset+2]; 
+    }
+    catch ( const std::exception& e )
+    {
+        std::cout << e.what() << std::endl;
+        return -1;
+    }
+    return r;
+}
+float getSkyPoint_colorL(int offset)
+{
+    float r;
+    float g;
+    float b;
+
+    try
+    {
+        r = ptr[offset+0]; 
+        g = ptr[offset+1]; 
+        b = ptr[offset+2]; 
+    }
+    catch ( const std::exception& e )
+    {
+        std::cout << e.what() << std::endl;
+        return -1;
+    }
+    return 0.33 * r + 0.5 * g  + 0.16 * b;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void updatePanelResultat(float x, float y, float mag)
+{
+    int xPanel = x;
+    int yPanel = y;
+
+    tex2screen(xPanel,yPanel);
+    panelResultat->setPos(xPanel+20 , yPanel+20);
+
+    int offset = getOffset( x ,y ,vCameraSize.x);
+
+    
+    char sSkyPoint[255];
+    char sR[255];
+    char sG[255];
+    char sB[255];
+    char sL[255];
+    sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, vOrigine.x, vOrigine.y, pond2mag(mag) );
+    SP->changeText(sSkyPoint);
+    
+    sprintf( sR, "r=%03d", (int)getSkyPoint_colorR(offset) );
+    sprintf( sG, "g=%03d", (int)getSkyPoint_colorG(offset) );
+    sprintf( sB, "b=%03d", (int)getSkyPoint_colorB(offset) );
+    sprintf( sL, "l=%03d", (int)getSkyPoint_colorL(offset) );
+
+    R->changeText(sR);
+    G->changeText(sG);
+    B->changeText(sB);
+    L->changeText(sL);
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void getSkyPointLine(struct sky_point* point, int x, int y, int size)
 {
     int min = x - size;
@@ -1108,7 +1208,7 @@ void suivi(void)
     //change_background_pleiade();
     getSuiviParameter();   
     
-    char   sSkyPoint[100];
+    //char   sSkyPoint[100];
     
     struct sky_point point;
     point.xAverage = 0.0;
@@ -1131,8 +1231,8 @@ void suivi(void)
         //float mag = -(log(point.ponderation ) / log(2.0)) + 17.0;
         //float mag = point.ponderation;
 
-        sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, pond2mag(point.ponderation) );
-        SP->changeText(sSkyPoint);
+        //sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, pond2mag(point.ponderation) );
+        //SP->changeText(sSkyPoint);
         //panelResultat->setVisible(true);
 
         xSuivi = xx;
@@ -1164,10 +1264,11 @@ void suivi(void)
     
     
     //printf( "3-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
-    int xPanel = xSuivi;
-    int yPanel = ySuivi;
-    tex2screen(xPanel,yPanel);
-    panelResultat->setPos(xPanel+20 , yPanel+20);
+    //int xPanel = xSuivi;
+    //int yPanel = ySuivi;
+    //tex2screen(xPanel,yPanel);
+    //panelResultat->setPos(xPanel+20 , yPanel+20);
+    updatePanelResultat( xSuivi, ySuivi, point.ponderation );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1267,6 +1368,7 @@ static void idleGL(void)
 
     if (!bAutorisationSuivi)
     {
+        /*
         char   s[100];
 
         int x = xClick;
@@ -1278,6 +1380,8 @@ static void idleGL(void)
         SP->changeText(s);
         //panelResultat->setVisible(true);
         panelResultat->setPos(x+20 , y+20);
+        */
+        updatePanelResultat( xClick, yClick, 0 );
     }
 
 	
@@ -2220,12 +2324,6 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    sprintf( sB, "b=%03d", b );
 	    sprintf( sL, "l=%03d", l );
 	    
-	    R->changeText(sR);
-	    G->changeText(sG);
-	    B->changeText(sB);
-	    L->changeText(sL);
-	    
-	    panelResultat->setPos(x+20 , y+20);
 
     
         struct sky_point point;
@@ -2284,6 +2382,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	        ySuivi = yy;
 	        offset_x = xx;
 	        offset_y = yy;
+
+            updatePanelResultat( xSuivi, ySuivi, point.ponderation );
 	        //t_vResultat.clear();
         }
         else {
