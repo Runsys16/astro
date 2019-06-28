@@ -157,4 +157,22 @@ void VarManager::charge()
     
     bSauve = old_sauve;   
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool VarManager::existe(const std::string& name)
+{
+    dbMap& db = getDB();
+    VarManager::dbMap::iterator p;
+    
+    string key;
+    
+    for(p = db.begin(); p!=db.end(); ++p)
+    {
+        key = string( p->first );
+        if ( key.compare(name) == 0 )   return true;
+    }
+
+    return false;
+}
 

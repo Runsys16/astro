@@ -48,6 +48,7 @@ public:
     void sauve();
 	void Destroy();
 	
+	bool existe( const std::string& );
 
 protected:
     VarManager();

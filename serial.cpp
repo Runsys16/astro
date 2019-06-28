@@ -1,6 +1,6 @@
 #include "serial.h"    /* Standard input/output definitions */
 #include "panel_console_serial.h"    
-
+#include <unistd.h>
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -55,6 +55,22 @@ int Serial::write_string( const char* str)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Serial::sound()
+{
+    //aplay /usr/share/sounds/purple/send.wav
+    char *arguments[] = { (char*)"aplay", (char*)"/usr/share/sounds/purple/send.wav", (char*)NULL };
+    execv( "/usr/bin/aplay", arguments );
+
+}
+void Serial::sound_thread()
+{
+    th_sound = std::thread(&Serial::sound, this);
+    th_sound.detach();
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Serial::read_thread()
 {
     unsigned char b[1];
@@ -85,6 +101,45 @@ void Serial::read_thread()
             {
                 buffer[idx++] = 0;
                 PanelConsoleSerial::getInstance().writeln( (char*)buffer );
+                //printf("play\n" );
+                
+                string test = buffer;
+                //sound_thread();
+                if ( test.find("Change joy ...NOK") != string::npos )
+                    system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
+                else if ( test.find("Change joy ...OK") != string::npos )
+                    system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
+                else if ( test.find("dbl click") != string::npos )
+                    system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
+                else if ( test.find("GOTO OK") != string::npos )
+                    system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
+                else if ( test.find("Rotation Declinaison") != string::npos )
+                {
+                    if ( test.find("normal") != string::npos)
+                    {
+                        //logf( (char*)"Declinaison : normale" );
+                        changeDec( true );
+                    }
+                    else
+                    {
+                        //logf( (char*)"Declinaison : inverse" );
+                        changeDec( false );
+                    }
+                }
+                else if ( test.find("Rotation  Asc Droite") != string::npos )
+                {
+                    if ( test.find("normal") != string::npos)
+                    {
+                        //logf( (char*)"Asc Droite : normale" );
+                        changeAsc( true );
+                    }
+                    else
+                    {
+                        //logf( (char*)"Asc Droite : inverse" );
+                        changeAsc( false );
+                    }
+                }
+                    
             }
             idx = 0;
         }

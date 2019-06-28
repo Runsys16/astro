@@ -4,6 +4,8 @@ PanelButton *       pButtonControl;
 PanelButton *       pButtonHelp;
 PanelButton *       pButtonResultat;
 PanelButton *       pButtonCourbe;
+PanelButton *       pButtonAsc;
+PanelButton *       pButtonDec;
 
 PanelButton *       pFlecheHaut;
 PanelButton *       pFlecheBas;
@@ -22,25 +24,21 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
     
     if ( tex.length() == 0 )    tex = "window";
         
-    //string down = tex + "_down.tga";
-    //string over = tex + "_over.tga";
-
-
     string down = "images/" + tex + "_down.tga";
     string over = "images/" + tex + "_over.tga";
     
-    logf( (char*)"inverse_texture()" );
+    logf( (char*)"inverse_texture() , %d \"%s\"", (int) b, tex.c_str() );
     if ( !b )
     {
         pButton->setUp(   (char*)over.c_str() );
         pButton->setDown( (char*)over.c_str() );
-        pButton->setOver( (char*)down.c_str() );
+        pButton->setOver( (char*)over.c_str() );
     }
     else
     {
         pButton->setUp(   (char*)down.c_str() );
         pButton->setDown( (char*)down.c_str() );
-        pButton->setOver( (char*)over.c_str() );
+        pButton->setOver( (char*)down.c_str() );
     }
 }
 
@@ -191,7 +189,7 @@ PanelButton* create_window_button( PanelButton* pButton, int i, string tex)
 
     pButton->setUp(   (char*)over.c_str() );
     pButton->setDown( (char*)over.c_str() );
-    pButton->setOver( (char*)down.c_str() );
+    pButton->setOver( (char*)over.c_str() );
 
 	pButton->setCallBackOver( call_back_over );
 	pButton->setCallBackUp( call_back_up );
@@ -237,6 +235,9 @@ void create_windows_button()
 
     pButtonMode     = create_window_button( pButtonMode,     7, "cible" );
     pButtonAsserv   = create_window_button( pButtonAsserv,   8, "cadena" );
+    
+    pButtonAsc      = create_window_button( pButtonAsc,     10, "asc" );
+    pButtonDec      = create_window_button( pButtonDec,     11, "dec" );
     
     create_fleches();
 }

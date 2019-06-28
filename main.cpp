@@ -186,6 +186,12 @@ int                 current_capture = -1;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+float fTimer = 0.0;
+bool bAsc = true;
+bool bDec = true;
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static const char short_options[] = "d:hfs:lpe:";
 static const struct option
 //--------------------------------------------------------------------------------------------------------------------
@@ -1129,6 +1135,18 @@ static void idleGL(void)
         //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
 
+    if ( panelHelp->getHaveMove() )
+    {
+        panelHelp->resetHaveMove();
+
+        var.set("xPanelHelp",  panelHelp->getX() );
+        var.set("yPanelHelp",  panelHelp->getY() );
+        var.set("dxPanelHelp", panelHelp->getDX() );
+        var.set("dyPanelHelp", panelHelp->getDY() );
+        
+        //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
+    }
+
 
     if (!bPause)    {
         Camera_mgr::getInstance().change_background_camera();
@@ -1161,7 +1179,19 @@ static void idleGL(void)
 		prevTime = time;
 	}
     WindowsManager::getInstance().idleGL( elapsedTime );
-	
+	if ( elapsedTime != -1 )
+	{
+	    fTimer += elapsedTime;
+	    if ( fTimer >= 5.0 )
+	    {
+	        fTimer -= 5.0;
+            
+            char cmd[255];
+            sprintf( cmd, "g" );
+            Serial::getInstance().write_string(cmd);
+	    }
+	    //logf( (char*)"%0.2f", fTimer );
+	}
     //------------------------------------------------------
     //------------------------------------------------------
 	// CALCUL DE L' ASSERVISSEMENT
@@ -1782,7 +1812,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
-            p->enregistre();
+            //p->enregistre();
     	    logf( (char*)"Enregistre  une photo de la camera courante !!" );
         }
         }
@@ -2275,6 +2305,19 @@ static void CreateHelp()
     int Y = 50;
     int DX = 400;
     int DY = 700;
+    
+    if ( var.existe("xPanelHelp") )
+        X  = var.geti( "xPanelHelp");
+
+    if ( var.existe("yPanelHelp") )
+        Y  = var.geti( "yPanelHelp");
+
+    if ( var.existe("dxPanelHelp") )
+        DX = var.geti("dxPanelHelp");
+
+    if ( var.existe("dyPanelHelp") )
+        DY = var.geti("dyPanelHelp");
+
     panelHelp = new PanelWindow();
 	panelHelp->setPosAndSize( X, Y, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
@@ -2343,8 +2386,8 @@ static void CreateHelp()
     //panelHelp->loadSkin((char*)"fen-2");
     resizeHelp(width, height);
 
-    X = width - 20 - DX;
-    Y = 20 + 20 ;
+    //X = width - 20 - DX;
+    //Y = 20 + 20 ;
 	panelHelp->setPos(X, Y);
 
 
@@ -2475,6 +2518,30 @@ static void CreateAllWindows()	{
     CreateStatus();
     CreateCourbe();
     CreateStdOut();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void changeDec( bool b )
+{
+    if ( b != bDec )
+    {
+        logf( (char*)"Declinaison : %d", (int)b );
+        inverse_texture( pButtonDec, b, "dec" );
+        bDec = b;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void changeAsc( bool b )
+{
+    if ( b != bAsc )
+    {
+        logf( (char*)"Asc Droite : %d", (int)b );
+        inverse_texture( pButtonAsc, b, "asc" );
+        bAsc = b;
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2854,12 +2921,15 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    width = getScreenDX() - 100;
-    height = getScreenDY() - 40;
+    //width = getScreenDX() - 100;
+    //height = getScreenDY() - 40;
+    width = getScreenDX();
+    height = getScreenDY();
     
     cout <<"Screen size "<< getScreenDX() <<"x"<< getScreenDY() << endl;
 
-	xPos = 1200 + (getScreenDX()-width)/2;
+	//xPos = 1200 + (getScreenDX()-width)/2;
+	xPos = (getScreenDX()-width)/2;
 	yPos = (getScreenDY()-height)/2;
 
 	glutInitWindowPosition(xPos, yPos);
@@ -2869,6 +2939,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	//glutFullScreen();
 
 	glutReshapeFunc(reshapeGL);
 	glutDisplayFunc(displayGL);

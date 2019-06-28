@@ -133,6 +133,8 @@ static void         usage(FILE *fp, int argc, char **argv);
 
 void                displayGL(void);
 
+void                changeDec(bool);
+void                changeAsc(bool);
 
 void                log( char *);
 void                logf( char *, ...);

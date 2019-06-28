@@ -31,6 +31,7 @@ protected:
     int             baudrate;
     int             fd;
     thread          th_serial;
+    thread          th_sound;
     
     char            buffer[1024];
     int             idx;
@@ -48,6 +49,8 @@ public :
     int             write_string(const char* str);
 
     void            read_thread();
+    void            sound_thread();
+    void            sound();
 
     void            start_thread();
 
