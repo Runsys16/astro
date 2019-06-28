@@ -4,8 +4,10 @@ PanelButton *       pButtonControl;
 PanelButton *       pButtonHelp;
 PanelButton *       pButtonResultat;
 PanelButton *       pButtonCourbe;
-PanelButton *       pButtonAsc;
-PanelButton *       pButtonDec;
+PanelCheckBox *     pButtonAsc;
+PanelCheckBox *     pButtonDec;
+PanelCheckBox *     pButtonJoy;
+PanelCheckBox *     pButtonSui;
 
 PanelButton *       pFlecheHaut;
 PanelButton *       pFlecheBas;
@@ -14,11 +16,15 @@ PanelButton *       pButtonMode;
 PanelButton *       pButtonAsserv;
 
 
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void call_back_over(PanelButton* pPanel)	{
 	//cout << "Button CallBack Over()" << endl;
 }
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void inverse_texture(PanelButton * pButton, bool b, string tex )
 {
     
@@ -41,8 +47,9 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
         pButton->setOver( (char*)down.c_str() );
     }
 }
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void cb_up_fleche_haut(PanelButton* pPanel)
 {
     char s[20];
@@ -67,7 +74,9 @@ void cb_up_fleche_haut(PanelButton* pPanel)
 
 	logf( (char*)"Button fleche up() : err=%0.2f", err );
 }
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void call_back_up(PanelButton* pPanel)
 {
 	logf( (char*) "Button CallBack up()" );
@@ -167,16 +176,70 @@ void call_back_up(PanelButton* pPanel)
         inverse_texture( pPanel, bCorrection, "cadena" );
 	}
 }
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void call_back_down(PanelButton* pPanel)	{
 	//cout << "Button CallBack down()" << endl;
 	//pCheck->setVal( !pCheck->getVal() );
 }
-
-
-PanelButton* create_window_button( PanelButton* pButton, int i, string tex)
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void cb_rotationCheck(PanelCheckBox* p)	{
+    if (  p == pButtonAsc )
+    {
+        char cmd[255];
+        sprintf( cmd, "sa" );
+        Serial::getInstance().write_string(cmd);
+    }
+    else if (  p == pButtonDec )
+    {
+        char cmd[255];
+        sprintf( cmd, "sd" );
+        Serial::getInstance().write_string(cmd);
+    }
+    else if (  p == pButtonJoy )
+    {
+        char cmd[255];
+        sprintf( cmd, "j" );
+        Serial::getInstance().write_string(cmd);
+    }
+    else if (  p == pButtonSui )
+    {
+        char cmd[255];
+        sprintf( cmd, "S" );
+        Serial::getInstance().write_string(cmd);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+PanelCheckBox* create_window_check_box( int i, string tex)
 {
-    pButton = new PanelButton();
+    if ( tex.length() == 0 )    return NULL;
+        
+    string strue = "images/" + tex + "_down.tga";
+    string sfalse = "images/" + tex + "_over.tga";
+
+    PanelCheckBox* pCheckBox = new PanelCheckBox();
+    pCheckBox->setTrue( (char*)strue.c_str() );
+    pCheckBox->setFalse( (char*)sfalse.c_str() );
+
+    pCheckBox->setCallBackMouse( cb_rotationCheck );
+
+    pCheckBox->setBackground( NULL );
+    pCheckBox->setPosAndSize( 450+ i*18, 2, 16, 16 );
+
+    panelStatus->add(pCheckBox);
+    return pCheckBox;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+PanelButton* create_window_button( int i, string tex)
+{
+    PanelButton * pButton = new PanelButton();
     panelStatus->add(pButton);
     
     pButton->setPosAndSize( 450+ i*18, 2, 16, 16 );
@@ -197,7 +260,9 @@ PanelButton* create_window_button( PanelButton* pButton, int i, string tex)
 	
 	return pButton;
 }
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void create_fleches()
 {
     pFlecheHaut = new PanelButton();
@@ -223,24 +288,32 @@ void create_fleches()
 
 	pFlecheBas->setCallBackUp(   cb_up_fleche_haut );
 }
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void create_windows_button()
 {
-    pButtonControl  = create_window_button( pButtonControl,  0, "camera" );
-    pButtonHelp     = create_window_button( pButtonHelp,     1, "help" );
-    pButtonResultat = create_window_button( pButtonResultat, 2, "cible" );
-    pButtonCourbe   = create_window_button( pButtonCourbe,   3, "courbe" );
-    pButtonStdOut   = create_window_button( pButtonStdOut,   4, "" );
-    pButtonSerial   = create_window_button( pButtonSerial,   5, "arduino" );
+    pButtonControl  = create_window_button( 0, "camera" );
+    pButtonHelp     = create_window_button( 1, "help" );
+    pButtonResultat = create_window_button( 2, "cible" );
+    pButtonCourbe   = create_window_button( 3, "courbe" );
+    pButtonStdOut   = create_window_button( 4, "" );
+    pButtonSerial   = create_window_button( 5, "arduino" );
 
-    pButtonMode     = create_window_button( pButtonMode,     7, "cible" );
-    pButtonAsserv   = create_window_button( pButtonAsserv,   8, "cadena" );
+    pButtonMode     = create_window_button( 7, "cible" );
+    pButtonAsserv   = create_window_button( 8, "cadena" );
     
-    pButtonAsc      = create_window_button( pButtonAsc,     10, "asc" );
-    pButtonDec      = create_window_button( pButtonDec,     11, "dec" );
+    pButtonAsc      = create_window_check_box( 10, "asc" );
+    pButtonDec      = create_window_check_box( 11, "dec" );
+    pButtonJoy      = create_window_check_box( 12, "joy" );
+    pButtonSui      = create_window_check_box( 13, "terre" );
     
     create_fleches();
 }
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

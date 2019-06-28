@@ -22,6 +22,8 @@ void Serial::init( string dev)
 
     sopen();
     start_thread();
+    
+    bPrintInfo = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -100,19 +102,35 @@ void Serial::read_thread()
             if ( idx != 0 )
             {
                 buffer[idx++] = 0;
-                PanelConsoleSerial::getInstance().writeln( (char*)buffer );
-                //printf("play\n" );
                 
                 string test = buffer;
                 //sound_thread();
                 if ( test.find("Change joy ...NOK") != string::npos )
                     system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
+                else if ( test.find("=INFO START") != string::npos )
+                    bPrintInfo = false;
+                else if ( test.find("=INFO FALSE") != string::npos )
+                    bPrintInfo = true;
+
                 else if ( test.find("Change joy ...OK") != string::npos )
                     system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
                 else if ( test.find("dbl click") != string::npos )
                     system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
                 else if ( test.find("GOTO OK") != string::npos )
                     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
+                else if ( test.find("Rotation terre") != string::npos )
+                {
+                    if ( test.find("OUI") != string::npos)
+                    {
+                        //logf( (char*)"Declinaison : normale" );
+                        changeSui( true );
+                    }
+                    else
+                    {
+                        //logf( (char*)"Declinaison : inverse" );
+                        changeSui( false );
+                    }
+                }
                 else if ( test.find("Rotation Declinaison") != string::npos )
                 {
                     if ( test.find("normal") != string::npos)
@@ -139,6 +157,10 @@ void Serial::read_thread()
                         changeAsc( false );
                     }
                 }
+
+
+                if ( bPrintInfo == true )
+                    PanelConsoleSerial::getInstance().writeln( (char*)buffer );
                     
             }
             idx = 0;

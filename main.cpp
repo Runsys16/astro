@@ -759,6 +759,117 @@ void getSkyPointLine(struct sky_point* point, int x, int y, int size)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+float getLumMax(int offset, float max )
+{
+    float r;
+    float g;
+    float b;
+
+    try
+    {
+        r = ptr[offset+0]; 
+        g = ptr[offset+1]; 
+        b = ptr[offset+2]; 
+    }
+    catch ( const std::exception& e )
+    {
+        std::cout << e.what() << std::endl;
+        return -1;
+    }
+
+    float l = 0.33 * r + 0.5 * g  + 0.16 * b;
+    if ( l<max )       l = 0.0;
+
+    return l;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+float getLum(int offset )
+{
+    return getLumMax( offset, 20.0 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void findSkyPoint(struct sky_point* point, int X, int Y, int size)
+{
+    int x, y;
+
+    y = X - size;
+        
+    ptr = Camera_mgr::getInstance().getPtr();
+    size_t size_ptr = malloc_usable_size ( (void*) ptr);
+    //-------------------------------------------------------------------------    
+    y = Y - size;
+    for( int i =-size; i<size; i++ ) 
+    {
+        x = X+i;
+        int offset = getOffset( x, y, vCameraSize.x);
+
+        if ( offset+4 > size_ptr )        {
+            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
+            return;
+        }
+        
+        float l = getLum( offset) ;
+        
+        if (l!=0.0) {  point->found = true; point->x = x; point->y = y; return; }
+    }  
+    //-------------------------------------------------------------------------    
+    y = Y + size;
+    for( int i =-size; i<size; i++ ) 
+    {
+        x = X+i;
+        int offset = getOffset( x, y, vCameraSize.x);
+
+        if ( offset+4 > size_ptr )        {
+            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
+            return;
+        }
+        
+        float l = getLum( offset) ;
+        
+        if (l!=0.0) { point->found = true; point->x = x; point->y = y; return; }
+    }  
+    //-------------------------------------------------------------------------    
+    //-------------------------------------------------------------------------    
+    x = X - size;
+    for( int i =-size; i<size; i++ ) 
+    {
+        y = Y + i;
+        int offset = getOffset( x, y,vCameraSize.x);
+
+        if ( offset+4 > size_ptr )        {
+            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
+            return;
+        }
+        
+        float l = getLum( offset) ;
+        
+        if (l!=0.0) { point->found = true; point->x = x; point->y = y; return; }
+    }  
+    //-------------------------------------------------------------------------    
+    x = X + size;
+    for( int i =-size; i<size; i++ ) 
+    {
+        y = Y + i;
+        int offset = getOffset( x, y,vCameraSize.x);
+
+        if ( offset+4 > size_ptr )        {
+            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
+            return;
+        }
+        
+        float l = getLum( offset) ;
+        
+        if (l!=0.0) { point->found = true; point->x = x; point->y = y; return; }
+    } 
+    point->found = false;  
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void getSkyPoint(struct sky_point* point, int x, int y, int size)
 {
     //int X = (float)(x-xCam) * rw;
@@ -2122,10 +2233,34 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
         point.yAverage = 0.0;
         point.ponderation = 0.0;
         
-        //rw = (float)vCameraSize.x.0/(float)panelPreView->getDX();
-        //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
         bPrintLum = true;
+        
         getSkyPoint(&point, X, Y, SIZEPT);
+        
+        for( int i=0; i<500; i++ )
+        {
+            findSkyPoint(&point, X, Y, i);
+            if ( point.found )
+            {
+                int xx = point.x;
+                int yy = point.y;
+                
+
+                point.xAverage = 0.0;
+                point.yAverage = 0.0;
+                point.ponderation = 0.0;
+
+                bPrintLum = true;
+                
+                getSkyPoint(&point, xx, yy, SIZEPT);
+
+                logf( (char*)"Iteration : %d  x=%0.2f, y=%0.2f", i, (float)point.x, (float)point.y );
+
+                break;
+            }
+        }
+        
+        
         bPrintLum = false;
         
         if ( point.ponderation > 0.1 ) {
@@ -2524,10 +2659,12 @@ static void CreateAllWindows()	{
 //--------------------------------------------------------------------------------------------------------------------
 void changeDec( bool b )
 {
+    pButtonDec->setVal( !b );
     if ( b != bDec )
     {
         logf( (char*)"Declinaison : %d", (int)b );
-        inverse_texture( pButtonDec, b, "dec" );
+        //inverse_texture( pButtonDec, b, "dec" );
+        pButtonDec->setVal( !b );
         bDec = b;
     }
 }
@@ -2536,10 +2673,24 @@ void changeDec( bool b )
 //--------------------------------------------------------------------------------------------------------------------
 void changeAsc( bool b )
 {
+    pButtonAsc->setVal( !b );
     if ( b != bAsc )
     {
         logf( (char*)"Asc Droite : %d", (int)b );
-        inverse_texture( pButtonAsc, b, "asc" );
+        //inverse_texture( pButtonAsc, b, "asc" );
+        bAsc = b;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void changeSui( bool b )
+{
+    pButtonSui->setVal( !b );
+    if ( b != bAsc )
+    {
+        logf( (char*)"Suivi : %d", (int)b );
+        //inverse_texture( pButtonAsc, b, "asc" );
         bAsc = b;
     }
 }

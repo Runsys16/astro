@@ -44,6 +44,9 @@ struct sky_point
     float   xAverage;
     float   yAverage;
     float   ponderation;
+    float   x;
+    float   y;
+    bool    found;
 };
 
 struct readBackground
@@ -135,6 +138,7 @@ void                displayGL(void);
 
 void                changeDec(bool);
 void                changeAsc(bool);
+void                changeSui(bool);
 
 void                log( char *);
 void                logf( char *, ...);

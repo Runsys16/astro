@@ -36,7 +36,8 @@ protected:
     char            buffer[1024];
     int             idx;
     int             nbZero;
-
+    
+    bool            bPrintInfo;
 
 public :
     Serial();
