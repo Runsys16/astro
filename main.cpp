@@ -15,8 +15,8 @@
 
 //#define DEBUG 1
 #define SIZEPT  20
-#define AXE_X   (300.0/4.0)
-#define AXE_Y   (3.0*300.0/4.0)
+//#define AXE_X   (300.0/4.0)
+//#define AXE_Y   (3.0*300.0/4.0)
 
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -152,6 +152,7 @@ float               delta_courbe1 = 1.0;
 float               delta_courbe2 = 1.0;
 float               courbe1 = 1.0;
 float               courbe2 = 1.0;
+int                 decal_resultat = 0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -232,7 +233,7 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 void photo()
 {
-    string filename = " -o /home/rene/Documents/astronomie/logiciel/k200d/test";
+    string filename = " -o /home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/test";
     string iso = " -i 100";
     string stime = " -t 1";
     string frames = " -F 2";
@@ -560,88 +561,125 @@ void displayGL_cb(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void glEchelle()
+void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, PanelText* pMin )
 {
     float gris = 0.3;
-    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
-    else                            glColor4f( gris, gris, gris, 1.0 );
+    vec4 color, colorLimit, colorAxe;
+    
+    if ( var.getb("bNuit") )
+    {
+        color       = vec4( 0.15, 0.0, 0.0, 1.0 );    
+        colorLimit  = vec4( 0.8, 0.0, 0.0, 1.0 );    
+        colorAxe    = vec4( 1.0, 0.0, 0.0, 1.0 );
+    }
+    else                            
+    {
+        gris = 0.15;
+        color       = vec4( gris, gris, gris, 1.0 );
+        colorLimit  = vec4( 1.0, 0.0, 1.0, 1.0 );
+        colorAxe    = vec4( 1.0, 1.0, 1.0, 1.0 );
+    }
     
     glBegin(GL_LINES);
-        int y = AXE_X;
+
+        //
+        // graduation horizontale
+        //
+        glColor4fv( (GLfloat*)&color );
+        int pas = delta_courbe1;
+        for( float i=0; i<SIZE/2; i+=delta_courbe1 )
+        {
+            int x = 0;
+            int y = AXE + i;
+            panelCourbe->x2Screen(x);
+            panelCourbe->y2Screen(y);
+            glVertex2i( x, y );
+            x += panelCourbe->getPosDX();
+            glVertex2i( x, y );
+
+            x = 0;
+            y = AXE - i;
+            panelCourbe->x2Screen(x);
+            panelCourbe->y2Screen(y);
+            glVertex2i( x, y );
+            x += panelCourbe->getPosDX();
+            glVertex2i( x, y );
+        }
+        //
+        // graduation verticale
+        //
+        float fPas = courbe1;
+        while( fPas < 10.0 )     fPas += courbe1;
+        for( float i=0; i<2000; i+=fPas )
+        {
+            int x = i;
+            int y = AXE;
+            panelCourbe->x2Screen(x);
+            panelCourbe->y2Screen(y);
+            y -= SIZE/2;
+            glVertex2i( x, y );
+            
+            y += SIZE;
+            glVertex2i( x, y );
+        }
+        //
+        // axe horizontale centrale
+        //
+        glColor4fv( (GLfloat*)&colorAxe );
+        int y = AXE;
         int x = 0;
 
         panelCourbe->x2Screen(x);
         panelCourbe->y2Screen(y);
 
         glVertex2i( x, y );
-        
         x += panelCourbe->getPosDX();
-
         glVertex2i( x, y );
-     
-        y = AXE_Y;
-        x = 0;
+        //
+        // Limite horizontale
+        // Min et Max
+        //
+        glColor4fv( (GLfloat*)&colorLimit );
 
-        panelCourbe->x2Screen(x);
-        panelCourbe->y2Screen(y);
-
-        glVertex2i( x, y );
-        
-        x = panelCourbe->getDX() + x;
-        panelCourbe->x2Screen(x);
-
-        glVertex2i( x, y );
-
-        float dxMax = err;
-        y = (float)(delta_courbe1*(dxMax) + AXE_X);
-        pXMax->setPos( 5, y );
+        y = (float)(delta_courbe1*(min) + AXE);
+        if ( pMax != NULL )     pMax->setPos( 5, y );
         panelCourbe->y2Screen(y);
         glVertex2i( 0, y );
         glVertex2i( x, y );
 
-        float dxMin = -err;
-        y = (float)(delta_courbe1*(dxMin) + AXE_X);
-        pXMin->setPos( 5, y -15 );
+        y = (float)(delta_courbe1*(max) + AXE);
+        if ( pMin != NULL )     pMin->setPos( 5, y -15 );
         panelCourbe->y2Screen(y);
         glVertex2i( 0, y );
         glVertex2i( x, y );
 
-        float dyMax = err;
-        y = (float)(delta_courbe2*(dyMax) + AXE_Y);
-        pYMax->setPos( 5, y );
-        panelCourbe->y2Screen(y);
-        glVertex2i( 0, y );
-        glVertex2i( x, y );
-
-        float dyMin = -err;
-        y = (float)(delta_courbe2*(dyMin) + AXE_Y);
-        pYMin->setPos( 5, y -15 );
-        panelCourbe->y2Screen(y);
-        glVertex2i( 0, y );
-        glVertex2i( x, y );
-
-        for( int i=0; i<2000; i+=60)
-        {
-            int x = i;
-            int y = 0;
-            panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(y);
-            glVertex2i( x, y );
-            
-            y += panelCourbe->getPosDX();
-            glVertex2i( x, y );
-            
-        }
     glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void glEchelle()
+{
+    int  AXE_X = (float)panelCourbe->getDY()/4.0;
+    int  AXE_Y   (3.0*(float)panelCourbe->getDY()/4.0);
+    
+    glEchelleAxe( AXE_X, 300, (float)+err, (float)-err, pXMax, pXMin );
+    glEchelleAxe( AXE_Y, 300, (float)+err, (float)-err, pYMax, pYMin );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void displayCourbeGL_cb(void)
 {
+    
     int DY = panelCourbe->getY();
     int n = t_vResultat.size();
     
+    int  AXE_X = (float)panelCourbe->getDY()/4.0;
+    int  AXE_Y   (3.0*(float)panelCourbe->getDY()/4.0);
+
+
     if ( bCorrection || bRestauration )
     {
         offset_x = vOrigine.x;
@@ -652,16 +690,19 @@ void displayCourbeGL_cb(void)
 
     glEchelle();
     
+    
+    if ( decal_resultat >= t_vResultat.size() )     return;
+    
     if ( n != 0  )
     {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
         else                            glColor4f( 0.0, 0.0, 1.0, 1.0 );
         
         glBegin(GL_LINE_STRIP);
-        for( int i=0; i<t_vResultat.size(); i++ )
+        for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
         {
             int y = (float)(delta_courbe1*(t_vResultat[i].x-offset_x) + AXE_X);
-            int x = (n-i)*courbe1;
+            int x = (n-i-decal_resultat)*courbe1;
 
             panelCourbe->x2Screen(x);
             panelCourbe->y2Screen(y);
@@ -675,10 +716,10 @@ void displayCourbeGL_cb(void)
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
         else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
         glBegin(GL_LINE_STRIP);
-        for( int i=0; i<t_vResultat.size(); i++ )
+        for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
         {
             int y = (float)(delta_courbe2*(t_vResultat[i].y-offset_y) + AXE_Y);
-            int x = (n-i)*courbe2;
+            int x = (n-i-decal_resultat)*courbe2;
 
             panelCourbe->x2Screen(x);
             panelCourbe->y2Screen(y);
@@ -835,8 +876,9 @@ void getSkyPointLine(struct sky_point* point, int x, int y, int size)
         int offset = getOffset(x,y,vCameraSize.x);
         if ( offset+4 > size_ptr )
         {
-            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
-            return;
+            //logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
+            //return;
+            continue;
         }
         
         float r;
@@ -921,6 +963,7 @@ void findSkyPoint(struct sky_point* point, int X, int Y, int size)
         int offset = getOffset( x, y, vCameraSize.x);
 
         if ( offset+4 > size_ptr )        {
+            continue;
             logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
             return;
         }
@@ -937,6 +980,7 @@ void findSkyPoint(struct sky_point* point, int X, int Y, int size)
         int offset = getOffset( x, y, vCameraSize.x);
 
         if ( offset+4 > size_ptr )        {
+            continue;
             logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
             return;
         }
@@ -954,6 +998,7 @@ void findSkyPoint(struct sky_point* point, int X, int Y, int size)
         int offset = getOffset( x, y,vCameraSize.x);
 
         if ( offset+4 > size_ptr )        {
+            continue;
             logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
             return;
         }
@@ -970,6 +1015,7 @@ void findSkyPoint(struct sky_point* point, int X, int Y, int size)
         int offset = getOffset( x, y,vCameraSize.x);
 
         if ( offset+4 > size_ptr )        {
+            continue;
             logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
             return;
         }
@@ -1184,7 +1230,8 @@ void compute_matrix()
 void charge_fichier(void)
 {
     //string filename = "/home/rene/.astropilot/svg.text";
-    string filename = "/home/rene/.astropilot/sauvegarde.text";
+    //string filename = "/home/rene/.astropilot/sauvegarde.text";
+    string filename = "/home/rene/.astropilot/m57.text";
     logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
     
     std::ifstream fichier;
@@ -2036,52 +2083,60 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         var.set("bAfficheVec", bAfficheVec);
         }
         break;
-    case 'u':
+    case 'U':
         {
         courbe1 *= 0.8;
         var.set("courbe1", courbe1);
-        }
-        break;
-    case 'U':
-        {
-        courbe1 /= 0.8;
-        var.set("courbe1", courbe1);
-        }
-        break;
-    case 'j':
-        {
-        delta_courbe1 *= 0.8;
-        var.set("delta_courbe1", delta_courbe1);
-        }
-        break;
-    case 'J':
-        {
-        delta_courbe1 /= 0.8;
-        var.set("delta_courbe1", delta_courbe1);
-        }
-        break;
-    case 'i':
-        {
         courbe2 *= 0.8;
         var.set("courbe2", courbe2);
         }
         break;
-    case 'I':
+    case 'u':
         {
+        courbe1 /= 0.8;
+        var.set("courbe1", courbe1);
         courbe2 /= 0.8;
         var.set("courbe2", courbe2);
         }
         break;
-    case 'k':
+    case 'J':
         {
+        delta_courbe1 *= 0.8;
+        var.set("delta_courbe1", delta_courbe1);
         delta_courbe2 *= 0.8;
         var.set("delta_courbe2", delta_courbe2);
         }
         break;
-    case 'K':
+    case 'j':
         {
+        delta_courbe1 /= 0.8;
+        var.set("delta_courbe1", delta_courbe1);
         delta_courbe2 /= 0.8;
         var.set("delta_courbe2", delta_courbe2);
+        }
+        break;
+    case 'k':
+        {
+            decal_resultat ++;
+            if ( decal_resultat >= t_vResultat.size() )            decal_resultat --;
+        }
+        break;
+    case 'K':
+        {
+            decal_resultat --;
+            if ( decal_resultat < 0 )            decal_resultat = 0;
+        }
+        break;
+    case 'i':
+        {
+            decal_resultat += 100;
+            if ( decal_resultat >= t_vResultat.size() )            decal_resultat -= 100;
+        }
+        break;
+    case 'I':
+        {
+            decal_resultat -= 100;
+            if ( decal_resultat < 0 )            decal_resultat = 0;
         }
         break;
     case 'h':
@@ -2089,7 +2144,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
-            //p->enregistre();
+            p->enregistre();
     	    logf( (char*)"Enregistre  une photo de la camera courante !!" );
         }
         }
@@ -2138,6 +2193,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bAlert = !bAlert;
         alertBox( "TEST ALERT BOX" );
+        }
+        break;
+    case 'S' :
+        {
+        bSuivi = !bSuivi;
         }
         break;
     default:
@@ -2498,7 +2558,7 @@ void resizeHelp(int width, int height)	{
 //--------------------------------------------------------------------------------------------------------------------
 void resizeCourbe(int width, int height)	{
     int dx = width - 20;
-    int dy = 300;
+    int dy = 600;
     int x = 10;
     int y = height - 10 - 20 - dy;
 
@@ -2667,16 +2727,15 @@ static void CreateHelp()
 
 	addString( "");
 	addString( "h: Enregistre une image de la camera courante");
-	addString( "u/U: Echelle en x sur la courbe 1");
-	addString( "i/I: Echelle en x sur la courbe 2");
-	addString( "j/J: Echelle en y sur la courbe 1");
-	addString( "k/K: Echelle en y sur la courbe 2");
+	addString( "u/U: Echelle en x sur les courbes");
+	addString( "j/J: Echelle en y sur les courbes");
 	addString( "r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
 	addString( "R: Test alert BOX");
 	addString( "l: List les ports /dev/ +  les controles ");
 	addString( "L: List les variables");
 	
 	addString( "");
+	addString( "S: Stop le suivi");
 	addString( "t/T: change le temps de correction");
 	addString( "Y: Lance l' asservissement");
 	addString( "V: Initialise les coordonnees de suivi");

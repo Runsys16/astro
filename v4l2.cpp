@@ -292,7 +292,7 @@ void Device_cam::process_image(const void *p, int size)
 
     char filename[155];
      
-    sprintf(filename, "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame-%d.raw", frame_number);
+    sprintf(filename, "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame-%d.jpg", frame_number);
     frame_number++;
     
     logf( (char*)"Enregistre : %s", filename);
@@ -412,11 +412,14 @@ int Device_cam::read_frame(void)
         jpg_size = buf.bytesused;
 
         //log((char*)"Device_cam::read_frame() decompresse");
+
+        if ( bEnregistre )      process_image((void *)buf.m.userptr, buf.bytesused);
+
+
         decompressJpeg();
         
         
         
-        if ( bEnregistre )      process_image((void *)buf.m.userptr, buf.bytesused);
         bEnregistre = false;
         memory += buf.bytesused;
 

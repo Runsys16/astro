@@ -134,6 +134,13 @@ void Serveur_mgr::thread_listen_2()
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
+
+    int enable = 1;
+    if (setsockopt(sock_2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    {
+        perror("setsockopt(SO_REUSEADDR) failed");
+		exit(EXIT_FAILURE);
+    }
 	
 	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
@@ -278,7 +285,15 @@ void Serveur_mgr::thread_listen_1()
 		exit(EXIT_FAILURE);
 	}
 	
-	memset(& adresse, 0, sizeof(struct sockaddr));
+    int enable = 1;
+    if (setsockopt(sock_1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    {
+        perror("setsockopt(SO_REUSEADDR) failed");
+		exit(EXIT_FAILURE);
+    }
+
+
+    memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
 	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
 	adresse.sin_port = htons(10001);
@@ -357,7 +372,8 @@ void Serveur_mgr::close_all()
     traite_1 = false;
     traite_2 = false;
 
-
+	//close(sock_1);
+	//close(sock_2);
     sleep(1);
 
     if ( sock_stellarium!= -1 )         shutdown(sock_stellarium, 2);
