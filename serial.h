@@ -17,6 +17,8 @@
 
 #include "main.h"
 
+extern float fTimeMili;
+
 
 using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
@@ -38,6 +40,7 @@ protected:
     int             nbZero;
     
     bool            bPrintInfo;
+    float           fTimeOut;
 
 public :
     Serial();

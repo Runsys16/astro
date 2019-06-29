@@ -8,6 +8,7 @@
 Serial::Serial()
 {
     logf((char*)"----------- Constructeur Serial -------------" );
+    fTimeOut = 0.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -42,8 +43,13 @@ int Serial::write_byte( char b)
 //--------------------------------------------------------------------------------------------------------------------
 int Serial::write_string( const char* str)
 {
-    logf( (char*)"Serial::write_string('%s')", str );
     if ( fd ==-1 )      return -1;
+    if ( (fTimeMili - fTimeOut) < 1.0 )  return -1;
+    logf( (char*)"Serial::write_string('%s')", str );
+    
+    
+    fTimeOut = fTimeMili;
+    
 
     int len = strlen(str);
     int n = write(fd, str, len);
@@ -106,18 +112,31 @@ void Serial::read_thread()
                 string test = buffer;
                 //sound_thread();
                 if ( test.find("Change joy ...NOK") != string::npos )
+                {
+                    changeJoy(false);
                     system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
+                }
                 else if ( test.find("=INFO START") != string::npos )
+                {
                     bPrintInfo = false;
+                }
                 else if ( test.find("=INFO FALSE") != string::npos )
+                {
                     bPrintInfo = true;
-
+                }
                 else if ( test.find("Change joy ...OK") != string::npos )
+                {
+                    changeJoy(true);
                     system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
+                }
                 else if ( test.find("dbl click") != string::npos )
+                {
                     system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
+                }
                 else if ( test.find("GOTO OK") != string::npos )
+                {
                     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
+                }
                 else if ( test.find("Rotation terre") != string::npos )
                 {
                     if ( test.find("OUI") != string::npos)
@@ -159,7 +178,7 @@ void Serial::read_thread()
                 }
 
 
-                if ( bPrintInfo == true )
+                //if ( bPrintInfo == true )
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
                     
             }

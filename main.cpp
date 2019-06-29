@@ -126,6 +126,7 @@ int                 _b[256];
 
 float               xSuivi;
 float               ySuivi;
+float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
 //--------------------------------------------------------------------------------------------------------------------
@@ -189,6 +190,8 @@ int                 current_capture = -1;
 float fTimer = 0.0;
 bool bAsc = true;
 bool bDec = true;
+bool bSui = false;
+bool bJoy = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -231,12 +234,12 @@ void photo()
 {
     string filename = " -o /home/rene/Documents/astronomie/logiciel/k200d/test";
     string iso = " -i 100";
-    string time = " -t 1";
+    string stime = " -t 1";
     string frames = " -F 2";
     string timeout = " --timeout=3";
     string focus = " -f";
     string command = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli";
-    //command = command + filename + iso + time + timeout;
+    //command = command + filename + iso + stime + timeout;
     command = command + focus + timeout + filename;
     logf( (char*) command.c_str() );
     
@@ -502,6 +505,14 @@ void glCroix( int x,  int y,  int dx,  int dy )
 	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
 
     glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void displayGLnuit_cb(void)
+{
+    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -894,6 +905,8 @@ float getLum(int offset )
 //--------------------------------------------------------------------------------------------------------------------
 void findSkyPoint(struct sky_point* point, int X, int Y, int size)
 {
+    point->found = false;  
+
     int x, y;
 
     y = X - size;
@@ -966,6 +979,50 @@ void findSkyPoint(struct sky_point* point, int X, int Y, int size)
         if (l!=0.0) { point->found = true; point->x = x; point->y = y; return; }
     } 
     point->found = false;  
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void rechercheSkyPoint( int x, int y)
+{
+    struct sky_point point;
+    
+
+    for( int i=0; i<500; i++ )
+    {
+        findSkyPoint(&point, x, y, i);
+        if ( point.found )
+        {
+            int ix = point.x;
+            int iy = point.y;
+            
+
+            point.xAverage = 0.0;
+            point.yAverage = 0.0;
+            point.ponderation = 0.0;
+
+            bPrintLum = true;
+            
+            getSkyPoint( &point, ix, iy, SIZEPT);
+
+            logf( (char*)"Iteration : %d  x=%0.2f, y=%0.2f", i, (float)point.x, (float)point.y );
+            float xx;
+            float yy;
+
+            if ( point.ponderation > 0.1 ) {
+
+                xx = point.xAverage / point.ponderation;
+                yy = point.yAverage / point.ponderation;
+                
+                xSuivi = xx;
+                ySuivi = yy;
+            }
+
+            updatePanelResultat( xSuivi, ySuivi, point.ponderation );
+
+            break;
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1239,6 +1296,11 @@ void suivi(void)
         ySuivi = yy;
         //printf( "2-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
     }
+    else 
+    {
+        rechercheSkyPoint( xSuivi, ySuivi);
+        logf( (char*)"Perte suivi !!!" );
+    }
 
     if ( t_vResultat.size()>20000)      t_vResultat.clear();
 
@@ -1307,7 +1369,7 @@ static void idleGL(void)
 {
     //logf( (char*)"*** IDLE GL ***" );
     Timer&          timer = Timer::getInstance();
-	float time = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+	fTimeMili = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
 
     char sFPS[] = "fps 0000";
     sprintf( sFPS,"fps %d", *Timer::getInstance().getvFPSCounter() );
@@ -1387,19 +1449,19 @@ static void idleGL(void)
 	
     float elapsedTime = -1;
 	if ( prevTime < 0 )	{
-		prevTime = time;
+		prevTime = fTimeMili;
 	}
 	else 	{
-		elapsedTime = time - prevTime;
-		prevTime = time;
+		elapsedTime = fTimeMili - prevTime;
+		prevTime = fTimeMili;
 	}
     WindowsManager::getInstance().idleGL( elapsedTime );
 	if ( elapsedTime != -1 )
 	{
 	    fTimer += elapsedTime;
-	    if ( fTimer >= 5.0 )
+	    if ( fTimer >= 10.0 )
 	    {
-	        fTimer -= 5.0;
+	        fTimer -= 10.0;
             
             char cmd[255];
             sprintf( cmd, "g" );
@@ -2061,6 +2123,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         if (bNuit)  panelStdOut->setColor(0xFFFF0000);
         else        panelStdOut->setColor(0xFFFFFFFF);
+
+        //if (bNuit)  panelHelp->setColor(0xFFFF0000);
+        //else        panelHelp->setColor(0xFFFFFFFF);
         }
         break;
     case 'r' :
@@ -2462,6 +2527,7 @@ static void CreateCourbe()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 
     panelCourbe = new PanelWindow();
+    panelCourbe->setDisplayGL(displayGLnuit_cb);
     resizeCourbe( width, height );
 
     wm.add(panelCourbe);
@@ -2491,6 +2557,7 @@ static void CreateResultat()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 
     panelResultat = new PanelWindow();
+    panelResultat->setDisplayGL(displayGLnuit_cb);
     int dx = 700;
     int dy = 30;
     int x = 10;
@@ -2554,6 +2621,7 @@ static void CreateHelp()
         DY = var.geti("dyPanelHelp");
 
     panelHelp = new PanelWindow();
+    panelHelp->setDisplayGL(displayGLnuit_cb);
 	panelHelp->setPosAndSize( X, Y, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
 	//panelHelp->setBackground( (char*)"/home/rene/programmes/opengl/video/images/background.tga");
@@ -2723,6 +2791,8 @@ static void CreateStdOut()	{
     if ( dy<= 100 )     dy = 400;
 
 	panelStdOutW = new PanelWindow();
+    panelStdOutW->setDisplayGL(displayGLnuit_cb);
+
 	panelStdOut = new PanelScrollText(dy/13,50);
 	panelStdOut->setPrompt(string(">"));
 
@@ -2786,12 +2856,25 @@ void changeAsc( bool b )
 //--------------------------------------------------------------------------------------------------------------------
 void changeSui( bool b )
 {
-    pButtonSui->setVal( !b );
-    if ( b != bAsc )
+    pButtonSui->setVal( b );
+    if ( b != bSui )
     {
         logf( (char*)"Suivi : %d", (int)b );
         //inverse_texture( pButtonAsc, b, "asc" );
-        bAsc = b;
+        bSui = b;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void changeJoy( bool b )
+{
+    pButtonJoy->setVal( b );
+    if ( b != bJoy )
+    {
+        logf( (char*)"Joy : %d", (int)b );
+        //inverse_texture( pButtonAsc, b, "asc" );
+        bJoy = b;
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

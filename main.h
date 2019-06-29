@@ -89,7 +89,23 @@ void                displayCourbeGL_cb(void);
 int                 getOffset( int x, int y, int width );
 void                screen2tex( int& x, int& y );
 void                tex2screen( int& x, int& y);
-void                getSkyPoint(struct sky_point&, int, int, int);
+
+float               getSkyPoint_colorR(int offset);
+float               getSkyPoint_colorG(int offset);
+float               getSkyPoint_colorB(int offset);
+float               getSkyPoint_colorL(int offset);
+void                updatePanelResultat(float x, float y, float mag);
+void                getSkyPointLine(struct sky_point* point, int x, int y, int size);
+float               getLumMax(int offset, float max );
+float               getLum(int offset );
+void                findSkyPoint(struct sky_point* point, int X, int Y, int size);
+void                rechercheSkyPoint( int x, int y);
+
+void                getSkyPoint(struct sky_point*, int, int, int);
+
+
+
+
 
 void                change_fov( void );
 static void         displayGL(void);
@@ -139,6 +155,7 @@ void                displayGL(void);
 void                changeDec(bool);
 void                changeAsc(bool);
 void                changeSui(bool);
+void                changeJoy(bool);
 
 void                log( char *);
 void                logf( char *, ...);
