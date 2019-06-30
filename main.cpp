@@ -587,7 +587,10 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
         //
         glColor4fv( (GLfloat*)&color );
         int pas = delta_courbe1;
-        for( float i=0; i<SIZE/2; i+=delta_courbe1 )
+        float fPas = delta_courbe1;
+        while( fPas < 10.0 )     fPas += courbe1;
+
+        for( float i=0; i<SIZE/2; i+=fPas )
         {
             int x = 0;
             int y = AXE + i;
@@ -608,7 +611,7 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
         //
         // graduation verticale
         //
-        float fPas = courbe1;
+        fPas = courbe1;
         while( fPas < 10.0 )     fPas += courbe1;
         for( float i=0; i<2000; i+=fPas )
         {
@@ -653,6 +656,7 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
         glVertex2i( 0, y );
         glVertex2i( x, y );
 
+        glColor4fv( (GLfloat*)&colorAxe );
     glEnd();        
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1345,8 +1349,8 @@ void suivi(void)
     }
     else 
     {
-        rechercheSkyPoint( xSuivi, ySuivi);
         logf( (char*)"Perte suivi !!!" );
+        rechercheSkyPoint( xSuivi, ySuivi);
     }
 
     if ( t_vResultat.size()>20000)      t_vResultat.clear();
