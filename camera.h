@@ -54,7 +54,7 @@ virtual    ~Camera();
     void                        threadExtractImg();
     virtual void                change_background_camera();
     
-    void                        keyboard( char );
+    bool                        keyboard( char );
     
     //std::thread                 memberThread();
     

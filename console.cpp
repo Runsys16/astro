@@ -192,7 +192,7 @@ bool Console::commande( string cmd )
 	else	{
 		if ( str.find_first_of("#") != 0 )
 		{
-			pc->affiche( "commande inconnu .... \"" + str + "\"" );
+			//pc->affiche( "commande inconnu .... \"" + str + "\"" );
 			return false;
 	    }
 	}

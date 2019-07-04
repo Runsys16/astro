@@ -18,7 +18,6 @@ protected:
     //char                        sPleiade[255];
     string                      sPleiade;
     string                      sPleiades;
-    struct readBackground       readB;
     
     GLubyte*                    ptr;
 

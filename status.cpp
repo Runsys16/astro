@@ -8,6 +8,7 @@ PanelCheckBox *     pButtonAsc;
 PanelCheckBox *     pButtonDec;
 PanelCheckBox *     pButtonJoy;
 PanelCheckBox *     pButtonSui;
+PanelCheckBox *     pButtonRet;
 
 PanelButton *       pFlecheHaut;
 PanelButton *       pFlecheBas;
@@ -211,6 +212,12 @@ void cb_rotationCheck(PanelCheckBox* p)	{
         sprintf( cmd, "S" );
         Serial::getInstance().write_string(cmd);
     }
+    else if (  p == pButtonRet )
+    {
+        char cmd[255];
+        sprintf( cmd, "p" );
+        Serial::getInstance().write_string(cmd);
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -307,6 +314,7 @@ void create_windows_button()
     pButtonDec      = create_window_check_box( 11, "dec" );
     pButtonJoy      = create_window_check_box( 12, "joy" );
     pButtonSui      = create_window_check_box( 13, "terre" );
+    pButtonRet      = create_window_check_box( 14, "terre" );
     
     create_fleches();
 }

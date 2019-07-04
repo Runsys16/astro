@@ -55,12 +55,12 @@ void Pleiade::charge_background()
 {
     bCharging = true;
     //logf((char*)"Pleiade::charge_background() start %s", (char*)getName());
-    readB.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, readB.w, readB.h, readB.d );
+    readBgr.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, readBgr.w, readBgr.h, readBgr.d );
 
     bCharging = false;
     bCharged = true;
     bFreePtr = true;
-    //logf((char*)"Camera::threadExtractImg()  stop %ld", readB.ptr);
+    //logf((char*)"Camera::threadExtractImg()  stop %ld", readBgr.ptr);
 }
 /*
 //--------------------------------------------------------------------------------------------------------------------
@@ -102,10 +102,10 @@ void Pleiade::change_background_camera(void)
         unsigned int w, h, d;
 
 
-        ptr = readB.ptr;
-        w   = readB.w;
-        h   = readB.h;
-        d   = readB.d;
+        ptr = readBgr.ptr;
+        w   = readBgr.w;
+        h   = readBgr.h;
+        d   = readBgr.d;
         
         panelPreview->setBackground( ptr, w, h, d);
         bNewBackground = true;

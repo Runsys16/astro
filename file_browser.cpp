@@ -112,7 +112,7 @@ FileBrowser::FileBrowser()
 
     workingDir = "/home/rene/programmes/";
     workingDir = "/home/rene/programmes/opengl/";
-    workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/";
+    workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2019-06-30/";
     currentDir = string(workingDir);
 
     pW              = new PanelWindow();
@@ -123,6 +123,7 @@ FileBrowser::FileBrowser()
     panelQuit       = new PanelButton();
     panelFilename   = new PanelEditText();
     
+    pW->setDisplayGL(displayGLnuit_cb);
     //WindowsManager::getInstance().call_back_keyboard( panelFilename );
 
     

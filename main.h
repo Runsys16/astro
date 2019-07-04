@@ -57,7 +57,13 @@ struct readBackground
     GLubyte*                ptr;
 };
 
+#ifndef MAIN_CPP
+    extern bool         bNuit;
+    extern bool         bFindStar;
+#endif
 
+bool                starExist(int, int);
+void                findAllStar(void);
 void                photo();
 
 string              getCurrentDirectory();
@@ -83,9 +89,14 @@ void                rad2dms( struct dms&, float );
 void                glCercle(int x, int y, int rayon);
 void                glCarre( int x,  int y,  int dx,  int dy );
 void                glCroix( int x,  int y,  int dx,  int dy );
-void                displayGL_cb(void);
+void                displayGLCourbe(void);
+void                displayGLCamera_cb(void);
 void                glEchelle();
-void                displayCourbeGL_cb(void);
+
+void                displayGLnuit_cb();
+void                displayResultat_cb(void);
+void                displayCourbe(void);
+
 int                 getOffset( int x, int y, int width );
 void                screen2tex( int& x, int& y );
 void                tex2screen( int& x, int& y);
@@ -119,6 +130,12 @@ void                change_arduino(bool);
 void                change_ad(float);
 void                change_dc(float);
 void                compute_matrix();
+
+void                sauve(void);
+void                charge_fichier(void);
+void                sauve_traces(void);
+void                charge_traces(void);
+void                suivi(void);
 
 void                getSuiviParameter();
 
@@ -156,6 +173,7 @@ void                changeDec(bool);
 void                changeAsc(bool);
 void                changeSui(bool);
 void                changeJoy(bool);
+void                changeRetourPos(bool);
 
 void                log( char *);
 void                logf( char *, ...);

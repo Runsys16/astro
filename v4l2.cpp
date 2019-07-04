@@ -1111,6 +1111,25 @@ struct jpeg_error_mgr * my_jpeg_std_error(struct jpeg_error_mgr * jerr)
 //--------------------------------------------------------------------------------------------------------------------
 void Device_cam::decompressJpeg() {
 	//printf("Proc: %d--------------------------------------\n", nbJPG++);
+
+	wBmp = -1;
+	hBmp = -1;
+	bmp_buffer = NULL;
+
+    readBgr.ptr = NULL;
+    readBgr.w   = -1;
+    readBgr.h   = -1;
+    readBgr.d   = -1;
+
+	//logf((char*)"wBmp=%d hBmp=%d", wBmp, hBmp);
+
+	//pixel_size = cinfo.output_components;
+    // si le buffer n'est pas vide on le libere
+	if (bmp_buffer)     free(bmp_buffer);
+    // On recreer le nouveau buffer
+	bmp_size = wBmp * hBmp * pixel_size;
+
+
     int rc, i, j;
 	// Variables for the source jpg
 	struct stat file_info;
@@ -1162,6 +1181,11 @@ void Device_cam::decompressJpeg() {
 	bmp_buffer = (unsigned char*) malloc(bmp_size);
 
 	row_stride = wBmp * pixel_size;
+
+    readBgr.ptr = (GLubyte*)bmp_buffer;
+    readBgr.w   = wBmp;
+    readBgr.h   = hBmp;
+    readBgr.d   = 3;
 
     /*	
     if ( bmp_size<6220800 ) {

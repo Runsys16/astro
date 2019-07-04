@@ -79,6 +79,7 @@ void Camera::CreatePreview()	{
 
 	//panelPreview = new PanelSimple();
 	panelPreview = new PanelWindow();
+    panelPreview->setDisplayGL(displayGLnuit_cb);
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
@@ -196,7 +197,7 @@ void Camera::resizePreview(int width, int height)	{
 
 	
 	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
-	panelPreview->setDisplayGL(displayGL_cb);
+	panelPreview->setDisplayGL(displayGLCamera_cb);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -250,7 +251,7 @@ void Camera::fullSizePreview(int width, int height)	{
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
 	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
-	panelPreview->setDisplayGL(displayGL_cb);
+	panelPreview->setDisplayGL(displayGLCamera_cb);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -328,6 +329,7 @@ void Camera::CreateControl()	{
     }
 
     panelControl = new PanelWindow();
+    panelControl->setDisplayGL(displayGLnuit_cb);
     
 	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
@@ -435,10 +437,11 @@ void Camera::change_background_camera(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::keyboard(char key)
+bool Camera::keyboard(char key)
 {
     //std::cout << (int)key << std::endl;
 	Control* pControl;
+	if ( !panelControl->getVisible() )       return false;
 	
 	switch(key){ 
 	
@@ -509,8 +512,11 @@ void Camera::keyboard(char key)
     case 'l':  // '-'
         capability_list();
         break;
-        
+
+    default:
+        return false;        
 	}
+	return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

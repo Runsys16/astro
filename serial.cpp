@@ -103,6 +103,8 @@ void Serial::read_thread()
         char c = b[0];
         //if ( c==10)
         //printf( "%c", c);
+        bool bAffiche = true;
+
         if ( c == '\n' )
         {
             if ( idx != 0 )
@@ -116,18 +118,27 @@ void Serial::read_thread()
                     changeJoy(false);
                     system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
                 }
-                else if ( test.find("=INFO START") != string::npos )
-                {
-                    bPrintInfo = false;
-                }
-                else if ( test.find("=INFO FALSE") != string::npos )
-                {
-                    bPrintInfo = true;
-                }
                 else if ( test.find("Change joy ...OK") != string::npos )
                 {
                     changeJoy(true);
                     system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
+                }
+                else if ( test.find("Retour Stellarium on") != string::npos )
+                {
+                    changeRetourPos( true );
+                }
+                else if ( test.find("Retour Stellarium off") != string::npos )
+                {
+                    changeRetourPos( false );
+                }
+                else if ( test.find("=INFO START") != string::npos )
+                {
+                    bPrintInfo = false;
+                }
+                else if ( test.find("=INFO STOP") != string::npos )
+                {
+                    bPrintInfo = true;
+                    bAffiche = false;
                 }
                 else if ( test.find("dbl click") != string::npos )
                 {
@@ -177,10 +188,11 @@ void Serial::read_thread()
                     }
                 }
 
-
-                //if ( bPrintInfo == true )
+                if ( bPrintInfo == true && bAffiche )
+                {
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
-                    
+                }    
+
             }
             idx = 0;
         }

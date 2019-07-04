@@ -122,6 +122,10 @@ private:
     bool                    bCapture;
     bool                    bHaveNew;
 
+protected:
+    struct readBackground       readBgr;
+
+
 
 public :
 
@@ -181,6 +185,8 @@ public :
 
     inline void             setSizeChoix()          {  sizeChoix = ++sizeChoix % nSize; }
     inline int              getSizeChoix()          {  return sizeChoix; }
+
+virtual struct readBackground*      getRB()     {return &readBgr;}
 
 private:
     void                    decompressJpeg();

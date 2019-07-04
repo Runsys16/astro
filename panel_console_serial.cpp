@@ -15,6 +15,8 @@ PanelConsoleSerial::PanelConsoleSerial()
     pw->add(pc);
     
 	pw->setPosAndSize( 10, 10, 500, 700);
+    pw->setDisplayGL(displayGLnuit_cb);
+
     VarManager& var= VarManager::getInstance();
     int x = var.geti("xPanelSerial");
     int y = var.geti("yPanelSerial");

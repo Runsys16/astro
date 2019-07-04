@@ -30,7 +30,7 @@ public:
     void                        change_background_camera();
     void                        start_camera();
     void                        stop_camera();
-    void                        keyboard( char key );
+    bool                        keyboard( char key );
     void                        idleGL();
     void                        onBottom();
     void                        resize( int, int );
@@ -55,13 +55,18 @@ public:
     bool                        haveNewFrame();
     void                        haveUseFrame(bool);
 
+    struct readBackground*      getRB();
+
     inline Camera*              getCurrent()                                { return pCurrent; }   
    
+   
+   
+   
 private:
-    vector<Camera*>     pCameras;
-    Camera*             pCurrent;
+    vector<Camera*>             pCameras;
+    Camera*                     pCurrent;
     
-    int                 nActive;
+    int                         nActive;
     
     
 SINGLETON_END()

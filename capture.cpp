@@ -62,7 +62,6 @@ Capture::Capture(string dirname, string name)
 
     logf( (char*)"image : %s", filename.c_str() );
     create_preview();
-
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -129,15 +128,31 @@ void Capture::create_preview()	{
 	//panelPreview = new PanelSimple();
 	//panelPreview = new PanelWindow();
     pW = new PanelWindow();
-	panelPreview = new PanelCapture();
+    pW->setDisplayGL(displayGLnuit_cb);
+
 
     readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+	panelPreview = new PanelCapture(NULL);
     panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+    panelPreview->setRB( &readBgr );
+    panelPreview->findAllStar();
+
     pW->add(panelPreview);
 
     resize( getWidth(), getHeight() );
 
-	pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
+    char * pS = filename.c_str();
+    char * filenameShort = NULL;
+    int nb = filename.size();
+    
+    for( int i=nb; i>0; i-- )
+    {
+        int j = i-1;
+        if ( pS[j]=='/' )       { filenameShort = pS+j+1; break; }
+    }
+
+	//pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
+	pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
 	pW->add( pTitre );
 	
 	
@@ -181,6 +196,7 @@ void Capture::resize(int w, int h )
     
     pW->setPosAndSize( x, y, dx, dy );
     panelPreview->setPosAndSize( 0, 0, dx, dy );
+    //panelPreview->setEchelle( (float)readBgr.w / (float)dx );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -225,16 +241,22 @@ void Capture::resize(int x, int y, int w, int h )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void Capture::onTop()
 {
     WindowsManager::getInstance().onTop( pW );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::addStar( int x, int y )
+{
+    panelPreview->addStar(x, y);
 }
 
 
 
 
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

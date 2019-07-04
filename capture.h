@@ -37,6 +37,9 @@ public :
     void                        resize(int,int,int,int);
 
     void                        onTop();
+    void                        addStar(int,int);
+
+    struct readBackground*      getRB()     {return &readBgr;}
 
 inline void                     setEchelle(float f)                         { panelPreview->setEchelle(f); }
 inline float                    getEchelle()                                { return panelPreview->getEchelle(); }

@@ -1,3 +1,8 @@
+#ifndef MAIN_CPP
+#define MAIN_CPP
+
+
+
 #include "main.h"
 #include "v4l2.h"
 #include "camera.h"
@@ -12,6 +17,7 @@
 #include "var_mgr.h"
 #include "alert_box.h"
 #include "file_browser.h"
+#include "stars.h"
 
 //#define DEBUG 1
 #define SIZEPT  20
@@ -117,7 +123,7 @@ int                 hImg;
 int                 nPlanesImg;
 
 ivec2               vCameraSize;
-GLubyte*             ptr;
+GLubyte*            ptr;
 vector<string>      exclude;
 
 int                 _r[256];
@@ -126,6 +132,7 @@ int                 _b[256];
 
 float               xSuivi;
 float               ySuivi;
+vector<Star*>       v_tStars;
 float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
@@ -146,6 +153,9 @@ float               zoom;
 //--------------------------------------------------------------------------------------------------------------------
 vector<vec2>        t_vResultat;
 vector<vec2>        t_vSauve;
+vector<vector<vec2> * >        t_vTrace;
+bool                bAffTrace = false;
+bool                bRecTrace = false;
 float               offset_x;
 float               offset_y;
 float               delta_courbe1 = 1.0;
@@ -153,6 +163,13 @@ float               delta_courbe2 = 1.0;
 float               courbe1 = 1.0;
 float               courbe2 = 1.0;
 int                 decal_resultat = 0;
+vec4                colorTraces[] = 
+                        {
+                        vec4(1.0,0.0,0.0,1.0), vec4(0.0,1.0,0.0,1.0), vec4(0.0,0.0,1.0,1.0),
+                        vec4(1.0,1.0,0.0,1.0), vec4(1.0,0.0,1.0,1.0), vec4(0.0,1.0,1.0,1.0),
+                        vec4(0.5,0.0,0.0,1.0), vec4(0.0,0.5,0.0,1.0), vec4(0.0,0.0,0.5,1.0),
+                        vec4(0.5,0.5,0.0,1.0), vec4(0.5,0.0,0.5,1.0), vec4(0.0,0.5,0.5,1.0)
+                        };
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -185,6 +202,7 @@ string              sAlert;
 
 vector<Capture*>    captures;
 int                 current_capture = -1;
+bool                bFindStar = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -193,6 +211,7 @@ bool bAsc = true;
 bool bDec = true;
 bool bSui = false;
 bool bJoy = false;
+bool bRet = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -213,6 +232,17 @@ long_options[] = {
 };
 //--------------------------------------------------------------------------------------------------------------------
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //--------------------------------------------------------------------------------------------------------------------
 static void usage(FILE *fp, int argc, char **argv)
 {
@@ -228,6 +258,87 @@ static void usage(FILE *fp, int argc, char **argv)
                  "",
                  argv[0] );
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool starExist(int x, int y)
+{
+    int nb = v_tStars.size();
+    for( int n=0; n<nb; n++ )
+    {
+        int x_star = v_tStars[n]->getX();
+        int y_star = v_tStars[n]->getY();
+        
+        if ( abs(x-x_star) < 8 && abs(y-y_star) < 8 )       return true;
+    }
+    
+    return false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void findAllStar()
+{
+    Camera_mgr& mgr = Camera_mgr::getInstance(); 
+    if ( mgr.getCurrent() == NULL ) return;
+    if ( mgr.getCurrent()->getPanelPreview() == NULL )  return;
+    
+    struct readBackground*  RB = mgr.getRB();
+    if (RB==NULL || RB->ptr==NULL) return;
+
+    int width = RB->w;
+    int height = RB->h;
+
+    logf( (char*)"Find all star(%d,%d)", width, height );
+
+    Star *      p = new Star();
+    
+    p->setPtr( RB->ptr );
+    p->setWidth( RB->w );
+
+    for( int y_find=20; y_find<height; y_find+=(40) )
+    {
+        for( int x_find=20; x_find<width; x_find+=(40) )
+        {
+            //logf( (char*)"Cherche etoile(%d,%d)", x_find, y_find );
+            if ( p->chercheLum(x_find, y_find, 50) )
+            {
+                //logf( (char*)"  (%d,%d)", p->getX(), p->getY() );
+                
+                p->setXY(x_find,y_find);            
+                p->find();            
+                int x_find = p->getX();
+                int y_find = p->getY();
+                p->computeMag();
+                
+                if ( p->getMagnitude() < 9.0 )     
+                {
+                    if ( starExist(x_find, y_find) )            
+                    {
+                        //logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, x_find, p->getMagnitude() );
+                        continue;
+                    }
+                    
+                    Star * pp = new Star();
+                    pp->setPtr( RB->ptr );
+                    pp->setWidth( RB->w );
+
+                    pp->setXY( x_find, y_find );
+                    pp->find();
+                    mgr.getCurrent()->getPanelPreview()->add( pp->getInfo() );
+                    
+                    v_tStars.push_back( pp );
+
+                    logf( (char*)"Nouvelle etoile(%d,%d) mag=%0.2f", x_find, x_find, pp->getMagnitude() );
+
+                    
+                }
+            }
+        }
+    }
+    delete p;
+}
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -510,6 +621,47 @@ void glCroix( int x,  int y,  int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void displayGLTrace(void)
+{
+    if ( !bAffTrace )              return;
+
+    int nbv = t_vTrace.size();
+    
+    glBegin(GL_LINES);
+        
+    int m = sizeof(colorTraces) / 16;
+    //logf( (char*)"Modulo : %d", m );
+
+    for( int j=0; j<nbv; j++ )
+    {
+        
+        glColor4fv( (GLfloat*)&colorTraces[j%m] );
+            
+        vector<vec2> *   trace = t_vTrace[j];
+        int nb = (*trace).size();
+        if ( nb == 1 )                  continue;
+    
+        for ( int i=0; i<nb-1; i++ )
+        {
+	        int x;
+	        int y;
+	        
+	        x = round((*trace)[i].x);
+	        y = round((*trace)[i].y);
+	        tex2screen(x,y);
+            glVertex2i(x,y);
+
+	        x = round((*trace)[i+1].x);
+	        y = round((*trace)[i+1].y);
+	        tex2screen(x,y);
+            glVertex2i(x,y);
+        }
+    }    
+    glEnd();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void displayGLnuit_cb(void)
 {
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
@@ -518,7 +670,7 @@ void displayGLnuit_cb(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void displayGL_cb(void)
+void displayGLCamera_cb(void)
 {
     if ( bSuivi && bAutorisationSuivi )   {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
@@ -554,9 +706,37 @@ void displayGL_cb(void)
         glVecDC();
     }
 
+    float gris = 0.3;
+    if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
+    else                glColor4f( 0.0,   1.0,  0.0, 0.2 );    
+
+    int nb = v_tStars.size();
+    for (int i=0; i<nb; i++ )
+    {
+        Camera_mgr& mgr = Camera_mgr::getInstance(); 
+        if ( mgr.getCurrent() == NULL )                         continue;
+        if ( mgr.getCurrent()->getPanelPreview() == NULL )      continue;
+        
+        PanelWindow* p = mgr.getCurrent()->getPanelPreview();
+        
+        struct readBackground*  RB = mgr.getRB();
+        if (RB==NULL || RB->ptr==NULL) continue;
+
+        int DX = p->getDX();
+        int X  = p->getX();
+        int Y  = p->getY();
+        v_tStars[i]->setPtr( RB->ptr );
+        v_tStars[i]->setWidth( RB->w );
+        v_tStars[i]->find();
+        v_tStars[i]->updatePos( X, Y, (float)DX/(float)RB->w);
+        v_tStars[i]->displayGL();
+    }
+    
+    displayGLTrace();
 
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
     else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -674,7 +854,7 @@ void glEchelle()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void displayCourbeGL_cb(void)
+void displayResultat_cb(void)
 {
     
     int DY = panelCourbe->getY();
@@ -873,7 +1053,19 @@ void getSkyPointLine(struct sky_point* point, int x, int y, int size)
     
     //printf( "getPointLine x%d y%d\n", x, y);
     ptr = Camera_mgr::getInstance().getPtr();
-    size_t size_ptr = malloc_usable_size ( (void*) ptr);
+    size_t size_ptr;
+    
+    try
+    {
+        size_ptr = malloc_usable_size ( (void*) ptr);
+    }
+    catch(std::exception const& e)
+    {
+        cerr << "ERREUR : " << e.what() << endl;
+    }
+     
+    
+    
     
     for( x=min; x<max; x++) 
     {
@@ -1231,6 +1423,32 @@ void compute_matrix()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void sauve(void)
+{
+    string filename = "/home/rene/.astropilot/sauvegarde.text";
+    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filename.c_str() );
+    
+    std::ofstream fichier;
+    fichier.open(filename, std::ios_base::app);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+    }
+
+    for(int i=0; i<t_vSauve.size(); i++)
+    {
+        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " ) / ";
+        fichier << "( " << vOrigine.x << " , " <<  vOrigine.y << " )\n";
+    }
+
+    fichier.close();
+    
+    t_vSauve.clear();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void charge_fichier(void)
 {
     //string filename = "/home/rene/.astropilot/svg.text";
@@ -1279,10 +1497,13 @@ void charge_fichier(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void sauve(void)
+void sauve_traces(void)
 {
-    string filename = "/home/rene/.astropilot/sauvegarde.text";
-    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filename.c_str() );
+    string filename = "/home/rene/.astropilot/traces.txt";
+    logf( (char*)"Sauvegarde des traces dans '%s'", (char*)filename.c_str() );
+    
+    int nbt = t_vTrace.size();
+    if ( nbt < 1 )          return;
     
     std::ofstream fichier;
     fichier.open(filename, std::ios_base::app);
@@ -1290,17 +1511,86 @@ void sauve(void)
     if ( !fichier ) 
     {
         logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        return;
     }
 
-    for(int i=0; i<t_vSauve.size(); i++)
+    fichier << "Nombre de trace : " <<  nbt << "\n";
+
+    for( int j=0; j<nbt; j++ )
     {
-        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " ) / ";
-        fichier << "( " << vOrigine.x << " , " <<  vOrigine.y << " )\n";
+        fichier << "Trace No : " <<  j << "\n";
+        vector<vec2>* courbe = t_vTrace[j];
+        for(int i=0; i<courbe->size(); i++)
+        {
+            fichier << "( " << (*courbe)[i].x << " , " <<  (*courbe)[i].y << " )";
+            fichier << "\n";
+        }
     }
-
     fichier.close();
     
-    t_vSauve.clear();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void charge_traces(void)
+{
+    string filename = "/home/rene/.astropilot/traces.txt";
+    logf( (char*)"Lecture des traces dans '%s'", (char*)filename.c_str() );
+    
+    std::ifstream fichier;
+    fichier.open(filename, std::ios_base::app);
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        return;
+    }
+
+    //----------------- Suppression du tableau ----------------------------
+    int nbt = t_vTrace.size();
+    int i, j;
+    
+    for( int i=nbt-1; i>=0; i-- )
+    {
+        vector<vec2>* trace = t_vTrace[i];
+        trace->clear();
+        delete trace;
+        t_vTrace.pop_back();
+        trace = 0;
+    }
+    //------------- Lecture du fichier ------------------------------------
+    string line;
+    float x, y;
+    vec2 v;
+    int n = -1;
+    vector<vec2>* trace;
+    
+    
+    while ( getline (fichier, line) )
+    {
+        //n = -1;
+        //logf( (char*)"%s", line.c_str() );
+        if ( line.find("trace") != std::string::npos )                  continue;
+        
+        if ( line.find("Trace No : ") != std::string::npos )
+        {
+            sscanf( line.c_str(), "Trace No : %d", &n );
+            logf( (char*)"Charge la trace No : %d", n );
+            trace = new (vector<vec2>)();
+            t_vTrace.push_back( trace );
+            continue;
+        }
+        trace = t_vTrace[n];
+
+        sscanf( line.c_str(), "( %f , %f )", &x, &y );
+        //logf ( (char*)" v(%f,%f)", x, y );
+        v.x = x;
+        v.y = y;
+
+        trace->push_back( vec2(x,y) );
+    }
+    
+    fichier.close();
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1481,22 +1771,19 @@ static void idleGL(void)
 
     if (!bAutorisationSuivi)
     {
-        /*
-        char   s[100];
-
-        int x = xClick;
-        int y = yClick;
-        tex2screen(x,y);
-
-        //sprintf( s, "x=%d, y=%d", x, y);
-        sprintf( s, "(%0.2f,%0.2f) / (%0.2f,%0.2f)", (float)x, (float)y, vOrigine.x, vOrigine.y );
-        SP->changeText(s);
-        //panelResultat->setVisible(true);
-        panelResultat->setPos(x+20 , y+20);
-        */
         updatePanelResultat( xClick, yClick, 0 );
     }
 
+
+    if ( bRecTrace )
+    {
+        int i = t_vTrace.size() - 1;
+        if ( i >= 0 )
+        {
+            vector<vec2>* trace = t_vTrace[i];
+            trace->push_back( vec2(xSuivi, ySuivi) );
+        }
+    }
 	
     float elapsedTime = -1;
 	if ( prevTime < 0 )	{
@@ -1668,7 +1955,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //std::cout << (int)key << std::endl;
     //logf( (char*)"*** KEYBOARD GL ***" );
 	int modifier = glutGetModifiers();
-        bFileBrowser = FileBrowser::getInstance().getVisible();
+    bFileBrowser = FileBrowser::getInstance().getVisible();
     
     if (tAlert.size() != 0 )
     {
@@ -1689,7 +1976,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         return;
     }
 
-
+    Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+    if (        cam_mgr.getCurrent() 
+            &&  cam_mgr.getCurrent()->getControlVisible()       )
+    {
+        if ( cam_mgr.getCurrent()->keyboard(key) )      return;
+    }
+    
 
 	
 	switch(key){ 
@@ -2016,6 +2309,57 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'c':
+        {
+            bRecTrace = !bRecTrace;
+            if ( bRecTrace )
+            {
+                t_vTrace.push_back( new (vector<vec2>)() );
+            }
+        }
+        break;
+    case 'C':
+        {
+            bAffTrace = !bAffTrace;
+        }
+        break;
+    case 'e':
+        {
+            int i = t_vTrace.size();
+            if ( i == 0 )       break;
+            
+            vector<vec2>* trace = t_vTrace[i-1];
+            trace->clear();
+            delete trace;
+            t_vTrace.pop_back();
+            trace = 0;
+        }
+        break;
+    case 'E':
+        {
+            sauve_traces();
+        }
+        break;
+    case 'z':
+        {
+            charge_traces();
+        }
+        break;
+    case 'Z':
+        {
+            bFindStar = !bFindStar; 
+        }
+        break;
+    case 's':
+        {
+            findAllStar();
+        }
+        break;
+    case 'S' :
+        {
+            bSuivi = !bSuivi;
+        }
+        break;
     case 'D':
         {
         if ( bAutorisationSuivi )
@@ -2199,11 +2543,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         alertBox( "TEST ALERT BOX" );
         }
         break;
-    case 'S' :
-        {
-        bSuivi = !bSuivi;
-        }
-        break;
     default:
         {
         logf((char*)"key: %d", key);
@@ -2211,7 +2550,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 	}
 	
-	Camera_mgr::getInstance().keyboard( key );
+	//Camera_mgr::getInstance().keyboard( key );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2285,7 +2624,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	case 104:	
 	    {
 
-        float e = c.getEchelle() + 0.2;
+        float e = c.getEchelle() * 0.9;
         c.setEchelle(e);
         
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
@@ -2296,7 +2635,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	case 105:	
 	    {
 
-        float e = c.getEchelle() - 0.2;
+        float e = c.getEchelle() / 0.9;
         c.setEchelle(e);
         
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
@@ -2333,12 +2672,25 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
-	WindowsManager::getInstance().mouseFunc(button, state, x, y);
+    WindowsManager& wm = WindowsManager::getInstance();
+	wm.mouseFunc(button, state, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
     if ( panelStatus->isMouseOver(x, y) )
     {
         logf( (char*)"Souris sur la barre de status" );
         return;
+    }
+
+    PanelWindow*    pPreviewCam = NULL;
+    Panel *         pFocus = NULL;
+    Panel*          pMouseOver = NULL;
+
+    Camera_mgr& mgr = Camera_mgr::getInstance(); 
+    if ( mgr.getCurrent() != NULL  &&  mgr.getCurrent()->getPanelPreview() != NULL )
+    {
+        pPreviewCam = mgr.getCurrent()->getPanelPreview();
+        pFocus      = wm.getFocus();
+        pMouseOver  = wm.findPanelMouseOver(x, y);
     }
     
 	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 0 )
@@ -2411,7 +2763,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    
 	} 
     else
-	if ( bAutorisationSuivi && button == 0 && state == 0 )	{
+	if ( bAutorisationSuivi && button == 0 && state == 0 && pMouseOver == pPreviewCam )	{
 
         getSuiviParameter();
 
@@ -2513,7 +2865,25 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	        offset_y = yy;
 
             updatePanelResultat( xSuivi, ySuivi, point.ponderation );
-	        //t_vResultat.clear();
+            
+            if ( pFocus == NULL )
+                logf( (char*)"focus == NULL" );
+
+            struct readBackground*  RB = Camera_mgr::getInstance().getRB();
+            if (RB!=NULL && RB->ptr!=NULL && pMouseOver == pPreviewCam)
+            { 
+                logf( (char*)"Mouse over" );
+
+                Star * pStar = new Star();
+                v_tStars.push_back( pStar );
+                pStar->setXY( xSuivi, ySuivi );
+                pStar->setPtr( RB->ptr );
+                pStar->setWidth( RB->w );
+                pStar->find();
+
+                pPreviewCam->add( pStar->getInfo() );
+            }
+            
         }
         else {
             sprintf( skyPoint, "Rien");
@@ -2598,7 +2968,7 @@ static void CreateCourbe()	{
     
     panelCourbe->setVisible(bPanelCourbe);
  	panelCourbe->setBackground((char*)"images/background.tga");
-    panelCourbe->setDisplayGL( displayCourbeGL_cb );
+    panelCourbe->setDisplayGL( displayResultat_cb );
 
     pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
 	panelCourbe->add( pXMax );
@@ -2730,9 +3100,18 @@ static void CreateHelp()
 	addString( "O  : Mode souris / mode suivi");
 
 	addString( "");
+	addString( "c: Lance/arrete l\'enregistrement de trace");
+	addString( "C: Affiche les traces");
+	addString( "e: Efface la derniere trace");
+	addString( "E: Sauvegarde les traces");
+	addString( "z: Charge les traces");
+	addString( "");
 	addString( "h: Enregistre une image de la camera courante");
 	addString( "u/U: Echelle en x sur les courbes");
 	addString( "j/J: Echelle en y sur les courbes");
+	addString( "k/K: Decalage sur les courbes de 1");
+	addString( "i/I: Decalage sur les courbes de 100");
+
 	addString( "r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
 	addString( "R: Test alert BOX");
 	addString( "l: List les ports /dev/ +  les controles ");
@@ -2935,9 +3314,21 @@ void changeJoy( bool b )
     pButtonJoy->setVal( b );
     if ( b != bJoy )
     {
-        logf( (char*)"Joy : %d", (int)b );
         //inverse_texture( pButtonAsc, b, "asc" );
         bJoy = b;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void changeRetourPos( bool b )
+{
+    pButtonRet->setVal( b );
+    if ( b != bRet )
+    {
+        logf( (char*)"RetourPos : %d", (int)b );
+        //inverse_texture( pButtonAsc, b, "asc" );
+        bRet = b;
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3398,3 +3789,5 @@ int main(int argc, char **argv)
 }
 
 
+
+#endif

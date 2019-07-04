@@ -113,6 +113,7 @@ void Serveur_mgr::traite_connexion2()
         char cmd[255];
         sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );
         Serial::getInstance().write_string(cmd);
+        logf( (char*)"  Envoi arduino : %s", cmd );
 
     }
     
