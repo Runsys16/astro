@@ -277,7 +277,7 @@ bool starExist(int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void findAllStar()
+static void findAllStar()
 {
     Camera_mgr& mgr = Camera_mgr::getInstance(); 
     if ( mgr.getCurrent() == NULL ) return;
@@ -339,6 +339,31 @@ void findAllStar()
     delete p;
 }
 
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+static void deleteStars()
+{
+    Camera* pCurrent = Camera_mgr::getInstance().getCurrent();
+    if ( pCurrent = NULL )           return;
+    
+    PanelWindow* panelPreview = pCurrent->getPanelPreview();
+    if ( panelPreview == NULL )     return;
+
+    logf( (char*)"Delete star" );
+    
+
+    int nb = v_tStars.size();
+    for( int n = nb-1; n>0; n-- )
+    {
+        Star* p = v_tStars[n];
+        panelPreview->sup(p->getInfo());
+        delete p;
+        v_tStars.pop_back();
+        p=0;
+        
+    } 
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1029,7 +1054,7 @@ void updatePanelResultat(float x, float y, float mag)
     char sL[255];
     sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, vOrigine.x, vOrigine.y, pond2mag(mag) );
     SP->changeText(sSkyPoint);
-    
+    /*
     sprintf( sR, "r=%03d", (int)getSkyPoint_colorR(offset) );
     sprintf( sG, "g=%03d", (int)getSkyPoint_colorG(offset) );
     sprintf( sB, "b=%03d", (int)getSkyPoint_colorB(offset) );
@@ -1039,7 +1064,7 @@ void updatePanelResultat(float x, float y, float mag)
     G->changeText(sG);
     B->changeText(sB);
     L->changeText(sL);
-    
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1951,10 +1976,45 @@ static void rotate_capture(bool bIcones)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
+{
+    WindowsManager&     wm      = WindowsManager::getInstance(); 
+    Camera_mgr&         cam_mgr = Camera_mgr::getInstance();
+	
+	switch(key){ 
+	
+    // CTRL A
+    case 1:
+		{
+		    deleteStars();
+        }
+		break;
+    // touche tab
+	case 9:
+		//WindowsManager::getInstance().swapVisible();
+		{
+            logf( (char*)"-------------- Touche CTRL+TAB" );
+	        Camera* pCurrent = cam_mgr.getCurrent();
+	        cam_mgr.active();
+
+            getSuiviParameter();
+        }
+		break;
+    default:
+		{
+		    cout << "Default..." << endl;
+        }
+        break;
+    }		
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //std::cout << (int)key << std::endl;
     //logf( (char*)"*** KEYBOARD GL ***" );
 	int modifier = glutGetModifiers();
+	
     bFileBrowser = FileBrowser::getInstance().getVisible();
     
     if (tAlert.size() != 0 )
@@ -1982,7 +2042,20 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     {
         if ( cam_mgr.getCurrent()->keyboard(key) )      return;
     }
-    
+    /*
+	if (modifier == GLUT_ACTIVE_CTRL)
+	{
+        logf( (char*)" Touche CTRL %d", (int)key );
+        glutKeyboardFuncCtrl(key,  x,  y);
+        return;
+	}
+	*/
+	if (modifier == GLUT_ACTIVE_ALT)
+	{
+        logf( (char*)" Touche ALT %c", key );
+        glutKeyboardFuncCtrl(key,  x,  y);
+        return;
+	}
 
 	
 	switch(key){ 
@@ -1993,8 +2066,29 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    alertBox( "Confirmez la sortie du programme 'ESC'" );
 	    bQuit = true;
 	    }
-	     break;
+        break;
 
+
+    case 4:
+		{
+		    deleteStars();
+        }
+        break;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     // touche tab
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
@@ -2047,6 +2141,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'q':
     	{
 	    rotate_capture(true);
+    	}
+	    break;
+    
+    case 'Q':
+    	{
+    	deleteStars();
     	}
 	    break;
     
@@ -2188,83 +2288,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+/*
     case '0':
         {
         Camera_mgr::getInstance().sup("video1");
         log( (char*)"Sup camera !!!" );
         }
         break;
-    case '1':
-        {
-        Camera_mgr::getInstance().togglePanel();
-        log( (char*)"Toggle panelCamera !!!" );
-        }
-        break;
-    case '2':
-        {
-        bPanelHelp = !bPanelHelp;
-        var.set("bPanelHelp", bPanelHelp);
-        panelHelp->setVisible(bPanelHelp);
-        WindowsManager::getInstance().onTop(panelHelp);
-        log( (char*)"Toggle panelHelp !!!" );
-        }
-        break;
-    case '3':
-        {
-        bPanelResultat = !bPanelResultat;
-        var.set("bPanelResultat", bPanelResultat);
-        panelResultat->setVisible(bPanelResultat);
-        WindowsManager::getInstance().onTop(panelResultat);
-        log( (char*)"Toggle panelResultat !!!" );
-        }
-        break;
-    case '4':
-        {
-        bPanelCourbe = !bPanelCourbe;
-        var.set("bPanelCourbe", bPanelCourbe);
-        panelCourbe->setVisible(bPanelCourbe);
-        WindowsManager::getInstance().onTop(panelCourbe);
-        log( (char*)"Toggle panelCourbe !!!" );
-        }
-        break;
-    case '5':
-        {
-        bPanelStdOut = !bPanelStdOut;
-        var.set("bPanelStdOut", bPanelStdOut);
-        panelStdOutW->setVisible(bPanelStdOut);
-        WindowsManager::getInstance().onTop(panelStdOutW);
-        log( (char*)"Toggle panelStdOut !!!" );
-        }
-        break;
-    case '6':
-        {
-        bPanelSerial = !bPanelSerial;
-        var.set("bPanelSerial", bPanelSerial);
-        PanelWindow* p = PanelConsoleSerial::getInstance().getWindow();
-        p->setVisible( bPanelSerial );
-        WindowsManager::getInstance().onTop(p);
-        log( (char*)"Toggle serial !!!" );
-        }
-        break;
-    case '7':
-        {
-        captures.push_back( new Capture() );
-        current_capture = captures.size() - 1;
-        }
-        break;
-    case '8':
-        {
-        int n = captures.size();
-        if ( n!= 0 )
-        {
-            Capture* p = captures[n-1];
-            delete p;
-            captures.pop_back();
-        }
-        else
-            current_capture = -1;
-        }
-        break;
+*/
     case 'A':
         {
         if ( bAutorisationSuivi )
@@ -2565,10 +2596,7 @@ static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 static void glutSpecialFunc(int key, int x, int y)	{
 
     int n = current_capture;
-    if ( n == -1 )          return;
 
-
-    Capture&  c = *captures[n];
     
     
     switch( key)
@@ -2576,6 +2604,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// right
 	case 102:	
 	    {
+        if ( n == -1 )          return;
+        Capture&  c = *captures[n];
 
 	    logf( (char*)"Touche right !!" );
         float m = c.getCentX() + 10.0;
@@ -2588,6 +2618,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// left
 	case 100:	
 	    {
+        if ( n == -1 )          return;
+        Capture&  c = *captures[n];
 
         float m = c.getCentX() - 10.0;
         c.setCentX( m );
@@ -2599,6 +2631,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// up
 	case 101:	
 	    {
+        if ( n == -1 )          return;
+        Capture&  c = *captures[n];
 
         float m = c.getCentY() - 10.0;
         c.setCentY( m );
@@ -2610,6 +2644,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// down
 	case 103:	
 	    {
+        if ( n == -1 )          return;
+        Capture&  c = *captures[n];
 
         float m = c.getCentY() + 10.0;
         c.setCentY( m );
@@ -2623,6 +2659,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// pgup
 	case 104:	
 	    {
+        if ( n == -1 )          return;
+        Capture&  c = *captures[n];
 
         float e = c.getEchelle() * 0.9;
         c.setEchelle(e);
@@ -2634,6 +2672,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// pgdown
 	case 105:	
 	    {
+        if ( n == -1 )          return;
+        Capture&  c = *captures[n];
 
         float e = c.getEchelle() / 0.9;
         c.setEchelle(e);
@@ -2645,6 +2685,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// home
 	case 106:	
 	    {
+        if ( n == -1 )          return;
+        Capture&  c = *captures[n];
 
         c.setEchelle( 1.0 );
         c.setCentX( 0.0 );
@@ -2654,6 +2696,85 @@ static void glutSpecialFunc(int key, int x, int y)	{
 
 		}
 		break;
+		
+	case GLUT_KEY_F1:
+        {
+        Camera_mgr::getInstance().togglePanel();
+        log( (char*)"Toggle panelCamera !!!" );
+        }
+        break;
+    case GLUT_KEY_F2:
+        {
+        bPanelHelp = !bPanelHelp;
+        var.set("bPanelHelp", bPanelHelp);
+        panelHelp->setVisible(bPanelHelp);
+        WindowsManager::getInstance().onTop(panelHelp);
+        log( (char*)"Toggle panelHelp !!!" );
+        }
+        break;
+    case GLUT_KEY_F3:
+        {
+        bPanelResultat = !bPanelResultat;
+        var.set("bPanelResultat", bPanelResultat);
+        panelResultat->setVisible(bPanelResultat);
+        WindowsManager::getInstance().onTop(panelResultat);
+        log( (char*)"Toggle panelResultat !!!" );
+        }
+        break;
+    case GLUT_KEY_F4:
+        {
+        bPanelCourbe = !bPanelCourbe;
+        var.set("bPanelCourbe", bPanelCourbe);
+        panelCourbe->setVisible(bPanelCourbe);
+        WindowsManager::getInstance().onTop(panelCourbe);
+        log( (char*)"Toggle panelCourbe !!!" );
+        }
+        break;
+    case GLUT_KEY_F5:
+        {
+        bPanelStdOut = !bPanelStdOut;
+        var.set("bPanelStdOut", bPanelStdOut);
+        panelStdOutW->setVisible(bPanelStdOut);
+        WindowsManager::getInstance().onTop(panelStdOutW);
+        log( (char*)"Toggle panelStdOut !!!" );
+        }
+        break;
+    case GLUT_KEY_F6:
+        {
+        bPanelSerial = !bPanelSerial;
+        var.set("bPanelSerial", bPanelSerial);
+        PanelWindow* p = PanelConsoleSerial::getInstance().getWindow();
+        p->setVisible( bPanelSerial );
+        WindowsManager::getInstance().onTop(p);
+        log( (char*)"Toggle serial !!!" );
+        }
+        break;
+    case GLUT_KEY_F11:
+        {
+        captures.push_back( new Capture() );
+        current_capture = captures.size() - 1;
+        }
+        break;
+    case GLUT_KEY_F12:
+        {
+        int n = captures.size();
+        if ( n!= 0 )
+        {
+            Capture* p = captures[n-1];
+            delete p;
+            captures.pop_back();
+        }
+        else
+            current_capture = -1;
+        }
+        break;
+	default:	
+	    {
+        logf( (char*)"glutSpecialFunc %d", key );
+
+		}
+		break;
+		
     }
 
 

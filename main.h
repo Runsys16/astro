@@ -63,7 +63,8 @@ struct readBackground
 #endif
 
 bool                starExist(int, int);
-void                findAllStar(void);
+static void         findAllStar(void);
+static void         deleteStars();
 void                photo();
 
 string              getCurrentDirectory();
@@ -146,6 +147,7 @@ static void         rotateVisible();
 static void         rotate_capture();
 
 static void         glutKeyboardFunc(unsigned char key, int x, int y);
+static void         glutKeyboardFuncCtrl(unsigned char key, int x, int y);
 static void         glutKeyboardUpFunc(unsigned char key, int x, int y);
 static void         glutSpecialFunc(int key, int x, int y);
 static void         glutSpecialUpFunc(int key, int x, int y);

@@ -314,7 +314,7 @@ void create_windows_button()
     pButtonDec      = create_window_check_box( 11, "dec" );
     pButtonJoy      = create_window_check_box( 12, "joy" );
     pButtonSui      = create_window_check_box( 13, "terre" );
-    pButtonRet      = create_window_check_box( 14, "terre" );
+    pButtonRet      = create_window_check_box( 14, "retour" );
     
     create_fleches();
 }

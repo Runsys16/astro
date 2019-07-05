@@ -1114,7 +1114,7 @@ void Device_cam::decompressJpeg() {
 
 	wBmp = -1;
 	hBmp = -1;
-	bmp_buffer = NULL;
+	//bmp_buffer = NULL;
 
     readBgr.ptr = NULL;
     readBgr.w   = -1;
@@ -1126,6 +1126,7 @@ void Device_cam::decompressJpeg() {
 	//pixel_size = cinfo.output_components;
     // si le buffer n'est pas vide on le libere
 	if (bmp_buffer)     free(bmp_buffer);
+	bmp_buffer = NULL;
     // On recreer le nouveau buffer
 	bmp_size = wBmp * hBmp * pixel_size;
 
@@ -1175,10 +1176,14 @@ void Device_cam::decompressJpeg() {
 
 	pixel_size = cinfo.output_components;
     // si le buffer n'est pas vide on le libere
-	if (bmp_buffer)     free(bmp_buffer);
+
+    unsigned char* previous = bmp_buffer;
+
     // On recreer le nouveau buffer
 	bmp_size = wBmp * hBmp * pixel_size;
 	bmp_buffer = (unsigned char*) malloc(bmp_size);
+    
+    if ( previous!=NULL )     free(previous);
 
 	row_stride = wBmp * pixel_size;
 
