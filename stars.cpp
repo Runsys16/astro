@@ -4,493 +4,223 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-Star::Star()
+Stars::Stars()
 {
-    logf( (char*)"Constructeur Star()" );
-    init( -1, -1 );
+    logf( (char*)"Constructeur Stars()" );
+    RB      = NULL;
+    pView   = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-Star::Star(int X, int Y)
+void Stars::add(Star * p)
 {
-    logf( (char*)"Constructeur Star(%d,%d)", X, Y );
-    init( X, Y );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::init(int xx, int yy)
-{
-    x           = xx;
-    y           = yy;
-    limitLum    = 20.0;
-    ptr         = NULL;
-    
-    pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::setPtr(GLubyte* p)
-{
-    ptr = p;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::setWidth(int w)
-{
-    width = w;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-int Star::getOffset( int X, int Y )
-{
-    return 3*(X) + 3*(Y)* width;
-}
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::screen2tex( int& x, int& y )
-{
-    x = (float)(x-xCam) * rw;
-    y = (float)(y-yCam) * rh;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::tex2screen( int& x, int& y )
-{
-    x = (float)x / rw + xCam;
-    y = (float)y / rh + yCam;
-}
-*/
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::computeMag()
-{
-    magnitude = -(log( ponderation ) / log(2.0)) + 17.0;
-    
-    sprintf( p_sInfo, "mag=%0.2f", magnitude );
-    pInfo->changeText( p_sInfo );
-    
-    //logf( (char*)p_sInfo );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float Star::computeRayon()
-{
-    float r = (15.0 - magnitude)*1.5 - 8.0;
-    if ( r<0.0 )    r = 0.0;
-    return r;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float Star::getLumLimit(int offset, float limit )
-{
-    float r;
-    float g;
-    float b;
+    logf( (char*)"Add Star()" );
+    int nb = v_tStars.size();
 
-    try
+    for( int n=0; n<nb; n++ )
     {
-        r = ptr[offset+0]; 
-        g = ptr[offset+1]; 
-        b = ptr[offset+2]; 
+        Star* ps = v_tStars[n];
+        if ( ps == p )              return;
     }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-
-    float l = 0.33 * r + 0.5 * g  + 0.16 * b;
-    if ( l<limit )       l = 0.0;
-
-    return l;
+    v_tStars.push_back( p );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float Star::getLum(int offset )
+void Stars::sup(Star * p)
 {
-    return getLumLimit( offset, limitLum );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float Star::getLum(int X, int Y, int limit )
-{
-    int offset = getOffset( X, Y );
-    return getLumLimit( offset, limit );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float Star::getColorR(int offset)
-{
-    float r;
+    logf( (char*)"Sup Star()" );
+    int nb = v_tStars.size();
 
-    try
+    for( int n=0; n<nb; n++ )
     {
-        r = ptr[offset+0]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-    return r;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float Star::getColorG(int offset)
-{
-    float r;
-
-    try
-    {
-        r = ptr[offset+1]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-    return r;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float Star::getColorB(int offset)
-{
-    float r;
-
-    try
-    {
-        r = ptr[offset+2]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-    return r;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-bool Star::cherche(int X, int Y, int size)
-{
-
-    yFound = X - size;
-        
-    size_t size_ptr = malloc_usable_size ( (void*) ptr);
-    //-------------------------------------------------------------------------    
-    yFound = Y - size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        xFound = X+i;
-        int offset = getOffset( xFound, yFound );
-
-        if ( offset+4 > size_ptr )          continue;
-        float l = getLum( offset) ;
-        if (l!=0.0)                         { x = xFound; y=yFound; return true; }
-    }  
-    //-------------------------------------------------------------------------    
-    yFound = Y + size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        xFound = X+i;
-        int offset = getOffset( xFound, yFound );
-
-        if ( offset+4 > size_ptr )          continue;
-        float l = getLum( offset) ;
-        if (l!=0.0)                         { x = xFound; y=yFound; return true; }
-    }  
-    //-------------------------------------------------------------------------    
-    xFound = X - size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        yFound = Y + i;
-        int offset = getOffset( xFound, yFound );
-
-        if ( offset+4 > size_ptr )          continue;
-        float l = getLum( offset) ;
-        if (l!=0.0)                         { x = xFound; y=yFound; return true; }
-    }  
-    //-------------------------------------------------------------------------    
-    xFound = X + size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        yFound = Y + i;
-        int offset = getOffset( xFound, yFound );
-
-        if ( offset+4 > size_ptr )          continue;
-        float l = getLum( offset) ;
-        if (l!=0.0)                         { x = xFound; y=yFound; return true; }
-    } 
-    
-    return false;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-bool Star::cherche(int X, int Y, int size, float lum)
-{
-    limitLum = lum;
-    
-    return cherche(X, Y, size);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-bool Star::chercheLum(int X, int Y, int size)
-{
-
-    for ( int n=0; n<size; n++ )
-    {
-        if( cherche( X, Y, n ) )                return true;
-    }    
-    return false;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-bool Star::chercheLum(int X, int Y, int size, int limit)
-{
-
-    for ( int n=0; n<size; n++ )
-    {
-        if( cherche( X, Y, n, limit ) )                return true;
-    }    
-    return false;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::find( int size)
-{
-    struct sky_point point;
-    
-
-    for( int i=0; i<size; i++ )
-    {
-        limitLum = 20.0;
-        bool bTrouve = cherche(x, y, i);
-        if ( bTrouve )
+        Star* ps = v_tStars[n];
+        if ( ps == p )
         {
-            x = xFound;
-            y = yFound;
-#ifdef DEBUG
-            logf( (char*)"Iteration : %d  (%d,%d)", i, x, y );
-#endif
-
-            getFWHM( xFound, yFound, 20 );
-
-
-#ifdef DEBUG
-            logf( (char*)"Iteration : %d  (%d,%d)", i, x, y );
-#endif
-            break;
+            Panel* pPanel = p->getInfo()->getParent();
+            pPanel->sup( p->getInfo() );
+            v_tStars.erase( v_tStars.begin() + n );
+            p = 0;
+            return;
         }
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::find()
+bool Stars::starExist(int xp, int yp )
 {
-    find(500);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::getFWHMLine( int xx, int yy, int size)
-{
-    int min = xx - size;
-    int max = xx + size;
-    
-    size_t size_ptr;
-    try
+    int nb = v_tStars.size();
+    for( int n=0; n<nb; n++ )
     {
-        size_ptr = malloc_usable_size ( (void*) ptr);
-    }
-    catch(std::exception const& e)
-    {
-        cerr << "ERREUR : " << e.what() << endl;
-    }
-     
-    //--------------------------------------------------    
-    for( int X=min; X<max; X++) 
-    {
-        int offset = getOffset(X,yy);
-        if ( offset+4 > size_ptr )              continue;
-
-        //float l = getLumLimit( offset, 20.0 );
-        float l = getLum( offset );
-
-        //if ( l<limitLum )       l = 0.0;
-        if ( l>maxLum )         maxLum = l;
+        int x_star = v_tStars[n]->getX();
+        int y_star = v_tStars[n]->getY();
         
-        vFWHM.x     += l * (float)X;
-        vFWHM.y     += l * (float)yy;
-        ponderation += l;
-    }  
+        if ( abs(xp-x_star) < 8 && abs(yp-y_star) < 8 )       return true;
+    }
+    
+    return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::getFWHM( int xx, int yy, int size)
+void Stars::findAllStars()
 {
-    int min;
-    int max;
+    logf( (char*)"Stars::findAllStars()" );
 
-    vFWHM.x         = 0.0;
-    vFWHM.y         = 0.0;
-    ponderation     = 0.0;
-    maxLum          = 0.0;
-    limitLum        = 20.0;
+    if (RB==NULL || RB->ptr==NULL) return;
+
+    int width = RB->w;
+    int height = RB->h;
+
+    logf( (char*)"Find all star(%d,%d)", width, height );
+
+    Star *      p = new Star();
     
-    min = yy - size;
-    max = yy + size;
-    
+    p->setPtr( RB->ptr );
+    p->setWidth( RB->w );
+    p->setHeight( RB->h );
 
-    for(int Y=min; Y<max; Y ++)        getFWHMLine(xx, Y, size);
-
-    vFWHM.x     /= ponderation;
-    vFWHM.y     /= ponderation;
-    
-    xx = round(vFWHM.x);
-    yy = round(vFWHM.y);
-
-    min = yy - size;
-    max = yy + size;
-
-    vFWHM.x         = 0.0;
-    vFWHM.y         = 0.0;
-    ponderation     = 0.0;
-    limitLum = maxLum / 2.0;
-    //limitLum = 20.0;
-    size = computeRayon();
-    if ( size < 10 )            size = 10;
-    
-    for(int Y=min; Y<max; Y ++)        getFWHMLine(xx, Y, size);
-    limitLum = 20.0;
-    
-    computeMag();
-    
-#ifdef DEBUG
-    logf( (char*)"Pond : %0.2f mag=%0.2f max=%0.2f limit=%0.2f", ponderation, magnitude, maxLum, limitLum );
-    logf( (char*)" pt (%0.2f,%0.2f)", vFWHM.x/ponderation, vFWHM.y/ponderation );
-#endif
-
-    vFWHM.x     /= ponderation;
-    vFWHM.y     /= ponderation;
-    
-    x = round(vFWHM.x);
-    y = round(vFWHM.y);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::glCercle(int rayon)
-{
-    int x = x_screen + 1;
-    int y = y_screen + 1;
-
-
-	glBegin(GL_LINE_LOOP);
-
-        for( float i=0; i<=360.0; i+=1.0 )
+    for( int y_find=20; y_find<height; y_find+=(40) )
+    {
+        for( int x_find=20; x_find<width; x_find+=(40) )
         {
-            float fx = (float)x+ (float)rayon*cos(DEG2RAD(i));
-            float fy = (float)y+ (float)rayon*sin(DEG2RAD(i));
-            glVertex2i(fx,fy);
+            //logf( (char*)"Cherche etoile(%d,%d)", x_find, y_find );
+            if ( p->chercheLum(x_find, y_find, 50) )
+            {
+                //logf( (char*)"  (%d,%d)", p->getX(), p->getY() );
+                
+                p->setXY(x_find,y_find);            
+                p->find();            
+                int x_find = p->getX();
+                int y_find = p->getY();
+                p->computeMag();
+                
+                if ( p->getMagnitude() < 9.0 )     
+                {
+                    if ( starExist(x_find, y_find) )            
+                    {
+                        //logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, x_find, p->getMagnitude() );
+                        continue;
+                    }
+                    
+                    Star * pp = new Star();
+                    pp->setPtr( RB->ptr );
+                    pp->setWidth( RB->w );
+                    pp->setHeight( RB->h );
+
+                    pp->setXY( x_find, y_find );
+                    pp->find();
+                    pView->add( pp->getInfo() );
+                    
+                    v_tStars.push_back( pp );
+
+                    logf( (char*)"Nouvelle etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), x_find, x_find, pp->getMagnitude() );
+
+                    
+                }
+            }
         }
+    }
+    delete p;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::deleteAllStars()
+{
+    int nb = v_tStars.size();
+    for( int n = nb-1; n>0; n-- )
+    {
+        Star* p = v_tStars[n];
+        Panel*  panelPreview = p->getInfo()->getParent();
+        panelPreview->sup(p->getInfo());
+        delete p;
+        v_tStars.pop_back();
+        p=0;
         
-    glEnd();        
+    }
+    logf( (char*)"Delete  %d Star()", nb );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::glCarre( int dx,  int dy )
+void Stars::setView(Panel* p)
 {
-    int x = x_screen + 1;
-    int y = y_screen + 1;
+    pView = p;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::setRB(rb_t* p)
+{
+    RB = p;
     
-	glBegin(GL_LINES);
-        x = x-dx;
-        y = y-dy;
-        
-        glVertex2i(x,y);                glVertex2i(x+2*dx,y);
-        glVertex2i(x+2*dx,y);           glVertex2i(x+2*dx,y+2*dy);
-        glVertex2i(x+2*dx,y+2*dy);      glVertex2i(x,y+2*dy);
-        glVertex2i(x,y+2*dy);           glVertex2i(x,y);
-
-    glEnd();        
+    int nb = v_tStars.size();
+    for( int n = nb-1; n>0; n-- )
+    {
+        v_tStars[n]->setRB( p );
+    }
+    //logf( (char*)"setRB  %d Star()", nb );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::glCroix( int dx,  int dy )
+void Stars::updateRB(rb_t* p)
 {
-    int x = x_screen + 1;
-    int y = y_screen + 1;
+    setRB(p);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::suivi(rb_t* p)
+{
+    int nb = v_tStars.size();
+    setRB(p);
+    for (int i=0; i<nb; i++ )
+    {
+        float e = (float)pView->getDX() / (float)RB->w; 
+        v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
+        v_tStars[i]->find();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::displayGL()
+{
+    //logf( (char*)"Stars::displayGL()" );
+    //mat4 m = scale( 2.0, 2.0, 1.0 );
+    float gris = 0.3;
+    //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
+    //else                            glColor4f( gris, gris, gris, 0.2 );
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+    //float x = getParent()->getX();
+    //float y = getParent()->getY();
+
+
+    if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
+    else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
+
     
-	glBegin(GL_LINES);
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        float e = (float)pView->getDX() / (float)RB->w; 
+        //logf( (char*)"Echelle %0.2f", v_tStars[i]->getMagnitude() );
 
-	    glVertex2i(x, y-dy);         glVertex2i(x, y+dy);
-	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
+        v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
+        v_tStars[i]->displayGL();
+    }
 
-    glEnd();        
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::glMark( int dx,  int dy )
-{
-    int x = x_screen + 1;
-    int y = y_screen + 1;
-    
-	glBegin(GL_LINES);
 
-	    glVertex2i(x, y+5);         glVertex2i(x, y+dy);
-	    glVertex2i(x+5, y);         glVertex2i(x+dx, y);
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 
-    glEnd();        
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::updatePos(int X, int Y, float e)
-{
-    x_screen = e*x + X;
-    y_screen = e*y + Y;
-    
-    pInfo->setPos( e*x + 8, e*y + 8 );
-    pInfo->updatePos();
-}
-void Star::updatePos(int X, int Y)
-{   
-    updatePos( X, Y, 1.0 );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Star::displayGL()
-{
-    //logf( (char*)"Star::displayGL()" );
-    //glCroix(20,20);
-    glMark(40,40);
-    glCercle( computeRayon() +4 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

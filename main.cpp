@@ -17,7 +17,7 @@
 #include "var_mgr.h"
 #include "alert_box.h"
 #include "file_browser.h"
-#include "stars.h"
+//#include "star.h"
 
 //#define DEBUG 1
 #define SIZEPT  20
@@ -132,7 +132,7 @@ int                 _b[256];
 
 float               xSuivi;
 float               ySuivi;
-vector<Star*>       v_tStars;
+//vector<Star*>       v_tStars;
 float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
@@ -146,6 +146,8 @@ int                 dxCam;
 int                 dyCam;
 
 float               zoom;
+
+ivec2               mouse;
 
 #define             GET_OFFSET(x,y,width)   (3*y*width+x)
 //--------------------------------------------------------------------------------------------------------------------
@@ -261,108 +263,14 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool starExist(int x, int y)
+bool isMouseOverCapture()
 {
-    int nb = v_tStars.size();
+    int nb = captures.size();
     for( int n=0; n<nb; n++ )
     {
-        int x_star = v_tStars[n]->getX();
-        int y_star = v_tStars[n]->getY();
-        
-        if ( abs(x-x_star) < 8 && abs(y-y_star) < 8 )       return true;
+        if ( captures[n]->isMouseOver(mouse.x, mouse.y) )            return true;
     }
-    
     return false;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-static void findAllStar()
-{
-    Camera_mgr& mgr = Camera_mgr::getInstance(); 
-    if ( mgr.getCurrent() == NULL ) return;
-    if ( mgr.getCurrent()->getPanelPreview() == NULL )  return;
-    
-    struct readBackground*  RB = mgr.getRB();
-    if (RB==NULL || RB->ptr==NULL) return;
-
-    int width = RB->w;
-    int height = RB->h;
-
-    logf( (char*)"Find all star(%d,%d)", width, height );
-
-    Star *      p = new Star();
-    
-    p->setPtr( RB->ptr );
-    p->setWidth( RB->w );
-
-    for( int y_find=20; y_find<height; y_find+=(40) )
-    {
-        for( int x_find=20; x_find<width; x_find+=(40) )
-        {
-            //logf( (char*)"Cherche etoile(%d,%d)", x_find, y_find );
-            if ( p->chercheLum(x_find, y_find, 50) )
-            {
-                //logf( (char*)"  (%d,%d)", p->getX(), p->getY() );
-                
-                p->setXY(x_find,y_find);            
-                p->find();            
-                int x_find = p->getX();
-                int y_find = p->getY();
-                p->computeMag();
-                
-                if ( p->getMagnitude() < 9.0 )     
-                {
-                    if ( starExist(x_find, y_find) )            
-                    {
-                        //logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, x_find, p->getMagnitude() );
-                        continue;
-                    }
-                    
-                    Star * pp = new Star();
-                    pp->setPtr( RB->ptr );
-                    pp->setWidth( RB->w );
-
-                    pp->setXY( x_find, y_find );
-                    pp->find();
-                    mgr.getCurrent()->getPanelPreview()->add( pp->getInfo() );
-                    
-                    v_tStars.push_back( pp );
-
-                    logf( (char*)"Nouvelle etoile(%d,%d) mag=%0.2f", x_find, x_find, pp->getMagnitude() );
-
-                    
-                }
-            }
-        }
-    }
-    delete p;
-}
-
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-static void deleteStars()
-{
-    Camera* pCurrent = Camera_mgr::getInstance().getCurrent();
-    if ( pCurrent = NULL )           return;
-    
-    PanelWindow* panelPreview = pCurrent->getPanelPreview();
-    if ( panelPreview == NULL )     return;
-
-    logf( (char*)"Delete star" );
-    
-
-    int nb = v_tStars.size();
-    for( int n = nb-1; n>0; n-- )
-    {
-        Star* p = v_tStars[n];
-        panelPreview->sup(p->getInfo());
-        delete p;
-        v_tStars.pop_back();
-        p=0;
-        
-    } 
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -735,6 +643,8 @@ void displayGLCamera_cb(void)
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.2 );    
 
+     //update position
+    /*
     int nb = v_tStars.size();
     for (int i=0; i<nb; i++ )
     {
@@ -752,10 +662,14 @@ void displayGLCamera_cb(void)
         int Y  = p->getY();
         v_tStars[i]->setPtr( RB->ptr );
         v_tStars[i]->setWidth( RB->w );
+        v_tStars[i]->setHeight( RB->h );
         v_tStars[i]->find();
         v_tStars[i]->updatePos( X, Y, (float)DX/(float)RB->w);
         v_tStars[i]->displayGL();
     }
+    */
+    
+    Camera_mgr::getInstance().suivi();
     
     displayGLTrace();
 
@@ -1628,6 +1542,8 @@ void suivi(void)
     }
     else
         return;
+    
+    Camera_mgr::getInstance().suivi();
     //change_background_pleiade();
     getSuiviParameter();   
     
@@ -1986,7 +1902,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
     // CTRL A
     case 1:
 		{
-		    deleteStars();
+		    //deleteStars();
         }
 		break;
     // touche tab
@@ -2071,7 +1987,22 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 4:
 		{
-		    deleteStars();
+            logf( (char*)"case 'ctrl+D'" );
+            if ( Camera_mgr::getInstance().getCurrent() != NULL )
+            {
+                if ( !isMouseOverCapture()  )
+                {
+        		    Camera_mgr::getInstance().deleteAllStars();
+                }
+                else
+                {
+                    int n = current_capture;
+                    if ( n != -1 )
+                    {
+                        captures[n]->getPreview()->deleteAllStars();
+                    }
+                }
+            }
         }
         break;
     
@@ -2146,7 +2077,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     
     case 'Q':
     	{
-    	deleteStars();
+    	//deleteStars();
     	}
 	    break;
     
@@ -2383,7 +2314,22 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 's':
         {
-            findAllStar();
+            logf( (char*)"case 's'" );
+            if ( Camera_mgr::getInstance().getCurrent() != NULL )
+            {
+                if ( !isMouseOverCapture()  )
+                {
+                    Camera_mgr::getInstance().findAllStars();
+                }
+                else
+                {
+                    int n = current_capture;
+                    if ( n != -1 )
+                    {
+                        captures[n]->getPreview()->findAllStar();
+                    }
+                }
+            }
         }
         break;
     case 'S' :
@@ -2612,8 +2558,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
         c.setCentX( m );
 
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
-		}
+        
+        }
 		break;
 	// left
 	case 100:	
@@ -2793,6 +2739,8 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
+    mouse.x = x;
+    mouse.y = y;
     WindowsManager& wm = WindowsManager::getInstance();
 	wm.mouseFunc(button, state, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
@@ -2990,21 +2938,28 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
             if ( pFocus == NULL )
                 logf( (char*)"focus == NULL" );
 
+            /*
             struct readBackground*  RB = Camera_mgr::getInstance().getRB();
             if (RB!=NULL && RB->ptr!=NULL && pMouseOver == pPreviewCam)
             { 
                 logf( (char*)"Mouse over" );
 
-                Star * pStar = new Star();
-                v_tStars.push_back( pStar );
-                pStar->setXY( xSuivi, ySuivi );
-                pStar->setPtr( RB->ptr );
-                pStar->setWidth( RB->w );
-                pStar->find();
+               if ( !starExist( xSuivi, ySuivi ) )
+                {
+                    Star * pStar = new Star();
+                    v_tStars.push_back( pStar );
+                    pStar->setXY( xSuivi, ySuivi );
+                    pStar->setPtr( RB->ptr );
+                    pStar->setWidth( RB->w );
+                    pStar->setHeight( RB->h );
+                    pStar->find();
 
-                pPreviewCam->add( pStar->getInfo() );
+                    pPreviewCam->add( pStar->getInfo() );
+                }
+                else
+                logf( (char*)"L'etoile est deja suivi" );
             }
-            
+            */
         }
         else {
             sprintf( skyPoint, "Rien");
@@ -3024,6 +2979,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMotionFunc(int x, int y)	{	
+    mouse.x = x;
+    mouse.y = y;
 	WindowsManager::getInstance().motionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
 }
@@ -3031,6 +2988,8 @@ static void glutMotionFunc(int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutPassiveMotionFunc(int x, int y)	{
+    mouse.x = x;
+    mouse.y = y;
 	WindowsManager::getInstance().passiveMotionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
 }

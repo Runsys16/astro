@@ -398,6 +398,57 @@ struct readBackground*      Camera_mgr::getRB()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::deleteAllStars()
+{
+    if (pCurrent == NULL)                   return;
+    if (pCurrent->getRB() == NULL)          return;
+    
+    logf( (char*)"Camera_mgr::findAllStars()" );
+    
+    pCurrent->getPanelPreview()->getStars()->deleteAllStars();
+    /*
+    pCurrent->getStars()->setView( pCurrent->getPanelPreview() );
+    pCurrent->getStars()->setRB(pCurrent->getRB());
+    pCurrent->getStars()->findAllStars();
+    */
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::findAllStars()
+{
+    if (pCurrent == NULL)                   return;
+    if (pCurrent->getRB() == NULL)          return;
+    
+    logf( (char*)"Camera_mgr::findAllStars()" );
+    
+    pCurrent->getPanelPreview()->getStars()->setView( pCurrent->getPanelPreview() );
+    pCurrent->getPanelPreview()->getStars()->setRB( pCurrent->getRB() );
+    pCurrent->getPanelPreview()->getStars()->findAllStars();
+    /*
+    pCurrent->getStars()->setView( pCurrent->getPanelPreview() );
+    pCurrent->getStars()->setRB(pCurrent->getRB());
+    pCurrent->getStars()->findAllStars();
+    */
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::suivi()
+{
+    if (pCurrent == NULL)                   return;
+    if (pCurrent->getRB() == NULL)          return;
+    
+    
+    if ( getRB() != NULL )
+    {
+        //logf( (char*)"Camera_mgr::suivi()" );
+        pCurrent->getPanelPreview()->getStars()->suivi( getRB() );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 
 
 

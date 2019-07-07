@@ -78,7 +78,7 @@ void Camera::CreatePreview()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	//panelPreview = new PanelSimple();
-	panelPreview = new PanelWindow();
+	panelPreview = new PanelCamera();
     panelPreview->setDisplayGL(displayGLnuit_cb);
 
 	int wsc = wm.getWidth();

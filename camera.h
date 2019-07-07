@@ -2,10 +2,14 @@
 #define CAMERA_H  1
 
 #include "v4l2.h"
+#include "stars.h"
 #include "timer.h"
+#include "panel_camera.h"
 
 #include <WindowsManager.h>
 #include <thread>
+
+
 
 
 using namespace std;
@@ -16,7 +20,8 @@ class Camera : public Device_cam
 {
 protected:
     PanelWindow *               panelControl;
-    PanelWindow *               panelPreview;
+    //PanelWindow *               panelWindow;
+    PanelCamera *               panelPreview;
     //PanelSimple *               panelPreview;
 
     PanelText*                  pCamFilename;
@@ -32,6 +37,11 @@ protected:
 
     ivec2                       vCameraSize;
 
+    Stars                       stars;
+    
+    
+    
+    
 public :
 virtual    ~Camera();
     Camera();
@@ -75,8 +85,9 @@ virtual    ~Camera();
     ivec2                       get_vCameraSize();
 
 inline bool                     getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
-inline PanelWindow *            getPanelPreview()               { return panelPreview; }
+inline PanelCamera *            getPanelPreview()               { return panelPreview; }
 inline float                    getHertz()                      { return hz; }
+inline Stars*                   getStars()                      { return &stars; }
 
     //inline int                  getFd()                         { return getFd
 };

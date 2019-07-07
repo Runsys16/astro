@@ -1,30 +1,28 @@
-#ifndef PANEL_CAPTURE_H
-#define PANEL_CAPTURE_H  1
+#ifndef PANEL_CAMERA_H
+#define PANEL_CAMERA_H  1
 
-#include "camera.h"
+//#include "camera.h"
 #include <dirent.h>
 #include <algorithm>
 
-#include <WindowsManager.h>
 #include "main.h"
 #include "var_mgr.h"
-#include "star.h"
+#include "stars.h"
 //#include "capture.h"
+#include <WindowsManager.h>
 
 
 using namespace std;
 
-class PanelCapture : public PanelSimple
+class PanelCamera : public PanelWindow
 {
 public:
-    PanelCapture(struct readBackground*);
-    
+    PanelCamera();
     
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);
 
     void                findAllStar();
-    void                deleteAllStars();
     bool                starExist(int, int);    
     void                addStar(int,int);
 
@@ -32,19 +30,20 @@ public:
     void                setCentX(float f);
     void                setCentY(float f);
 
-inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
+inline void             setRB(rb_t*p)                                   { pReadBgr = p; }
 inline float            getEchelle()                                    { return echelle; }
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
+inline Stars*           getStars()                                      { return &stars; }
 
 protected:
     float               echelle;
     float               dx;
     float               dy;
     
-struct readBackground*  pReadBgr;
+    rb_t*               pReadBgr;
     
-    vector<Star*>       v_tStars;
+    Stars               stars;
 };
 
 

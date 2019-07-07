@@ -54,8 +54,13 @@ public:
  
     bool                        haveNewFrame();
     void                        haveUseFrame(bool);
+    
+    void                        findAllStars();
+    void                        deleteAllStars();
+    
+    void                        suivi();
 
-    struct readBackground*      getRB();
+    rb_t *                      getRB();
 
     inline Camera*              getCurrent()                                { return pCurrent; }   
    

@@ -56,15 +56,13 @@ struct readBackground
     unsigned int            d;
     GLubyte*                ptr;
 };
+typedef struct readBackground       rb_t;
 
 #ifndef MAIN_CPP
     extern bool         bNuit;
     extern bool         bFindStar;
 #endif
 
-bool                starExist(int, int);
-static void         findAllStar(void);
-static void         deleteStars();
 void                photo();
 
 string              getCurrentDirectory();

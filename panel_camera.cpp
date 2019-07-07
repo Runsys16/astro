@@ -1,44 +1,24 @@
-#include "panel_capture.h"
+#include "panel_camera.h"
 
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-PanelCapture::PanelCapture( struct readBackground*  pReadBgr )
+PanelCamera::PanelCamera()
 {
     echelle = 1.0;
     dx      = 0.0;
     dy      = 0.0;
-    pReadBgr = pReadBgr;
+    pReadBgr = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::deleteAllStars()
+void PanelCamera::findAllStar()
 {
-    int nb = v_tStars.size();
-    for( int n = nb-1; n>0; n-- )
-    {
-        Star* p = v_tStars[n];
-        Panel*  panelPreview = p->getInfo()->getParent();
-        panelPreview->sup(p->getInfo());
-        delete p;
-        v_tStars.pop_back();
-        p=0;
-        
-    }
-    logf( (char*)"Delete  %d Star()", nb );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::findAllStar()
-{
-    logf( (char*)"PanelCapture::findAllStar()..." );
-    if ( pReadBgr == NULL )
-    {
-        return;
-    }
-    //if ( !bFindStar )               return;
+    stars.findAllStars();
+    /*
+    if ( pReadBgr == NULL )         return;
+    if ( !bFindStar )               return;
 
     int width = pReadBgr->w;
     int height = pReadBgr->h;
@@ -93,12 +73,15 @@ void PanelCapture::findAllStar()
         }
     }
     delete p;
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool PanelCapture::starExist(int x, int y)
+bool PanelCamera::starExist(int x, int y)
 {
+    return stars.starExist(x,y);
+    /*
     int nb = v_tStars.size();
     for( int n=0; n<nb; n++ )
     {
@@ -109,12 +92,15 @@ bool PanelCapture::starExist(int x, int y)
     }
     
     return false;
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::addStar(int x, int y)
+void PanelCamera::addStar(int x, int y)
 {
+    //stars.addStar
+    /*
     if ( pReadBgr == NULL )         return;
 
 
@@ -139,11 +125,12 @@ void PanelCapture::addStar(int x, int y)
     logf( (char*)"Nouvelle etoile(%d,%d) mag=%0.2f", (int)p->getX(), (int)p->getY(), p->getMagnitude() );
     logf( (char*)"setXY( %0.4f, %0.4f )", fx, fy );
     logf( (char*)"Echelle %0.4f", e );
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setCentX(float f)
+void PanelCamera::setCentX(float f)
 {
     dx = f;
 
@@ -161,7 +148,7 @@ void PanelCapture::setCentX(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setCentY(float f)
+void PanelCamera::setCentY(float f)
 {
     dy = f;
 
@@ -179,7 +166,7 @@ void PanelCapture::setCentY(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setEchelle(float f)
+void PanelCamera::setEchelle(float f)
 {
     logf( (char*)"setEchelle(%0.2f)", f );
     echelle = f;
@@ -206,7 +193,7 @@ void PanelCapture::setEchelle(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::displayGL()
+void PanelCamera::displayGL()
 {
     //mat4 m = scale( 2.0, 2.0, 1.0 );
     float gris = 0.3;
@@ -233,13 +220,14 @@ void PanelCapture::displayGL()
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( gris, gris, gris, 0.2 );    
     
-    PanelSimple::displayGL();
+    PanelWindow::displayGL();
 
 
 
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
 
+    /*
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
     {
@@ -249,18 +237,20 @@ void PanelCapture::displayGL()
         v_tStars[i]->updatePos( getX(), getY(), e );
         v_tStars[i]->displayGL();
     }
-    
+    */
 
+    stars.displayGL();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::releaseLeft(int xm, int ym)
+void PanelCamera::releaseLeft(int xm, int ym)
 {
-    logf( (char*)"PanelCapture::releaseLeft(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCamera::releaseLeft(%d,%d) ...", xm, ym );
     
 
     addStar( xm, ym );

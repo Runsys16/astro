@@ -39,7 +39,10 @@ public :
     void                        onTop();
     void                        addStar(int,int);
 
-    struct readBackground*      getRB()     {return &readBgr;}
+    bool                        isMouseOver(int, int);
+    
+    
+inline rb_t *                   getRB()                                     { return &readBgr; }
 
 inline void                     setEchelle(float f)                         { panelPreview->setEchelle(f); }
 inline float                    getEchelle()                                { return panelPreview->getEchelle(); }
@@ -48,6 +51,7 @@ inline void                     setCentY(float f)                           { pa
 inline float                    getCentX()                                  { return panelPreview->getCentX(); }
 inline float                    getCentY()                                  { return panelPreview->getCentY(); }
 inline string                   getFilenName()                              { return filename; }
+inline PanelCapture*            getPreview()                                { return panelPreview; }
 
 };
 

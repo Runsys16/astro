@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "Mathlib.h"
+#include "star.h"
 
 #include <WindowsManager.h>
 #include <thread>
@@ -10,80 +11,31 @@
 
 using namespace std;
 
-class Star
+class Stars
 {
 public:
-    Star();
-    Star(int, int);
-    void                init(int,int);
-
-    void                setPtr(GLubyte*);
-    void                setWidth(int);
-
-    int                 getOffset(int,int);
-    void                computeMag();
-    float               computeRayon();
-
-    float               getLumLimit(int offset, float limit );
-    float               getLum(int offset );
-    float               getLum(int X, int Y, int limit );
-
-    bool                cherche(int X, int Y, int size);
-    bool                cherche(int X, int Y, int size, float lum);
-    bool                chercheLum(int X, int Y, int size);
-    bool                chercheLum(int X, int Y, int size, int limit);
-
-    void                find(int);
-    void                find();
+    Stars();
     
-    
-    float               getColorR(int);
-    float               getColorG(int);
-    float               getColorB(int);
+    void                    add( Star*);
+    void                    sup( Star*);
 
-    void                getFWHMLine( int x, int y, int size);
-    void                getFWHM( int x, int y, int size);
+    bool                    starExist(int, int);
 
-    void                glCercle(int rayon);
-    void                glCarre(int dx,  int dy );
-    void                glMark(int dx,  int dy );
-    void                glCroix(int dx,  int dy );
+    void                    findAllStars();
+    void                    deleteAllStars();
+    
+    void                    setView( Panel* );
 
-    void                updatePos(int, int, float);
-    void                updatePos(int, int);
-
-    void                displayGL();
-    
-    inline int          getX()                                          { return xFound; }
-    inline int          getY()                                          { return y; }
-    inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
-    inline float        getMagnitude()                                  { return magnitude; }
-    inline PanelText*   getInfo()                                       { return pInfo; }
-    
-    
+    void                    setRB(rb_t*);
+    void                    updateRB(rb_t*);
+    void                    displayGL();
+    void                    suivi(rb_t*);
+           
 private:
-    int                 width;
-    
-    int                 xFound;
-    int                 yFound;
+    vector<Star*>           v_tStars;
+    rb_t*                   RB;
+    Panel*                  pView;
 
-    int                 x;
-    int                 y;
-
-    int                 x_screen;
-    int                 y_screen;
-
-    vec2                vFWHM;
-    float               ponderation;
-    
-    float               magnitude;
-    float               maxLum;
-    float               limitLum;
-    
-    GLubyte*            ptr;
-
-    PanelText *         pInfo;
-    char                p_sInfo[225];
 };
 
 

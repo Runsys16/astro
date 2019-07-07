@@ -135,13 +135,13 @@ void Capture::create_preview()	{
 	panelPreview = new PanelCapture(NULL);
     panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
     panelPreview->setRB( &readBgr );
-    panelPreview->findAllStar();
+    //panelPreview->findAllStar();
 
     pW->add(panelPreview);
 
     resize( getWidth(), getHeight() );
 
-    char * pS = filename.c_str();
+    char * pS = (char*)filename.c_str();
     char * filenameShort = NULL;
     int nb = filename.size();
     
@@ -251,6 +251,13 @@ void Capture::onTop()
 void Capture::addStar( int x, int y )
 {
     panelPreview->addStar(x, y);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool Capture::isMouseOver( int xm, int ym )
+{
+    return panelPreview->isMouseOver(xm, ym);
 }
 
 
