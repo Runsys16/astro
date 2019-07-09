@@ -15,65 +15,9 @@ PanelCamera::PanelCamera()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::findAllStar()
 {
+    stars.setView( this );
+    stars.setRB( pReadBgr );
     stars.findAllStars();
-    /*
-    if ( pReadBgr == NULL )         return;
-    if ( !bFindStar )               return;
-
-    int width = pReadBgr->w;
-    int height = pReadBgr->h;
-
-    logf( (char*)"Find all star(%d,%d)", width, height );
-
-    Star *      p = new Star();
-    
-    p->setPtr( pReadBgr->ptr );
-    p->setWidth( pReadBgr->w );
-    p->setHeight( pReadBgr->h );
-
-    for( int y_find=20; y_find<height; y_find+=(40) )
-    {
-        for( int x_find=20; x_find<width; x_find+=(40) )
-        {
-            //logf( (char*)"Cherche etoile(%d,%d)", x_find, y_find );
-            if ( p->chercheLum(x_find, y_find, 50) )
-            {
-                //logf( (char*)"  (%d,%d)", p->getX(), p->getY() );
-                
-                p->setXY(x_find,y_find);            
-                p->find();            
-                int x_find = p->getX();
-                int y_find = p->getY();
-                p->computeMag();
-                
-                if ( p->getMagnitude() < 9.0 )     
-                {
-                    if ( starExist(x_find, y_find) )            
-                    {
-                        logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, x_find, p->getMagnitude() );
-                        continue;
-                    }
-                    
-                    Star * pp = new Star();
-                    pp->setPtr( pReadBgr->ptr );
-                    pp->setWidth( pReadBgr->w );
-                    pp->setHeight( pReadBgr->h );
-
-                    pp->setXY( x_find, y_find );
-                    pp->find();
-                    add( pp->getInfo() );
-                    
-                    v_tStars.push_back( pp );
-
-                    logf( (char*)"Nouvelle etoile(%d,%d) mag=%0.2f", x_find, x_find, pp->getMagnitude() );
-
-                    
-                }
-            }
-        }
-    }
-    delete p;
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -81,51 +25,15 @@ void PanelCamera::findAllStar()
 bool PanelCamera::starExist(int x, int y)
 {
     return stars.starExist(x,y);
-    /*
-    int nb = v_tStars.size();
-    for( int n=0; n<nb; n++ )
-    {
-        int x_star = v_tStars[n]->getX();
-        int y_star = v_tStars[n]->getY();
-        
-        if ( abs(x-x_star) < 8 && abs(y-y_star) < 8 )       return true;
-    }
-    
-    return false;
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::addStar(int x, int y)
 {
-    //stars.addStar
-    /*
-    if ( pReadBgr == NULL )         return;
-
-
-    float e = (float)pReadBgr->w / (float)getDX(); 
-    
-    float fx = e*(x-getX());
-    float fy = e*(y-getY());
-
-    Star *      p = new Star(fx,fy);
-    
-    p->setPtr( pReadBgr->ptr );
-    p->setWidth( pReadBgr->w );
-    p->setHeight( pReadBgr->h );
-
-    p->setXY( fx, fy);
-    p->find();
-    //p->computeMag();
-    add( p->getInfo() );
-
-    v_tStars.push_back( p );
-
-    logf( (char*)"Nouvelle etoile(%d,%d) mag=%0.2f", (int)p->getX(), (int)p->getY(), p->getMagnitude() );
-    logf( (char*)"setXY( %0.4f, %0.4f )", fx, fy );
-    logf( (char*)"Echelle %0.4f", e );
-    */
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    //stars.addStar(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -193,6 +101,25 @@ void PanelCamera::setEchelle(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::setRB(rb_t* p)
+{
+    pReadBgr = p;
+    stars.setRB(p);
+    //logf((char*)"PanelCamera::setRB() w=%d", pReadBgr->w);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::update()
+{
+    if  ( pReadBgr==NULL )      logf( (char*)"PanelCamera::update()   pointeur RB NULL" );
+    //else            logf((char*)"PanelCamera::update() w=%d", pReadBgr->w);
+    
+    stars.update( getX(), getY(), this, pReadBgr );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displayGL()
 {
     //mat4 m = scale( 2.0, 2.0, 1.0 );
@@ -251,9 +178,19 @@ void PanelCamera::displayGL()
 void PanelCamera::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelCamera::releaseLeft(%d,%d) ...", xm, ym );
+    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
+    logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
     
-
-    addStar( xm, ym );
+    //float e = (float)getDX() / (float)pReadBgr->w; 
+    float e = (float)getDX() / (float)1920.0; 
+    
+    int xx = ((float)xm-(float)getX()) / e;
+    int yy = ((float)ym-(float)getY()) / e;
+    
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+        stars.select(xx, yy);
 }
 
 

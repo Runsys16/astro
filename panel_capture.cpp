@@ -9,136 +9,27 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr )
     dx      = 0.0;
     dy      = 0.0;
     pReadBgr = pReadBgr;
+
+    stars.setView( this );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::deleteAllStars()
 {
-    int nb = v_tStars.size();
-    for( int n = nb-1; n>0; n-- )
-    {
-        Star* p = v_tStars[n];
-        Panel*  panelPreview = p->getInfo()->getParent();
-        panelPreview->sup(p->getInfo());
-        delete p;
-        v_tStars.pop_back();
-        p=0;
-        
-    }
-    logf( (char*)"Delete  %d Star()", nb );
+    stars.setRB( pReadBgr );
+
+    stars.deleteAllStars();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::findAllStar()
+void PanelCapture::findAllStars()
 {
-    logf( (char*)"PanelCapture::findAllStar()..." );
-    if ( pReadBgr == NULL )
-    {
-        return;
-    }
-    //if ( !bFindStar )               return;
-
-    int width = pReadBgr->w;
-    int height = pReadBgr->h;
-
-    logf( (char*)"Find all star(%d,%d)", width, height );
-
-    Star *      p = new Star();
-    
-    p->setPtr( pReadBgr->ptr );
-    p->setWidth( pReadBgr->w );
-    p->setHeight( pReadBgr->h );
-
-    for( int y_find=20; y_find<height; y_find+=(40) )
-    {
-        for( int x_find=20; x_find<width; x_find+=(40) )
-        {
-            //logf( (char*)"Cherche etoile(%d,%d)", x_find, y_find );
-            if ( p->chercheLum(x_find, y_find, 50) )
-            {
-                //logf( (char*)"  (%d,%d)", p->getX(), p->getY() );
-                
-                p->setXY(x_find,y_find);            
-                p->find();            
-                int x_find = p->getX();
-                int y_find = p->getY();
-                p->computeMag();
-                
-                if ( p->getMagnitude() < 9.0 )     
-                {
-                    if ( starExist(x_find, y_find) )            
-                    {
-                        logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, x_find, p->getMagnitude() );
-                        continue;
-                    }
-                    
-                    Star * pp = new Star();
-                    pp->setPtr( pReadBgr->ptr );
-                    pp->setWidth( pReadBgr->w );
-                    pp->setHeight( pReadBgr->h );
-
-                    pp->setXY( x_find, y_find );
-                    pp->find();
-                    add( pp->getInfo() );
-                    
-                    v_tStars.push_back( pp );
-
-                    logf( (char*)"Nouvelle etoile(%d,%d) mag=%0.2f", x_find, x_find, pp->getMagnitude() );
-
-                    
-                }
-            }
-        }
-    }
-    delete p;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-bool PanelCapture::starExist(int x, int y)
-{
-    int nb = v_tStars.size();
-    for( int n=0; n<nb; n++ )
-    {
-        int x_star = v_tStars[n]->getX();
-        int y_star = v_tStars[n]->getY();
-        
-        if ( abs(x-x_star) < 8 && abs(y-y_star) < 8 )       return true;
-    }
-    
-    return false;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::addStar(int x, int y)
-{
-    if ( pReadBgr == NULL )         return;
-
-
-    float e = (float)pReadBgr->w / (float)getDX(); 
-    
-    float fx = e*(x-getX());
-    float fy = e*(y-getY());
-
-    Star *      p = new Star(fx,fy);
-    
-    p->setPtr( pReadBgr->ptr );
-    p->setWidth( pReadBgr->w );
-    p->setHeight( pReadBgr->h );
-
-    p->setXY( fx, fy);
-    p->find();
-    //p->computeMag();
-    add( p->getInfo() );
-
-    v_tStars.push_back( p );
-
-    logf( (char*)"Nouvelle etoile(%d,%d) mag=%0.2f", (int)p->getX(), (int)p->getY(), p->getMagnitude() );
-    logf( (char*)"setXY( %0.4f, %0.4f )", fx, fy );
-    logf( (char*)"Echelle %0.4f", e );
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    stars.findAllStars();
+    return;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -206,19 +97,26 @@ void PanelCapture::setEchelle(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::update()
+{
+    if  ( pReadBgr==NULL )      logf( (char*)"PanelCamera::update()   pointeur RB NULL" );
+
+    //Panel* pParent = getParent();
+    stars.update( getX(), getY(), this, pReadBgr );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::displayGL()
 {
-    //mat4 m = scale( 2.0, 2.0, 1.0 );
     float gris = 0.3;
     VarManager& var = VarManager::getInstance();
-    //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
-    //else                            glColor4f( gris, gris, gris, 0.2 );
+
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-
-    //float x = getParent()->getX();
-    //float y = getParent()->getY();
 
     float x = getX();
     float y = getY();
@@ -235,22 +133,7 @@ void PanelCapture::displayGL()
     
     PanelSimple::displayGL();
 
-
-
-    if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
-    else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
-
-    int nb = v_tStars.size();
-    for( int i=0; i<nb; i++ )
-    {
-        float e = (float)getDX() / (float)pReadBgr->w; 
-        //logf( (char*)"Echelle %0.2f", v_tStars[i]->getMagnitude() );
-
-        v_tStars[i]->updatePos( getX(), getY(), e );
-        v_tStars[i]->displayGL();
-    }
-    
-
+    stars.displayGL();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -258,12 +141,29 @@ void PanelCapture::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::addStar(int xm, int ym)
+{
+    logf( (char*)"PanelCapture::addStar(%d,%d) ...", xm, ym );
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    //stars.addStar( xm, ym );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) ...", xm, ym );
-    
 
-    addStar( xm, ym );
+    float e = (float)getDX() / (float)pReadBgr->w; 
+    
+    int xx = ((float)xm-(float)getX()) / e;
+    int yy = ((float)ym-(float)getY()) / e;
+    
+    stars.setView( this->getParent() );
+    stars.setRB( pReadBgr );
+    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+        stars.select(xx, yy);
 }
 
 

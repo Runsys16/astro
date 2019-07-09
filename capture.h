@@ -41,6 +41,7 @@ public :
 
     bool                        isMouseOver(int, int);
     
+    virtual void                update();
     
 inline rb_t *                   getRB()                                     { return &readBgr; }
 

@@ -48,19 +48,24 @@ public:
 
     void                glCercle(int rayon);
     void                glCarre(int dx,  int dy );
+    void                glCarre(int dx);
     void                glMark(int dx,  int dy );
     void                glCroix(int dx,  int dy );
 
+    void                screen2tex(int&, int&);
+    void                screen2tex(int&, int&, int, int, int, int);
     void                updatePos(int, int, float);
     void                updatePos(int, int);
 
+
     void                displayGL();
     
-    inline int          getX()                                          { return xFound; }
+    inline int          getX()                                          { return x; }
     inline int          getY()                                          { return y; }
     inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
     inline float        getMagnitude()                                  { return magnitude; }
     inline PanelText*   getInfo()                                       { return pInfo; }
+    inline void         select()                                        { bSelect = !bSelect; }
     
     
 private:
@@ -73,6 +78,8 @@ private:
     int                 x;
     int                 y;
 
+    int                 dx_screen;
+    int                 dy_screen;
     int                 x_screen;
     int                 y_screen;
 
@@ -82,11 +89,14 @@ private:
     float               magnitude;
     float               maxLum;
     float               limitLum;
+    float               ech;
     
     GLubyte*            ptr;
 
     PanelText *         pInfo;
     char                p_sInfo[225];
+    
+    bool                bSelect;
 };
 
 

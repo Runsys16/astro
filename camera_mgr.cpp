@@ -208,6 +208,7 @@ void Camera_mgr::onBottom()
     */
     
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -215,6 +216,31 @@ void Camera_mgr::idleGL()
 {
     if ( pCurrent )            
         WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
+    
+
+    int nb = pCameras.size();
+
+    for( int i=0; i<nb; i++ )
+    {
+        pCameras[i]->idleGL();
+    }
+}
+*/
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::update()
+{
+    if ( pCurrent )            
+        WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
+    
+
+    int nb = pCameras.size();
+
+    for( int i=0; i<nb; i++ )
+    {
+        pCameras[i]->update();
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -443,6 +469,8 @@ void Camera_mgr::suivi()
     if ( getRB() != NULL )
     {
         //logf( (char*)"Camera_mgr::suivi()" );
+        Panel * pView= pCurrent->getPanelPreview();
+        pCurrent->getPanelPreview()->getStars()->setView( pView );
         pCurrent->getPanelPreview()->getStars()->suivi( getRB() );
     }
 }

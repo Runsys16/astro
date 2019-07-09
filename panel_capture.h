@@ -8,7 +8,7 @@
 #include <WindowsManager.h>
 #include "main.h"
 #include "var_mgr.h"
-#include "star.h"
+#include "stars.h"
 //#include "capture.h"
 
 
@@ -16,16 +16,26 @@ using namespace std;
 
 class PanelCapture : public PanelSimple
 {
+protected:
+    float               echelle;
+    float               dx;
+    float               dy;
+    
+    rb_t *              pReadBgr;
+    
+    Stars               stars;
+
 public:
-    PanelCapture(struct readBackground*);
+    PanelCapture( rb_t * );
     
     
+    virtual void		update();
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);
 
-    void                findAllStar();
+    void                findAllStars();
     void                deleteAllStars();
-    bool                starExist(int, int);    
+    //bool                starExist(int, int);    
     void                addStar(int,int);
 
     void                setEchelle(float f);
@@ -37,14 +47,6 @@ inline float            getEchelle()                                    { return
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
 
-protected:
-    float               echelle;
-    float               dx;
-    float               dy;
-    
-struct readBackground*  pReadBgr;
-    
-    vector<Star*>       v_tStars;
 };
 
 

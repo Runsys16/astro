@@ -31,7 +31,7 @@ public:
     void                        start_camera();
     void                        stop_camera();
     bool                        keyboard( char key );
-    void                        idleGL();
+    //void                        idleGL();
     void                        onBottom();
     void                        resize( int, int );
     void                        active();
@@ -64,7 +64,7 @@ public:
 
     inline Camera*              getCurrent()                                { return pCurrent; }   
    
-   
+    void                        update();   
    
    
 private:

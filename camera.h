@@ -37,7 +37,7 @@ protected:
 
     ivec2                       vCameraSize;
 
-    Stars                       stars;
+    //Stars                       stars;
     
     
     
@@ -54,6 +54,7 @@ virtual    ~Camera();
     void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
     void                        CreateControl();
 
+    virtual void                update();
     virtual void                CreatePreview();
     virtual void                resizePreview(int, int);
     virtual void                fullSizePreview(int, int);
@@ -87,7 +88,7 @@ virtual    ~Camera();
 inline bool                     getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
 inline PanelCamera *            getPanelPreview()               { return panelPreview; }
 inline float                    getHertz()                      { return hz; }
-inline Stars*                   getStars()                      { return &stars; }
+//inline Stars*                   getStars()                      { return &stars; }
 
     //inline int                  getFd()                         { return getFd
 };

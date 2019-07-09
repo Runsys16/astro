@@ -19,6 +19,7 @@ public:
     void                    add( Star*);
     void                    sup( Star*);
 
+    Star*                   addStar( int, int, int, int, float );
     bool                    starExist(int, int);
 
     void                    findAllStars();
@@ -28,13 +29,22 @@ public:
 
     void                    setRB(rb_t*);
     void                    updateRB(rb_t*);
+
+    void                    update(int, int, Panel*, rb_t*);
     void                    displayGL();
+    
+    void                    select(int, int);
     void                    suivi(rb_t*);
            
 private:
     vector<Star*>           v_tStars;
     rb_t*                   RB;
     Panel*                  pView;
+    
+    int                     dx;
+    int                     dy;
+    
+    float                   ech;
 
 };
 

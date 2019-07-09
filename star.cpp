@@ -24,8 +24,10 @@ void Star::init(int xx, int yy)
 {
     x           = xx;
     y           = yy;
+    ech         = 1.0;
     limitLum    = 20.0;
     ptr         = NULL;
+    bSelect     = false;
     
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
 }
@@ -92,6 +94,7 @@ void Star::computeMag()
     magnitude = -(log( ponderation ) / log(2.0)) + 17.0;
     
     sprintf( p_sInfo, "mag=%0.2f", magnitude );
+    //logf( (char*)"mag=%0.2f", magnitude );
     pInfo->changeText( p_sInfo );
     
     //logf( (char*)p_sInfo );
@@ -486,6 +489,13 @@ void Star::glCarre( int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Star::glCarre( int d )
+{
+    glCarre(d, d);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Star::glCroix( int dx,  int dy )
 {
     int x = x_screen + 1;
@@ -516,8 +526,23 @@ void Star::glMark( int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Star::screen2tex(int& X, int& Y)
+{
+    float xx = ((float)x_screen-(float)dx_screen) / ech;
+    float yy = ((float)y_screen-(float)dy_screen) / ech;
+
+    X = xx;
+    Y = yy;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Star::updatePos(int X, int Y, float e)
 {
+    dx_screen = X;
+    dy_screen = Y;
+    
+    ech = e;
     x_screen = e*x + X;
     y_screen = e*y + Y;
     
@@ -535,8 +560,17 @@ void Star::displayGL()
 {
     //logf( (char*)"Star::displayGL()" );
     //glCroix(20,20);
-    glMark(40,40);
-    glCercle( computeRayon() +4 );
+    if ( bNuit )        glColor4f( 0.3,  0.0,  0.0, 1.0 );
+    else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
+
+    glMark(ech*40, ech*40);
+    glCercle( ech*computeRayon() + 4 );
+    
+    if ( bSelect )      
+    {
+        glColor4f( 1.0,  0.0,  0.0, 1.0 );
+        glCarre( ech*computeRayon() + 4 +10 );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

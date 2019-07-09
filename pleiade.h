@@ -15,7 +15,6 @@ protected:
     bool                        bCharging;
     bool                        bFreePtr;
     bool                        bFirst;
-    //char                        sPleiade[255];
     string                      sPleiade;
     string                      sPleiades;
     
@@ -29,6 +28,7 @@ public :
     Pleiade();
     ~Pleiade();
 
+    virtual void                update();
     virtual void                change_background_camera();
 
     void                        charge_background();

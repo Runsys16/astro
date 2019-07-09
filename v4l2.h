@@ -123,7 +123,7 @@ private:
     bool                    bHaveNew;
 
 protected:
-    struct readBackground       readBgr;
+    rb_t                    readBgr;
 
 
 

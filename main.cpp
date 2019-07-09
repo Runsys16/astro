@@ -669,7 +669,7 @@ void displayGLCamera_cb(void)
     }
     */
     
-    Camera_mgr::getInstance().suivi();
+    //Camera_mgr::getInstance().suivi();
     
     displayGLTrace();
 
@@ -968,7 +968,7 @@ void updatePanelResultat(float x, float y, float mag)
     char sL[255];
     sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, vOrigine.x, vOrigine.y, pond2mag(mag) );
     SP->changeText(sSkyPoint);
-    /*
+    /* 
     sprintf( sR, "r=%03d", (int)getSkyPoint_colorR(offset) );
     sprintf( sG, "g=%03d", (int)getSkyPoint_colorG(offset) );
     sprintf( sB, "b=%03d", (int)getSkyPoint_colorB(offset) );
@@ -1543,7 +1543,7 @@ void suivi(void)
     else
         return;
     
-    Camera_mgr::getInstance().suivi();
+    //Camera_mgr::getInstance().suivi();
     //change_background_pleiade();
     getSuiviParameter();   
     
@@ -1704,11 +1704,18 @@ static void idleGL(void)
     }
 
 
+    //------------------------------------------------------
     if (!bPause)    {
         Camera_mgr::getInstance().change_background_camera();
     }
+    Camera_mgr::getInstance().update();
+    
+    int nb = captures.size();
+        for( int n=0; n<nb; n++ )
+            captures[n]->update();
+    //------------------------------------------------------
 
-    if (bAutorisationSuivi & bSuivi)    suivi();
+    //if (bAutorisationSuivi & bSuivi)    suivi();
 
     if (!bAutorisationSuivi)
     {
@@ -1734,7 +1741,9 @@ static void idleGL(void)
 		elapsedTime = fTimeMili - prevTime;
 		prevTime = fTimeMili;
 	}
+    
     WindowsManager::getInstance().idleGL( elapsedTime );
+    
 	if ( elapsedTime != -1 )
 	{
 	    fTimer += elapsedTime;
@@ -1988,20 +1997,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 4:
 		{
             logf( (char*)"case 'ctrl+D'" );
-            if ( Camera_mgr::getInstance().getCurrent() != NULL )
+            if ( isMouseOverCapture()  )
             {
-                if ( !isMouseOverCapture()  )
+                int n = current_capture;
+                if ( n != -1 )
                 {
+                    captures[n]->getPreview()->deleteAllStars();
+                }
+            }
+            else
+            {
+                if ( Camera_mgr::getInstance().getCurrent() != NULL )
         		    Camera_mgr::getInstance().deleteAllStars();
-                }
-                else
-                {
-                    int n = current_capture;
-                    if ( n != -1 )
-                    {
-                        captures[n]->getPreview()->deleteAllStars();
-                    }
-                }
             }
         }
         break;
@@ -2315,20 +2322,19 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 's':
         {
             logf( (char*)"case 's'" );
-            if ( Camera_mgr::getInstance().getCurrent() != NULL )
+
+            if ( isMouseOverCapture()  )
             {
-                if ( !isMouseOverCapture()  )
+                int n = current_capture;
+                if ( n != -1 )
                 {
+                    captures[n]->getPreview()->findAllStars();
+                }
+            }
+            else
+            {
+                if ( Camera_mgr::getInstance().getCurrent() != NULL )
                     Camera_mgr::getInstance().findAllStars();
-                }
-                else
-                {
-                    int n = current_capture;
-                    if ( n != -1 )
-                    {
-                        captures[n]->getPreview()->findAllStar();
-                    }
-                }
             }
         }
         break;
@@ -3860,6 +3866,8 @@ int main(int argc, char **argv)
     WindowsManager::getInstance().loadResourceImage( "images/file.png" );
     WindowsManager::getInstance().loadResourceImage( "images/dir.png" );
     FileBrowser::getInstance();
+
+    WindowsManager::genereMipMap( false );
     
     compute_matrix();
     glutMainLoop();

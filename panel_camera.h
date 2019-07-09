@@ -16,9 +16,21 @@ using namespace std;
 
 class PanelCamera : public PanelWindow
 {
+
+protected:
+    float               echelle;
+    float               dx;
+    float               dy;
+    
+    rb_t*               pReadBgr;
+    
+    Stars               stars;
+
+
 public:
     PanelCamera();
     
+    virtual void		update();
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);
 
@@ -30,20 +42,13 @@ public:
     void                setCentX(float f);
     void                setCentY(float f);
 
-inline void             setRB(rb_t*p)                                   { pReadBgr = p; }
+    void                setRB(rb_t* p);
+    
 inline float            getEchelle()                                    { return echelle; }
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
 
-protected:
-    float               echelle;
-    float               dx;
-    float               dy;
-    
-    rb_t*               pReadBgr;
-    
-    Stars               stars;
 };
 
 
