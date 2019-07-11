@@ -120,7 +120,7 @@ void Pleiade::change_background_camera(void)
         //printf( "%s\n", &sPleiade[56] );
         count_png += plus;
         if ( count_png>=119 )           plus = -1;
-        if ( count_png<=30 )            plus = 1;
+        if ( count_png<= 30 )            plus = 1;
 
 
 

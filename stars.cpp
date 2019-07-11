@@ -183,6 +183,7 @@ void Stars::deleteAllStars()
         p=0;
         
     }
+    v_tStars.clear();
     logf( (char*)"Delete  %d Star()", nb );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -191,6 +192,13 @@ void Stars::deleteAllStars()
 void Stars::setView(Panel* p)
 {
     pView = p;
+    
+    int nb = v_tStars.size();
+    for( int n=0; n<nb; n++ )
+    {
+        v_tStars[n]->setView( p );
+    }
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -200,7 +208,7 @@ void Stars::setRB(rb_t* p)
     RB = p;
     
     int nb = v_tStars.size();
-    for( int n = nb-1; n>0; n-- )
+    for( int n=0; n<nb; n++ )
     {
         v_tStars[n]->setRB( p );
     }
@@ -225,8 +233,9 @@ void Stars::suivi(rb_t* p)
         float e = (float)pView->getDX() / (float)RB->w; 
         //logf((char*)"Stars::suivi() w=%d h=%d  delta window (%d, %d)", p->w, p->h, pView->getDX(), pView->getDY() );
 
-        v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
         v_tStars[i]->find();
+        v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
+        v_tStars[i]->suivi();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -246,7 +255,8 @@ void Stars::select( int xp, int yp)
         //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
         if ( dx <20 && dy < 20 )
         {
-            v_tStars[n]->select();
+            for( int k=0; k<nb; k++ )   { if (k!=n) v_tStars[k]->setSuivi(false); }
+            v_tStars[n]->setSuivi(true);
         }
     }
 }
@@ -269,8 +279,9 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
     {
-        v_tStars[i]->updatePos( dx, dy, ech );
+        v_tStars[i]->setRB( RB );
         v_tStars[i]->find();
+        v_tStars[i]->updatePos( dx, dy, ech );
     }
 
 

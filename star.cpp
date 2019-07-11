@@ -4,6 +4,19 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+Star::~Star()
+{
+    logf( (char*)"Destructeur Star()" );
+    if (panelZoom != NULL)
+    {
+        pView->sup( panelZoom );
+        delete panelZoom;
+        panelZoom = NULL;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 Star::Star()
 {
     logf( (char*)"Constructeur Star()" );
@@ -28,8 +41,11 @@ void Star::init(int xx, int yy)
     limitLum    = 20.0;
     ptr         = NULL;
     bSelect     = false;
+    bSuivi      = false;
     
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
+    panelZoom   = NULL;
+    RB          = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -60,6 +76,14 @@ void Star::setRB(rb_t* p)
     ptr =           p->ptr;
     width =         p->w;
     height =        p->h;
+    RB =            p;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::setView(Panel* p)
+{
+    pView = p;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -446,14 +470,17 @@ void Star::getFWHM( int xx, int yy, int size)
     
     x = round(vFWHM.x);
     y = round(vFWHM.y);
+    
+    pos.x = vFWHM.x +0.5;
+    pos.y = vFWHM.y +0.5;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCercle(int rayon)
 {
-    int x = x_screen + 1;
-    int y = y_screen + 1;
+    int x = x_screen;
+    int y = y_screen;
 
 
 	glBegin(GL_LINE_LOOP);
@@ -472,8 +499,8 @@ void Star::glCercle(int rayon)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCarre( int dx,  int dy )
 {
-    int x = x_screen + 1;
-    int y = y_screen + 1;
+    int x = x_screen;
+    int y = y_screen;
     
 	glBegin(GL_LINES);
         x = x-dx;
@@ -498,8 +525,8 @@ void Star::glCarre( int d )
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCroix( int dx,  int dy )
 {
-    int x = x_screen + 1;
-    int y = y_screen + 1;
+    int x = x_screen;
+    int y = y_screen;
     
 	glBegin(GL_LINES);
 
@@ -513,8 +540,8 @@ void Star::glCroix( int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glMark( int dx,  int dy )
 {
-    int x = x_screen + 1;
-    int y = y_screen + 1;
+    int x = x_screen;
+    int y = y_screen;
     
 	glBegin(GL_LINES);
 
@@ -543,15 +570,88 @@ void Star::updatePos(int X, int Y, float e)
     dy_screen = Y;
     
     ech = e;
-    x_screen = e*x + X;
-    y_screen = e*y + Y;
+    x_screen = e*pos.x + (float)X;
+    y_screen = e*pos.y + (float)Y;
     
     pInfo->setPos( e*x + 8, e*y + 8 );
     pInfo->updatePos();
+    if (panelZoom!=NULL)
+    {
+        //logf( (char*)"-------------" );
+        panelZoom->setRB( RB );
+        float xx = 1.0 * x;
+        float yy = 1.0 * y;
+        panelZoom->setPosStar(pos.x, pos.y);
+        //logf( (char*)"Appel de setPosAndSize() x,y(%d, %d)", x, y );
+        panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
+        //logf( (char*)"-------------" );
+    }
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Star::updatePos(int X, int Y)
 {   
     updatePos( X, Y, 1.0 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::suivi()
+{
+    if ( panelZoom == NULL )                return;
+    
+    panelZoom->setRB( RB );
+    panelZoom->setPosStar(pos.x, pos.y);
+    panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 300, 300 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::setSuivi(bool b)
+{
+    if ( b )
+    {
+        if ( bSuivi )
+        {
+            bSuivi = bSelect = false;
+            if (panelZoom!=NULL)
+            {
+                pView->sup( panelZoom );
+                delete panelZoom;
+                panelZoom = NULL;
+            }
+            return;
+        }
+        else
+        {
+            bSuivi = bSelect = true;
+            panelZoom = new PanelZoom();
+            pView->add( panelZoom );
+            //panelZoom->setPosStar(xFound, yFound);
+            panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
+            
+            logf( (char*)"Star::displayGL() setBackGround()" );
+            if ( RB != NULL )
+            {
+                logf( (char*)"Star::displayGL() setRB()" );
+                panelZoom->setRB( RB );
+                //panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
+            }
+            return;
+        }
+        
+    }
+    else
+    {
+        bSuivi = false;
+        if (panelZoom!=NULL)
+        {
+            pView->sup( panelZoom );
+            delete panelZoom;
+            panelZoom = NULL;
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -566,7 +666,12 @@ void Star::displayGL()
     glMark(ech*40, ech*40);
     glCercle( ech*computeRayon() + 4 );
     
-    if ( bSelect )      
+    if ( bSuivi )      
+    {
+        glColor4f( 1.0,  1.0,  0.0, 1.0 );
+        glCarre( ech*computeRayon() + 4 +10 );
+    }
+    else if ( bSelect )      
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
         glCarre( ech*computeRayon() + 4 +10 );

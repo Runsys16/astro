@@ -117,6 +117,7 @@ bool                bFileBrowser   = false;
 bool                bStellarium    = false;
 bool                bPleiade       = false;
 bool                bSauve         = false;
+bool                bOneFrame      = false;
 
 int                 wImg;
 int                 hImg;
@@ -605,6 +606,7 @@ void displayGLnuit_cb(void)
 //--------------------------------------------------------------------------------------------------------------------
 void displayGLCamera_cb(void)
 {
+    /*
     if ( bSuivi && bAutorisationSuivi )   {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
 	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
@@ -618,6 +620,7 @@ void displayGLCamera_cb(void)
         glCarre(x, y, SIZEPT, SIZEPT);
             
     }
+    */
     if ( !bAutorisationSuivi )
     {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
@@ -1659,6 +1662,9 @@ static void idleGL(void)
     
 	timer.Idle();
 
+    //-----------------------------------------------------------------------
+    // Gestion de alertbox
+    //-----------------------------------------------------------------------
     if ( bAlert )
     {
         bAlert = false;
@@ -1666,7 +1672,10 @@ static void idleGL(void)
         tAlert.push_back( p );
         p->onTop();
     }
-    
+    //-----------------------------------------------------------------------
+    // Gestion des connexions logiciel /dev/:
+    // arduino et stellarium
+    //-----------------------------------------------------------------------
     if ( Serveur_mgr::getInstance().isConnect() )
     {
        bStellarium = true;
@@ -1677,8 +1686,10 @@ static void idleGL(void)
        bStellarium = false;
        pStellarium->changeText( (char*)"----" );
     }
-    
-
+    //-----------------------------------------------------------------------
+    // Gestion de la sauvegarde des coordonnees
+    // ecran des differentes fenetres
+    //-----------------------------------------------------------------------
     if ( panelStdOutW->getHaveMove() )
     {
         panelStdOutW->resetHaveMove();
@@ -1702,27 +1713,30 @@ static void idleGL(void)
         
         //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
-
-
-    //------------------------------------------------------
-    if (!bPause)    {
+    //-----------------------------------------------------------------------
+    // Mise a jour des buffers de la camera
+    // et des pointeurs vers la texture background
+    //-----------------------------------------------------------------------
+    if (!bPause || bOneFrame )    {
         Camera_mgr::getInstance().change_background_camera();
+        if (bOneFrame)      bPause = true;
+        bOneFrame = false;
     }
     Camera_mgr::getInstance().update();
     
     int nb = captures.size();
         for( int n=0; n<nb; n++ )
             captures[n]->update();
-    //------------------------------------------------------
-
-    //if (bAutorisationSuivi & bSuivi)    suivi();
-
+    //-----------------------------------------------------------------------
+    // Geqtion du suivi des eroiles
+    //-----------------------------------------------------------------------
     if (!bAutorisationSuivi)
     {
         updatePanelResultat( xClick, yClick, 0 );
     }
-
-
+    //-----------------------------------------------------------------------
+    //
+    //-----------------------------------------------------------------------
     if ( bRecTrace )
     {
         int i = t_vTrace.size() - 1;
@@ -1732,6 +1746,9 @@ static void idleGL(void)
             trace->push_back( vec2(xSuivi, ySuivi) );
         }
     }
+    //-----------------------------------------------------------------------
+    //
+    //-----------------------------------------------------------------------
 	
     float elapsedTime = -1;
 	if ( prevTime < 0 )	{
@@ -2222,7 +2239,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'P':  // '-'
         {
-        photo();
+        //photo();
+        bOneFrame = true;
         }
         break;
 

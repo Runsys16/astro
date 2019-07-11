@@ -7,12 +7,15 @@
 #include <WindowsManager.h>
 #include <thread>
 
+#include "panel_zoom.h"
+
 
 using namespace std;
 
 class Star
 {
 public:
+    ~Star();
     Star();
     Star(int, int);
     void                init(int,int);
@@ -21,6 +24,7 @@ public:
     void                setWidth(int);
     void                setHeight(int);
     void                setRB(rb_t*);
+    void                setView(Panel*);
 
     int                 getOffset(int,int);
     void                computeMag();
@@ -56,10 +60,14 @@ public:
     void                screen2tex(int&, int&, int, int, int, int);
     void                updatePos(int, int, float);
     void                updatePos(int, int);
+    void                suivi();
 
 
     void                displayGL();
     
+    void                setSuivi(bool);
+    inline bool         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
+    inline bool         getSuivi()                                      { return bSuivi; }
     inline int          getX()                                          { return x; }
     inline int          getY()                                          { return y; }
     inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
@@ -69,6 +77,8 @@ public:
     
     
 private:
+    vec2                pos;
+    
     int                 width;
     int                 height;
     
@@ -92,11 +102,16 @@ private:
     float               ech;
     
     GLubyte*            ptr;
+    rb_t*               RB;
 
     PanelText *         pInfo;
     char                p_sInfo[225];
     
     bool                bSelect;
+    bool                bSuivi;
+    
+    PanelZoom*          panelZoom;
+    Panel*              pView;
 };
 
 
