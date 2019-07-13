@@ -2046,6 +2046,26 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
     
+    case 16:
+		{
+            logf( (char*)"case 'ctrl+P'" );
+        }
+        break;
+    
+    case 6:
+		{
+            logf( (char*)"case 'ctrl+F'" );
+            if ( isMouseOverCapture()  )
+            {
+                int n = current_capture;
+                if ( n != -1 )
+                {
+                    captures[n]->fullscreen();
+                }
+            }
+        }
+        break;
+    
     
     
     

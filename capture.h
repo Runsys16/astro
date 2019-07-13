@@ -35,6 +35,8 @@ public :
     void                        create_preview();
     void                        resize(int,int);
     void                        resize(int,int,int,int);
+    void                        fullscreen();
+
 
     void                        onTop();
     void                        addStar(int,int);

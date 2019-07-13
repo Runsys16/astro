@@ -41,7 +41,7 @@ public:
     void                setEchelle(float f);
     void                setCentX(float f);
     void                setCentY(float f);
-
+    
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
 inline float            getEchelle()                                    { return echelle; }
 inline float            getCentX()                                      { return dx; }
