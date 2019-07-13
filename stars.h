@@ -29,6 +29,7 @@ public:
 
     void                    setRB(rb_t*);
     void                    updateRB(rb_t*);
+    vec2*                   getSuivi();
 
     void                    update(int, int, Panel*, rb_t*);
     void                    displayGL();

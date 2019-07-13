@@ -28,7 +28,7 @@ public :
     Pleiade();
     ~Pleiade();
 
-    virtual void                update();
+    //virtual void                update();
     virtual void                change_background_camera();
 
     void                        charge_background();

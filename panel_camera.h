@@ -43,6 +43,7 @@ public:
     void                setCentY(float f);
 
     void                setRB(rb_t* p);
+    vec2*               getSuivi();
     
 inline float            getEchelle()                                    { return echelle; }
 inline float            getCentX()                                      { return dx; }

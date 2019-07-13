@@ -816,7 +816,7 @@ void displayResultat_cb(void)
 
     glEchelle();
     
-    
+#define KLOG    2.0   
     if ( decal_resultat >= t_vResultat.size() )     return;
     
     if ( n != 0  )
@@ -827,13 +827,15 @@ void displayResultat_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
         {
-            int y = (float)(delta_courbe1*(t_vResultat[i].x-offset_x) + AXE_X);
+            float y = t_vResultat[i].x - offset_x;
+            y = (float)(delta_courbe1*(y) + AXE_X);
             int x = (n-i-decal_resultat)*courbe1;
 
+            int Y = y;
             panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(y);
+            panelCourbe->y2Screen(Y);
 
-            glVertex2i( x, y );
+            glVertex2i( x, Y );
             //printf( "%d %0.2f %0.2f y=%0.2f\n", i, t_vResultat[i].x, offset_x, y );
         }
         glEnd();        
@@ -844,13 +846,15 @@ void displayResultat_cb(void)
         glBegin(GL_LINE_STRIP);
         for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
         {
-            int y = (float)(delta_courbe2*(t_vResultat[i].y-offset_y) + AXE_Y);
+            float y = t_vResultat[i].y - offset_y;
+            y = (float)(delta_courbe2*(y) + AXE_Y);
             int x = (n-i-decal_resultat)*courbe2;
 
+            int Y = y;
             panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(y);
+            panelCourbe->y2Screen(Y);
 
-            glVertex2i( x, y );
+            glVertex2i( x, Y );
         }
         glEnd();   
         
@@ -1610,11 +1614,17 @@ void suivi(void)
     t_vSauve.push_back(v);
     
     
-    //printf( "3-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
-    //int xPanel = xSuivi;
-    //int yPanel = ySuivi;
-    //tex2screen(xPanel,yPanel);
-    //panelResultat->setPos(xPanel+20 , yPanel+20);
+    vec2*       pV = Camera_mgr::getInstance().getSuivi();
+    if ( pV == NULL )
+    {
+        //logf( (char*)"Suivi NULL");
+    }
+    else
+    {
+        //logf( (char*)"Suivi (%0.2f, %0.2f)", pV->x, pV->y ); 
+        xSuivi = pV->x;
+        ySuivi = pV->y;
+    }
     updatePanelResultat( xSuivi, ySuivi, point.ponderation );
     
 }
@@ -1727,6 +1737,13 @@ static void idleGL(void)
     int nb = captures.size();
         for( int n=0; n<nb; n++ )
             captures[n]->update();
+    //-----------------------------------------------------------------------
+    // Lance le suivi des etoiles
+    //-----------------------------------------------------------------------
+    if (bAutorisationSuivi)
+    {
+        suivi();
+    }
     //-----------------------------------------------------------------------
     // Geqtion du suivi des eroiles
     //-----------------------------------------------------------------------
@@ -1953,8 +1970,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
-    //std::cout << (int)key << std::endl;
-    //logf( (char*)"*** KEYBOARD GL ***" );
+    //logf( (char*)"*** glutKeyboardFunc(unsigned char key, int x, int y)" );
 	int modifier = glutGetModifiers();
 	
     bFileBrowser = FileBrowser::getInstance().getVisible();

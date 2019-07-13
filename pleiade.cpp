@@ -16,7 +16,7 @@ Pleiade::Pleiade()
     //sprintf( sPleiade, "%s", sTmp );
 
     sPleiades = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-";
-    sPleiade = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
+    sPleiade  = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
 
     ptr = NULL;
 
@@ -64,15 +64,20 @@ void Pleiade::charge_background()
     bFreePtr = true;
     //logf((char*)"Camera::threadExtractImg()  stop %ld", readBgr.ptr);
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Pleiade::update(void)
 {
 //    logf((char*)"Camera::update() -------------");
-    panelPreview->setRB( &readBgr );
-    panelPreview->update();
+    if ( readBgr.ptr != NULL )
+    {
+        panelPreview->setRB( &readBgr );
+        panelPreview->update();
+    }
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -118,9 +123,6 @@ void Pleiade::change_background_camera(void)
         //ptr = _ImageTools::OpenImage( (const std::string)sPleiade, w, h, d );
         
         //printf( "%s\n", &sPleiade[56] );
-        count_png += plus;
-        if ( count_png>=119 )           plus = -1;
-        if ( count_png<= 30 )            plus = 1;
 
 
 
@@ -129,13 +131,14 @@ void Pleiade::change_background_camera(void)
         char num[] = "000";
         
         sprintf( num, "%03d", count_png );
-        pCamFilename->changeText( num );
-        //logf((char*)" num =  %s", (char*)num );
-        //logf((char*)" namefile =  %s", (char*)sPleiade );
-        //sPleiade[56] = num[0];
-        //sPleiade[57] = num[1];
-        //sPleiade[58] = num[2];
+        string titre = "suivi-20190103-" + string(num) + ".png";
+        
+        pCamFilename->changeText( titre.c_str() );
         sPleiade = sPleiades + string(num) + ".png";
+
+        count_png += plus;
+        if ( count_png>=119 )           plus = -1;
+        if ( count_png<= 30 )            plus = 1;
         
 
         thread_chargement_pleiade = std::thread(&Pleiade::charge_background, this);

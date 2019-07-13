@@ -117,7 +117,10 @@ void Star::computeMag()
 {
     magnitude = -(log( ponderation ) / log(2.0)) + 17.0;
     
-    sprintf( p_sInfo, "mag=%0.2f", magnitude );
+    if ( bSuivi )
+        sprintf( p_sInfo, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
+    else
+        sprintf( p_sInfo, "mag=%0.2f", magnitude );
     //logf( (char*)"mag=%0.2f", magnitude );
     pInfo->changeText( p_sInfo );
     

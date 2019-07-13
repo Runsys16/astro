@@ -45,6 +45,7 @@ public:
     int                         get_dxCam();
     int                         get_dyCam();
     ivec2                       get_vCameraSize();
+    vec2*                       getSuivi();
     
     int                         getSize();
     int                         getNum(Camera *);
@@ -72,6 +73,7 @@ private:
     Camera*                     pCurrent;
     
     int                         nActive;
+    vec2                        vSuivi;
     
     
 SINGLETON_END()

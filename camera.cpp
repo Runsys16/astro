@@ -75,8 +75,11 @@ void Camera::init()
 void Camera::update()
 {
     //logf((char*)"Camera::update() -------------");
-    panelPreview->setRB( &readBgr );
-    panelPreview->update();
+    if ( readBgr.ptr != NULL )
+    {
+        panelPreview->setRB( &readBgr );
+        panelPreview->update();
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -608,6 +611,14 @@ int Camera::get_dyCam()
 ivec2 Camera::get_vCameraSize()
 {
     return vCameraSize;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+vec2* Camera::getSuivi()
+{
+    if ( panelPreview!=NULL )           return panelPreview->getSuivi();
+    return NULL;
 }
 
 

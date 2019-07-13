@@ -54,7 +54,7 @@ virtual    ~Camera();
     void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
     void                        CreateControl();
 
-    virtual void                update();
+    void                        update();
     virtual void                CreatePreview();
     virtual void                resizePreview(int, int);
     virtual void                fullSizePreview(int, int);
@@ -84,6 +84,8 @@ virtual    ~Camera();
     int                         get_dxCam();
     int                         get_dyCam();
     ivec2                       get_vCameraSize();
+
+    vec2*                       getSuivi();
 
 inline bool                     getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
 inline PanelCamera *            getPanelPreview()               { return panelPreview; }
