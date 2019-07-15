@@ -573,8 +573,8 @@ void Star::updatePos(int X, int Y, float e)
     dy_screen = Y;
     
     ech = e;
-    x_screen = e*pos.x + (float)X;
-    y_screen = e*pos.y + (float)Y;
+    x_screen = e*(pos.x+0.5) + (float)X;
+    y_screen = e*(pos.y+0.5) + (float)Y;
     
     pInfo->setPos( e*x + 8, e*y + 8 );
     pInfo->updatePos();
@@ -588,6 +588,7 @@ void Star::updatePos(int X, int Y, float e)
         //logf( (char*)"Appel de setPosAndSize() x,y(%d, %d)", x, y );
         panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
         //logf( (char*)"-------------" );
+        panelZoom->updatePos();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -607,6 +608,7 @@ void Star::suivi()
     panelZoom->setRB( RB );
     panelZoom->setPosStar(pos.x, pos.y);
     panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 300, 300 );
+    panelZoom->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -641,6 +643,7 @@ void Star::setSuivi(bool b)
                 panelZoom->setRB( RB );
                 //panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
             }
+            panelZoom->updatePos();
             return;
         }
         

@@ -646,34 +646,7 @@ void displayGLCamera_cb(void)
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.2 );    
 
-     //update position
-    /*
-    int nb = v_tStars.size();
-    for (int i=0; i<nb; i++ )
-    {
-        Camera_mgr& mgr = Camera_mgr::getInstance(); 
-        if ( mgr.getCurrent() == NULL )                         continue;
-        if ( mgr.getCurrent()->getPanelPreview() == NULL )      continue;
-        
-        PanelWindow* p = mgr.getCurrent()->getPanelPreview();
-        
-        struct readBackground*  RB = mgr.getRB();
-        if (RB==NULL || RB->ptr==NULL) continue;
 
-        int DX = p->getDX();
-        int X  = p->getX();
-        int Y  = p->getY();
-        v_tStars[i]->setPtr( RB->ptr );
-        v_tStars[i]->setWidth( RB->w );
-        v_tStars[i]->setHeight( RB->h );
-        v_tStars[i]->find();
-        v_tStars[i]->updatePos( X, Y, (float)DX/(float)RB->w);
-        v_tStars[i]->displayGL();
-    }
-    */
-    
-    //Camera_mgr::getInstance().suivi();
-    
     displayGLTrace();
 
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
@@ -961,6 +934,8 @@ void updatePanelResultat(float x, float y, float mag)
 {
     int xPanel = x;
     int yPanel = y;
+    
+    mag = -1.0;
 
     tex2screen(xPanel,yPanel);
     panelResultat->setPos(xPanel+20 , yPanel+20);
@@ -986,256 +961,6 @@ void updatePanelResultat(float x, float y, float mag)
     B->changeText(sB);
     L->changeText(sL);
     */
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void getSkyPointLine(struct sky_point* point, int x, int y, int size)
-{
-    int min = x - size;
-    int max = x + size;
-    
-    //int offset = GET_OFFSET(0,y,vCameraSize.x);
-    
-    //printf( "getPointLine x%d y%d\n", x, y);
-    ptr = Camera_mgr::getInstance().getPtr();
-    size_t size_ptr;
-    
-    try
-    {
-        size_ptr = malloc_usable_size ( (void*) ptr);
-    }
-    catch(std::exception const& e)
-    {
-        cerr << "ERREUR : " << e.what() << endl;
-    }
-     
-    
-    
-    
-    for( x=min; x<max; x++) 
-    {
-        int offset = getOffset(x,y,vCameraSize.x);
-        if ( offset+4 > size_ptr )
-        {
-            //logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
-            //return;
-            continue;
-        }
-        
-        float r;
-        float g;
-        float b;
-
-        try
-        {
-            r = ptr[offset+0]; 
-            g = ptr[offset+1]; 
-            b = ptr[offset+2]; 
-        }
-        catch ( const std::exception& e )
-        {
-            std::cout << e.what() << std::endl;
-            return;
-        }
-
-        float l = 0.33 * r + 0.5 * g  + 0.16 * b;
-        if ( l<20.0 )       l = 0.0;
-        
-        //if (bPrintLum)      printf( "%-3d-", (int)l);
-        
-        point->xAverage    += l * (float)x;
-        point->yAverage    += l * (float)y;
-        point->ponderation += l;
-    }  
-
-    //if (bPrintLum)      printf( "\n" );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float getLumMax(int offset, float max )
-{
-    float r;
-    float g;
-    float b;
-
-    try
-    {
-        r = ptr[offset+0]; 
-        g = ptr[offset+1]; 
-        b = ptr[offset+2]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-
-    float l = 0.33 * r + 0.5 * g  + 0.16 * b;
-    if ( l<max )       l = 0.0;
-
-    return l;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float getLum(int offset )
-{
-    return getLumMax( offset, 20.0 );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void findSkyPoint(struct sky_point* point, int X, int Y, int size)
-{
-    point->found = false;  
-
-    int x, y;
-
-    y = X - size;
-        
-    ptr = Camera_mgr::getInstance().getPtr();
-    size_t size_ptr = malloc_usable_size ( (void*) ptr);
-    //-------------------------------------------------------------------------    
-    y = Y - size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        x = X+i;
-        int offset = getOffset( x, y, vCameraSize.x);
-
-        if ( offset+4 > size_ptr )        {
-            continue;
-            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
-            return;
-        }
-        
-        float l = getLum( offset) ;
-        
-        if (l!=0.0) {  point->found = true; point->x = x; point->y = y; return; }
-    }  
-    //-------------------------------------------------------------------------    
-    y = Y + size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        x = X+i;
-        int offset = getOffset( x, y, vCameraSize.x);
-
-        if ( offset+4 > size_ptr )        {
-            continue;
-            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
-            return;
-        }
-        
-        float l = getLum( offset) ;
-        
-        if (l!=0.0) { point->found = true; point->x = x; point->y = y; return; }
-    }  
-    //-------------------------------------------------------------------------    
-    //-------------------------------------------------------------------------    
-    x = X - size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        y = Y + i;
-        int offset = getOffset( x, y,vCameraSize.x);
-
-        if ( offset+4 > size_ptr )        {
-            continue;
-            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
-            return;
-        }
-        
-        float l = getLum( offset) ;
-        
-        if (l!=0.0) { point->found = true; point->x = x; point->y = y; return; }
-    }  
-    //-------------------------------------------------------------------------    
-    x = X + size;
-    for( int i =-size; i<size; i++ ) 
-    {
-        y = Y + i;
-        int offset = getOffset( x, y,vCameraSize.x);
-
-        if ( offset+4 > size_ptr )        {
-            continue;
-            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) offset );
-            return;
-        }
-        
-        float l = getLum( offset) ;
-        
-        if (l!=0.0) { point->found = true; point->x = x; point->y = y; return; }
-    } 
-    point->found = false;  
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void rechercheSkyPoint( int x, int y)
-{
-    struct sky_point point;
-    
-
-    for( int i=0; i<500; i++ )
-    {
-        findSkyPoint(&point, x, y, i);
-        if ( point.found )
-        {
-            int ix = point.x;
-            int iy = point.y;
-            
-
-            point.xAverage = 0.0;
-            point.yAverage = 0.0;
-            point.ponderation = 0.0;
-
-            bPrintLum = true;
-            
-            getSkyPoint( &point, ix, iy, SIZEPT);
-
-            logf( (char*)"Iteration : %d  x=%0.2f, y=%0.2f", i, (float)point.x, (float)point.y );
-            float xx;
-            float yy;
-
-            if ( point.ponderation > 0.1 ) {
-
-                xx = point.xAverage / point.ponderation;
-                yy = point.yAverage / point.ponderation;
-                
-                xSuivi = xx;
-                ySuivi = yy;
-            }
-
-            updatePanelResultat( xSuivi, ySuivi, point.ponderation );
-
-            break;
-        }
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void getSkyPoint(struct sky_point* point, int x, int y, int size)
-{
-    //int X = (float)(x-xCam) * rw;
-    //int Y = (float)(y-yCam) * rh;
-    int min = y - size;
-    int max = y + size;
-    
-    //printf( "getPoint\n");
-    for(int Y=min; Y<max; Y ++)        getSkyPointLine(point, x, Y, size);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void change_fov( void )
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	
-	GLdouble ratio = (GLdouble)width / (GLdouble)height;
-	
-	gluPerspective((GLdouble)fov, (GLdouble)ratio, (GLdouble)0.1, (GLdouble) 1000.0);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1283,7 +1008,7 @@ static void reshapeGL(int newWidth, int newHeight)
 
 	glViewport(0, 0, (GLint)newWidth, (GLint)newHeight);
 
-	change_fov();
+	//change_fov();
 	if ( !bFull )
     {
 	    width = newWidth;
@@ -1550,6 +1275,7 @@ void suivi(void)
     else
         return;
     
+    /*
     //Camera_mgr::getInstance().suivi();
     //change_background_pleiade();
     getSuiviParameter();   
@@ -1590,12 +1316,32 @@ void suivi(void)
         logf( (char*)"Perte suivi !!!" );
         rechercheSkyPoint( xSuivi, ySuivi);
     }
+    */
+
+
+    vec2*       pV = Camera_mgr::getInstance().getSuivi();
+    if ( pV == NULL )
+    {
+        //logf( (char*)"Suivi NULL");
+    }
+    else
+    {
+        //logf( (char*)"Suivi (%0.2f, %0.2f)", pV->x, pV->y ); 
+        xSuivi = pV->x;
+        ySuivi = pV->y;
+    }
+
+
 
     if ( t_vResultat.size()>20000)      t_vResultat.clear();
 
     vec2 v;
+    float xx;
+    float yy;
+
     v.x = xx;
     v.y = yy;
+
     if ( t_vResultat.size() > 2000 )
     {
         t_vResultat.erase ( t_vResultat.begin()+0);
@@ -1614,18 +1360,7 @@ void suivi(void)
     t_vSauve.push_back(v);
     
     
-    vec2*       pV = Camera_mgr::getInstance().getSuivi();
-    if ( pV == NULL )
-    {
-        //logf( (char*)"Suivi NULL");
-    }
-    else
-    {
-        //logf( (char*)"Suivi (%0.2f, %0.2f)", pV->x, pV->y ); 
-        xSuivi = pV->x;
-        ySuivi = pV->y;
-    }
-    updatePanelResultat( xSuivi, ySuivi, point.ponderation );
+    updatePanelResultat( xSuivi, ySuivi, 0.0 );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -2894,142 +2629,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     else
 	if ( bAutorisationSuivi && button == 0 && state == 0 && pMouseOver == pPreviewCam )	{
 
-        getSuiviParameter();
-
-        Camera_mgr::getInstance().onBottom();
-        
-	    int X = x;
-	    int Y = y;
-	    
-	    screen2tex(X,Y);
-	    logf( (char*)"---------------------- Click (%d, %d)  (%d, %d) vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
-	    
-        ptr = Camera_mgr::getInstance().getPtr();
-        int N = getOffset(X, Y, vCameraSize.x);
-
-
-        size_t size_ptr = malloc_usable_size ( (void*) ptr);
-        if ( N+4 > size_ptr )
-        {
-            logf( (char*)" lg : %ld  offset : %ld", (unsigned long) size_ptr, (unsigned long) N );
-            return;
-        }
-
-
-	    int r = ptr[N];
-	    int g = ptr[N+1];
-	    int b = ptr[N+2];
-
-        float fL = 0.33 * (float)r + 0.5 * (float)g  + 0.16 * (float)b;
-        int l = fL;
-
-	    char sR[10];
-	    char sG[10];
-	    char sB[10];
-	    char sL[100];
-	    char skyPoint[100];
-	    
-	    sprintf( sR, "r=%03d", r );
-	    sprintf( sG, "g=%03d", g );
-	    sprintf( sB, "b=%03d", b );
-	    sprintf( sL, "l=%03d", l );
-	    
-
-    
-        struct sky_point point;
-        point.xAverage = 0.0;
-        point.yAverage = 0.0;
-        point.ponderation = 0.0;
-        
-        bPrintLum = true;
-        
-        getSkyPoint(&point, X, Y, SIZEPT);
-        
-        for( int i=0; i<500; i++ )
-        {
-            findSkyPoint(&point, X, Y, i);
-            if ( point.found )
-            {
-                int xx = point.x;
-                int yy = point.y;
-                
-
-                point.xAverage = 0.0;
-                point.yAverage = 0.0;
-                point.ponderation = 0.0;
-
-                bPrintLum = true;
-                
-                getSkyPoint(&point, xx, yy, SIZEPT);
-
-                logf( (char*)"Iteration : %d  x=%0.2f, y=%0.2f", i, (float)point.x, (float)point.y );
-
-                break;
-            }
-        }
-        
-        
-        bPrintLum = false;
-        
-        if ( point.ponderation > 0.1 ) {
-
-            float xx = point.xAverage / point.ponderation;
-            float yy = point.yAverage / point.ponderation;
-            
-            sprintf( skyPoint, "x=%0.2f, y=%0.2f, mag=%0.2f", xx, yy, pond2mag(point.ponderation) );
-	        SP->changeText(skyPoint);
-	        //panelResultat->setVisible(true);
-
-	        //printf( "%s", skyPoint);
-	        
-	        if ( bAutorisationSuivi)
-	        {
-	            bSuivi = true;
-                var.set( "bSuivi", bSuivi );
-            }
-            	            
-	        xSuivi = xx;
-	        ySuivi = yy;
-	        offset_x = xx;
-	        offset_y = yy;
-
-            updatePanelResultat( xSuivi, ySuivi, point.ponderation );
-            
-            if ( pFocus == NULL )
-                logf( (char*)"focus == NULL" );
-
-            /*
-            struct readBackground*  RB = Camera_mgr::getInstance().getRB();
-            if (RB!=NULL && RB->ptr!=NULL && pMouseOver == pPreviewCam)
-            { 
-                logf( (char*)"Mouse over" );
-
-               if ( !starExist( xSuivi, ySuivi ) )
-                {
-                    Star * pStar = new Star();
-                    v_tStars.push_back( pStar );
-                    pStar->setXY( xSuivi, ySuivi );
-                    pStar->setPtr( RB->ptr );
-                    pStar->setWidth( RB->w );
-                    pStar->setHeight( RB->h );
-                    pStar->find();
-
-                    pPreviewCam->add( pStar->getInfo() );
-                }
-                else
-                logf( (char*)"L'etoile est deja suivi" );
-            }
-            */
-        }
-        else {
-            sprintf( skyPoint, "Rien");
-	        SP->changeText(skyPoint);
-	        bSuivi = false;
-            var.set( "bSuivi", bSuivi );
-        }
-
 	    logf( (char*)"xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
-	    logf( (char*)"    l=%d rgb=%d,%d,%d" , r,g,b,  l );
+	    //logf( (char*)"    l=%d rgb=%d,%d,%d" , r,g,b,  l );
 
 	} 
 

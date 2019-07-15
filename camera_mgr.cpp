@@ -43,6 +43,7 @@ void Camera_mgr::add( string sdev_name )
     Camera *        pCamera = new Camera(1600,900);
     //pCameras.push_back( pCamera );
     string newString = sdev_name;
+    
     pCamera->setDevName( newString );
     pCamera->open_device();
     pCamera->getIOName();

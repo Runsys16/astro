@@ -91,7 +91,7 @@ void Camera::CreatePreview()	{
 
 	//panelPreview = new PanelSimple();
 	panelPreview = new PanelCamera();
-    panelPreview->setDisplayGL(displayGLnuit_cb);
+    //panelPreview->setDisplayGL(displayGLnuit_cb);
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
@@ -105,7 +105,7 @@ void Camera::CreatePreview()	{
 	
 	
 	//string pStr = getName();
-	PanelTextOmbre* pTO = new PanelTextOmbre( getName(),	PanelText::LARGE_FONT, 0, 10 );
+	PanelTextOmbre* pTO = new PanelTextOmbre( (char*)getName(),	PanelText::LARGE_FONT, 0, 10 );
 	pTO->setAlign( PanelText::CENTER );
 	panelPreview->add( pTO );
 	
@@ -113,7 +113,8 @@ void Camera::CreatePreview()	{
 	//panelPreview->setCanMove(false);
  	wm.add( panelPreview );
 
-    logf((char*)"    name %s ", getName() );
+    logf((char*)"    name    %s ", getName() );
+    logf((char*)"    devname %s ", getDevName() );
     logf((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
 }
 //--------------------------------------------------------------------------------------------------------------------

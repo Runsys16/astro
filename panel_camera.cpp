@@ -52,6 +52,7 @@ void PanelCamera::setCentX(float f)
     int deltay = (dyp-fDY)/2 + dy*echelle;
     
     setPos( deltax, deltay );
+    updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -70,6 +71,7 @@ void PanelCamera::setCentY(float f)
     int deltay = (dyp-fDY)/2 + dy*echelle;
     
     setPos( deltax, deltay );
+    updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -97,6 +99,7 @@ void PanelCamera::setEchelle(float f)
     
     setSize( fDX, fDY );
     setPos( deltax, deltay );
+    updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
