@@ -281,6 +281,7 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
     {
         v_tStars[i]->setRB( RB );
         v_tStars[i]->find();
+        //v_tStars[i]->computeMag();
         v_tStars[i]->updatePos( dx, dy, ech );
     }
 

@@ -45,7 +45,7 @@ int Serial::write_string( const char* str)
 {
     if ( fd ==-1 )      return -1;
     if ( (fTimeMili - fTimeOut) < 1.0 )  return -1;
-    logf( (char*)"Serial::write_string('%s')", str );
+    //logf( (char*)"Serial::write_string('%s')", str );
     
     
     fTimeOut = fTimeMili;

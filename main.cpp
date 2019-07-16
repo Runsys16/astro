@@ -1143,6 +1143,7 @@ void charge_fichier(void)
     
 
     string line;
+    int nbLigne = 0;
     
     
     while ( getline (fichier, line) )
@@ -1150,16 +1151,17 @@ void charge_fichier(void)
         //cout << line << '\n';
         float rx, ry, ox, oy;
 
-        logf( (char*) line.c_str() );
+        //logf( (char*) line.c_str() );
         sscanf( line.c_str(), "( %f , %f ) / ( %f , %f )", &rx, &ry, &ox, &oy );
 
         vOrigine.x = ox;
         vOrigine.y = oy;
 
         t_vResultat.push_back( vec2(rx,ry) );
+        nbLigne++;
     }    
     int n = t_vResultat.size();
-    logf( (char*)"%0.2f, %0.2f", t_vResultat[n-1].x, t_vResultat[n-1].y );
+    logf( (char*)"Lecture de %d donnees dans %d lignes", n, nbLigne );
     
     fichier.close();
     
@@ -1199,6 +1201,7 @@ void sauve_traces(void)
     }
     fichier.close();
     
+    //logf( (char*)"Lecture de %d donnees dans %d lignes", n, nbLigne );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1234,6 +1237,7 @@ void charge_traces(void)
     vec2 v;
     int n = -1;
     vector<vec2>* trace;
+    int nbl = 0;
     
     
     while ( getline (fichier, line) )
@@ -1258,9 +1262,11 @@ void charge_traces(void)
         v.y = y;
 
         trace->push_back( vec2(x,y) );
+        nbl++;
     }
     
     fichier.close();
+    logf( (char*)"Lecture de %d lignes %d", nbl );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1897,6 +1903,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             if ( pPleiade == NULL )             pPleiade = new Pleiade();
             Camera_mgr::getInstance().add( pPleiade );
             bPleiade = true;
+            //bOneFrame = true;
         }
         else
         {
@@ -3186,6 +3193,7 @@ void parse_option( int argc, char**argv )
             case 'p':
                 {
                 pPleiade = new Pleiade();
+                //bOneFrame = true;
                 Camera_mgr::getInstance().add( pPleiade );
                 bPleiade = true;
                 }

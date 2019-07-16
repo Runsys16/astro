@@ -61,6 +61,7 @@ typedef struct readBackground       rb_t;
 #ifndef MAIN_CPP
     extern bool         bNuit;
     extern bool         bFindStar;
+    extern bool         bOneFrame;
 #endif
 
 void                photo();
