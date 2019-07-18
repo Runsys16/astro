@@ -32,6 +32,7 @@ public:
     virtual void		update();
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);
+    virtual void        releaseRight( int, int);
 
     void                findAllStars();
     void                deleteAllStars();

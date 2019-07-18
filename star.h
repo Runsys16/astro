@@ -65,9 +65,16 @@ public:
 
     void                displayGL();
     
-    void                setSuivi(bool);
+    void                setZoom(bool);
+    
     inline bool         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
+
     inline bool         getSuivi()                                      { return bSuivi; }
+    inline void         toggleSuivi()                                   { bSuivi = !bSuivi; }
+
+    inline bool         getZoom()                                       { return bZoom; }
+    inline void         toggleZoom()                                    { bZoom = !bZoom; }
+
     inline int          getX()                                          { return x; }
     inline int          getY()                                          { return y; }
     inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
@@ -109,6 +116,7 @@ private:
     
     bool                bSelect;
     bool                bSuivi;
+    bool                bZoom;
     
     PanelZoom*          panelZoom;
     Panel*              pView;

@@ -34,7 +34,8 @@ public:
     void                    update(int, int, Panel*, rb_t*);
     void                    displayGL();
     
-    void                    select(int, int);
+    void                    selectLeft(int, int);
+    void                    selectRight(int, int);
     void                    suivi(rb_t*);
            
 private:

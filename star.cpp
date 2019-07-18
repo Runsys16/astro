@@ -42,6 +42,7 @@ void Star::init(int xx, int yy)
     ptr         = NULL;
     bSelect     = false;
     bSuivi      = false;
+    bZoom       = false;
     
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
     panelZoom   = NULL;
@@ -117,7 +118,7 @@ void Star::computeMag()
 {
     magnitude = -(log( ponderation ) / log(2.0)) + 17.0;
     
-    if ( bSuivi )
+    if ( bZoom )
         sprintf( p_sInfo, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
     else
         sprintf( p_sInfo, "mag=%0.2f", magnitude );
@@ -613,13 +614,13 @@ void Star::suivi()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::setSuivi(bool b)
+void Star::setZoom(bool b)
 {
     if ( b )
     {
-        if ( bSuivi )
+        if ( bZoom )
         {
-            bSuivi = bSelect = false;
+            bZoom = bSelect = false;
             if (panelZoom!=NULL)
             {
                 pView->sup( panelZoom );
@@ -630,7 +631,7 @@ void Star::setSuivi(bool b)
         }
         else
         {
-            bSuivi = bSelect = true;
+            bZoom = bSelect = true;
             panelZoom = new PanelZoom();
             pView->add( panelZoom );
             //panelZoom->setPosStar(xFound, yFound);
@@ -650,7 +651,7 @@ void Star::setSuivi(bool b)
     }
     else
     {
-        bSuivi = false;
+        bZoom = false;
         if (panelZoom!=NULL)
         {
             pView->sup( panelZoom );
@@ -672,7 +673,7 @@ void Star::displayGL()
     glMark(ech*40, ech*40);
     glCercle( ech*computeRayon() + 4 );
     
-    if ( bSuivi )      
+    if ( bZoom )      
     {
         glColor4f( 1.0,  1.0,  0.0, 1.0 );
         glCarre( ech*computeRayon() + 4 +10 );
@@ -681,6 +682,12 @@ void Star::displayGL()
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
         glCarre( ech*computeRayon() + 4 +10 );
+    }
+
+    if ( bSuivi )      
+    {
+        glColor4f( 1.0,  0.0,  0.0, 1.0 );
+        glCercle( 1.5*ech*computeRayon() + 4 +10 );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -201,7 +201,27 @@ void PanelCamera::releaseLeft(int xm, int ym)
     stars.setView( this );
     stars.setRB( pReadBgr );
     if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
-        stars.select(xx, yy);
+        stars.selectLeft(xx, yy);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::releaseRight(int xm, int ym)
+{
+    logf( (char*)"PanelCamera::releaseRight(%d,%d) ...", xm, ym );
+    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
+    logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
+    
+    //float e = (float)getDX() / (float)pReadBgr->w; 
+    float e = (float)getDX() / (float)1920.0; 
+    
+    int xx = ((float)xm-(float)getX()) / e;
+    int yy = ((float)ym-(float)getY()) / e;
+    
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+        stars.selectRight(xx, yy);
 }
 
 

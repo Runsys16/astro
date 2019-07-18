@@ -111,10 +111,16 @@ void Stars::findAllStars()
 {
     logf( (char*)"Stars::findAllStars()" );
 
-    if (RB==NULL || RB->ptr==NULL) return;
+    if (RB==NULL || RB->ptr==NULL)  return;
+    if (pView==NULL )               return;
+    
+    int dx_view = pView->getDX();
+    int dy_view = pView->getDY();
 
     int width = RB->w;
     int height = RB->h;
+    
+    ech = (float) dx_view / (float)width; 
 
     logf( (char*)"Find all star(%d,%d)", width, height );
 
@@ -154,11 +160,15 @@ void Stars::findAllStars()
 
                     pp->setXY( x_find, y_find );
                     pp->find();
+                    pp->updatePos(dx_view, dy_view, ech);
+                    pp->computeMag();
+                    //pp->getMagnitude();
                     pView->add( pp->getInfo() );
                     
                     v_tStars.push_back( pp );
 
                     logf( (char*)" Add etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), x_find, y_find, pp->getMagnitude() );
+                    logf( (char*)"      (%d,%d) e=%0.2f", dx_view, dy_view, ech );
 
                     
                 }
@@ -241,7 +251,7 @@ void Stars::suivi(rb_t* p)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Stars::select( int xp, int yp)
+void Stars::selectLeft( int xp, int yp)
 {
     int nb = v_tStars.size();
     for( int n=0; n<nb; n++ )
@@ -255,8 +265,30 @@ void Stars::select( int xp, int yp)
         //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
         if ( dx <20 && dy < 20 )
         {
-            for( int k=0; k<nb; k++ )   { if (k!=n) v_tStars[k]->setSuivi(false); }
-            v_tStars[n]->setSuivi(true);
+            for( int k=0; k<nb; k++ )   { if (k!=n) v_tStars[k]->setZoom(false); }
+            v_tStars[n]->setZoom(true);
+        }
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::selectRight( int xp, int yp)
+{
+    int nb = v_tStars.size();
+    for( int n=0; n<nb; n++ )
+    {
+        int x_star = v_tStars[n]->getX();
+        int y_star = v_tStars[n]->getY();
+        
+        int dx = abs(xp-x_star);
+        int dy = abs(yp-y_star);
+        
+        //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
+        if ( dx <20 && dy < 20 )
+        {
+            v_tStars[n]->toggleSuivi();
+            //logf( (char*)"Etoile trouve " );
         }
     }
 }
