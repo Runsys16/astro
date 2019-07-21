@@ -36,7 +36,7 @@ Pleiade::Pleiade()
     charge_background();
     change_background_camera();
     
-    bOneFrame = true;
+    if( bPause )                bOneFrame = true;
 
     //bFreePtr = true;
 }

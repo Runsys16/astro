@@ -62,9 +62,12 @@ typedef struct readBackground       rb_t;
     extern bool         bNuit;
     extern bool         bFindStar;
     extern bool         bOneFrame;
+    extern bool         bPause;
 #endif
 
 void                photo();
+void                updatePanelPause();
+void                updatePanelPause(bool);
 
 string              getCurrentDirectory();
 void                setCurrentDirectory(string);

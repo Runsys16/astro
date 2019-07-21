@@ -264,6 +264,26 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void updatePanelPause()
+{
+    if ( bPause )   pStatus->changeText((char*)"Pause" );
+    else            pStatus->changeText((char*)"----" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void updatePanelPause(bool b)
+{
+    if ( b != bPause)            
+    {
+        bPause = b; 
+        updatePanelPause();
+        var.set("bPause", bPause);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 bool isMouseOverCapture()
 {
     int nb = captures.size();
@@ -1470,7 +1490,7 @@ static void idleGL(void)
     //-----------------------------------------------------------------------
     if (!bPause || bOneFrame )    {
         Camera_mgr::getInstance().change_background_camera();
-        if (bOneFrame)      bPause = true;
+        if (bOneFrame)      { updatePanelPause(true); }
         bOneFrame = false;
     }
     Camera_mgr::getInstance().update();
@@ -2008,11 +2028,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'p':  // '-'
         {
-        bPause = !bPause;
-        var.set("bPause", bPause);
-
-        if ( bPause )   pStatus->changeText((char*)"Pause" );
-        else            pStatus->changeText((char*)"----" );
+        updatePanelPause(!bPause);
         }
         break;
     case 'P':  // '-'

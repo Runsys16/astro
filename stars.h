@@ -15,6 +15,7 @@ class Stars
 {
 public:
     Stars();
+    ~Stars();
     
     void                    add( Star*);
     void                    sup( Star*);
