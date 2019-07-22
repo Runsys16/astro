@@ -2701,6 +2701,8 @@ void resizeHelp(int width, int height)	{
     int x = width - dx - 20;
     int y = 20 + 20 ;
 
+    if ( var.existe("xPanelHelp") )         x  = var.geti( "xPanelHelp");
+    if ( var.existe("yPanelHelp") )         y  = var.geti( "yPanelHelp");
 
     panelHelp->setPos( x,  y );
 }
@@ -2825,11 +2827,6 @@ static void CreateHelp()
     int DX = 400;
     int DY = 700;
     
-    if ( var.existe("xPanelHelp") )         X  = var.geti( "xPanelHelp");
-    if ( var.existe("yPanelHelp") )         Y  = var.geti( "yPanelHelp");
-    if ( var.existe("dxPanelHelp") )        DX = var.geti("dxPanelHelp");
-    if ( var.existe("dyPanelHelp") )        DY = var.geti("dyPanelHelp");
-
     panelHelp = new PanelWindow();
     panelHelp->setDisplayGL(displayGLnuit_cb);
 	panelHelp->setPosAndSize( X, Y, DX, DY);
@@ -2903,7 +2900,14 @@ static void CreateHelp()
 
 	WindowsManager::getInstance().add(panelHelp);
 	
-    panelHelp->setSize( DX, ++l*dy);
+	DY = ++l*dy;
+	
+    if ( var.existe("xPanelHelp") )         X  = var.geti( "xPanelHelp");
+    if ( var.existe("yPanelHelp") )         Y  = var.geti( "yPanelHelp");
+    if ( var.existe("dxPanelHelp") )        DX = var.geti("dxPanelHelp");
+    if ( var.existe("dyPanelHelp") )        DY = var.geti("dyPanelHelp");
+
+    panelHelp->setSize(DX, DY);
     //panelHelp->loadSkin((char*)"fen-2");
     resizeHelp(width, height);
 
