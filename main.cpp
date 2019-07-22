@@ -1484,6 +1484,18 @@ static void idleGL(void)
         
         //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
+
+    if ( panelCourbe->getHaveMove() )
+    {
+        panelCourbe->resetHaveMove();
+
+        var.set("xPanelCourbe",  panelCourbe->getX() );
+        var.set("yPanelCourbe",  panelCourbe->getY() );
+        var.set("dxPanelCourbe", panelCourbe->getDX() );
+        var.set("dyPanelCourbe", panelCourbe->getDY() );
+        
+        //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
+    }
     //-----------------------------------------------------------------------
     // Mise a jour des buffers de la camera
     // et des pointeurs vers la texture background
@@ -2472,7 +2484,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         bPanelHelp = !bPanelHelp;
         var.set("bPanelHelp", bPanelHelp);
         panelHelp->setVisible(bPanelHelp);
-        WindowsManager::getInstance().onTop(panelHelp);
+        if ( bPanelHelp )       WindowsManager::getInstance().onTop(panelHelp);
         log( (char*)"Toggle panelHelp !!!" );
         }
         break;
@@ -2481,7 +2493,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         bPanelResultat = !bPanelResultat;
         var.set("bPanelResultat", bPanelResultat);
         panelResultat->setVisible(bPanelResultat);
-        WindowsManager::getInstance().onTop(panelResultat);
+        if ( bPanelResultat )       WindowsManager::getInstance().onTop(panelResultat);
         log( (char*)"Toggle panelResultat !!!" );
         }
         break;
@@ -2490,7 +2502,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         bPanelCourbe = !bPanelCourbe;
         var.set("bPanelCourbe", bPanelCourbe);
         panelCourbe->setVisible(bPanelCourbe);
-        WindowsManager::getInstance().onTop(panelCourbe);
+        if ( bPanelCourbe )       WindowsManager::getInstance().onTop(panelCourbe);
         log( (char*)"Toggle panelCourbe !!!" );
         }
         break;
@@ -2499,7 +2511,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         bPanelStdOut = !bPanelStdOut;
         var.set("bPanelStdOut", bPanelStdOut);
         panelStdOutW->setVisible(bPanelStdOut);
-        WindowsManager::getInstance().onTop(panelStdOutW);
+        if ( bPanelStdOut )       WindowsManager::getInstance().onTop(panelStdOutW);
         log( (char*)"Toggle panelStdOut !!!" );
         }
         break;
@@ -2509,7 +2521,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         var.set("bPanelSerial", bPanelSerial);
         PanelWindow* p = PanelConsoleSerial::getInstance().getWindow();
         p->setVisible( bPanelSerial );
-        WindowsManager::getInstance().onTop(p);
+        if ( bPanelSerial )       WindowsManager::getInstance().onTop(p);
         log( (char*)"Toggle serial !!!" );
         }
         break;
@@ -2689,6 +2701,7 @@ void resizeHelp(int width, int height)	{
     int x = width - dx - 20;
     int y = 20 + 20 ;
 
+
     panelHelp->setPos( x,  y );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -2699,6 +2712,12 @@ void resizeCourbe(int width, int height)	{
     int dy = 600;
     int x = 10;
     int y = height - 10 - 20 - dy;
+
+    if ( var.existe("xPanelCourbe") )         x  = var.geti( "xPanelCourbe");
+    if ( var.existe("yPanelCourbe") )         y  = var.geti( "yPanelCourbe");
+    if ( var.existe("dxPanelCourbe") )        dx = var.geti("dxPanelCourbe");
+    if ( var.existe("dyPanelCourbe") )        dy = var.geti("dyPanelCourbe");
+
 
     panelCourbe->setPosAndSize( x,  y, dx, dy );
     //printf("resizeControl(%d, %d\n", width, height);
@@ -2806,17 +2825,10 @@ static void CreateHelp()
     int DX = 400;
     int DY = 700;
     
-    if ( var.existe("xPanelHelp") )
-        X  = var.geti( "xPanelHelp");
-
-    if ( var.existe("yPanelHelp") )
-        Y  = var.geti( "yPanelHelp");
-
-    if ( var.existe("dxPanelHelp") )
-        DX = var.geti("dxPanelHelp");
-
-    if ( var.existe("dyPanelHelp") )
-        DY = var.geti("dyPanelHelp");
+    if ( var.existe("xPanelHelp") )         X  = var.geti( "xPanelHelp");
+    if ( var.existe("yPanelHelp") )         Y  = var.geti( "yPanelHelp");
+    if ( var.existe("dxPanelHelp") )        DX = var.geti("dxPanelHelp");
+    if ( var.existe("dyPanelHelp") )        DY = var.geti("dyPanelHelp");
 
     panelHelp = new PanelWindow();
     panelHelp->setDisplayGL(displayGLnuit_cb);
