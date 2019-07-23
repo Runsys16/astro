@@ -9,6 +9,10 @@ Serial::Serial()
 {
     logf((char*)"----------- Constructeur Serial -------------" );
     fTimeOut = 0.0;
+    fd = -1;
+
+    idx = 0;
+    nbZero = 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -43,10 +47,10 @@ int Serial::write_byte( char b)
 //--------------------------------------------------------------------------------------------------------------------
 int Serial::write_string( const char* str)
 {
-    if ( fd ==-1 )      return -1;
-    if ( (fTimeMili - fTimeOut) < 1.0 )  return -1;
-    //logf( (char*)"Serial::write_string('%s')", str );
+    //return -1;
     
+    if ( fd ==-1 )                          return -1;
+    if ( (fTimeMili - fTimeOut) < 1.0 )     return -1;
     
     fTimeOut = fTimeMili;
     
@@ -190,6 +194,7 @@ void Serial::read_thread()
 
                 if ( bPrintInfo == true && bAffiche )
                 {
+                    //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
                 }    
 
@@ -228,6 +233,8 @@ void Serial::start_thread()
 // returns valid fd, or -1 on error
 void Serial::sopen()
 {
+    logf( (char*)"Serial::sopen()");
+    
     if (fd != -1)
     {        
         logf( (char*)"sopen fd != -1 !! " );
