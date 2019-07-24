@@ -23,7 +23,7 @@
 #define SIZEPT  20
 //#define AXE_X   (300.0/4.0)
 //#define AXE_Y   (3.0*300.0/4.0)
-
+float   xStartAxe = 50.0;
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -626,21 +626,6 @@ void displayGLnuit_cb(void)
 //--------------------------------------------------------------------------------------------------------------------
 void displayGLCamera_cb(void)
 {
-    /*
-    if ( bSuivi && bAutorisationSuivi )   {
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
-	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
-	    
-	    int x = round(xSuivi+0.5);
-	    int y = round(ySuivi+0.5);
-	    
-	    tex2screen(x,y);
-
-	    glCroix(x, y, 50, 50);
-        glCarre(x, y, SIZEPT, SIZEPT);
-            
-    }
-    */
     if ( !bAutorisationSuivi )
     {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
@@ -707,7 +692,7 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
 
         for( float i=0; i<SIZE/2; i+=fPas )
         {
-            int x = 0;
+            int x = xStartAxe;
             int y = AXE + i;
             panelCourbe->x2Screen(x);
             panelCourbe->y2Screen(y);
@@ -715,7 +700,7 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
             x += panelCourbe->getPosDX();
             glVertex2i( x, y );
 
-            x = 0;
+            x = xStartAxe;
             y = AXE - i;
             panelCourbe->x2Screen(x);
             panelCourbe->y2Screen(y);
@@ -728,7 +713,7 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
         //
         fPas = courbe1;
         while( fPas < 10.0 )     fPas += courbe1;
-        for( float i=0; i<2000; i+=fPas )
+        for( float i=xStartAxe; i<2000; i+=fPas )
         {
             int x = i;
             int y = AXE;
@@ -745,7 +730,7 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
         //
         glColor4fv( (GLfloat*)&colorAxe );
         int y = AXE;
-        int x = 0;
+        int x = xStartAxe;
 
         panelCourbe->x2Screen(x);
         panelCourbe->y2Screen(y);
@@ -760,15 +745,15 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
         glColor4fv( (GLfloat*)&colorLimit );
 
         y = (float)(delta_courbe1*(min) + AXE);
-        if ( pMax != NULL )     pMax->setPos( 5, y );
+        if ( pMax != NULL )     pMax->setPos( 5, y-7 );
         panelCourbe->y2Screen(y);
-        glVertex2i( 0, y );
+        glVertex2i( xStartAxe, y );
         glVertex2i( x, y );
 
         y = (float)(delta_courbe1*(max) + AXE);
-        if ( pMin != NULL )     pMin->setPos( 5, y -15 );
+        if ( pMin != NULL )     pMin->setPos( 5, y-7 );
         panelCourbe->y2Screen(y);
-        glVertex2i( 0, y );
+        glVertex2i( xStartAxe, y );
         glVertex2i( x, y );
 
         glColor4fv( (GLfloat*)&colorAxe );
@@ -780,10 +765,12 @@ void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, Pan
 void glEchelle()
 {
     int  AXE_X = (float)panelCourbe->getDY()/4.0;
-    int  AXE_Y   (3.0*(float)panelCourbe->getDY()/4.0);
+    int  AXE_Y = (3.0*(float)panelCourbe->getDY()/4.0);
     
-    glEchelleAxe( AXE_X, 300, (float)+err, (float)-err, pXMax, pXMin );
-    glEchelleAxe( AXE_Y, 300, (float)+err, (float)-err, pYMax, pYMin );
+    int dy_axe = (float)panelCourbe->getDY() / 2.0;
+    
+    glEchelleAxe( AXE_X, dy_axe, (float)+err, (float)-err, pXMax, pXMin );
+    glEchelleAxe( AXE_Y, dy_axe, (float)+err, (float)-err, pYMax, pYMin );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -818,11 +805,18 @@ void displayResultat_cb(void)
         else                            glColor4f( 0.0, 0.0, 1.0, 1.0 );
         
         glBegin(GL_LINE_STRIP);
-        for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
+        int deb = decal_resultat;
+        int fin = deb + 2000.0/courbe1;
+        
+        if ( fin >= t_vResultat.size() )        fin = t_vResultat.size();
+        //int fin = t_vResultat.size()-decal_resultat;
+        //logf( 
+        //for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
+        for( int i=deb; i<fin; i++ )
         {
-            float y = t_vResultat[i].x - offset_x;
+            float y = t_vResultat[n-i].x - offset_x;
             y = (float)(delta_courbe1*(y) + AXE_X);
-            int x = (n-i-decal_resultat)*courbe1;
+            int x = (i-deb)*courbe1 + xStartAxe;
 
             int Y = y;
             panelCourbe->x2Screen(x);
@@ -837,11 +831,12 @@ void displayResultat_cb(void)
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
         else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
         glBegin(GL_LINE_STRIP);
-        for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
+        //for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
+        for( int i=deb; i<fin; i++ )
         {
-            float y = t_vResultat[i].y - offset_y;
+            float y = t_vResultat[n-i].y - offset_y;
             y = (float)(delta_courbe2*(y) + AXE_Y);
-            int x = (n-i-decal_resultat)*courbe2;
+            int x = (i-deb)*courbe2 + xStartAxe;
 
             int Y = y;
             panelCourbe->x2Screen(x);
