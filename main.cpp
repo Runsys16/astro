@@ -809,12 +809,13 @@ void displayResultat_cb(void)
         int fin = deb + 2000.0/courbe1;
         
         if ( fin >= t_vResultat.size() )        fin = t_vResultat.size();
+        if ( deb <= 0 )                          deb = 0;
         //int fin = t_vResultat.size()-decal_resultat;
         //logf( 
         //for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
         for( int i=deb; i<fin; i++ )
         {
-            float y = t_vResultat[n-i].x - offset_x;
+            float y = t_vResultat[n-i-1].x - offset_x;
             y = (float)(delta_courbe1*(y) + AXE_X);
             int x = (i-deb)*courbe1 + xStartAxe;
 
@@ -822,8 +823,9 @@ void displayResultat_cb(void)
             panelCourbe->x2Screen(x);
             panelCourbe->y2Screen(Y);
 
+
             glVertex2i( x, Y );
-            //printf( "%d %0.2f %0.2f y=%0.2f\n", i, t_vResultat[i].x, offset_x, y );
+            //logf( "%d %0.2f %0.2f y=%0.2f", n-i-1, t_vResultat[i].x, offset_x, y );
         }
         glEnd();        
 
@@ -834,7 +836,7 @@ void displayResultat_cb(void)
         //for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
         for( int i=deb; i<fin; i++ )
         {
-            float y = t_vResultat[n-i].y - offset_y;
+            float y = t_vResultat[n-i-1].y - offset_y;
             y = (float)(delta_courbe2*(y) + AXE_Y);
             int x = (i-deb)*courbe2 + xStartAxe;
 
@@ -1344,45 +1346,44 @@ void suivi(void)
     if ( pV == NULL )
     {
         //logf( (char*)"Suivi NULL");
+        return;
     }
     else
     {
         //logf( (char*)"Suivi (%0.2f, %0.2f)", pV->x, pV->y ); 
         xSuivi = pV->x;
         ySuivi = pV->y;
+
+
+        if ( t_vResultat.size()>20000)      t_vResultat.clear();
+
+        vec2 v;
+        float xx;
+        float yy;
+
+        v.x = xx;
+        v.y = yy;
+
+        if ( t_vResultat.size() > 2000 )
+        {
+            t_vResultat.erase ( t_vResultat.begin()+0);
+        }
+        t_vResultat.push_back(v);
+
+        if ( bSauve )
+        {
+            if ( t_vSauve.size() > 200 )       sauve();
+        }
+        else 
+        {
+            if ( t_vSauve.size() > 200 )       t_vSauve.clear();
+        }
+
+        t_vSauve.push_back(v);
+        
+        
+        updatePanelResultat( xSuivi, ySuivi, 0.0 );
     }
-
-
-
-    if ( t_vResultat.size()>20000)      t_vResultat.clear();
-
-    vec2 v;
-    float xx;
-    float yy;
-
-    v.x = xx;
-    v.y = yy;
-
-    if ( t_vResultat.size() > 2000 )
-    {
-        t_vResultat.erase ( t_vResultat.begin()+0);
-    }
-    t_vResultat.push_back(v);
-
-    if ( bSauve )
-    {
-        if ( t_vSauve.size() > 200 )       sauve();
-    }
-    else 
-    {
-        if ( t_vSauve.size() > 200 )       t_vSauve.clear();
-    }
-
-    t_vSauve.push_back(v);
-    
-    
-    updatePanelResultat( xSuivi, ySuivi, 0.0 );
-    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2160,6 +2161,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'S' :
         {
             bSuivi = !bSuivi;
+            var.set( "bSuivi", bSuivi );
         }
         break;
     case 'D':
