@@ -7,7 +7,7 @@ INCS     =  -I"/usr/include" -I"/usr/include/freetype2"
 CFLAGS   = $(INCS) -g -std=c++11 -O2 -fpermissive -mtune=core2 -Wno-deprecated -Wno-unused-result
 
 PATHLIBS = -L"/usr/local/lib" -L"/usr/lib"
-LIBS	 =  $(PATHLIBS) -lX11 -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
+LIBS	 =  $(PATHLIBS) -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
 
 BIN_NAME = astro
 

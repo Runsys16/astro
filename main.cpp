@@ -2,6 +2,8 @@
 #define MAIN_CPP
 
 
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
 
 #include "main.h"
 #include "v4l2.h"
@@ -366,9 +368,9 @@ void alertBoxQuit()
 //--------------------------------------------------------------------------------------------------------------------
 int getScreenDX()
 {
-    int dx = glutGet(GLUT_SCREEN_WIDTH);
-    if (dx==3200)            dx = 1920;
-    return dx;
+    //int dx = glutGet(GLUT_SCREEN_WIDTH);
+    //if (dx==3200)            dx = 1920;
+    return widthScreen;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -389,8 +391,8 @@ int getHeight()
 //--------------------------------------------------------------------------------------------------------------------
 int getScreenDY()
 {
-    int dy = glutGet(GLUT_SCREEN_HEIGHT);
-    return dy;
+    //int dy = glutGet(GLUT_SCREEN_HEIGHT);
+    return heightScreen;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -796,7 +798,6 @@ void displayResultat_cb(void)
 
     glEchelle();
     
-#define KLOG    2.0   
     if ( decal_resultat >= t_vResultat.size() )     return;
     
     if ( n != 0  )
@@ -952,12 +953,10 @@ void updatePanelResultat(float x, float y, float mag)
     int xPanel = x;
     int yPanel = y;
     
-    mag = -1.0;
+    //mag = -1.0;
 
     tex2screen(xPanel,yPanel);
     panelResultat->setPos(xPanel+20 , yPanel+20);
-
-    int offset = getOffset( x ,y ,vCameraSize.x);
 
     
     char sSkyPoint[255];
@@ -965,7 +964,10 @@ void updatePanelResultat(float x, float y, float mag)
     char sG[255];
     char sB[255];
     char sL[255];
-    sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, vOrigine.x, vOrigine.y, pond2mag(mag) );
+    sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, vOrigine.x, vOrigine.y, mag );
+    
+    //logf( (char*)"updatePanelResultat(%d, %d) => %s", x, y, (char*)sSkyPoint );
+    
     SP->changeText(sSkyPoint);
     /* 
     sprintf( sR, "r=%03d", (int)getSkyPoint_colorR(offset) );
@@ -1351,18 +1353,17 @@ void suivi(void)
     else
     {
         //logf( (char*)"Suivi (%0.2f, %0.2f)", pV->x, pV->y ); 
-        xSuivi = pV->x;
-        ySuivi = pV->y;
 
+        float xx = pV->x;
+        float yy = pV->y;
+
+        xSuivi = xx;
+        ySuivi = yy;
+        
 
         if ( t_vResultat.size()>20000)      t_vResultat.clear();
 
-        vec2 v;
-        float xx;
-        float yy;
-
-        v.x = xx;
-        v.y = yy;
+        vec2 v = vec2(xx, yy);
 
         if ( t_vResultat.size() > 2000 )
         {
@@ -1380,7 +1381,6 @@ void suivi(void)
         }
 
         t_vSauve.push_back(v);
-        
         
         updatePanelResultat( xSuivi, ySuivi, 0.0 );
     }
@@ -1893,7 +1893,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         else    {
             logf( (char*)"w=%d h=%d", width, height );
-		    glutPositionWindow( (getScreenDX()-width)/2, (getScreenDY()-height)/2  );
+		    glutPositionWindow( (widthScreen-width)/2, (heightScreen-height)/2  );
 		    glutReshapeWindow( width, height );
             log( (char*)"NormalScreen !!!" );
 		}
@@ -2491,7 +2491,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         var.set("bPanelResultat", bPanelResultat);
         panelResultat->setVisible(bPanelResultat);
         if ( bPanelResultat )       WindowsManager::getInstance().onTop(panelResultat);
-        log( (char*)"Toggle panelResultat !!!" );
+        logf( (char*)"Toggle panelResultat !!! %d", (int)bPanelResultat );
         }
         break;
     case GLUT_KEY_F4:
@@ -3318,6 +3318,32 @@ void getX11Screen()
 
     // close the display
     XCloseDisplay(display);
+    
+
+
+    Display *dpy;
+    XRRScreenResources *scr;
+    XRRCrtcInfo *crtc_info;
+
+    dpy = XOpenDisplay(":0");
+    scr = XRRGetScreenResources (dpy, DefaultRootWindow(dpy));
+    //0 to get the first monitor   
+    crtc_info = XRRGetCrtcInfo (dpy, scr, scr->crtcs[0]);         
+
+    cout << "Nb crtc   : " << scr->ncrtc << endl;         
+    cout << "Nb Output : " << scr->noutput << endl;         
+    cout << "N  mode   : " << scr->nmode << endl;    
+    
+    for( int i=0; i<scr->ncrtc; i++ )
+    {
+        crtc_info = XRRGetCrtcInfo (dpy, scr, scr->crtcs[i]);
+        cout << i <<" - " << crtc_info->width <<"x"<< crtc_info->height << endl;
+        if ( i == 0 )
+        {
+            widthScreen  = crtc_info->width;
+            heightScreen = crtc_info->height;
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3484,6 +3510,8 @@ int main(int argc, char **argv)
     dxCam = 1920;
     dyCam = 1080;
 
+    getX11Screen();
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
@@ -3491,12 +3519,13 @@ int main(int argc, char **argv)
     //height = getScreenDY() - 40;
     width = getScreenDX();
     height = getScreenDY();
+
     
-    cout <<"Screen size "<< getScreenDX() <<"x"<< getScreenDY() << endl;
+    cout <<"Screen size "<< width <<"x"<< height << endl;
 
 	//xPos = 1200 + (getScreenDX()-width)/2;
-	xPos = (getScreenDX()-width)/2;
-	yPos = (getScreenDY()-height)/2;
+	xPos = 0.0;//(getScreenDX()-width)/2;
+	yPos = 0.0;//(getScreenDY()-height)/2;
 
 	glutInitWindowPosition(xPos, yPos);
 	glutInitWindowSize( width, height );
@@ -3512,7 +3541,7 @@ int main(int argc, char **argv)
 	glutIdleFunc(idleGL);
 
 	
-	cout << "Ecran   wxh " << getScreenDX() << "x" << getScreenDY() << endl;
+	cout << "Ecran   wxh " << width << "x" << height << endl;
 	cout << "Fenetre x,y wxh "<< xPos <<","<< yPos <<" " << width << "x" << height << endl;
 
 	glutKeyboardFunc(glutKeyboardFunc);
@@ -3532,7 +3561,6 @@ int main(int argc, char **argv)
 
     CreateAllWindows();
 
-    getX11Screen();
     parse_option(argc, argv);
     
     
