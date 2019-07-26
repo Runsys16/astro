@@ -58,6 +58,11 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
     WindowsManager& wm = WindowsManager::getInstance();
 
     Panel* p = wm.getFocus();
+    if      ( p == pc )              logf( (char*)"PanelConsoleSerial::keyboard() focus panel console" );
+    else if ( p == pw )              logf( (char*)"PanelConsoleSerial::keyboard() focus panel window" );
+    else if ( p == NULL )            logf( (char*)"PanelConsoleSerial::keyboard() focus NULL" );
+    else                             logf( (char*)"PanelConsoleSerial::keyboard() focus autre chose ID=%d", p->getID() );
+    
     if ( p != pc )
     {
         while ( wm.is_call_back_keyboard(pc) )

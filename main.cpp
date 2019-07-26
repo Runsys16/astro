@@ -103,6 +103,7 @@ bool                bPause  = false;
 bool                bSuivi  = false;
 bool                bAutorisationSuivi = false;
 bool                bNuit   = false;
+bool                bDebug  = false;
 bool                bQuit;
 
 
@@ -2526,6 +2527,12 @@ static void glutSpecialFunc(int key, int x, int y)	{
         {
         captures.push_back( new Capture() );
         current_capture = captures.size() - 1;
+        }
+        break;
+    case GLUT_KEY_F10:
+        {
+        bDebug = !bDebug;
+        WindowsManager::getInstance().debug(bDebug);
         }
         break;
     case GLUT_KEY_F12:
