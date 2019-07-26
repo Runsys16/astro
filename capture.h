@@ -1,5 +1,5 @@
-#ifndef CAPtuRE_H
-#define CAPtuRE_H  1
+#ifndef CAPTURE_H
+#define CAPTURE_H  1
 
 #include "camera.h"
 #include <dirent.h>
@@ -19,6 +19,8 @@ protected:
     bool                        bFirst;
     vector<string>              filenames;
     string                      filename;
+    string                      dirname;
+    string                      basename;
     
     PanelWindow*                pW;
     PanelCapture*               panelPreview;
@@ -28,6 +30,7 @@ protected:
 
 public :
     Capture();
+    Capture(string);
     Capture(string, string);
     ~Capture();
     
@@ -53,7 +56,9 @@ inline void                     setCentX(float f)                           { pa
 inline void                     setCentY(float f)                           { panelPreview->setCentY(f); }
 inline float                    getCentX()                                  { return panelPreview->getCentX(); }
 inline float                    getCentY()                                  { return panelPreview->getCentY(); }
-inline string                   getFilenName()                              { return filename; }
+inline string                   getFilename()                               { return filename; }
+inline string                   getBasename()                               { return basename; }
+inline string                   getDirname()                                { return dirname; }
 inline PanelCapture*            getPreview()                                { return panelPreview; }
 
 };

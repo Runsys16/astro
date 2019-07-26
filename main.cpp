@@ -19,6 +19,7 @@
 #include "var_mgr.h"
 #include "alert_box.h"
 #include "file_browser.h"
+#include "captures.h"
 //#include "star.h"
 
 //#define DEBUG 1
@@ -206,8 +207,6 @@ vector<AlertBox*>   tAlert;
 bool                bAlert = false;
 string              sAlert;
 
-vector<Capture*>    captures;
-int                 current_capture = -1;
 bool                bFindStar = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -267,6 +266,25 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+vector<string> split (string s, string delimiter)
+{
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        if ( token.size() != 0 )
+            res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void updatePanelPause()
 {
     if ( bPause )   pStatus->changeText((char*)"Pause" );
@@ -283,18 +301,6 @@ void updatePanelPause(bool b)
         updatePanelPause();
         var.set("bPause", bPause);
     }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-bool isMouseOverCapture()
-{
-    int nb = captures.size();
-    for( int n=0; n<nb; n++ )
-    {
-        if ( captures[n]->isMouseOver(mouse.x, mouse.y) )            return true;
-    }
-    return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -337,18 +343,17 @@ void setCurrentDirectory( string mes )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void change_file( string dirname, string filename )
-{
-    captures.push_back( new Capture(dirname, filename) );
-    logf ( (char*)"main.c::change_file()  Chargement du fichier %s%s", dirname.c_str(), filename.c_str() );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void alertBox( string mes )
 {
     bAlert = true;
     sAlert = mes;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void change_file(string dirname, string filename)
+{
+    Captures::getInstance().change_file(dirname, filename);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1504,9 +1509,7 @@ static void idleGL(void)
     }
     Camera_mgr::getInstance().update();
     
-    int nb = captures.size();
-        for( int n=0; n<nb; n++ )
-            captures[n]->update();
+    Captures::getInstance().update();
     //-----------------------------------------------------------------------
     // Lance le suivi des etoiles
     //-----------------------------------------------------------------------
@@ -1644,67 +1647,6 @@ static void rotateVisible()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-static void rotate_capture(bool bIcones)
-{
-    int n = captures.size();
-
-    if ( n == 0 )           return;
-       
-    WindowsManager& wm = WindowsManager::getInstance();
-    
-    current_capture = ++current_capture % n;
-    int dx, dy, dxi, dyi;
-    float ratio = (float)width/(float)height;
-    
-    dxi = width / 8;
-    dyi = height  / 6;
-
-    dx = width - dxi;
-    dy = height; 
-
-    int j = current_capture;
-    int DY;
-
-    if ( bIcones )         n++;
-
-    if ( n>1 )      DY = height / (n-1);    
-    else            DY = height / (n);    
-
-    if ( bIcones )         n--;
-
-    int y=10;
-
-    for (int i=0; i<n; i++ )
-    {
-        Capture* p = captures[j];
-        
-        if ( j==current_capture )
-        {
-            if ( !bIcones )
-            {
-                p->resize(10,10,dx-20,dy-20);
-                p->onTop();
-            }
-            else
-            {
-                p->resize(dx+10,y+10,dxi-20,dyi-20);
-                p->onTop();
-                y += DY;
-            }
-        }
-        else
-        {
-            p->resize(dx+10,y+10,dxi-20,dyi-20);
-            p->onTop();
-            y += DY;
-        }
-        j = ++j % n;
-    } 
-    
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 {
     WindowsManager&     wm      = WindowsManager::getInstance(); 
@@ -1800,13 +1742,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 4:
 		{
             logf( (char*)"case 'ctrl+D'" );
-            if ( isMouseOverCapture()  )
+            Captures& cap = Captures::getInstance();
+            if ( cap.isMouseOverCapture(x, y)  )
             {
-                int n = current_capture;
-                if ( n != -1 )
-                {
-                    captures[n]->getPreview()->deleteAllStars();
-                }
+                cap.deleteAllStars();
             }
             else
             {
@@ -1825,6 +1764,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 6:
 		{
             logf( (char*)"case 'ctrl+F'" );
+            /*
             if ( isMouseOverCapture()  )
             {
                 int n = current_capture;
@@ -1833,6 +1773,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                     captures[n]->fullscreen();
                 }
             }
+            */
         }
         break;
     
@@ -1877,7 +1818,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 break;
         	}
 
-	        rotate_capture(false);
+	        Captures::getInstance().rotate_capture(false);
         }
 		break;
 	case 10:
@@ -1901,7 +1842,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	break;
     case 'q':
     	{
-	    rotate_capture(true);
+	        Captures::getInstance().rotate_capture(true);
     	}
 	    break;
     
@@ -1960,6 +1901,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {            
         Connexion_mgr::getInstance().print_list();
         Camera_mgr::getInstance().print_list();
+        Captures::getInstance().print_list();
         }
         break;
 
@@ -2143,14 +2085,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 's':
         {
             logf( (char*)"case 's'" );
-
-            if ( isMouseOverCapture()  )
+            
+            if ( Captures::getInstance().isMouseOverCapture(x, y)  )
             {
-                int n = current_capture;
-                if ( n != -1 )
-                {
-                    captures[n]->getPreview()->findAllStars();
-                }
+                Captures::getInstance().findAllStar();
             }
             else
             {
@@ -2369,108 +2307,11 @@ static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialFunc(int key, int x, int y)	{
 
-    int n = current_capture;
-
+    Captures::getInstance().glutSpecialFunc(key, x, y);
     
     
     switch( key)
     {
-	// right
-	case 102:	
-	    {
-        if ( n == -1 )          return;
-        Capture&  c = *captures[n];
-
-	    logf( (char*)"Touche right !!" );
-        float m = c.getCentX() + 10.0;
-        c.setCentX( m );
-
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-        
-        }
-		break;
-	// left
-	case 100:	
-	    {
-        if ( n == -1 )          return;
-        Capture&  c = *captures[n];
-
-        float m = c.getCentX() - 10.0;
-        c.setCentX( m );
-
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
-	    }
-		break;
-	// up
-	case 101:	
-	    {
-        if ( n == -1 )          return;
-        Capture&  c = *captures[n];
-
-        float m = c.getCentY() - 10.0;
-        c.setCentY( m );
-
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
-		}
-		break;
-	// down
-	case 103:	
-	    {
-        if ( n == -1 )          return;
-        Capture&  c = *captures[n];
-
-        float m = c.getCentY() + 10.0;
-        c.setCentY( m );
-
-        float e = c.getEchelle();
-
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
-		}	
-		break;
-	// pgup
-	case 104:	
-	    {
-        if ( n == -1 )          return;
-        Capture&  c = *captures[n];
-
-        float e = c.getEchelle() * 0.9;
-        c.setEchelle(e);
-        
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
-		}
-		break;
-	// pgdown
-	case 105:	
-	    {
-        if ( n == -1 )          return;
-        Capture&  c = *captures[n];
-
-        float e = c.getEchelle() / 0.9;
-        c.setEchelle(e);
-        
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
-        }
-		break;
-	// home
-	case 106:	
-	    {
-        if ( n == -1 )          return;
-        Capture&  c = *captures[n];
-
-        c.setEchelle( 1.0 );
-        c.setCentX( 0.0 );
-        c.setCentY( 0.0 );
-
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
-		}
-		break;
-		
 	case GLUT_KEY_F1:
         {
         Camera_mgr::getInstance().togglePanel();
@@ -2525,8 +2366,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         break;
     case GLUT_KEY_F11:
         {
-        captures.push_back( new Capture() );
-        current_capture = captures.size() - 1;
+        Captures::getInstance().ajoute();
         }
         break;
     case GLUT_KEY_F10:
@@ -2537,15 +2377,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         break;
     case GLUT_KEY_F12:
         {
-        int n = captures.size();
-        if ( n!= 0 )
-        {
-            Capture* p = captures[n-1];
-            delete p;
-            captures.pop_back();
-        }
-        else
-            current_capture = -1;
+        Captures::getInstance().supprime();
         }
         break;
 	default:	

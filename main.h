@@ -63,7 +63,15 @@ typedef struct readBackground       rb_t;
     extern bool         bFindStar;
     extern bool         bOneFrame;
     extern bool         bPause;
+
+    extern int          width;
+    extern int          height;
 #endif
+
+
+
+vector<string>      split (string s, string delimiter);
+
 
 void                photo();
 void                updatePanelPause();
@@ -146,7 +154,6 @@ static void         idleGL(void);
 static void         quit(void);
 static void         initGL(int argc, char **argv);
 static void         rotateVisible();
-static void         rotate_capture();
 
 static void         glutKeyboardFunc(unsigned char key, int x, int y);
 static void         glutKeyboardFuncCtrl(unsigned char key, int x, int y);

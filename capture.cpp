@@ -47,7 +47,19 @@ Capture::Capture()
         num = -1;
     }
 
-    logf( (char*)"image : %s", filename.c_str() );
+    //logf( (char*)"image : %s", filename.c_str() );
+    vector<string> res = split(filename,"/");
+    dirname = "";
+    
+    int nb = res.size();
+    for( int i=0; i<nb-1; i++ )
+    {
+        dirname += "/" + res[i];
+    }
+    basename = res[nb-1];
+    //logf( (char*)"   dirname  : %s", (char*)dirname.c_str() );
+    //logf( (char*)"   basename : %s", (char*)basename.c_str() );
+    
     create_preview();
 
 }
@@ -58,7 +70,34 @@ Capture::Capture(string dirname, string name)
 {
     logf((char*)"----------- Constructeur Capture() -----------" );
 
+    
     filename = dirname + name;
+    dirname = dirname;
+    basename = name;
+
+    logf( (char*)"image : %s", filename.c_str() );
+    create_preview();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+Capture::Capture(string f )
+{
+    logf((char*)"----------- Constructeur Capture() -----------" );
+
+    
+    filename = f;
+
+    vector<string> res = split(f,"/");
+    dirname = "";
+    
+    int nb = res.size();
+    for( int i=0; i<nb-1; i++ )
+    {
+        dirname += "/" + res[i];
+    }
+
+    basename = res[nb-1];
 
     logf( (char*)"image : %s", filename.c_str() );
     create_preview();
@@ -277,10 +316,6 @@ bool Capture::isMouseOver( int xm, int ym )
 {
     return panelPreview->isMouseOver(xm, ym);
 }
-
-
-
-
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
