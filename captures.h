@@ -19,7 +19,8 @@ public:
     bool                        isMouseOverCapture(int, int);
     void                        change_file(string, string);
     void                        update();
-    void                        rotate_capture(bool);
+    void                        rotate_capture_plus(bool);
+    void                        rotate_capture_moins(bool);
     void                        glutSpecialFunc(int key, int x, int y);
     void                        ajoute();
     void                        ajoute(string);

@@ -1682,7 +1682,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
-    //logf( (char*)"*** glutKeyboardFunc(unsigned char key, int x, int y)" );
+    logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
 	int modifier = glutGetModifiers();
 	
     bFileBrowser = FileBrowser::getInstance().getVisible();
@@ -1806,10 +1806,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	}
         	else if (modifier == GLUT_ACTIVE_SHIFT)
         	{
-	            static int cursor;
-	            cursor = ++cursor % 20;
-	            logf( (char*)"-------------- Touche SHIFT+TAB %04X", cursor );
-	            glutSetCursor(cursor);
+	            logf( (char*)"-------------- Touche SHIFT+TAB" );
+    	        Captures::getInstance().rotate_capture_moins(false);
                 break;
         	}
         	else if (modifier == GLUT_ACTIVE_ALT)
@@ -1818,7 +1816,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 break;
         	}
 
-	        Captures::getInstance().rotate_capture(false);
+            logf( (char*)"-------------- Touche TAB" );
+	        Captures::getInstance().rotate_capture_plus(false);
         }
 		break;
 	case 10:
@@ -1842,13 +1841,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	break;
     case 'q':
     	{
-	        Captures::getInstance().rotate_capture(true);
+	        Captures::getInstance().rotate_capture_plus(true);
     	}
 	    break;
     
     case 'Q':
     	{
-    	//deleteStars();
+	        Captures::getInstance().rotate_capture_moins(true);
     	}
 	    break;
     
