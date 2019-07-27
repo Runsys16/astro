@@ -30,6 +30,7 @@ public:
     
     
     virtual void		update();
+    virtual void		updatePos();
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);
     virtual void        releaseRight( int, int);
@@ -39,6 +40,7 @@ public:
     //bool                starExist(int, int);    
     void                addStar(int,int);
 
+    void                setCent();
     void                setEchelle(float f);
     void                setCentX(float f);
     void                setCentY(float f);

@@ -34,6 +34,7 @@ public:
 private:
     vector<Capture*>            captures;
     int                         current_capture;
+    bool                        bIcones;
 
 SINGLETON_END()
 

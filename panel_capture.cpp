@@ -34,6 +34,22 @@ void PanelCapture::findAllStars()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::setCent()
+{
+    float fDX = (float)pReadBgr->w / echelle;
+    float fDY = (float)pReadBgr->h / echelle;
+
+    int dxp = getParent()->getDX();
+    int dyp = getParent()->getDY();
+    
+    int deltax = (dxp-fDX)/2 + dx*echelle;
+    int deltay = (dyp-fDY)/2 + dy*echelle;
+    
+    setPos( deltax, deltay );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::setCentX(float f)
 {
     dx = f;
@@ -72,7 +88,7 @@ void PanelCapture::setCentY(float f)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::setEchelle(float f)
 {
-    logf( (char*)"setEchelle(%0.2f)", f );
+    //logf( (char*)"setEchelle(%0.2f)", f );
     echelle = f;
     float fDX = (float)pReadBgr->w / echelle;
     float fDY = (float)pReadBgr->h / echelle;
@@ -103,6 +119,22 @@ void PanelCapture::update()
 
     //Panel* pParent = getParent();
     stars.update( getX(), getY(), this, pReadBgr );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::updatePos()
+{
+    PanelSimple::updatePos();
+
+    float coef0 = (float)pReadBgr->w / getParent()->getDX();
+    float coef1 = (float)pReadBgr->h / getParent()->getDY();
+    float coef;
+    if ( coef0 > coef1 )        coef = coef1;
+    else                        coef = coef0;
+    setEchelle(coef);
+    setCent();
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

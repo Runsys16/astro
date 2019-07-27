@@ -53,15 +53,24 @@ void Captures::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Captures::rotate_capture_plus(bool bIcones)
+void Captures::rotate_capture_plus(bool b)
 {
     int n = captures.size();
-
     if ( n == 0 )           return;
+
+    if ( b != bIcones )
+    {
+        bIcones = b;
+    }
+    else
+    {
+        current_capture--;
+        if ( current_capture == -1 )            current_capture = n-1;
+    }
+    
        
     WindowsManager& wm = WindowsManager::getInstance();
     
-    current_capture = ++current_capture % n;
     int dx, dy, dxi, dyi;
     float ratio = (float)width/(float)height;
     
@@ -114,16 +123,22 @@ void Captures::rotate_capture_plus(bool bIcones)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Captures::rotate_capture_moins(bool bIcones)
+void Captures::rotate_capture_moins(bool b)
 {
     int n = captures.size();
-
     if ( n == 0 )           return;
+
+    if ( b != bIcones )
+    {
+        bIcones = b;
+    }
+    else
+    {
+        current_capture = ++current_capture % n;
+    }
        
     WindowsManager& wm = WindowsManager::getInstance();
     
-    current_capture--;
-    if ( current_capture == -1 )            current_capture = n-1;
     
     int dx, dy, dxi, dyi;
     float ratio = (float)width/(float)height;
