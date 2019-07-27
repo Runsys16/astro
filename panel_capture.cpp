@@ -150,6 +150,7 @@ void PanelCapture::displayGL()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
+    /*
     float x = getX();
     float y = getY();
 
@@ -158,7 +159,7 @@ void PanelCapture::displayGL()
 
     float dx = getDX()/2;
     float dy = getDY()/2;
-
+    */
 
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( gris, gris, gris, 0.2 );    
