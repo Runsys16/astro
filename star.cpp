@@ -47,6 +47,9 @@ void Star::init(int xx, int yy)
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
     panelZoom   = NULL;
     RB          = NULL;
+    
+    ra_rad      = 9999.0;
+    dc_rad      = 9999.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -122,11 +125,25 @@ void Star::computeMag()
         sprintf( p_sInfo, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
     else
         sprintf( p_sInfo, "mag=%0.2f", magnitude );
-    //logf( (char*)"mag=%0.2f", magnitude );
-    pInfo->changeText( p_sInfo );
     
-    //logf( (char*)p_sInfo );
-}
+    if ( haveCoord() )
+    {
+        char sDEC[255];
+        char sRA[255];
+        
+        struct dms DMS;
+        rad2dms( DMS, dc_rad );
+        sprintf( sDEC, "DEC=%02d:%02d:%0.2f", (int)DMS.d, (int)DMS.m, DMS.s );
+
+        struct hms HMS;
+        rad2hms( HMS, ra_rad );
+        sprintf( sRA,  "RA=%02d:%02d:%0.2f", (int)HMS.h, (int)HMS.m, HMS.s );
+
+        sprintf( p_sInfo, "mag=%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
+    }
+
+    pInfo->changeText( p_sInfo );
+    }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -689,6 +706,14 @@ void Star::displayGL()
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
         glCercle( 1.5*ech*computeRayon() + 4 +10 );
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::position(double ra, double dc)
+{
+    ra_rad = ra;
+    dc_rad = dc;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

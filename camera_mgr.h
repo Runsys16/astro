@@ -66,7 +66,7 @@ public:
     inline Camera*              getCurrent()                                { return pCurrent; }   
    
     void                        update();   
-   
+    void                        position(double, double);
    
 private:
     vector<Camera*>             pCameras;

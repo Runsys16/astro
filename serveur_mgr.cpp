@@ -1,5 +1,6 @@
 #include "serveur_mgr.h"
-
+#include "camera_mgr.h"
+#include "captures.h"
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -103,17 +104,19 @@ void Serveur_mgr::traite_connexion2()
 
         struct hms HMS;
         rad2hms( HMS, ra );
-        logf( (char*)"  AsDrte : %02d:%02d:%0.2f (%0.4f)", (int)HMS.h, (int)HMS.m, HMS.s, ra);
-
+        logf( (char*)"  AsDrte : %02d:%02d:%0.2f (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( DMS, dc );
-        logf( (char*)"  Declin : %02d:%02d:%0.2f (%0.4f)", (int)DMS.d, (int)DMS.m, DMS.s, dc);
+        logf( (char*)"  Declin : %02d:%02d:%0.2f (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );
         Serial::getInstance().write_string(cmd);
         logf( (char*)"  Envoi arduino : %s", cmd );
+        
+        Camera_mgr::getInstance().position(ra, dc);
+        Captures::getInstance().position(ra, dc);
 
     }
     
@@ -253,12 +256,11 @@ void Serveur_mgr::traite_connexion1()
 
         struct hms HMS;
         rad2hms( HMS, ra );
-        logf( (char*)"  AsDrte : %02d:%02d:%0.2f (%0.4f)", (int)HMS.h, (int)HMS.m, HMS.s, ra);
-
+        logf( (char*)"  AsDrte : %02d:%02d:%0.2f (%0.4f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( DMS, dc );
-        logf( (char*)"  Declin : %02d:%02d:%0.2f (%0.4f)", (int)DMS.d, (int)DMS.m, DMS.s, dc);
+        logf( (char*)"  Declin : %02d:%02d:%0.2f (%0.4f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "A%f;D%f", RAD2DEG(ra), RAD2DEG(dc) );

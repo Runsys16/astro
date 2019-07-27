@@ -67,6 +67,8 @@ public:
     
     void                setZoom(bool);
     
+    void                position(double, double);
+    
     inline bool         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
 
     inline bool         getSuivi()                                      { return bSuivi; }
@@ -82,6 +84,9 @@ public:
     inline PanelText*   getInfo()                                       { return pInfo; }
     inline void         select()                                        { bSelect = !bSelect; }
     
+    inline bool         haveCoord()                                      { return ra_rad != 9999.0; }
+    inline double       getRA()                                          { return ra_rad; }
+    inline double       getDC()                                          { return dc_rad; }
     
 private:
     vec2                pos;
@@ -107,6 +112,8 @@ private:
     float               maxLum;
     float               limitLum;
     float               ech;
+    double              ra_rad;
+    double              dc_rad;
     
     GLubyte*            ptr;
     rb_t*               RB;

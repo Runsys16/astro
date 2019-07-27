@@ -22,6 +22,7 @@ public:
     void                        rotate_capture_plus(bool);
     void                        rotate_capture_moins(bool);
     void                        glutSpecialFunc(int key, int x, int y);
+    void                        fullscreen();
     void                        ajoute();
     void                        ajoute(string);
     void                        supprime();
@@ -30,6 +31,7 @@ public:
     void                        print_list();
     void                        sauve();
     void                        charge();
+    void                        position(double, double);
     
 private:
     vector<Capture*>            captures;

@@ -49,6 +49,7 @@ inline void             setRB(struct readBackground*p)                  { pReadB
 inline float            getEchelle()                                    { return echelle; }
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
+inline Stars*           getStars()                                      { return &stars; }
 
 };
 

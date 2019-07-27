@@ -38,6 +38,8 @@ public:
     void                    selectLeft(int, int);
     void                    selectRight(int, int);
     void                    suivi(rb_t*);
+    
+    void                    position(double, double);
            
 private:
     vector<Star*>           v_tStars;

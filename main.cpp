@@ -1774,6 +1774,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 }
             }
             */
+            Captures::getInstance().fullscreen();
         }
         break;
     
