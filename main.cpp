@@ -1121,7 +1121,7 @@ void compute_matrix()
 //--------------------------------------------------------------------------------------------------------------------
 void sauve(void)
 {
-    string filename = "/home/rene/.astropilot/sauvegarde.text";
+    string filename = "/home/rene/.astropilot/sauvegarde.txt";
     logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filename.c_str() );
     
     std::ofstream fichier;
@@ -1147,9 +1147,9 @@ void sauve(void)
 //--------------------------------------------------------------------------------------------------------------------
 void charge_fichier(void)
 {
-    //string filename = "/home/rene/.astropilot/svg.text";
-    //string filename = "/home/rene/.astropilot/sauvegarde.text";
-    string filename = "/home/rene/.astropilot/m57.text";
+    //string filename = "/home/rene/.astropilot/svg.txt";
+    //string filename = "/home/rene/.astropilot/m57.txt";
+    string filename = "/home/rene/.astropilot/sauvegarde.txt";
     logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
     
     std::ifstream fichier;
@@ -1590,7 +1590,7 @@ static void idleGL(void)
                 int dc = (int) (res.y * 1000.0);
                 char cmd[255];
                 sprintf( cmd, "a%dp;d%dp", ad, dc );
-                //logf( (char*)"**** Asservissement -> '%s'",  cmd );
+                logf( (char*)" main.cpp (Asservissement=>) '%s'",  cmd );
                 Serial::getInstance().write_string(cmd);
                 //fTimeCpt += 1.0;
 	        }
@@ -1682,7 +1682,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
-    logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
+    //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
 	int modifier = glutGetModifiers();
 	
     bFileBrowser = FileBrowser::getInstance().getVisible();
@@ -2046,6 +2046,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             bRecTrace = !bRecTrace;
             if ( bRecTrace )
             {
+                logf( (char*)"Sauvegarde ...");
                 t_vTrace.push_back( new (vector<vec2>)() );
             }
         }
