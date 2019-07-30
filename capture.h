@@ -61,6 +61,8 @@ inline string                   getBasename()                               { re
 inline string                   getDirname()                                { return dirname; }
 inline PanelCapture*            getPreview()                                { return panelPreview; }
 
+inline void                     setIcone(bool b)                            { panelPreview->setIcone(b); }
+inline bool                     getIcone()                                  { return panelPreview->getIcone(); }
 };
 
 

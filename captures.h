@@ -26,6 +26,7 @@ public:
     void                        ajoute();
     void                        ajoute(string);
     void                        supprime();
+    void                        onTop(Capture*);
     void                        findAllStar();
     void                        deleteAllStars();
     void                        print_list();

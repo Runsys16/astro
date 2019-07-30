@@ -179,7 +179,7 @@ void Capture::create_preview()	{
 
 
     readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
-	panelPreview = new PanelCapture(NULL);
+	panelPreview = new PanelCapture(NULL, this);
     panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
     panelPreview->setRB( &readBgr );
     //panelPreview->findAllStar();

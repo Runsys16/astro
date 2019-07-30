@@ -3,13 +3,14 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-PanelCapture::PanelCapture( struct readBackground*  pReadBgr )
+PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 {
-    echelle = 1.0;
-    dx      = 0.0;
-    dy      = 0.0;
-    pReadBgr = pReadBgr;
-
+    echelle     = 1.0;
+    dx          = 0.0;
+    dy          = 0.0;
+    pReadBgr    = pReadBgr;
+    pCapture    = pc;
+    bIcone      = false;
     stars.setView( this );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -192,11 +193,21 @@ void PanelCapture::releaseLeft(int xm, int ym)
     
     int xx = ((float)xm-(float)getX()) / e;
     int yy = ((float)ym-(float)getY()) / e;
-    
-    stars.setView( this->getParent() );
-    stars.setRB( pReadBgr );
-    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
-        stars.selectLeft(xx, yy);
+
+
+    // Si en plei ecran on ajoute une etoile
+        
+    if ( !bIcone     )
+    {
+        stars.setView( this->getParent() );
+        stars.setRB( pReadBgr );
+        if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+            stars.selectLeft(xx, yy);
+            captureOnTop(pCapture);
+    }
+    //else
+
+        
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -11,7 +11,7 @@
 #include "stars.h"
 //#include "capture.h"
 
-
+class Capture;
 using namespace std;
 
 class PanelCapture : public PanelSimple
@@ -20,13 +20,15 @@ protected:
     float               echelle;
     float               dx;
     float               dy;
+    bool                bIcone;
     
     rb_t *              pReadBgr;
     
     Stars               stars;
+    Capture*            pCapture;
 
 public:
-    PanelCapture( rb_t * );
+    PanelCapture( rb_t *, Capture* );
     
     
     virtual void		update();
@@ -50,6 +52,8 @@ inline float            getEchelle()                                    { return
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
+inline void             setIcone(bool b)                                { bIcone = b; }
+inline bool             getIcone()                                      { return bIcone; }
 
 };
 

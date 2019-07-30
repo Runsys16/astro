@@ -11,7 +11,6 @@
 //#include "capture.h"
 #include <WindowsManager.h>
 
-
 using namespace std;
 
 class PanelCamera : public PanelWindow
