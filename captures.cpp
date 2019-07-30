@@ -102,12 +102,14 @@ void Captures::rotate_capture_moins(bool b)
             {
                 p->resize(10,10,dx-20,dy-20);
                 p->onTop();
+                p->setIcone(false);
             }
             else
             {
                 p->resize(dx+10,y+10,dxi-20,dyi-20);
                 p->onTop();
                 y += DY;
+                p->setIcone(true);
             }
         }
         else
@@ -115,6 +117,7 @@ void Captures::rotate_capture_moins(bool b)
             p->resize(dx+10,y+10,dxi-20,dyi-20);
             p->onTop();
             y += DY;
+            p->setIcone(true);
         }
         j = ++j % n;
     } 
@@ -171,11 +174,13 @@ void Captures::rotate_capture_plus(bool b)
             {
                 p->resize(10,10,dx-20,dy-20);
                 p->onTop();
+                p->setIcone(false);
             }
             else
             {
                 p->resize(dx+10,y+10,dxi-20,dyi-20);
                 p->onTop();
+                p->setIcone(true);
                 y += DY;
             }
         }
@@ -184,6 +189,7 @@ void Captures::rotate_capture_plus(bool b)
             p->resize(dx+10,y+10,dxi-20,dyi-20);
             p->onTop();
             y += DY;
+            p->setIcone(true);
         }
         j = ++j % n;
     } 
@@ -342,6 +348,24 @@ void Captures::supprime()
         sauve();
     }
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::onTop(Capture* p)
+{
+    int nb = captures.size();
+    int i;
+    for ( i=0; i<nb; i++ )
+    {
+        if ( captures[i] == p ) break;
+    }
+    if ( i >= nb )          return;
+    
+    if ( current_capture != -1 )
+        rotate_capture_plus(true);
+    current_capture = i;
+    rotate_capture_plus(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

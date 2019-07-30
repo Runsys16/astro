@@ -18,6 +18,7 @@
 
 #include <WindowsManager.h>
 
+
 using namespace std;
 
 struct hms
@@ -69,10 +70,11 @@ typedef struct readBackground       rb_t;
     extern int          height;
 #endif
 
-
+class Capture;
 
 vector<string>      split (string s, string delimiter);
 
+void                captureOnTop(Capture*);
 
 void                photo();
 void                updatePanelPause();
