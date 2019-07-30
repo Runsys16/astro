@@ -56,6 +56,7 @@ void Captures::update()
 void Captures::rotate_capture_moins(bool b)
 {
     int n = captures.size();
+    
     if ( n == 0 )           return;
 
     if ( b != bIcones )
@@ -100,6 +101,7 @@ void Captures::rotate_capture_moins(bool b)
         {
             if ( !bIcones )
             {
+                //int xx = (dx-20)
                 p->resize(10,10,dx-20,dy-20);
                 p->onTop();
                 p->setIcone(false);
@@ -354,16 +356,20 @@ void Captures::supprime()
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::onTop(Capture* p)
 {
+    logf( (char*)"Captures::onTop(%s)", (char*)p->getBasename().c_str() );
+
     int nb = captures.size();
     int i;
     for ( i=0; i<nb; i++ )
     {
         if ( captures[i] == p ) break;
     }
+    //--------------------------------------------
     if ( i >= nb )          return;
+    logf( (char*)"Captures::onTop  -> %s", (char*)p->getBasename().c_str() );
     
-    if ( current_capture != -1 )
-        rotate_capture_plus(true);
+    if ( current_capture != -1 )        rotate_capture_plus(true);
+    
     current_capture = i;
     rotate_capture_plus(false);
 }

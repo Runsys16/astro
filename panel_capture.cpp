@@ -203,7 +203,10 @@ void PanelCapture::releaseLeft(int xm, int ym)
         stars.setRB( pReadBgr );
         if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
             stars.selectLeft(xx, yy);
-            captureOnTop(pCapture);
+    }
+    else
+    {            
+        captureOnTop(pCapture);
     }
     //else
 

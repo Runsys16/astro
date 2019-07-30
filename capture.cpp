@@ -265,6 +265,7 @@ void Capture::resize(int x, int y, int w, int h )
             dx = (float)readBgr.w * ratioX;
             dy = (float)readBgr.h * ratioX;
 
+            y += (h-dy)/2;
             //dx = readBgr.w * ratioX;
             //dy = readBgr.h * ratioX;
         }
@@ -272,6 +273,8 @@ void Capture::resize(int x, int y, int w, int h )
         {
             dx = (float)readBgr.w * ratioY;
             dy = (float)readBgr.h * ratioY;
+
+            x += (w-dx)/2;
         }
     }
     else
