@@ -48,6 +48,7 @@ public:
     inline void     setPanelText( PanelText* p)         { pt = p; }
     inline int      getValue()                          { return value; }
     inline int      getId()                             { return id; }
+    inline string&  getName()                           { return name; }
     
     
 };

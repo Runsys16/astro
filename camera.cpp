@@ -526,6 +526,10 @@ bool Camera::keyboard(char key)
         capability_list();
         break;
 
+    case 'a':  // '-'
+        capability_save();
+        break;
+
     default:
         return false;        
 	}

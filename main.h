@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <getopt.h>

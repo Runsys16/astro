@@ -135,6 +135,7 @@ public :
     bool                    isDevice(int);
     void                    enumerate_menu(__u32 id);
     void                    capability_list( void );
+    void                    capability_save( void );
     void                    def_crop(int, int);
     void                    enum_format_size(int pixel_format);
     void                    enum_format();

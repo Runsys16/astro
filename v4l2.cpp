@@ -156,6 +156,38 @@ void Device_cam::capability_list( void )    {
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Device_cam::capability_save( void )    {
+    if (fd == -1)       return;
+
+    string filename = "/home/rene/.astropilot/"+ name +".txt";
+    logf( (char*)"Sauvegarde des parametres de la camera dans '%s'", (char*)filename.c_str() );
+
+    ofstream fichier;
+    //fichier.open(filename, ios_base::trunc);
+    fichier.open(filename);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        return;
+    }
+
+
+    int nb = pControl.size();
+    for( int i=0; i<nb; i++ )
+    {
+        logf( (char*)"%s %d", (char*)pControl[i]->getName().c_str(), pControl[i]->getValue() );
+        fichier << pControl[i]->getName() << " : " <<  pControl[i]->getValue();
+        fichier << "\n";
+    }
+    
+    
+    
+    fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Device_cam::enum_format()
 {
     //-------------------------------------------        
