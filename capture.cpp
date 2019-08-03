@@ -161,7 +161,7 @@ void Capture::pooling()
 void Capture::update()
 {
     panelPreview->setRB( &readBgr );
-    panelPreview->update();
+    //panelPreview->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -180,8 +180,15 @@ void Capture::create_preview()	{
 
     readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
 	panelPreview = new PanelCapture(NULL, this);
-    panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
-    panelPreview->setRB( &readBgr );
+	if ( readBgr.ptr == NULL )
+	{
+        panelPreview->setRB( NULL );
+    }
+    else
+    {
+        panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+        panelPreview->setRB( &readBgr );
+    }
     //panelPreview->findAllStar();
 
     pW->add(panelPreview);

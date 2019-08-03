@@ -17,7 +17,8 @@ using namespace std;
 class PanelCapture : public PanelSimple
 {
 protected:
-    float               echelle;
+    float               ech_geo;
+    float               ech_user;
     float               dx;
     float               dy;
     bool                bIcone;
@@ -48,7 +49,7 @@ public:
     void                setCentY(float f);
     
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
-inline float            getEchelle()                                    { return echelle; }
+inline float            getEchelle()                                    { return ech_user; }
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }

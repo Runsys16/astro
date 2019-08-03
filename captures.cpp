@@ -44,6 +44,9 @@ void Captures::change_file( string dirname, string filename )
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::update()
 {
+    //logf( (char*)"Captures::update() ..." );
+    return;
+    
     int nb = captures.size();
 
     for( int n=0; n<nb; n++ )
@@ -203,7 +206,7 @@ void Captures::rotate_capture_plus(bool b)
 void Captures::glutSpecialFunc(int key, int x, int y)	{
 
     int n = current_capture;
-
+    if ( n == -1)                   return;
     
     
     switch( key)
@@ -231,6 +234,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         float m = c.getCentX() - 10.0;
         c.setCentX( m );
 
+	    logf( (char*)"Touche left !!" );
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 	    }
@@ -244,6 +248,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         float m = c.getCentY() - 10.0;
         c.setCentY( m );
 
+	    logf( (char*)"Touche up !!" );
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 		}
@@ -259,6 +264,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 
         float e = c.getEchelle();
 
+	    logf( (char*)"Touche down !!" );
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 		}	
@@ -272,6 +278,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         float e = c.getEchelle() * 0.9;
         c.setEchelle(e);
         
+	    logf( (char*)"Touche pgup !!" );
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 		}
@@ -284,7 +291,8 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 
         float e = c.getEchelle() / 0.9;
         c.setEchelle(e);
-        
+
+	    logf( (char*)"Touche pgdown !!" );
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
         }
@@ -299,11 +307,17 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         c.setCentX( 0.0 );
         c.setCentY( 0.0 );
 
+	    logf( (char*)"Touche home !!" );
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 		}
 		break;
+    default:
+        return;
     }
+    
+    //Capture&  c = *captures[n];
+    //c.update();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

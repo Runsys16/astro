@@ -5,7 +5,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 {
-    echelle     = 1.0;
+    ech_geo     = 1.0;
+    ech_user    = 1.0;
     dx          = 0.0;
     dy          = 0.0;
     pReadBgr    = pReadBgr;
@@ -37,14 +38,14 @@ void PanelCapture::findAllStars()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::setCent()
 {
-    float fDX = (float)pReadBgr->w / echelle;
-    float fDY = (float)pReadBgr->h / echelle;
+    float fDX = (float)pReadBgr->w / ech_geo;
+    float fDY = (float)pReadBgr->h / ech_geo;
 
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
     
-    int deltax = (dxp-fDX)/2 + dx*echelle;
-    int deltay = (dyp-fDY)/2 + dy*echelle;
+    int deltax = (dxp-fDX)/2 + dx*ech_geo;
+    int deltay = (dyp-fDY)/2 + dy*ech_geo;
     
     setPos( deltax, deltay );
 }
@@ -55,14 +56,14 @@ void PanelCapture::setCentX(float f)
 {
     dx = f;
 
-    float fDX = (float)pReadBgr->w / echelle;
-    float fDY = (float)pReadBgr->h / echelle;
+    float fDX = (float)pReadBgr->w / ech_geo;
+    float fDY = (float)pReadBgr->h / ech_geo;
 
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
     
-    int deltax = (dxp-fDX)/2 + dx*echelle;
-    int deltay = (dyp-fDY)/2 + dy*echelle;
+    int deltax = (dxp-fDX)/2 + dx*ech_geo;
+    int deltay = (dyp-fDY)/2 + dy*ech_geo;
     
     setPos( deltax, deltay );
 }
@@ -73,14 +74,14 @@ void PanelCapture::setCentY(float f)
 {
     dy = f;
 
-    float fDX = (float)pReadBgr->w / echelle;
-    float fDY = (float)pReadBgr->h / echelle;
+    float fDX = (float)pReadBgr->w / ech_geo;
+    float fDY = (float)pReadBgr->h / ech_geo;
 
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
     
-    int deltax = (dxp-fDX)/2 + dx*echelle;
-    int deltay = (dyp-fDY)/2 + dy*echelle;
+    int deltax = (dxp-fDX)/2 + dx*ech_geo;
+    int deltay = (dyp-fDY)/2 + dy*ech_geo;
     
     setPos( deltax, deltay );
 }
@@ -89,26 +90,35 @@ void PanelCapture::setCentY(float f)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::setEchelle(float f)
 {
-    //logf( (char*)"setEchelle(%0.2f)", f );
-    echelle = f;
-    float fDX = (float)pReadBgr->w / echelle;
-    float fDY = (float)pReadBgr->h / echelle;
+    if ( f == 0.0 )     
+    {
+        logf( (char*)"setEchelle(%0.2f)", f );
+        return;
+    }
+    if ( pReadBgr == NULL )         return;
+    
+    ech_geo  = f;
+    ech_user = f;
+    
+    float fDX = (float)pReadBgr->w / ech_geo;
+    float fDY = (float)pReadBgr->h / ech_geo;
     
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
 
     if ( fDX < dxp )
     {
-        echelle = (float)pReadBgr->w/(float)dxp;
+        ech_geo = (float)pReadBgr->w/(float)dxp;
         fDX = dxp;
         fDY = dyp;
-        logf( (char*)"Stop setEchelle(%0.2f)", echelle );
+        logf( (char*)"Stop setEchelle(%0.2f)", ech_user );
     }
     
-    int deltax = (dxp-fDX)/2 + dx*echelle;
-    int deltay = (dyp-fDY)/2 + dy*echelle;
+    int deltax = (dxp-fDX)/2 + dx*ech_geo;
+    int deltay = (dyp-fDY)/2 + dy*ech_geo;
     
     setSize( fDX, fDY );
+    //logf( (char*)"setSize(%0.2f, %0.2f)", fDX, fDY );
     setPos( deltax, deltay );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -126,16 +136,24 @@ void PanelCapture::update()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::updatePos()
 {
-    PanelSimple::updatePos();
+    //PanelSimple::updatePos();
 
-    float coef0 = (float)pReadBgr->w / getParent()->getDX();
-    float coef1 = (float)pReadBgr->h / getParent()->getDY();
+    float coef0 = (float)pReadBgr->w / getParent()->getDX();// * ech_user;
+    float coef1 = (float)pReadBgr->h / getParent()->getDY();// * ech_user;
     float coef;
     if ( coef0 > coef1 )        coef = coef1;
     else                        coef = coef0;
-    setEchelle(coef);
+    
+    if ( coef != ech_geo )
+    {
+        logf( (char*)"Changement d'echelle %0.2f", coef );
+        ech_geo = coef;
+    }
+    
+    //setEchelle(coef);
     setCent();
     
+    PanelSimple::updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

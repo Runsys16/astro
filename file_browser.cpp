@@ -110,6 +110,9 @@ FileBrowser::FileBrowser()
 {
     logf( (char*)"----------- Constructeur filebrowser() -----------" );
 
+    dirScroll  = 0;
+    fileScroll = 0;
+
     workingDir = "/home/rene/programmes/";
     workingDir = "/home/rene/programmes/opengl/";
     workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2019-06-30/";
@@ -300,10 +303,14 @@ bool FileBrowser::isInsideDir( int x, int y )
         logf( (char*)"NOK" );
         return false;
     }
+
+    n -= dirScroll;
+    logf( (char*)"Choix rep : %d  (scroll=%d)", n, dirScroll );
     logf( (char*)"OK %s ", (char*)tDirNames[n].c_str() );
     
     change_dir( n );        
     
+    dirScroll = 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -454,6 +461,8 @@ bool FileBrowser::keyboard(char key, int x, int y)
 void FileBrowser::scrollDir( int n )
 {
     if ( n!=1 && n!=-1 )            return;
+    
+    dirScroll += n;
     
     vector<Panel*>& childs = panelDir->getChilds();
     for ( int i=0; i<childs.size(); i++ )

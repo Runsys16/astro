@@ -30,7 +30,7 @@ Device_cam::Device_cam()
     out_buf         = 1;
     force_format    = MJPG;
     frame_count     = 1;
-    frame_number    = 0;
+    frame_number    = 7;
     strErr          = (char*)calloc( 200, 1 );
     memset(strErr, 0, 199);
     nControl        = 0;
@@ -445,14 +445,19 @@ int Device_cam::read_frame(void)
 
         //log((char*)"Device_cam::read_frame() decompresse");
 
-        if ( bEnregistre )      process_image((void *)buf.m.userptr, buf.bytesused);
+        if ( bEnregistre )      
+        {
+            logf( (char*)"Enregistre l'image lu" );
+            process_image((void *)buf.m.userptr, buf.bytesused);
+            bEnregistre = false;
+        }
 
+        //logf( (char*)"lit image" );
 
         decompressJpeg();
         
         
         
-        bEnregistre = false;
         memory += buf.bytesused;
 
         if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))       errno_exit("VIDIOC_QBUF");
