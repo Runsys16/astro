@@ -275,7 +275,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         if ( n == -1 )          return;
         Capture&  c = *captures[n];
 
-        float e = c.getEchelle() * 0.9;
+        float e = c.getEchelle() / 0.9;
         c.setEchelle(e);
         
 	    logf( (char*)"Touche pgup !!" );
@@ -289,7 +289,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         if ( n == -1 )          return;
         Capture&  c = *captures[n];
 
-        float e = c.getEchelle() / 0.9;
+        float e = c.getEchelle() * 0.9;
         c.setEchelle(e);
 
 	    logf( (char*)"Touche pgdown !!" );

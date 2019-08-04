@@ -44,8 +44,8 @@ void PanelCapture::setCent()
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
     
-    int deltax = (dxp-fDX)/2 + dx*ech_geo;
-    int deltay = (dyp-fDY)/2 + dy*ech_geo;
+    int deltax = (dxp-fDX)/2 + dx*ech_geo*ech_user;
+    int deltay = (dyp-fDY)/2 + dy*ech_geo*ech_user;
     
     setPos( deltax, deltay );
 }
@@ -62,8 +62,8 @@ void PanelCapture::setCentX(float f)
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
     
-    int deltax = (dxp-fDX)/2 + dx*ech_geo;
-    int deltay = (dyp-fDY)/2 + dy*ech_geo;
+    int deltax = (dxp-fDX)/2 + dx*ech_geo*ech_user;
+    int deltay = (dyp-fDY)/2 + dy*ech_geo*ech_user;
     
     setPos( deltax, deltay );
 }
@@ -97,11 +97,14 @@ void PanelCapture::setEchelle(float f)
     }
     if ( pReadBgr == NULL )         return;
     
-    ech_geo  = f;
+    //ech_geo  = f;
     ech_user = f;
     
-    float fDX = (float)pReadBgr->w / ech_geo;
-    float fDY = (float)pReadBgr->h / ech_geo;
+    float ech;
+    ech = ech_geo * ech_user;
+    
+    float fDX = (float)pReadBgr->w * ech;
+    float fDY = (float)pReadBgr->h * ech;
     
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
@@ -109,13 +112,17 @@ void PanelCapture::setEchelle(float f)
     if ( fDX < dxp )
     {
         ech_geo = (float)pReadBgr->w/(float)dxp;
-        fDX = dxp;
-        fDY = dyp;
-        logf( (char*)"Stop setEchelle(%0.2f)", ech_user );
+        ech = ech_geo * ech_user;
+        fDX = (float)pReadBgr->w / ech;
+        fDY = (float)pReadBgr->h / ech;
+        logf( (char*)"Stop setEchelle(%0.2f)", ech );
     }
     
-    int deltax = (dxp-fDX)/2 + dx*ech_geo;
-    int deltay = (dyp-fDY)/2 + dy*ech_geo;
+    //int deltax = (dxp-fDX)/2 + dx*ech_geo;
+    //int deltay = (dyp-fDY)/2 + dy*ech_geo;
+    
+    int deltax = (dxp-fDX)/2 + dx*ech;
+    int deltay = (dyp-fDY)/2 + dy*ech;
     
     setSize( fDX, fDY );
     //logf( (char*)"setSize(%0.2f, %0.2f)", fDX, fDY );
@@ -146,7 +153,7 @@ void PanelCapture::updatePos()
     
     if ( coef != ech_geo )
     {
-        logf( (char*)"Changement d'echelle %0.2f", coef );
+        logf( (char*)"Changement d'echelle ech_geo=%0.2f ech_user=%0.2f", coef, ech_user );
         ech_geo = coef;
     }
     

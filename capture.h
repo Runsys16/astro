@@ -52,10 +52,12 @@ inline rb_t *                   getRB()                                     { re
 
 inline void                     setEchelle(float f)                         { panelPreview->setEchelle(f); }
 inline float                    getEchelle()                                { return panelPreview->getEchelle(); }
+
 inline void                     setCentX(float f)                           { panelPreview->setCentX(f); }
 inline void                     setCentY(float f)                           { panelPreview->setCentY(f); }
 inline float                    getCentX()                                  { return panelPreview->getCentX(); }
 inline float                    getCentY()                                  { return panelPreview->getCentY(); }
+
 inline string                   getFilename()                               { return filename; }
 inline string                   getBasename()                               { return basename; }
 inline string                   getDirname()                                { return dirname; }
