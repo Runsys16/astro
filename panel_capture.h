@@ -23,6 +23,9 @@ protected:
     float               dy;
     bool                bIcone;
     
+    int                 xm_old;
+    int                 ym_old;
+    
     rb_t *              pReadBgr;
     
     Stars               stars;
@@ -37,6 +40,13 @@ public:
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);
     virtual void        releaseRight( int, int);
+
+    virtual void        clickMiddle( int, int);
+    virtual void        motionMiddle( int, int);
+    virtual void        releaseMiddle( int, int);
+
+    virtual void        wheelUp( int, int);
+    virtual void        wheelDown( int, int);
 
     void                findAllStars();
     void                deleteAllStars();

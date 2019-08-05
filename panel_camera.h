@@ -34,6 +34,9 @@ public:
     virtual void        releaseLeft( int, int);
     virtual void        releaseRight( int, int);
 
+    virtual void        wheelUp( int, int)                              {;};
+    virtual void        wheelDown( int, int)                            {;};
+
     void                findAllStar();
     bool                starExist(int, int);    
     void                addStar(int,int);

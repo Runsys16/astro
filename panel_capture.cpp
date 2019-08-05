@@ -1,4 +1,5 @@
 #include "panel_capture.h"
+#include "captures.h"
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -9,6 +10,9 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     ech_user    = 1.0;
     dx          = 0.0;
     dy          = 0.0;
+    xm_old      = -1;
+    ym_old      = -1;
+    
     pReadBgr    = pReadBgr;
     pCapture    = pc;
     bIcone      = false;
@@ -260,6 +264,60 @@ void PanelCapture::releaseRight(int xm, int ym)
     if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         stars.selectRight(xx, yy);
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::wheelUp(int xm, int ym)
+{
+    logf( (char*)"PanelCamera::wheelUp(%d,%d) ...", xm, ym );
+    Captures::getInstance().glutSpecialFunc(104, xm, ym);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::wheelDown(int xm, int ym)
+{
+    logf( (char*)"PanelCamera::wheelDown(%d,%d) ...", xm, ym );
+    Captures::getInstance().glutSpecialFunc(105, xm, ym);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::clickMiddle(int xm, int ym)
+{
+    xm_old = xm;
+    ym_old = ym;
+    logf( (char*)"PanelCamera::clickMiddle(%d,%d) ...", xm, ym );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::motionMiddle(int xm, int ym)
+{
+    //logf( (char*)"PanelCamera::motionMiddle(%d,%d) ...", xm, ym );
+    //logf( (char*)"    delta (%d,%d) ...", xm-xm_old, ym-ym_old );
+    float deltaX, deltaY;
+    
+    deltaX = (float) (xm-xm_old) * ech_geo / ech_user;
+    deltaY = (float) (ym-ym_old) * ech_geo / ech_user;
+
+    setCentX( dx + deltaX );
+    setCentY( dy + deltaY );
+    
+    xm_old = xm;
+    ym_old = ym;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::releaseMiddle(int xm, int ym)
+{
+    xm_old = -1;
+    ym_old = -1;
+    logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
+}
+
+
 
 
 
