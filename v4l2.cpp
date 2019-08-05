@@ -318,13 +318,35 @@ int Device_cam::xioctl(int fh, int request, void *arg)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+/**
+ * Check if a file exists
+ * @return true if and only if the file exists, false else
+ */
+bool fileExists(const std::string& file) {
+    struct stat buf;
+    return (stat(file.c_str(), &buf) == 0);
+}
+
 void Device_cam::process_image(const void *p, int size)
 {
     if (fd == -1)       return;
 
     char filename[155];
-     
-    sprintf(filename, "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame-%d.jpg", frame_number);
+    int nm;
+    
+    for( nm=0; nm<1000; nm++ )
+    {
+        sprintf(filename, "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame-%d.jpg", nm);
+        //logf( (char*)filename );
+
+        if ( !fileExists(filename) )        break;
+    }    
+    //logf( (char*)filename );
+    //return;
+    if (nm>=1000)
+    {
+        logf( (char*)"[Erreur] framme-1000.jpg atteind " );
+    }
     frame_number++;
     
     logf( (char*)"Enregistre : %s", filename);

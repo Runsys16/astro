@@ -1854,13 +1854,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             log( (char*)"NormalScreen !!!" );
 		}
     	break;
-    case 'q':
+    case 178:
+    //case 'q':
     	{
 	        Captures::getInstance().rotate_capture_plus(true);
     	}
 	    break;
     
-    case 'Q':
+    case 126:
+    //case 'Q':
     	{
 	        Captures::getInstance().rotate_capture_moins(true);
     	}
