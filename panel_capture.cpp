@@ -201,6 +201,41 @@ void PanelCapture::addStar(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+Panel* PanelCapture::isMouseOver(int xm, int ym)	{
+	#ifdef DEBUG
+	cout << "Panel::isMouseOver()" << x_raw <<", "<< y_raw <<", "<< dx_raw <<", "<< dy_raw << endl;
+	#endif
+
+	if ( !visible )			return NULL;
+	if ( bFantome )			return NULL;
+
+    int xx  = getParent()->getX();
+    int yy  = getParent()->getY();
+    int dxx = getParent()->getDX();
+    int dyy = getParent()->getDY();
+
+
+    /*
+    int nb = childs.size();
+	for( int i=0; i<nb; i++ )	{
+		Panel * p = childs[i]->isMouseOver(xm, ym);
+		if ( p )		return p;
+	}
+    */
+	if ( xx <= xm && xm <= (xx+dxx) && yy <= ym && ym <= (yy+dyy) )		                    return this;
+	else																					return NULL;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::clickLeft(int xm, int ym)
+{
+    Captures::getInstance().setCurrent( pCapture );
+    PanelSimple::clickLeft(xm,ym);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) ...", xm, ym );
@@ -227,6 +262,14 @@ void PanelCapture::releaseLeft(int xm, int ym)
     //else
 
         
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::clickRight(int xm, int ym)
+{
+    Captures::getInstance().setCurrent( pCapture );
+    PanelSimple::clickRight(xm,ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -272,6 +315,7 @@ void PanelCapture::clickMiddle(int xm, int ym)
     xm_old = xm;
     ym_old = ym;
     logf( (char*)"PanelCamera::clickMiddle(%d,%d) ...", xm, ym );
+    Captures::getInstance().setCurrent( pCapture );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -299,6 +343,7 @@ void PanelCapture::releaseMiddle(int xm, int ym)
     xm_old = -1;
     ym_old = -1;
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
+    logf( (char*)"  ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

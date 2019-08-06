@@ -33,6 +33,7 @@ public:
     void                        sauve();
     void                        charge();
     void                        position(double, double);
+    void                        setCurrent(Capture*);
     
 private:
     vector<Capture*>            captures;
