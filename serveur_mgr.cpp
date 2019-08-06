@@ -188,10 +188,12 @@ void Serveur_mgr::thread_listen_2()
 
 		if (sock_ref < 0)			continue;
 		
-		logf( (char*)"********** SOCKET 2*************" );
-		logf( (char*)"       sock = %d  sock_2 = %d", sock_2, sock_ref );
-		logf( (char*)"********** SUCCES 2*************" );
-		//exit(EXIT_SUCCESS);
+		char *some_addr;
+        some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+
+		logf( (char*)"Serveur_mgr::thread_listen_2() connexion SOCKET 2" );
+		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
+
 		traite_connexion2();
 	}
     logf( (char*)"** Fermeture de sock_2" );
@@ -221,7 +223,7 @@ void Serveur_mgr::traite_connexion1()
         if (n <= 0)
         {
             logf( (char*)"ERROR reading from socket");
-            break;
+            break;  
         }
 
         logf( (char*)"nb octet lu : %d", n);
@@ -335,10 +337,12 @@ void Serveur_mgr::thread_listen_1()
 
 		if (sock_stellarium < 0)			continue;
 		
-		logf( (char*)"********** SOCKET 1*************" );
-		logf( (char*)"       sock = %d  sock_2 = %d", sock_1, sock_stellarium );
-		logf( (char*)"********** SUCCES 1*************" );
-		//exit(EXIT_SUCCESS);
+		char *some_addr;
+        some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+
+		logf( (char*)"Serveur_mgr::thread_listen_1() connexion SOCKET 1" );
+		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
+
 		traite_connexion1();
 		
 		
