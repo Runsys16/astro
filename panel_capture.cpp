@@ -51,12 +51,18 @@ void PanelCapture::setCent()
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
     
-    //int deltax = (dxp-fDX)/2 + dx*ech_geo*ech_user;
-    //int deltay = (dyp-fDY)/2 + dy*ech_geo*ech_user;
-
     int deltax = ((fw/2.0 ) - ech_user * (fw/2.0 - dx )) / ech_geo;
     int deltay = ((fh/2.0 ) - ech_user * (fh/2.0 - dy )) / ech_geo;
     
+    if ( deltax > 0 )           deltax = 0;
+    if ( deltay > 0 )           deltay = 0;
+    
+    int maxX  = -(fDX*ech_user - dxp);
+    int maxY  = -(fDY*ech_user - dyp);
+    
+    if ( deltax < maxX )        deltax = maxX;
+    if ( deltay < maxY )        deltay = maxY;
+
     setPos( deltax, deltay );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -67,17 +73,6 @@ void PanelCapture::setCentX(float f)
     dx = f;
     setCent();
     return;
-
-    float fDX = (float)pReadBgr->w / ech_geo;
-    float fDY = (float)pReadBgr->h / ech_geo;
-
-    int dxp = getParent()->getDX();
-    int dyp = getParent()->getDY();
-    
-    int deltax = (dxp-fDX)/2 + dx*ech_geo*ech_user;
-    int deltay = (dyp-fDY)/2 + dy*ech_geo*ech_user;
-    
-    setPos( deltax, deltay );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -87,17 +82,6 @@ void PanelCapture::setCentY(float f)
     dy = f;
     setCent();
     return;
-
-    float fDX = (float)pReadBgr->w / ech_geo;
-    float fDY = (float)pReadBgr->h / ech_geo;
-
-    int dxp = getParent()->getDX();
-    int dyp = getParent()->getDY();
-    
-    int deltax = (dxp-fDX)/2 + dx*ech_geo;
-    int deltay = (dyp-fDY)/2 + dy*ech_geo;
-    
-    setPos( deltax, deltay );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -315,6 +299,22 @@ void PanelCapture::releaseMiddle(int xm, int ym)
     xm_old = -1;
     ym_old = -1;
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::screen2tex(int& x, int& y)
+{
+    x = (float)x * ech_geo / ech_user + dx;
+    y = (float)y * ech_geo / ech_user + dy;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::tex2screen(int& x, int& y)
+{
+    x = (float)( x-dx) * ech_user / ech_geo;
+    y = (float)( y-dy) * ech_user / ech_geo;
 }
 
 

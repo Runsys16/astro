@@ -58,6 +58,9 @@ public:
     void                setCentX(float f);
     void                setCentY(float f);
     
+    void                screen2tex( int&, int& );
+    void                tex2screen( int&, int& );
+    
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
 inline float            getEchelle()                                    { return ech_user; }
 inline float            getCentX()                                      { return dx; }
