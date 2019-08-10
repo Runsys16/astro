@@ -14,6 +14,7 @@ bool fct_tri(string i, string j)
 {
     return (i.compare(j) < 0);
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -40,7 +41,7 @@ void cb_dir_release_left( int x, int y )
     
     int n = y/DY;
 
-    fb.isInsideDir(x, y);
+    //fb.isInsideDir(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -52,6 +53,7 @@ void cb_file_release_left( int x, int y )
     
     fb.isInsideFile(x, y);
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -171,9 +173,9 @@ FileBrowser::FileBrowser()
     panelQuit->setDown( (char*)"images/quit_over.tga" );
     panelQuit->setOver( (char*)"images/quit_down.tga" );
 
-    panelDir->setClickLeft( (click_left_cb_t) &cb_dir_click_left );
-    panelDir->setReleaseLeft( (click_left_cb_t) &cb_dir_release_left );
-    panelFile->setReleaseLeft( (click_left_cb_t) &cb_file_release_left );
+    //panelDir->setClickLeft( (click_left_cb_t) &cb_dir_click_left );
+    //panelDir->setReleaseLeft( (click_left_cb_t) &cb_dir_release_left );
+    //panelFile->setReleaseLeft( (click_left_cb_t) &cb_file_release_left );
     
     panelQuit->setReleaseLeft( (release_left_cb_t) &cb_quit_release_left );
     panelOK->setReleaseLeft( (release_left_cb_t) &cb_ok_release_left );

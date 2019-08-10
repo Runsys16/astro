@@ -24,6 +24,8 @@ public:
 
 	virtual void		wheelUp( int, int);
 	virtual void		wheelDown( int, int);
+
+	virtual void		releaseLeft( int, int);
 };
 
 
