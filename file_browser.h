@@ -9,8 +9,11 @@
 #include <WindowsManager.h>
 #include "Singleton.h"
 #include "var_mgr.h"
+#include "panel_dir.h"
+#include "panel_file.h"
 
-
+class PanelDir;
+class PanelFile;
 //SINGLETON_BEGIN(  FileBrowser )
 class FileBrowser
 {
@@ -59,8 +62,8 @@ inline string                   setCurrentDir(string s)             { currentDir
 protected:
     PanelWindow*                pW;
     PanelText*                  panelDirName;
-    PanelSimple*                panelDir;
-    PanelSimple*                panelFile;
+    PanelDir*                   panelDir;
+    PanelFile*                  panelFile;
     
     PanelButton*                panelOK;
     PanelButton*                panelQuit;

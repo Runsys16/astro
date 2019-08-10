@@ -363,8 +363,14 @@ void Captures::supprime()
         delete p;
         captures.erase(captures.begin()+current_capture);
         sauve();
-    }
 
+        int n = captures.size();
+        if ( n == 0 )           current_capture  = -1;
+        else
+        {
+            current_capture = ++current_capture % n;
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

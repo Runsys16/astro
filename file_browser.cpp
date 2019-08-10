@@ -120,8 +120,8 @@ FileBrowser::FileBrowser()
 
     pW              = new PanelWindow();
 	panelDirName    = new PanelText( (char*)workingDir.c_str(),		PanelText::NORMAL_FONT, 20, 10 );
-    panelDir        = new PanelSimple();
-    panelFile       = new PanelSimple();
+    panelDir        = new PanelDir(this);
+    panelFile       = new PanelFile(this);
     panelOK         = new PanelButton();
     panelQuit       = new PanelButton();
     panelFilename   = new PanelEditText();
@@ -470,7 +470,7 @@ void FileBrowser::scrollDir( int n )
         int x = childs[i]->getPosX();
         int y = childs[i]->getPosY() + n * DY;
         childs[i]->setPos( x, y );
-        logf( (char*)"Changement %d,%d", x, y );
+        //logf( (char*)"Changement %d,%d", x, y );
     }
 
 }
@@ -500,7 +500,7 @@ void FileBrowser::scrollFile( int n )
         }
         
         childs[i]->setPos( x, y );
-        logf( (char*)"Changement %d,%d", x, y );
+        logf( (char*)"Changement %d (%d, %d)  max=%d", i, x, y, (max*DY) );
     }
 }
 

@@ -80,7 +80,7 @@ $(OBJDIR)alert_box.o: alert_box.cpp alert_box.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)file_browser.o: file_browser.cpp file_browser.h
+$(OBJDIR)file_browser.o: file_browser.cpp file_browser.h panel_dir.h panel_file.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
@@ -108,13 +108,21 @@ $(OBJDIR)captures.o: captures.cpp captures.h stars.h capture.h main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
+$(OBJDIR)panel_dir.o: panel_dir.cpp panel_dir.h main.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+$(OBJDIR)panel_file.o: panel_file.cpp panel_file.h main.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
 
 $(BIN_NAME): $(OBJDIR)main.o $(OBJDIR)v4l2.o $(OBJDIR)control.o $(OBJDIR)timer.o $(OBJDIR)camera.o \
              $(OBJDIR)camera_mgr.o $(OBJDIR)pleiade.o $(OBJDIR)serial.o $(OBJDIR)connexion_mgr.o \
              $(OBJDIR)panel_console_serial.o $(OBJDIR)console.o $(OBJDIR)serveur_mgr.o  $(OBJDIR)capture.o \
              $(OBJDIR)var_mgr.o $(OBJDIR)alert_box.o $(OBJDIR)file_browser.o $(OBJDIR)panel_capture.o \
              $(OBJDIR)stars.o $(OBJDIR)star.o $(OBJDIR)panel_camera.o $(OBJDIR)panel_zoom.o \
-             $(OBJDIR)captures.o
+             $(OBJDIR)captures.o $(OBJDIR)panel_dir.o $(OBJDIR)panel_file.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 
