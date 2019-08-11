@@ -20,6 +20,7 @@
 #include "alert_box.h"
 #include "file_browser.h"
 #include "captures.h"
+#include "bluetooth.h"
 //#include "star.h"
 
 //#define DEBUG 1
@@ -1868,6 +1869,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	}
 	    break;
     
+    case 'b':
+        {
+        BluetoothManager::getInstance().start();
+        }
+        break;
+    
+    case 'B':
+        {
+        BluetoothManager::getInstance().disconnect();
+        }
+        break;
+
 	case 't':
 		{;
     		fTimeCorrection *= 0.9f;
@@ -3359,6 +3372,7 @@ void charge_var()
 //--------------------------------------------------------------------------------------------------------------------
 void exit_handler()
 {
+    BluetoothManager::getInstance().disconnect();
     Serveur_mgr::getInstance().close_all();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3458,7 +3472,7 @@ int main(int argc, char **argv)
     WindowsManager::getInstance().loadResourceImage( "images/file.png" );
     WindowsManager::getInstance().loadResourceImage( "images/dir.png" );
     FileBrowser::getInstance();
-
+    BluetoothManager::getInstance();
     WindowsManager::genereMipMap( false );
     
     compute_matrix();
