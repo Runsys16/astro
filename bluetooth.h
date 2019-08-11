@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
@@ -35,16 +36,23 @@ public:
     void                    start();
     void                    scan();
     void                    connect_hc05();
-    inline void             disconnect()            { bCancel = true; }
+    void                    th_read_hc05();
+    void                    th_write_hc05();
+    void                    write_hc05(string);
+    void                    disconnect_hc05();
+    inline void             disconnect()        { disconnect_hc05(); }
 private:
     thread                  th_scan;
-    thread                  th_connect;
+    thread                  th_write;
+    thread                  th_read;
     bool                    bStart;
     
     bool                    bCancel;
     bool                    bConnect;
     bool                    bScan;
     bool                    bStopScan;
+    
+    int                     sock;
     
 SINGLETON_END()
 

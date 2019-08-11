@@ -11,6 +11,7 @@ BluetoothManager::BluetoothManager()
     bStopScan = false;
     bCancel = false;
     bConnect = false;
+    sock = -1;
     start();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -36,19 +37,20 @@ void BluetoothManager::scan()
     
     inquiry_info *ii = NULL;
     int max_rsp, num_rsp;
-    int dev_id, sock, len, flags;
+    int dev_id, len, flags;
     int i;
     char addr[19] = { 0 };
     char name[248] = { 0 };
     bStopScan = false;
     bScan = true;
+    int sock_scan;
     
     while( !bStopScan )
     {
 
         dev_id = hci_get_route(NULL);
-        sock = hci_open_dev( dev_id );
-        if (dev_id < 0 || sock < 0) {
+        sock_scan = hci_open_dev( dev_id );
+        if (dev_id < 0 || sock_scan < 0) {
             perror("opening socket");
             exit(1);
         }
@@ -61,34 +63,43 @@ void BluetoothManager::scan()
         num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
         if( num_rsp < 0 ) perror("hci_inquiry");
 
+        //logf( (char*)"BluetoothManager::scan() ..." );
         for (i = 0; i < num_rsp; i++) {
             ba2str(&(ii+i)->bdaddr, addr);
             memset(name, 0, sizeof(name));
-            if (hci_read_remote_name(sock, &(ii+i)->bdaddr, sizeof(name), 
-                name, 0) < 0)
-            strcpy(name, "[unknown]");
-            logf( (char*)"   BluetoothManager::scan  %s  %s\n", addr, name);
+            if (hci_read_remote_name(sock_scan, &(ii+i)->bdaddr, sizeof(name), name, 0) < 0)       strcpy(name, "[unknown]");
+            
+            //logf( (char*)"   BluetoothManager::scan  %s  %s\n", addr, name);
             string sName = string(name);
             
             if ( sName.find("DSD TECH HC-05") != string::npos )
-            {
+            {   
+                //*
                 if ( bConnect == false )
                 {
                     bConnect = true;
-                    th_connect = thread(&BluetoothManager::connect_hc05, this);
-                    th_connect.detach();
+                    //bConnect = true;
+                    logf( (char*)"BluetoothManager::scan() lancement de la connexion BT..." );
+                    connect_hc05();
+
+                    th_read = thread(&BluetoothManager::th_read_hc05, this);
+                    th_read.detach();
+                    th_write = thread(&BluetoothManager::th_write_hc05, this);
+                    th_write.detach();
+
                 }
+                //*/
             }
             
         }
 
 
         free( ii );
-        close( sock );
+        close( sock_scan );
 
         sleep(2);
         
-        logf( (char*)"Fin du scan ..." );
+        //logf( (char*)"Fin du scan ..." );
         bStart = false;
     }
     bScan = false;
@@ -101,12 +112,13 @@ void BluetoothManager::connect_hc05()
     logf( (char*)"BluetoothManager::connect_hc05()" );
     
     struct sockaddr_rc addr;
-    int s, status;
+    int status;
+    
     char dest[18] = "00:14:03:06:63:02";
 
     // allocate a socket
-    s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-
+    sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    //fcntl(sock, F_SETFL, O_NONBLOCK);
     // set the connection parameters (who to connect to)
     addr.rc_family = AF_BLUETOOTH;
     addr.rc_channel = (uint8_t) 1;
@@ -114,27 +126,100 @@ void BluetoothManager::connect_hc05()
 
     // connect to server
     logf( (char*)"  BT: connexion ..." );
-    status = connect( s, (struct sockaddr *)&addr, sizeof(addr) );
+    status = connect( sock, (struct sockaddr *)&addr, sizeof(addr) );
 
-    logf( (char*)"  BT: envoi du message ..." );
-    // send a message
-    int n = 0;
-    char mess[255];
-    while( !bCancel ) {
-        sprintf( mess, "astropilot  %d.... !\n", n++ );
-        //logf( (char*)"  BT: Envoi de %s", (char*)mess );
-        status = write( s, mess, strlen(mess) );
-        sleep( 2 );
+    if( status < 0 ) 
+    {
+        bCancel = true;
+        logf( (char*)"[Erreur] connexion Bluetooth" );
     }
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::th_read_hc05()
+{
+    logf( (char*)"BluetoothManager::th_read_hc05()" );
+
     bCancel = false;
-    if( status < 0 ) perror("uh oh");
+    int n = 0;
+    char mess[255];
+    int bytes_read;
+    
+    
+    while( !bCancel ) {
 
-    close(s);
+        memset(mess,0,sizeof(mess));
 
-    logf( (char*)"  BT: deconnexion" );
+        //bytes_read = recv(sock, mess, sizeof(mess), 0) ;
+        bytes_read = read(sock, mess, sizeof(mess)) ;
+
+        if(bytes_read <= 0)
+        {
+            logf( (char*)"[Erreur] Lecture Bluetooth" );
+            break;
+        }
+        
+        //logf( (char*)"reception : %s", (char*)mess ); 
+    }
+    logf( (char*)"BluetoothManager::th_read_hc05() fin" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::th_write_hc05()
+{
+    logf( (char*)"BluetoothManager::th_write_hc05()" );
+
+    bCancel = false;
+    int n = 0, status;
+    char mess[255];
+    while( !bCancel ) {
+        sleep( 2 );
+        sprintf( mess, "astropilot  %d.... !\n", n++ );
+        string str = string(mess);
+
+        write_hc05( str );
+    }
+    logf( (char*)"BluetoothManager::th_write_hc05() fin" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::write_hc05(string str)
+{
+    int status;
+    
+    status = write( sock, str.c_str(), str.size() );
+    //logf( (char*)"  BT: Envoi de %s", (char*)str.c_str() );
+
+    if( status < 0 ) 
+    {
+        bCancel = true;
+        logf( (char*)"[Erreur] ecriture Bluetooth" );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::disconnect_hc05()
+{
+    logf( (char*)"BluetoothManager::disconnect_hc05()" );
+    bCancel = true;
+    sleep(1);
+    close(sock);
+    
+
+    //th_read.join();
+    //th_write.join();
+
+
+    //logf( (char*)"  BT: deconnexion" );
 
     bConnect = false;
+    sleep(1);
+    bCancel = false;
 
 }
 
