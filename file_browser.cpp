@@ -14,70 +14,6 @@ bool fct_tri(string i, string j)
 {
     return (i.compare(j) < 0);
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void cb_dir_click_left( int x, int y )
-{
-    //logf( (char*)"Click (%d,%d)", x, y );
-    FileBrowser& fb = FileBrowser::getInstance();
-
-    int n = y/DY;
-    
-    if ( n >= fb.getDirNames().size() )
-    {
-        logf( (char*)"[warning]n'existe pas (%d,%d)", x, y );
-    }
-
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void cb_dir_release_left( int x, int y )
-{
-    //logf( (char*)"Click (%d,%d)", x, y );
-    FileBrowser& fb = FileBrowser::getInstance();
-    
-    int n = y/DY;
-
-    //fb.isInsideDir(x, y);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void cb_file_release_left( int x, int y )
-{
-    //logf( (char*)"Click (%d,%d)", x, y );
-    FileBrowser& fb = FileBrowser::getInstance();
-    
-    fb.isInsideFile(x, y);
-}
-*/
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void cb_ok_release_left( int x, int y )
-{
-    //logf( (char*)"Nouveau repertoire d'image : " );
-    
-    FileBrowser& fb = FileBrowser::getInstance();
-    
-    string s = fb.getWorkingDir();
-    //fb.setCurrentDir( s );
-    
-    logf( (char*)"  %s", (char*)s.c_str() );
-    setCurrentDirectory( s );
-    
-    fb.cache();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void cb_quit_release_left( int x, int y )
-{
-    FileBrowser::getInstance().cache();
-}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -124,8 +60,8 @@ FileBrowser::FileBrowser()
 	panelDirName    = new PanelText( (char*)workingDir.c_str(),		PanelText::NORMAL_FONT, 20, 10 );
     panelDir        = new PanelDir(this);
     panelFile       = new PanelFile(this);
-    panelOK         = new PanelButton();
-    panelQuit       = new PanelButton();
+    panelOK         = new ButtonOK(this);
+    panelQuit       = new ButtonQUIT(this);
     panelFilename   = new PanelEditText();
     
     pW->setDisplayGL(displayGLnuit_cb);
@@ -173,12 +109,6 @@ FileBrowser::FileBrowser()
     panelQuit->setDown( (char*)"images/quit_over.tga" );
     panelQuit->setOver( (char*)"images/quit_down.tga" );
 
-    //panelDir->setClickLeft( (click_left_cb_t) &cb_dir_click_left );
-    //panelDir->setReleaseLeft( (click_left_cb_t) &cb_dir_release_left );
-    //panelFile->setReleaseLeft( (click_left_cb_t) &cb_file_release_left );
-    
-    panelQuit->setReleaseLeft( (release_left_cb_t) &cb_quit_release_left );
-    panelOK->setReleaseLeft( (release_left_cb_t) &cb_ok_release_left );
 
     explore_dir();
     
@@ -421,7 +351,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
 	case 13:
 	    {
             logf( (char*)"ENTRE" );
-            cb_ok_release_left(0,0);
+            //cb_ok_release_left(0,0);
 	    }
 	    break;
 
@@ -505,6 +435,48 @@ void FileBrowser::scrollFile( int n )
         logf( (char*)"Changement %d (%d, %d)  max=%d", i, x, y, (max*DY) );
     }
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Class ButtonOK
+//
+//--------------------------------------------------------------------------------------------------------------------
+ButtonOK::ButtonOK( FileBrowser* p )
+{
+    pFB = p;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void ButtonOK::releaseLeft( int xm, int ym )
+{
+    logf( (char*)"Nouveau repertoire d'image : " );
+    
+    string s = pFB->getWorkingDir();
+    logf( (char*)"  %s", (char*)s.c_str() );
+    setCurrentDirectory( s );
+    
+    pFB->cache();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Class ButtonQUIT
+//
+//--------------------------------------------------------------------------------------------------------------------
+ButtonQUIT::ButtonQUIT( FileBrowser* p )
+{
+    pFB = p;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void ButtonQUIT::releaseLeft( int xm, int ym )
+{
+    pFB->cache();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+
 
 
 
