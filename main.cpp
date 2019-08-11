@@ -1605,10 +1605,10 @@ static void idleGL(void)
 	}
     //------------------------------------------------------
     //------------------------------------------------------
-    WindowsManager::getInstance().onTop(panelStatus);
     PanelConsoleSerial::getInstance().idleGL();
     WindowsManager::getInstance().idleGL( elapsedTime );
     
+    onTop();    
 
     //Camera_mgr::getInstance().idleGL();
 	glutPostRedisplay();
@@ -2311,6 +2311,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	}
 	
 	//Camera_mgr::getInstance().keyboard( key );
+    onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2318,6 +2319,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 	WindowsManager::getInstance().keyboardUpFunc( key, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+    onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2368,7 +2370,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         var.set("bPanelStdOut", bPanelStdOut);
         panelStdOutW->setVisible(bPanelStdOut);
         if ( bPanelStdOut )       WindowsManager::getInstance().onTop(panelStdOutW);
-        log( (char*)"Toggle panelStdOut !!!" );
+        //log( (char*)"Toggle panelStdOut !!!" );
         }
         break;
     case GLUT_KEY_F6:
@@ -2410,6 +2412,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 
 	WindowsManager::getInstance().keyboardSpecialFunc( key, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+    onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2417,6 +2420,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 static void glutSpecialUpFunc(int key, int x, int y)	{
 	WindowsManager::getInstance().keyboardSpecialUpFunc( key, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+    onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2523,6 +2527,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	} 
 
     Camera_mgr::getInstance().onBottom();
+    onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2532,6 +2537,7 @@ static void glutMotionFunc(int x, int y)	{
     mouse.y = y;
 	WindowsManager::getInstance().motionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+    onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2541,6 +2547,16 @@ static void glutPassiveMotionFunc(int x, int y)	{
     mouse.y = y;
 	WindowsManager::getInstance().passiveMotionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+    onTop();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void onTop()	
+{
+    WindowsManager& wm = WindowsManager::getInstance();
+    wm.onTop(panelStdOutW);
+    wm.onTop(panelStatus);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

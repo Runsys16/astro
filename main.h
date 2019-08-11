@@ -167,6 +167,7 @@ static void         glutMouseFunc(int button, int state, int x, int y);
 static void         glutMotionFunc(int x, int y);
 static void         glutPassiveMotionFunc(int x, int y);
 
+void                onTop();
 void                resizeHelp  (int width, int height);
 void                resizeControl(int width, int height);
 void                resizeCourbe(int width, int height);
