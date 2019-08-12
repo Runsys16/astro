@@ -11,6 +11,8 @@ BluetoothManager::BluetoothManager()
     bStopScan = false;
     bCancel = false;
     bConnect = false;
+    bPrintErreurDevice = false;
+    bPrintErreurSocket = false;
     sock = -1;
     start();
 }
@@ -49,11 +51,28 @@ void BluetoothManager::scan()
     {
 
         dev_id = hci_get_route(NULL);
-        sock_scan = hci_open_dev( dev_id );
-        if (dev_id < 0 || sock_scan < 0) {
-            perror("opening socket");
-            exit(1);
+        if (dev_id < 0) {
+            //perror("opening socket");
+            if (!bPrintErreurDevice)
+                logf( (char*)"[Erreur] BluetoothManager::scan()  opening device ..." );
+                
+            sleep(10);
+            bPrintErreurDevice = true;
+            continue;
         }
+        bPrintErreurDevice = false;
+        
+        
+        sock_scan = hci_open_dev( dev_id );
+        if (sock_scan < 0) {
+            //perror("opening socket");
+            if (!bPrintErreurSocket)
+                logf( (char*)"[Erreur] BluetoothManager::scan()  opening socket() ..." );
+            bPrintErreurSocket = true;
+            sleep(10);
+            continue;
+        }
+        bPrintErreurSocket = false;
 
         len  = 8;
         max_rsp = 255;
@@ -205,10 +224,13 @@ void BluetoothManager::write_hc05(string str)
 //--------------------------------------------------------------------------------------------------------------------
 void BluetoothManager::disconnect_hc05()
 {
+    if ( sock == -1 )       return;
+    
     logf( (char*)"BluetoothManager::disconnect_hc05()" );
     bCancel = true;
     sleep(1);
     close(sock);
+    sock = -1;
     
 
     //th_read.join();

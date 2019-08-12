@@ -52,6 +52,9 @@ private:
     bool                    bScan;
     bool                    bStopScan;
     
+    bool                    bPrintErreurDevice;
+    bool                    bPrintErreurSocket;
+    
     int                     sock;
     
 SINGLETON_END()
