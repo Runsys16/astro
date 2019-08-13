@@ -303,7 +303,8 @@ void Capture::fullscreen()
     int dx = WindowsManager::getInstance().getWidth();
     int dy = WindowsManager::getInstance().getHeight();
 
-    resize( 0, 0, dx, dy);
+    //resize( 0, 0, dx, dy);
+    pW->setPosAndSize(0, 0, dx, dy);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

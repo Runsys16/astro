@@ -2326,6 +2326,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         alertBox( "TEST ALERT BOX" );
         }
         break;
+    case 'w' :
+        {
+        BluetoothManager::getInstance().centre_joystick();
+        }
+        break;
     default:
         {
         logf((char*)"key: %d", key);
@@ -2992,6 +2997,13 @@ void changeJoy( bool b )
         //inverse_texture( pButtonAsc, b, "asc" );
         bJoy = b;
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool getJoy()
+{
+    return bJoy;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

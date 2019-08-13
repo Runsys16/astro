@@ -14,6 +14,10 @@ BluetoothManager::BluetoothManager()
     bPrintErreurDevice = false;
     bPrintErreurSocket = false;
     sock = -1;
+    FCT = FCT_CENTRAGE;
+    nb_cent = -1;
+    cent = 0;
+    bLogArduino = false;
     start();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -27,6 +31,70 @@ void BluetoothManager::start()
         th_scan.detach();
         bStart = true;
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::fct_switch()
+{
+    switch( FCT )
+    {
+        case FCT_CENTRAGE:      { fct_centrage(); break; }
+        case FCT_COMMAND:       { fct_command(); break; }
+        case FCT_NOP:           { fct_nop(); break; }
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::fct_centrage()
+{
+    nb_cent++;
+    if ( nb_cent == 0 )             return;
+
+    cent += x + y;
+    logf( (char*)"Centrage joystick : %d-%d (%d, %d)", nb_cent, cent, x, y );
+
+    if ( nb_cent >= 10 )
+    {
+        cent = (float)cent / (2.0*(float)(nb_cent));
+        FCT = FCT_NOP;
+        logf( (char*)"Centrage joystick : %d-%d", nb_cent, cent );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::fct_command()
+{
+    char cmd[255];
+    int decal = cent - 512;
+    int X = x - decal;
+    int Y = y - decal;
+    if (X<0)        X = 0;
+    if (Y<0)        Y = 0;
+    sprintf( cmd, "Jx%d;Jy%d", X, Y );
+
+    Serial::getInstance().write_string(cmd);
+
+    if ( bLogArduino )      logf( (char*)"Envoi de : \"%s\"", cmd );
+
+    nbMess = 0;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::fct_nop()
+{
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void BluetoothManager::centre_joystick()
+{
+    cent = 0;
+    nb_cent = -1;
+    FCT = FCT_CENTRAGE;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -161,11 +229,19 @@ void BluetoothManager::th_read_hc05()
 {
     logf( (char*)"BluetoothManager::th_read_hc05()" );
 
+    FCT = FCT_CENTRAGE;
+    nb_cent = -1;
+    cent = 0;
+    x = -1;
+    y = -1;
+    b = -1;
+
     bCancel = false;
     int bytes_read;
     n = 0;
     nbMess = 0;
-    cent = 640;
+    cent = 0;
+    bool bPremiereTrame = true;
     
     while( !bCancel ) {
 
@@ -194,22 +270,39 @@ void BluetoothManager::th_read_hc05()
                 else if ( mess[0] == 'b' )
                 {
                     sscanf( mess, "b:%d", &b );
+                    
+                    if ( bPremiereTrame )
+                    {
+                        bPremiereTrame = false;
+                        old_b = b;
+                        continue;
+                    }
+                    
+                    if ( x == -1 || y == -1 || b == -1 )     continue;
+
+                    if( b == 1 && old_b == 0 )  {
+                        if ( getJoy() )
+                        {
+                            sleep(1);
+                            changeJoy( false );
+                            FCT = FCT_NOP;
+                            logf( (char*)"desactive joystick..." );
+                            char cmd[255];
+                            sprintf( cmd, "j" );
+                            Serial::getInstance().write_string(cmd);
+                        }
+                        else
+                        {
+                            changeJoy( true );
+                            FCT = FCT_COMMAND;
+                            logf( (char*)"active joystick..." );
+                        }
+                    }
+                    old_b = b;
+                    
                     change_joy(x, y);
+                    fct_switch();
 
-                    char cmd[255];
-                    int decal = cent - 512;
-                    int X = x - decal;
-                    int Y = y - decal;
-                    if (X<0)        X = 0;
-                    if (Y<0)        Y = 0;
-                    sprintf( cmd, "Jx%d;Jy%d", X, Y );
-
-                    //if ( nbMess++ >2 )
-                    //{
-                        Serial::getInstance().write_string(cmd);
-                        //logf( (char*)"Envoi de : \"%s\"", cmd );
-                        nbMess = 0;
-                    //}
                 }
                 n = 0;
                 continue;

@@ -189,6 +189,7 @@ void                changeDec(bool);
 void                changeAsc(bool);
 void                changeSui(bool);
 void                changeJoy(bool);
+bool                getJoy();
 void                changeRetourPos(bool);
 
 void                log( char *);
