@@ -53,6 +53,9 @@ private:
     bool                    bScan;
     bool                    bStopScan;
     
+    bool                    bPrintErreurDevice;
+    bool                    bPrintErreurSocket;
+    
     int                     sock;
     int                     x, y, n, b;
     int                     cent;
