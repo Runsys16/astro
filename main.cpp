@@ -57,6 +57,7 @@ PanelText*          G;
 PanelText*          B;
 PanelText*          L;
 PanelText*          SP;
+PanelText*          pJoyXY;
 PanelText*          pArduino;
 PanelText*          pStellarium;
 PanelText*          pDeplacement;
@@ -1079,6 +1080,15 @@ void change_arduino(bool b)
 {
     if ( b )    pArduino->changeText((char*)"Arduino");
     else        pArduino->changeText((char*)"----");
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void change_joy(int x, int y)
+{
+    static char sJoyXY[255];
+    sprintf( sJoyXY, "Joy(%d, %d)", x, y);
+    pJoyXY->changeText((char*)sJoyXY );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2831,6 +2841,9 @@ static void CreateStatus()	{
     logf((char*)"** CreateStatus()  panelSatuts  %d", width);
     pArduino = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-300, 2 );
 	panelStatus->add( pArduino );
+
+    pJoyXY = new PanelText( (char*)"Joy(---, ---)",		PanelText::NORMAL_FONT, width-550, 2 );
+	panelStatus->add( pJoyXY );
 
     pStellarium = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-230, 2 );
 	panelStatus->add( pStellarium );

@@ -20,6 +20,7 @@
 #include <thread>
 
 #include "main.h"
+#include "serial.h"
 
 using namespace std;
 
@@ -53,6 +54,12 @@ private:
     bool                    bStopScan;
     
     int                     sock;
+    int                     x, y, n, b;
+    int                     cent;
+    int                     nbMess;
+    //static int n = 0;
+    char                    mess[255];
+    char                    buff[255];
     
 SINGLETON_END()
 

@@ -114,7 +114,7 @@ void BluetoothManager::connect_hc05()
     struct sockaddr_rc addr;
     int status;
     
-    char dest[18] = "00:14:03:06:63:02";
+    char dest[18] = "00:14:03:06:63:20";
 
     // allocate a socket
     sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -143,25 +143,61 @@ void BluetoothManager::th_read_hc05()
     logf( (char*)"BluetoothManager::th_read_hc05()" );
 
     bCancel = false;
-    int n = 0;
-    char mess[255];
     int bytes_read;
-    
+    n = 0;
+    nbMess = 0;
+    cent = 640;
     
     while( !bCancel ) {
 
-        memset(mess,0,sizeof(mess));
+        memset(buff,0,sizeof(buff));
 
-        //bytes_read = recv(sock, mess, sizeof(mess), 0) ;
-        bytes_read = read(sock, mess, sizeof(mess)) ;
+        //bytes_read = recv(sock, buff, sizeof(buff), 0) ;
+        bytes_read = read(sock, buff, sizeof(buff)) ;
 
         if(bytes_read <= 0)
         {
             logf( (char*)"[Erreur] Lecture Bluetooth" );
             break;
         }
+        for( int i=0; i<bytes_read; i++ )
+        {
+            if ( buff[i] == '\r' )      continue;
+            
+            if ( buff[i] == '\n' )
+            {
+                mess[n++] = 0;
+                //logf( (char*)"reception : %s", (char*)mess ); 
+                //printf( (char*)"reception : %s", (char*)mess ); 
+
+                if      ( mess[0] == 'x' )       sscanf( mess, "x:%d", &x );
+                else if ( mess[0] == 'y' )       sscanf( mess, "y:%d", &y );
+                else if ( mess[0] == 'b' )
+                {
+                    sscanf( mess, "b:%d", &b );
+                    change_joy(x, y);
+
+                    char cmd[255];
+                    int decal = cent - 512;
+                    int X = x - decal;
+                    int Y = y - decal;
+                    if (X<0)        X = 0;
+                    if (Y<0)        Y = 0;
+                    sprintf( cmd, "Jx%d;Jy%d", X, Y );
+
+                    //if ( nbMess++ >2 )
+                    //{
+                        Serial::getInstance().write_string(cmd);
+                        //logf( (char*)"Envoi de : \"%s\"", cmd );
+                        nbMess = 0;
+                    //}
+                }
+                n = 0;
+                continue;
+            }
+            mess[n++] = buff[i];
+        }
         
-        //logf( (char*)"reception : %s", (char*)mess ); 
     }
     logf( (char*)"BluetoothManager::th_read_hc05() fin" );
 }
