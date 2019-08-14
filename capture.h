@@ -40,11 +40,13 @@ public :
     void                        resize(int,int,int,int);
     void                        fullscreen();
 
-
     void                        onTop();
     void                        addStar(int,int);
 
     bool                        isMouseOver(int, int);
+    
+    void                        show();
+    void                        hide();
     
     virtual void                update();
     

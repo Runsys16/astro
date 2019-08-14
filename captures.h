@@ -35,6 +35,8 @@ public:
     void                        position(double, double);
     void                        setCurrent(Capture*);
     
+    void                        showIcones();
+    void                        hideIcones();
 private:
     vector<Capture*>            captures;
     int                         current_capture;

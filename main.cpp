@@ -108,6 +108,7 @@ bool                bAutorisationSuivi = false;
 bool                bNuit   = false;
 bool                bDebug  = false;
 bool                bQuit;
+bool                bAffIconeCapture = true;;
 
 
 bool                bPanelControl  = true;
@@ -1789,32 +1790,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 6:
 		{
             logf( (char*)"case 'ctrl+F'" );
-            /*
-            if ( isMouseOverCapture()  )
-            {
-                int n = current_capture;
-                if ( n != -1 )
-                {
-                    captures[n]->fullscreen();
-                }
-            }
-            */
             Captures::getInstance().fullscreen();
+            Captures::getInstance().hideIcones();
         }
         break;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     // touche tab
@@ -1843,6 +1822,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	}
 
             logf( (char*)"-------------- Touche TAB" );
+            Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_plus(false);
         }
 		break;
@@ -1868,6 +1848,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 178:
     //case 'q':
     	{
+            Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_plus(true);
     	}
 	    break;
@@ -1875,6 +1856,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 126:
     //case 'Q':
     	{
+            Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_moins(true);
     	}
 	    break;
@@ -2297,6 +2279,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         if ( bCorrection )      pAsservi->changeText((char*)"Asservissemnent");
         else                    pAsservi->changeText((char*)"");
+        }
+        break;
+    case 'n':
+        {
+        bAffIconeCapture = !bAffIconeCapture;
+        if (bAffIconeCapture)       Captures::getInstance().showIcones();
+        else                        Captures::getInstance().hideIcones();
         }
         break;
     case 'N':
