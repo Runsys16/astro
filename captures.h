@@ -21,8 +21,12 @@ public:
     void                        update();
     void                        rotate_capture_plus(bool);
     void                        rotate_capture_moins(bool);
+
+    void                        resize_icone( Capture*, int, int, int, int );
+    void                        resize_normal( Capture*, int, int );
+    void                        resize_all();
+    
     void                        glutSpecialFunc(int key, int x, int y);
-    void                        fullscreen();
     void                        ajoute();
     void                        ajoute(string);
     void                        supprime();
@@ -35,12 +39,17 @@ public:
     void                        position(double, double);
     void                        setCurrent(Capture*);
     
+    void                        fullscreen();
     void                        showIcones();
     void                        hideIcones();
+    void                        switchAffIcones();
 private:
     vector<Capture*>            captures;
     int                         current_capture;
     bool                        bIcones;
+    bool                        bShowIcones;
+    bool                        bFullPreview;
+    bool                        bShowPreview;
 
 SINGLETON_END()
 

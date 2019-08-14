@@ -1791,7 +1791,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		{
             logf( (char*)"case 'ctrl+F'" );
             Captures::getInstance().fullscreen();
-            Captures::getInstance().hideIcones();
+            //Captures::getInstance().hideIcones();
         }
         break;
     
@@ -1812,6 +1812,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	else if (modifier == GLUT_ACTIVE_SHIFT)
         	{
 	            logf( (char*)"-------------- Touche SHIFT+TAB" );
+                //Captures::getInstance().showIcones();
     	        Captures::getInstance().rotate_capture_moins(false);
                 break;
         	}
@@ -1822,7 +1823,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	}
 
             logf( (char*)"-------------- Touche TAB" );
-            Captures::getInstance().showIcones();
+            //Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_plus(false);
         }
 		break;
@@ -1848,7 +1849,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 178:
     //case 'q':
     	{
-            Captures::getInstance().showIcones();
+            //Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_plus(true);
     	}
 	    break;
@@ -1856,7 +1857,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 126:
     //case 'Q':
     	{
-            Captures::getInstance().showIcones();
+           // Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_moins(true);
     	}
 	    break;
@@ -2284,8 +2285,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'n':
         {
         bAffIconeCapture = !bAffIconeCapture;
-        if (bAffIconeCapture)       Captures::getInstance().showIcones();
-        else                        Captures::getInstance().hideIcones();
+        Captures::getInstance().switchAffIcones();
         }
         break;
     case 'N':

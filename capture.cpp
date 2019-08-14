@@ -61,7 +61,8 @@ Capture::Capture()
     //logf( (char*)"   basename : %s", (char*)basename.c_str() );
     
     create_preview();
-
+    bIcone = false;
+    bFullScreen = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -74,6 +75,8 @@ Capture::Capture(string dirname, string name)
     filename = dirname + name;
     dirname = dirname;
     basename = name;
+    bIcone = false;
+    bFullScreen = false;
 
     logf( (char*)"image : %s", filename.c_str() );
     create_preview();
@@ -305,6 +308,8 @@ void Capture::fullscreen()
 
     //resize( 0, 0, dx, dy);
     pW->setPosAndSize(0, 0, dx, dy);
+    bIcone = false;
+    bFullScreen = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
