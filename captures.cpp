@@ -83,6 +83,7 @@ void Captures::rotate_capture_moins(bool b)
         if ( current_capture == -1 )            current_capture = n-1;
     }
     
+    if ( bIcones )      { bShowIcones = true; bFullPreview = false; bShowPreview = false; }
     resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -113,6 +114,7 @@ void Captures::rotate_capture_plus(bool b)
         current_capture = ++current_capture % n;
     }
     
+    if ( bIcones )      { bShowIcones = true; bFullPreview = false; bShowPreview = false; }
     resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -394,7 +396,8 @@ void Captures::onTop(Capture* p)
     
     current_capture = i;
     captures[current_capture]->setFullScreen(bFull);
-
+    bShowPreview = true;
+    if ( bIcones )          bIcones = false;
     resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------

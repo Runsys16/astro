@@ -64,6 +64,7 @@ FileBrowser::FileBrowser()
     panelQuit       = new ButtonQUIT(this);
     panelFilename   = new PanelEditText();
     
+    panelFilename->changeText( "" );
     pW->setDisplayGL(displayGLnuit_cb);
     //WindowsManager::getInstance().call_back_keyboard( panelFilename );
 
@@ -264,7 +265,14 @@ bool FileBrowser::isInsideFile( int x, int y )
     }
     //logf( (char*)"OK %s ", (char*)tFileNames[n].c_str() );
     
-    change_file( workingDir, tFileNames[n] );
+    if ( panelOK->getCallback() == NULL )   change_file( workingDir, tFileNames[n] );
+    else                                    
+    {
+        //panelOK->getCallback()->callback( true, (char*)"OK" );
+        panelFilename->changeText( string(tFileNames[n]) );
+    }
+
+    //change_file( workingDir, tFileNames[n] );
     WindowsManager::getInstance().onTop(pW);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -437,12 +445,35 @@ void FileBrowser::scrollFile( int n )
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::setCallBackOK(ButtonCallBack* p)
+{
+    panelOK->setCallBack(p);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::setCallBackQUIT(ButtonCallBack* p)
+{
+    panelQuit->setCallBack(p);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::setCallBack(ButtonCallBack* p)
+{
+    panelOK->setCallBack(p);
+    panelQuit->setCallBack(p);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
 // Class ButtonOK
 //
 //--------------------------------------------------------------------------------------------------------------------
 ButtonOK::ButtonOK( FileBrowser* p )
 {
     pFB = p;
+    pCallBack = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -451,9 +482,14 @@ void ButtonOK::releaseLeft( int xm, int ym )
 {
     logf( (char*)"Nouveau repertoire d'image : " );
     
-    string s = pFB->getWorkingDir();
+    string s = pFB->getWorkingDir() + pFB->getFilename();
     logf( (char*)"  %s", (char*)s.c_str() );
-    setCurrentDirectory( s );
+    
+    if ( pCallBack == NULL )                logf( (char*)"callback null " );
+    else                                    logf( (char*)"callback NON null " );
+
+    if ( pCallBack == NULL )                setCurrentDirectory( s );
+    else                                    pCallBack->callback( true, (char*)s.c_str() );
     
     pFB->cache();
 }
@@ -471,6 +507,8 @@ ButtonQUIT::ButtonQUIT( FileBrowser* p )
 //--------------------------------------------------------------------------------------------------------------------
 void ButtonQUIT::releaseLeft( int xm, int ym )
 {
+    if ( pCallBack != NULL )                pCallBack->callback( false, (char*)"" );
+
     pFB->cache();
 }
 //--------------------------------------------------------------------------------------------------------------------

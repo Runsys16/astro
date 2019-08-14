@@ -28,8 +28,10 @@
 
 using namespace std;
 
+//#include "file_browser.h"
 #include "control.h"
 #include "main.h"
+#include "button_callback.h"
 
 
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
@@ -83,7 +85,7 @@ class Control;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Device_cam
+class Device_cam : public ButtonCallBack
 {
 private:
     string                  dev_name;
@@ -121,6 +123,7 @@ private:
     bool                    bEnregistre;
     bool                    bCapture;
     bool                    bHaveNew;
+    string                  filenameRec;
 
 protected:
     rb_t                    readBgr;
@@ -161,6 +164,10 @@ public :
     
     Control*                getControl( string s );
     Control*                getControl( int id );
+
+    //inline  void            enregistre()            { bEnregistre = true; }
+    void                    enregistre(); //            { bEnregistre = true; }
+
     
     inline  char*           getErr()                { return strErr; }
     inline  bool            isErr()                 { return fd == -1; }
@@ -177,7 +184,6 @@ public :
 
     inline  void            setName( char * s)      { name = s; }
     inline  char*           getName()               { return (char*)name.c_str(); }
-    inline  void            enregistre()            { bEnregistre = true; }
 
     inline int              getWidth()              { return width; }
     inline void             setWidth(int n)         { width = n; }
@@ -187,6 +193,9 @@ public :
     inline void             setSizeChoix()          {  sizeChoix = ++sizeChoix % nSize; }
     inline int              getSizeChoix()          {  return sizeChoix; }
 
+    inline void             setFilenameRec(string s) { filenameRec = s; }
+
+virtual void                callback(bool, char*);
 virtual struct readBackground*      getRB()     {return &readBgr;}
 
 private:

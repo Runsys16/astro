@@ -48,6 +48,7 @@ Device_cam::Device_cam()
     bHaveNew        = false;
     
     name ="";
+    filenameRec = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame";
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -330,13 +331,14 @@ bool fileExists(const std::string& file) {
 void Device_cam::process_image(const void *p, int size)
 {
     if (fd == -1)       return;
+    if ( filenameRec == "" )     return;
 
     char filename[155];
     int nm;
     
     for( nm=0; nm<1000; nm++ )
     {
-        sprintf(filename, "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame-%d.jpg", nm);
+        sprintf(filename, "%s-%d.jpg", (char*)filenameRec.c_str(), nm);
         //logf( (char*)filename );
 
         if ( !fileExists(filename) )        break;
@@ -1272,8 +1274,30 @@ void Device_cam::decompressJpeg() {
 	jpeg_destroy_decompress(&cinfo);
 
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::enregistre()
+{
+    bEnregistre = true;
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::callback(bool b, char* str)
+{
+    logf( (char*)"Device_cam::callback( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
+    if ( b )            bEnregistre = true;
+    callback_enregistre(b, str);
+    
+}
 
 
 
 
+
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

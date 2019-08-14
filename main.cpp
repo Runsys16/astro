@@ -315,6 +315,24 @@ void updatePanelPause(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void callback_enregistre( bool b, char* str)
+{
+    FileBrowser::getInstance().cache();    
+    logf( (char*)"callback_enregistre( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
+    
+    Camera* p = Camera_mgr::getInstance().getCurrent();
+    if ( p )        p->setFilenameRec( string(str) );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void ferme_file_browser()
+{
+    FileBrowser::getInstance().cache();    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void photo()
 {
     string filename = " -o /home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/test";
@@ -1965,6 +1983,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bFileBrowser = FileBrowser::getInstance().getVisible();
         bFileBrowser = !bFileBrowser;
+        FileBrowser::getInstance().setCallBack(NULL);
         
         if ( bFileBrowser )         FileBrowser::getInstance().affiche();
         else                        FileBrowser::getInstance().cache();
@@ -2258,7 +2277,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
-            p->enregistre();
+            FileBrowser::getInstance().setCallBack( p );
+            FileBrowser::getInstance().affiche();
+            //p->enregistre();
     	    logf( (char*)"Enregistre  une photo de la camera courante !!" );
         }
         }
