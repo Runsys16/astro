@@ -195,7 +195,7 @@ public :
 
     inline void             setFilenameRec(string s) { filenameRec = s; }
 
-virtual void                callback(bool, char*);
+virtual void                callback(bool, int, char*);
 virtual struct readBackground*      getRB()     {return &readBgr;}
 
 private:

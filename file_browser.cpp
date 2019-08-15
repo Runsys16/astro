@@ -54,6 +54,8 @@ FileBrowser::FileBrowser()
     workingDir = "/home/rene/programmes/";
     workingDir = "/home/rene/programmes/opengl/";
     workingDir = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2019-06-30/";
+    filtre     = "";
+    
     currentDir = string(workingDir);
 
     pW              = new PanelWindow();
@@ -129,6 +131,7 @@ void FileBrowser::explore_dir()
 
     rep = opendir( (char*)workingDir.c_str() );
     panelDirName->changeText( string(workingDir) );
+    if ( rep==NULL )        return;
 
     int xd, yd, xf, yf;
     xd = xf = 8+16;
@@ -143,7 +146,8 @@ void FileBrowser::explore_dir()
          
         if ( lecture->d_type == 8 )
         {
-            tFileNames.push_back( s );
+            if ( filtre != "" && s.find(filtre)!=string::npos )
+                tFileNames.push_back( s );
         }
         else
         {
@@ -286,11 +290,15 @@ bool FileBrowser::isInsideFile( int x, int y )
     }
     //logf( (char*)"OK %s ", (char*)tFileNames[n].c_str() );
     
-    if ( panelOK->getCallback() == NULL )   change_file( workingDir, tFileNames[n] );
-    else                                    
+    panelFilename->changeText( string(tFileNames[n]) );
+    
+    if ( panelOK->getCallback() == NULL ){
+        change_file( workingDir, tFileNames[n] );
+    }
+    else
     {
-        //panelOK->getCallback()->callback( true, (char*)"OK" );
-        panelFilename->changeText( string(tFileNames[n]) );
+        string s = getWorkingDir() + getFilename();
+        panelOK->getCallback()->callback( true, 0, (char*)s.c_str() );
     }
 
     //change_file( workingDir, tFileNames[n] );
@@ -510,7 +518,7 @@ void ButtonOK::releaseLeft( int xm, int ym )
     else                                    logf( (char*)"callback NON null " );
 
     if ( pCallBack == NULL )                setCurrentDirectory( s );
-    else                                    pCallBack->callback( true, (char*)s.c_str() );
+    else                                    pCallBack->callback( true, 1, (char*)s.c_str() );
     
     pFB->cache();
 }
@@ -528,7 +536,7 @@ ButtonQUIT::ButtonQUIT( FileBrowser* p )
 //--------------------------------------------------------------------------------------------------------------------
 void ButtonQUIT::releaseLeft( int xm, int ym )
 {
-    if ( pCallBack != NULL )                pCallBack->callback( false, (char*)"" );
+    if ( pCallBack != NULL )                pCallBack->callback( false, -1, (char*)"" );
 
     pFB->cache();
 }

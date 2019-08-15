@@ -49,6 +49,7 @@ protected:
     
     string                      workingDir;
     string                      currentDir;
+    string                      filtre;
  
     int                         x, y, dx, dy;
 
@@ -107,7 +108,8 @@ inline bool                     getVisible()                        { return pW-
 inline string                   getFilename()                       { return panelFilename->getText(); }
 inline string                   getCurrentDir()                     { return currentDir; }
 inline string                   getWorkingDir()                     { return workingDir; }
-inline string                   setCurrentDir(string s)             { currentDir = string(s); }
+inline void                     setCurrentDir(string s)             { currentDir = string(s); }
+inline void                     setFiltre(string s)                 { filtre = string(s); }
 
 
 

@@ -11,7 +11,7 @@
 class ButtonCallBack 
 {
 public :
-    virtual     void    callback( bool, char* )       {;}
+    virtual     void    callback( bool, int, char* )       {;}
 };
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -119,7 +119,6 @@ bool                bPanelStdOut   = false;
 bool                bPanelSerial   = false;
 bool                bAfficheVec    = false;
 bool                bMouseDeplace  = false;
-bool                bRestauration  = false;
 bool                bFileBrowser   = false;
 bool                bStellarium    = false;
 bool                bPleiade       = false;
@@ -223,7 +222,14 @@ bool bRet = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-CallbackSauveGuidage cb_guidage;
+string workDirCaptures = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame/";
+string workDirSauvegardes = "/home/rene/.astropilot/";
+string workDirFileBrowser = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/";
+string filenameSauve = "/home/rene/.astropilot/sauvegarde.txt";
+//--------------------------------------------------------------------------------------------------------------------
+CallbackSauveGuidage cb_sguidage;
+CallbackChargeGuidage cb_cguidage;
+CallbackFileBrowser  cb_file_browser;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -273,14 +279,67 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void CallbackSauveGuidage::callback( bool b, char* str)
+void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 {
-    logf( (char*)"CallbackSauveGuidage::callback( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
-    if ( b )     
+    logf( (char*)"CallbackChargeGuidage::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+    if ( bb )     
     {
-        logf( (char*)"Charge %s", (char*)str );
+        logf( (char*)"Charge guidage %s", (char*)str );
         charge_fichier( string(str) );
     }
+    workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+    FileBrowser::getInstance().setFiltre( "" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
+{
+    logf( (char*)"CallbackSauveGuidage::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+    if ( bb )     
+    {
+        if ( ii == 1 )
+        {
+            string s = string(str);
+            if ( s.find( ".guid" ) == string::npos )     s = s + ".guid";
+            filenameSauve = string(s);
+            logf( (char*)"  Sauve guidage %s", (char*)s.c_str() );
+            //charge_fichier( string(str) );
+            workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+            FileBrowser::getInstance().setFiltre( "" );
+            
+            bSauve = true;
+        }
+        else
+        {
+            logf( (char*)"  selection souris %s", (char*)str );
+            workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+        }
+    }
+    else
+    {
+        logf( (char*)"  ABANDON Sauve guidage %s", (char*)str );
+        workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+        bSauve = false;
+    }
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CallbackFileBrowser::callback( bool bb, int ii, char* str)
+{
+    FileBrowser& fb = FileBrowser::getInstance();
+    
+    logf( (char*)"CallbackFileBrowser::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+    if ( bb )     
+    {
+        string f = fb.getFilename();
+        string d = fb.getWorkingDir();
+        logf( (char*)"  charge capture %s %s", (char*)d.c_str(), (char*)f.c_str() );
+        change_file( d, f );
+    }
+    workDirFileBrowser = fb.getWorkingDir();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -837,14 +896,15 @@ void displayResultat_cb(void)
     int  AXE_X = (float)panelCourbe->getDY()/4.0;
     int  AXE_Y   (3.0*(float)panelCourbe->getDY()/4.0);
 
-
+    /*
     if ( bCorrection || bRestauration )
     {
         offset_x = vOrigine.x;
         offset_y = vOrigine.y;
     }
-        offset_x = vOrigine.x;
-        offset_y = vOrigine.y;
+    */
+    offset_x = vOrigine.x;
+    offset_y = vOrigine.y;
 
     glEchelle();
     
@@ -1172,17 +1232,18 @@ void compute_matrix()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void sauve(void)
+void sauve()
 {
-    string filename = "/home/rene/.astropilot/sauvegarde.txt";
-    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filename.c_str() );
+    //string filename = "/home/rene/.astropilot/sauvegarde.txt";
+    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filenameSauve.c_str() );
     
     std::ofstream fichier;
-    fichier.open(filename, std::ios_base::app);
+ 
+    fichier.open(filenameSauve, std::ios_base::app);
 
     if ( !fichier ) 
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filenameSauve.c_str() );
     }
 
     for(int i=0; i<t_vSauve.size(); i++)
@@ -1998,9 +2059,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'f':  // '-'
         {
         bFileBrowser = FileBrowser::getInstance().getVisible();
-        FileBrowser::getInstance().change_dir( "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2019-06-30/" );
+        FileBrowser::getInstance().change_dir( workDirFileBrowser );
         bFileBrowser = !bFileBrowser;
-        FileBrowser::getInstance().setCallBack(NULL);
+        FileBrowser::getInstance().setCallBack( &cb_file_browser );
         
         if ( bFileBrowser )         FileBrowser::getInstance().affiche();
         else                        FileBrowser::getInstance().cache();
@@ -2010,9 +2071,24 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'v':  // '-'
         {
-        bSauve = !bSauve;
-        if ( bSauve )       logf( (char*)"Sauvegarde !!!" );
-        else                logf( (char*)"Arret sauvegarde !!!" );
+        if ( !bSauve ) 
+        {
+            FileBrowser& fb = FileBrowser::getInstance();
+
+            bFileBrowser = fb.getVisible();
+            fb.setFiltre( ".guid" );
+            fb.change_dir( workDirSauvegardes );
+            fb.setCallBack( &cb_sguidage );
+            
+            fb.affiche();
+            
+            logf( (char*)"Sauvegarde !!!" );
+        }
+        else
+        {
+            bSauve = false;
+            logf( (char*)"Arret sauvegarde !!!" );
+        }
         }
         break;
     case 'V':  // '-'
@@ -2295,6 +2371,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         if ( p!=NULL )
         {
             FileBrowser::getInstance().setCallBack( p );
+            FileBrowser::getInstance().change_dir( workDirCaptures );
             FileBrowser::getInstance().affiche();
             //p->enregistre();
     	    logf( (char*)"Enregistre  une photo de la camera courante !!" );
@@ -2343,13 +2420,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'r' :
         {
-        bRestauration = !bRestauration;
-        if ( bRestauration )
-        {
-            FileBrowser::getInstance().setCallBack(&cb_guidage);
-            FileBrowser::getInstance().change_dir( "/home/rene/.astropilot/" );
+            FileBrowser::getInstance().setCallBack(&cb_cguidage);
+            FileBrowser::getInstance().setFiltre( ".guid" );
+            FileBrowser::getInstance().change_dir( workDirSauvegardes );
             FileBrowser::getInstance().affiche();
-        }
         }
         break;
     case 'R' :
