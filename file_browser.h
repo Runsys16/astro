@@ -104,7 +104,9 @@ public :
     void                        setCallBackOK(ButtonCallBack* p);
     void                        setCallBackQUIT(ButtonCallBack* p);
     void                        setCallBack(ButtonCallBack* p);
-
+    void                        setExtra( int );
+    void                        setColor( long );
+    
 inline bool                     getVisible()                        { return pW->getVisible(); }
 
 inline string                   getFilename()                       { return panelFilename->getText(); }
@@ -130,10 +132,12 @@ protected:
     
 public:
     ButtonOK(FileBrowser*);
-    void                setCallBack( ButtonCallBack*p )         { pCallBack = p; }            
-	virtual void		releaseLeft( int, int);
+    void                    setCallBack( ButtonCallBack*p )         { pCallBack = p; }            
+	virtual void		    releaseLeft( int, int);
+    inline  void            setExtra( int ii )                      { pCallBack->setExtra(ii); }
+    inline  int             getExtra()                              { return pCallBack->getExtra(); }
 
-inline ButtonCallBack*  getCallback()   { return pCallBack; }
+    inline ButtonCallBack*  getCallback()                           { return pCallBack; }
 };
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -147,9 +151,11 @@ protected:
 public:
     ButtonQUIT(FileBrowser*);
 
-    void                setCallBack( ButtonCallBack*p )         { pCallBack = p; }            
-	virtual void		releaseLeft( int, int);
-inline ButtonCallBack*  getCallback()   { return pCallBack; }
+    void                    setCallBack( ButtonCallBack*p )         { pCallBack = p; }            
+	virtual void		    releaseLeft( int, int);
+    inline  void            setExtra( int ii )                      { pCallBack->setExtra(ii); }
+    inline  int             getExtra()                              { return pCallBack->getExtra(); }
+    inline ButtonCallBack*  getCallback()                           { return pCallBack; }
 };
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -131,6 +131,11 @@ void PanelCapture::update()
 void PanelCapture::updatePos()
 {
     //PanelSimple::updatePos();
+    if ( pReadBgr == NULL )
+    {
+        PanelSimple::updatePos();
+        return;
+    }
 
     float coef0 = (float)pReadBgr->w / getParent()->getDX();// * ech_user;
     float coef1 = (float)pReadBgr->h / getParent()->getDY();// * ech_user;

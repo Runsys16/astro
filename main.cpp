@@ -344,6 +344,14 @@ void CallbackFileBrowser::callback( bool bb, int ii, char* str)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void callback_enregistre_cam(char* str)
+{
+    logf( (char*)"callback_enregistre_cam( \"%s\" )", (char*)str );
+    FileBrowser::getInstance().cache();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 vector<string> split (string s, string delimiter)
 {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
@@ -2377,6 +2385,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         if ( p!=NULL )
         {
             FileBrowser::getInstance().setCallBack( p );
+            FileBrowser::getInstance().setExtra( 0 );
             FileBrowser::getInstance().change_dir( workDirCaptures );
             FileBrowser::getInstance().setNewline(true);
             FileBrowser::getInstance().affiche();
@@ -2437,6 +2446,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         panelResultat->setColor(color);
         Captures::getInstance().setColor(color);
         Camera_mgr::getInstance().setColor(color);
+        FileBrowser::getInstance().setColor(color);
         }
         break;
     case 'r' :
@@ -2538,15 +2548,15 @@ static void glutSpecialFunc(int key, int x, int y)	{
         log( (char*)"Toggle serial !!!" );
         }
         break;
-    case GLUT_KEY_F11:
-        {
-        Captures::getInstance().ajoute();
-        }
-        break;
     case GLUT_KEY_F10:
         {
         bDebug = !bDebug;
         WindowsManager::getInstance().debug(bDebug);
+        }
+        break;
+    case GLUT_KEY_F11:
+        {
+        Captures::getInstance().ajoute();
         }
         break;
     case GLUT_KEY_F12:

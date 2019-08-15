@@ -8,6 +8,7 @@
 
 #include <WindowsManager.h>
 #include <thread>
+#include "button_callback.h"
 
 
 
@@ -36,6 +37,7 @@ protected:
     int                         nb_images;
 
     ivec2                       vCameraSize;
+    string                      sSauveDir;
 
     //Stars                       stars;
     

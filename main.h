@@ -20,6 +20,9 @@
 #include "button_callback.h"
 
 
+#define BOOL2STR(b) b?(char*)"true":(char*)"false"
+
+
 using namespace std;
 
 struct hms
@@ -102,11 +105,13 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void                callback_enregistre(bool, int, char*);
+void                callback_enregistre_cam(char*);
+
 vector<string>      split (string s, string delimiter);
 
 void                captureOnTop(Capture*);
 
-void                callback_enregistre(bool, int, char*);
 void                ferme_file_browser();
 void                photo();
 void                updatePanelPause();

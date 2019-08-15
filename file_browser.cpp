@@ -299,7 +299,7 @@ bool FileBrowser::isInsideFile( int x, int y )
     else
     {
         string s = getWorkingDir() + getFilename();
-        panelOK->getCallback()->callback( true, 0, (char*)s.c_str() );
+        if (panelOK->getExtra() != 10)      panelOK->getCallback()->callback( true, 0, (char*)s.c_str() );
     }
 
     //change_file( workingDir, tFileNames[n] );
@@ -394,15 +394,30 @@ bool FileBrowser::keyboard(char key, int x, int y)
                 string s = getWorkingDir() + getFilename();
                 logf( (char*)"  %s", (char*)s.c_str() );
 
-                if ( panelOK->getCallback() == NULL )       logf( (char*)"callback null " );
-                else                                        logf( (char*)"callback NON null " );
-
-                if ( panelOK->getCallback() != NULL )       panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
+                if ( panelOK->getCallback() != NULL )
+                {
+                    logf( (char*)"callback NON null " );
+                    if ( panelOK->getCallback()->getExtra() == 10 )
+                    {
+                        panelOK->getCallback()->callback( true, 10, (char*)s.c_str() );
+                    }
+                    else
+                    {
+                        panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
+                    }
+                }
+                else
+                {
+                    logf( (char*)"callback null " );
+                }
+                
+                //if ( panelOK->getCallback() != NULL &&  panelOK->getCallback()->getExtra() == 10)       
+                //    panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
             }
             //cb_ok_release_left(0,0);
 	    }
 	    break;
-
+    /*
 	case 'a':
 	    {
             scrollDir( 1 );
@@ -426,7 +441,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
             scrollFile( -1 );
 	    }
 	    break;
-
+    */
     default:
         {
             logf((char*)"FileBrowser key: %d", key);
@@ -507,6 +522,23 @@ void FileBrowser::setCallBack(ButtonCallBack* p)
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::setExtra( int ii)
+{
+    panelOK->setExtra( ii );
+    panelQuit->setExtra( ii );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::setColor( long color)
+{
+    pW->setColor( color );
+    panelDir->setColor( color );
+    panelFile->setColor( color );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
 // Class ButtonOK
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -520,7 +552,7 @@ ButtonOK::ButtonOK( FileBrowser* p )
 //--------------------------------------------------------------------------------------------------------------------
 void ButtonOK::releaseLeft( int xm, int ym )
 {
-    logf( (char*)"Nouveau repertoire d'image : " );
+    logf( (char*)"ButtonOK::releaseLeft(xm, ym) " );
     
     string s = pFB->getWorkingDir() + pFB->getFilename();
     logf( (char*)"  %s", (char*)s.c_str() );
@@ -528,9 +560,17 @@ void ButtonOK::releaseLeft( int xm, int ym )
     if ( pCallBack == NULL )                logf( (char*)"callback null " );
     else                                    logf( (char*)"callback NON null " );
 
-    if ( pCallBack == NULL )                setCurrentDirectory( s );
-    else                                    pCallBack->callback( true, 1, (char*)s.c_str() );
-    
+    if ( getExtra() == 0 )
+    {
+        if ( pCallBack == NULL )                setCurrentDirectory( s );
+        else                                    pCallBack->callback( true, 1, (char*)s.c_str() );
+    }
+    else if (getExtra() == 10)
+    {
+        pCallBack->callback( true, 10, (char*)s.c_str() );
+        logf( (char*)"  Extra %d", getExtra() ); 
+    }    
+
     pFB->cache();
 }
 //--------------------------------------------------------------------------------------------------------------------

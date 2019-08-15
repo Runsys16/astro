@@ -2,7 +2,7 @@
 
 
 #include "camera_mgr.h"
-
+#include "file_browser.h"
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -68,6 +68,7 @@ void Camera::init()
     startThread = false;
 
     nb_images   = 0;
+    sSauveDir = "/home/rene/.astropilot/";
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -527,7 +528,13 @@ bool Camera::keyboard(char key)
         break;
 
     case 'a':  // '-'
-        capability_save();
+        //capability_save();
+        FileBrowser::getInstance().setFiltre(".cam");
+        setExtra(10);
+        FileBrowser::getInstance().setNewline(true);
+        FileBrowser::getInstance().change_dir(sSauveDir);
+        FileBrowser::getInstance().setCallBack(this);
+        FileBrowser::getInstance().affiche();
         break;
 
     default:
@@ -564,14 +571,14 @@ void Camera::togglePanel()
 //--------------------------------------------------------------------------------------------------------------------
 bool Camera::haveNewFrame()
 {
- return getHaveNew();
+    return getHaveNew();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::haveUseFrame(bool)
 {
- return setHaveNew(false);
+    return setHaveNew(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

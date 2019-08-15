@@ -10,8 +10,12 @@
 //--------------------------------------------------------------------------------------------------------------------
 class ButtonCallBack 
 {
+protected:
+    int     extra;
 public :
-    virtual     void    callback( bool, int, char* )       {;}
+    virtual void        callback( bool, int, char* )        {;}
+    inline  void        setExtra( int ii )                  { extra = ii;}
+    inline  int         getExtra()                          { return extra; }
 };
 //--------------------------------------------------------------------------------------------------------------------
 //

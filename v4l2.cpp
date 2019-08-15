@@ -157,10 +157,9 @@ void Device_cam::capability_list( void )    {
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::capability_save( void )    {
+void Device_cam::capability_save( string filename )    {
     if (fd == -1)       return;
 
-    string filename = "/home/rene/.astropilot/"+ name +".txt";
     logf( (char*)"Sauvegarde des parametres de la camera dans '%s'", (char*)filename.c_str() );
 
     ofstream fichier;
@@ -185,6 +184,15 @@ void Device_cam::capability_save( void )    {
     
     
     fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::capability_save( void )    {
+    if (fd == -1)       return;
+
+    string filename = "/home/rene/.astropilot/"+ name +".cam";
+    capability_save( filename );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1285,11 +1293,21 @@ void Device_cam::enregistre()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::callback(bool b, int i, char* str)
+void Device_cam::callback(bool b, int ii, char* str)
 {
-    logf( (char*)"Device_cam::callback( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
-    if ( b && i == 1 )            bEnregistre = true;
-    callback_enregistre(b, i, str);
+    logf( (char*)"Device_cam::callback( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
+    
+    if ( b && ii == 1 )         bEnregistre = true;
+    if ( ii == 10 )
+    {
+        callback_enregistre_cam( str );
+        string filename = string(str);
+        if ( filename.find(".cam")==string::npos )      filename += ".cam";
+        logf( (char*)"sauvegarde dans  \"%s\" )", (char*)filename.c_str() );
+        
+        capability_save(filename);
+    }
+    else                        callback_enregistre(b, extra, str);
     
 }
 
