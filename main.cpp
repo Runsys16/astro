@@ -2407,15 +2407,19 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bNuit = !bNuit;
         var.set("bNuit", bNuit);
-        
-        if (bNuit)  PanelConsoleSerial::getInstance().getConsole()->setColor(0xFFFF0000);
-        else        PanelConsoleSerial::getInstance().getConsole()->setColor(0xFFFFFFFF);
+        long color;
+        if (bNuit)                  color = 0xFFFF0000;
+        else                        color = 0xFFFFFFFF;
 
-        if (bNuit)  panelStdOut->setColor(0xFFFF0000);
-        else        panelStdOut->setColor(0xFFFFFFFF);
+        PanelConsoleSerial::getInstance().getConsole()->setColor(color);
 
-        //if (bNuit)  panelHelp->setColor(0xFFFF0000);
-        //else        panelHelp->setColor(0xFFFFFFFF);
+        panelStdOut->setColor(color);
+        panelHelp->setColor(color);
+        panelCourbe->setColor(color);
+        panelStatus->setColor(color);
+        panelResultat->setColor(color);
+        Captures::getInstance().setColor(color);
+        Camera_mgr::getInstance().setColor(color);
         }
         break;
     case 'r' :

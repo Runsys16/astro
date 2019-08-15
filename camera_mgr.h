@@ -67,6 +67,8 @@ public:
    
     void                        update();   
     void                        position(double, double);
+    
+    void                        setColor(long);
    
 private:
     vector<Camera*>             pCameras;

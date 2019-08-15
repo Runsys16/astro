@@ -43,6 +43,9 @@ public:
     void                        showIcones();
     void                        hideIcones();
     void                        switchAffIcones();
+    
+    void                        setColor(long);
+
 private:
     vector<Capture*>            captures;
     int                         current_capture;

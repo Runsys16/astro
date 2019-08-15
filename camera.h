@@ -86,6 +86,8 @@ virtual    ~Camera();
     ivec2                       get_vCameraSize();
 
     vec2*                       getSuivi();
+    
+    void                        setColor(long);
 
 inline bool                     getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
 inline PanelCamera *            getPanelPreview()               { return panelPreview; }

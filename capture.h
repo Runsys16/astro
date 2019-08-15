@@ -50,6 +50,8 @@ public :
     void                        show();
     void                        hide();
     
+    void                        setColor(long);
+    
     virtual void                update();
     
 inline rb_t *                   getRB()                                     { return &readBgr; }
