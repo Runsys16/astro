@@ -1288,8 +1288,8 @@ void Device_cam::enregistre()
 void Device_cam::callback(bool b, int i, char* str)
 {
     logf( (char*)"Device_cam::callback( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
-    if ( b )            bEnregistre = true;
-    callback_enregistre(b, str);
+    if ( b && i == 1 )            bEnregistre = true;
+    callback_enregistre(b, i, str);
     
 }
 

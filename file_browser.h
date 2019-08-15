@@ -55,6 +55,8 @@ protected:
 
     int                         dirScroll;
     int                         fileScroll;
+    
+    bool                        bNewline;
    
 
 private :
@@ -111,6 +113,7 @@ inline string                   getWorkingDir()                     { return wor
 inline void                     setCurrentDir(string s)             { currentDir = string(s); }
 inline void                     setFiltre(string s)                 { filtre = string(s); }
 
+inline void                     setNewline(bool b)                  { bNewline = b; }
 
 
 //SINGLETON_END()

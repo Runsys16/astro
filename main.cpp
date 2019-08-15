@@ -390,9 +390,14 @@ void updatePanelPause(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void callback_enregistre( bool b, char* str)
+void callback_enregistre( bool b, int ii, char* str)
 {
-    FileBrowser::getInstance().cache();    
+    if ( ii == 1 )
+    {
+        FileBrowser::getInstance().setNewline(false);
+        FileBrowser::getInstance().cache();    
+
+    }
     logf( (char*)"callback_enregistre( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
     
     Camera* p = Camera_mgr::getInstance().getCurrent();
@@ -2059,6 +2064,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'f':  // '-'
         {
         bFileBrowser = FileBrowser::getInstance().getVisible();
+        FileBrowser::getInstance().setFiltre( "" );
         FileBrowser::getInstance().change_dir( workDirFileBrowser );
         bFileBrowser = !bFileBrowser;
         FileBrowser::getInstance().setCallBack( &cb_file_browser );
@@ -2365,16 +2371,27 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             if ( decal_resultat < 0 )            decal_resultat = 0;
         }
         break;
-    case 'h':
+    case 'H':
         {
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
             FileBrowser::getInstance().setCallBack( p );
             FileBrowser::getInstance().change_dir( workDirCaptures );
+            FileBrowser::getInstance().setNewline(true);
             FileBrowser::getInstance().affiche();
             //p->enregistre();
     	    logf( (char*)"Enregistre  une photo de la camera courante !!" );
+        }
+        }
+        break;
+    case 'h':
+        {
+        Camera* p = Camera_mgr::getInstance().getCurrent();
+        if ( p!=NULL )
+        {
+            p->enregistre();
+    	    //logf( (char*)"Enregistre  une photo de la camera courante !!" );
         }
         }
         break;

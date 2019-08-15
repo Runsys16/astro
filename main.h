@@ -106,7 +106,7 @@ vector<string>      split (string s, string delimiter);
 
 void                captureOnTop(Capture*);
 
-void                callback_enregistre(bool, char*);
+void                callback_enregistre(bool, int, char*);
 void                ferme_file_browser();
 void                photo();
 void                updatePanelPause();

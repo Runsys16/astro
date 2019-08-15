@@ -118,7 +118,8 @@ FileBrowser::FileBrowser()
     WindowsManager& wm = WindowsManager::getInstance();
     wm.add( pW );
     wm.sup_call_back_keyboard( panelFilename );
-    
+
+    bNewline = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -146,7 +147,7 @@ void FileBrowser::explore_dir()
          
         if ( lecture->d_type == 8 )
         {
-            if ( filtre != "" && s.find(filtre)!=string::npos )
+            if ( filtre == "" || s.find(filtre)!=string::npos )
                 tFileNames.push_back( s );
         }
         else
@@ -388,6 +389,16 @@ bool FileBrowser::keyboard(char key, int x, int y)
 	case 13:
 	    {
             logf( (char*)"ENTRE" );
+            if ( bNewline )
+            {
+                string s = getWorkingDir() + getFilename();
+                logf( (char*)"  %s", (char*)s.c_str() );
+
+                if ( panelOK->getCallback() == NULL )       logf( (char*)"callback null " );
+                else                                        logf( (char*)"callback NON null " );
+
+                if ( panelOK->getCallback() != NULL )       panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
+            }
             //cb_ok_release_left(0,0);
 	    }
 	    break;

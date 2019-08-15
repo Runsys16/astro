@@ -1,6 +1,6 @@
 #include "captures.h"
 
-
+#define BOOL2STR(b) b?(char*)"true":(char*)"false"
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -115,6 +115,7 @@ void Captures::rotate_capture_plus(bool b)
     }
     
     if ( bIcones )      { bShowIcones = true; bFullPreview = false; bShowPreview = false; }
+    else                bShowPreview = true;
     resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -123,6 +124,8 @@ void Captures::rotate_capture_plus(bool b)
 void Captures::resize_icone( Capture* p, int dx, int y, int dxi, int dyi )
 {
     p->resize(dx+10,y+10,dxi-20,dyi-20);
+    p->setIcone(true);
+    p->setFullScreen(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -130,6 +133,7 @@ void Captures::resize_icone( Capture* p, int dx, int y, int dxi, int dyi )
 void Captures::resize_normal(Capture* p, int dx, int dy)
 {
     p->resize(10,10,dx-20,dy-20);
+    p->setIcone(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -140,8 +144,20 @@ void Captures::resize_all()
 
     bool bFull = false;
     if ( current_capture != -1 )        bFull = captures[current_capture]->getFullScreen();
-    logf( (char*)"  %d   full = %s", current_capture, bFull ? (char*)"true":(char*)"false" );
     
+    //logf( (char*)"  %d   full = %s", current_capture, bFull ? (char*)"true":(char*)"false" );
+    logf( (char*)"  %d   bFull:%s bIcones:%s bShowPreview:%s bShowIcones:%s"   
+                                                                , current_capture
+                                                                , BOOL2STR(bFull)
+                                                                , BOOL2STR(bIcones)
+                                                                , BOOL2STR(bShowPreview)
+                                                                , BOOL2STR(bShowIcones)
+                                                                 );
+    
+    
+    //--------------------------------------------------
+    // Calcul les dimensions 
+    //--------------------------------------------------
     int dx, dy, dxi, dyi;
     float ratio = (float)width/(float)height;
     
@@ -155,10 +171,16 @@ void Captures::resize_all()
     int y=10;
 
     int n = captures.size();
+    int m = n;
+    
+    if ( bShowPreview )      m--;
 
-    if ( n>1 )      DY = height / (n-1);    
-    else            DY = height / (n);    
+    if ( m>1 )      DY = (height-20-dyi) / (m-1);    
+    else            DY = (height-20-dyi) / (m);    
 
+    //--------------------------------------------------
+    // Affiche l'image choisie
+    //--------------------------------------------------
     for (int i=0; i<n; i++)
     {
         Capture* p = captures[i];
@@ -167,33 +189,22 @@ void Captures::resize_all()
         {
             p->show();
             p->onTop();
-            p->setIcone(false);
             p->setFullScreen(bFullPreview);
             if ( bFullPreview )             p->fullscreen();
             else
-            if ( bIcones )
-            {
-                resize_icone( p, dx, y, dxi, dyi );
-                y += DY;
-                p->setIcone(true);
-                p->setFullScreen(false);
-                if ( bShowIcones )      p->show();
-                else                    p->hide();
-                p->onTop();
-                
-            }
-            else    resize_normal( p, dx, dy);
+            if ( !bIcones )                 resize_normal( p, dx, dy);
             
-            logf( (char*)"  %d icone %s", i, captures[i]->getIcone() ? (char*)"true":(char*)"false" );
+            logf( (char*)"  Current %d icone:%s", i, BOOL2STR(captures[i]->getIcone()) );
         }
     } 
-
+    //--------------------------------------------------
     // Affiche les icones
+    //--------------------------------------------------
     for (int i=0; i<n; i++)
     {
         Capture* p = captures[i];
         
-        if ( i!=current_capture )
+        if ( i!=current_capture || bIcones )
         {
             if ( bShowIcones )      p->show();
             else                    p->hide();
@@ -201,10 +212,8 @@ void Captures::resize_all()
             resize_icone( p, dx, y, dxi, dyi );
             p->onTop();
             y += DY;
-            p->setIcone(true);
-            p->setFullScreen(false);
             
-            logf( (char*)"  %d icone %s", i, captures[i]->getIcone() ? (char*)"true":(char*)"false" );
+            //logf( (char*)"  %d icone %s", i, captures[i]->getIcone() ? (char*)"true":(char*)"false" );
         }        
     } 
 }

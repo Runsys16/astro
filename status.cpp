@@ -257,7 +257,7 @@ PanelButton* create_window_button( int i, string tex)
     string down = "images/" + tex + "_down.tga";
     string over = "images/" + tex + "_over.tga";
 
-    pButton->setUp(   (char*)over.c_str() );
+    pButton->setUp(   (char*)down.c_str() );
     pButton->setDown( (char*)over.c_str() );
     pButton->setOver( (char*)over.c_str() );
 
