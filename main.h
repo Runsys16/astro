@@ -17,6 +17,7 @@
 #include <time.h>
 
 #include <WindowsManager.h>
+#include "button_callback.h"
 
 
 using namespace std;
@@ -71,6 +72,13 @@ typedef struct readBackground       rb_t;
 #endif
 
 class Capture;
+
+class CallbackSauveGuidage : public ButtonCallBack
+{
+public :
+    virtual     void    callback( bool, char* );
+};
+
 
 vector<string>      split (string s, string delimiter);
 
@@ -149,7 +157,7 @@ void                change_dc(float);
 void                compute_matrix();
 
 void                sauve(void);
-void                charge_fichier(void);
+void                charge_fichier(string);
 void                sauve_traces(void);
 void                charge_traces(void);
 void                suivi(void);

@@ -80,6 +80,7 @@ public :
 
     void                        explore_dir();
     void                        change_dir( int );
+    void                        change_dir( string );
     
     bool                        isInsideDir(int, int);
     bool                        isInsideFile(int, int);

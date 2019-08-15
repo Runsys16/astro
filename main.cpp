@@ -223,6 +223,10 @@ bool bRet = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+CallbackSauveGuidage cb_guidage;
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static const char short_options[] = "d:hfs:lpe:";
 static const struct option
 //--------------------------------------------------------------------------------------------------------------------
@@ -265,6 +269,18 @@ static void usage(FILE *fp, int argc, char **argv)
                  "-e | --exc           Exclude device\n"
                  "",
                  argv[0] );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CallbackSauveGuidage::callback( bool b, char* str)
+{
+    logf( (char*)"CallbackSauveGuidage::callback( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
+    if ( b )     
+    {
+        logf( (char*)"Charge %s", (char*)str );
+        charge_fichier( string(str) );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1182,11 +1198,11 @@ void sauve(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void charge_fichier(void)
+void charge_fichier(string filename)
 {
     //string filename = "/home/rene/.astropilot/svg.txt";
     //string filename = "/home/rene/.astropilot/m57.txt";
-    string filename = "/home/rene/.astropilot/sauvegarde.txt";
+    //string filename = "/home/rene/.astropilot/sauvegarde.txt";
     logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
     
     std::ifstream fichier;
@@ -1982,6 +1998,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'f':  // '-'
         {
         bFileBrowser = FileBrowser::getInstance().getVisible();
+        FileBrowser::getInstance().change_dir( "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2019-06-30/" );
         bFileBrowser = !bFileBrowser;
         FileBrowser::getInstance().setCallBack(NULL);
         
@@ -2327,7 +2344,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'r' :
         {
         bRestauration = !bRestauration;
-        if ( bRestauration )    charge_fichier();
+        if ( bRestauration )
+        {
+            FileBrowser::getInstance().setCallBack(&cb_guidage);
+            FileBrowser::getInstance().change_dir( "/home/rene/.astropilot/" );
+            FileBrowser::getInstance().affiche();
+        }
         }
         break;
     case 'R' :
