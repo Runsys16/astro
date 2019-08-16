@@ -163,8 +163,8 @@ void Device_cam::capability_save( string filename )    {
     logf( (char*)"Sauvegarde des parametres de la camera dans '%s'", (char*)filename.c_str() );
 
     ofstream fichier;
-    //fichier.open(filename, ios_base::trunc);
-    fichier.open(filename);
+    fichier.open(filename, ios_base::trunc);
+    //fichier.open(filename);
 
     if ( !fichier ) 
     {
@@ -182,6 +182,55 @@ void Device_cam::capability_save( string filename )    {
     }
     
     
+    
+    fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::capability_load( string filename )    {
+    if (fd == -1)       return;
+
+    logf( (char*)"Lecture des parametres de la camera dans '%s'", (char*)filename.c_str() );
+
+    ifstream fichier;
+    fichier.open(filename, std::ios_base::app);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        return;
+    }
+
+    int nbLigne = 0;
+    
+    while (!fichier.eof()) 
+    {
+        char output[255];
+        string sCtrl;
+        string  s = "";
+        do
+        {
+            sCtrl += s;
+            fichier >> output;            s = string(output);
+            if (fichier.eof())      break;
+
+        } while (s.find(":") == string::npos);
+        
+        
+        fichier >> output;          s = string(output);
+        if (fichier.eof())      break;
+        
+        int val = (int)stof((char*)s.c_str());
+        logf( (char*)" %d - %s = %d", nbLigne, (char*)sCtrl.c_str(), val );
+        
+        Control *   p = getControl( sCtrl );
+        if ( p != NULL )            p->setValue( val );
+        
+        nbLigne++;
+    }    
+
+    logf( (char*)"Lecture de %d lignes", nbLigne );
     
     fichier.close();
 }
@@ -1306,6 +1355,14 @@ void Device_cam::callback(bool b, int ii, char* str)
         logf( (char*)"sauvegarde dans  \"%s\" )", (char*)filename.c_str() );
         
         capability_save(filename);
+    }
+    else
+    if ( ii == 11 )
+    {
+        string filename = string(str);
+        if ( filename.find(".cam")==string::npos )      filename += ".cam";
+        callback_charge_cam( (char*)filename.c_str() );
+        capability_load(filename);
     }
     else                        callback_enregistre(b, extra, str);
     

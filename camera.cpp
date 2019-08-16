@@ -537,6 +537,16 @@ bool Camera::keyboard(char key)
         FileBrowser::getInstance().affiche();
         break;
 
+    case 'A':  // '-'
+        //capability_save();
+        FileBrowser::getInstance().setFiltre(".cam");
+        setExtra(11);
+        FileBrowser::getInstance().setNewline(true);
+        FileBrowser::getInstance().change_dir(sSauveDir);
+        FileBrowser::getInstance().setCallBack(this);
+        FileBrowser::getInstance().affiche();
+        break;
+
     default:
         return false;        
 	}

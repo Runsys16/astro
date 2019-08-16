@@ -107,6 +107,7 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 void                callback_enregistre(bool, int, char*);
 void                callback_enregistre_cam(char*);
+void                callback_charge_cam(char*);
 
 vector<string>      split (string s, string delimiter);
 

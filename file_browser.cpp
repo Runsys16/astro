@@ -402,6 +402,11 @@ bool FileBrowser::keyboard(char key, int x, int y)
                         panelOK->getCallback()->callback( true, 10, (char*)s.c_str() );
                     }
                     else
+                    if ( panelOK->getCallback()->getExtra() == 11 )
+                    {
+                        panelOK->getCallback()->callback( true, 11, (char*)s.c_str() );
+                    }
+                    else
                     {
                         panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
                     }
@@ -568,6 +573,11 @@ void ButtonOK::releaseLeft( int xm, int ym )
     else if (getExtra() == 10)
     {
         pCallBack->callback( true, 10, (char*)s.c_str() );
+        logf( (char*)"  Extra %d", getExtra() ); 
+    }    
+    else if (getExtra() == 11)
+    {
+        pCallBack->callback( true, 11, (char*)s.c_str() );
         logf( (char*)"  Extra %d", getExtra() ); 
     }    
 

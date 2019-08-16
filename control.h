@@ -43,6 +43,7 @@ public:
     bool            find(string);
     void            plus();
     void            moins();
+    void            setValue(int);
     void            printValue();
     
     inline void     setPanelText( PanelText* p)         { pt = p; }

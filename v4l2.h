@@ -140,6 +140,7 @@ public :
     void                    capability_list( void );
     void                    capability_save( void );
     void                    capability_save( string s );
+    void                    capability_load( string s );
     void                    def_crop(int, int);
     void                    enum_format_size(int pixel_format);
     void                    enum_format();
