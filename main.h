@@ -19,6 +19,8 @@
 #include <WindowsManager.h>
 #include "button_callback.h"
 
+#include "surveillance.h"
+
 
 #define BOOL2STR(b) b?(char*)"true":(char*)"false"
 

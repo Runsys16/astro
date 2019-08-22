@@ -344,6 +344,23 @@ void CallbackFileBrowser::callback( bool bb, int ii, char* str)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void callback_enregistre( bool b, int ii, char* str)
+{
+    logf( (char*)"callback_enregistre( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
+
+    if ( ii == 1 )
+    {
+        FileBrowser::getInstance().setNewline(false);
+        FileBrowser::getInstance().cache();    
+
+    }
+    
+    Camera* p = Camera_mgr::getInstance().getCurrent();
+    if ( p )        p->setFilenameRec( string(str) );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void callback_enregistre_cam(char* str)
 {
     logf( (char*)"callback_enregistre_cam( \"%s\" )", (char*)str );
@@ -402,22 +419,6 @@ void updatePanelPause(bool b)
         updatePanelPause();
         var.set("bPause", bPause);
     }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void callback_enregistre( bool b, int ii, char* str)
-{
-    if ( ii == 1 )
-    {
-        FileBrowser::getInstance().setNewline(false);
-        FileBrowser::getInstance().cache();    
-
-    }
-    logf( (char*)"callback_enregistre( %s, \"%s\" )", b?(char*)"true":(char*)"false", (char*)str );
-    
-    Camera* p = Camera_mgr::getInstance().getCurrent();
-    if ( p )        p->setFilenameRec( string(str) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1978,181 +1979,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	}
 	    break;
     
-    case 'b':
-        {
-        BluetoothManager::getInstance().start();
-        }
-        break;
-    
-    case 'B':
-        {
-        BluetoothManager::getInstance().disconnect();
-        }
-        break;
-
-	case 't':
-		{;
-    		fTimeCorrection *= 0.9f;
-    		fTimeCpt = 0.0;
-            logf( (char*)"Augmente de temps : %0.2f", fTimeCorrection );
-        }
-		break;
-	case 'T':
-		{
-    		fTimeCorrection /= 0.9f;
-    		fTimeCpt = 0.0;
-            logf( (char*)"Diminue de temps : %0.2f", fTimeCorrection );
-        }
-		break;
-    case 'o':
-        {
-        if ( !bPleiade )
-        {
-            if ( pPleiade == NULL )             pPleiade = new Pleiade();
-            Camera_mgr::getInstance().add( pPleiade );
-            bPleiade = true;
-            //bOneFrame = true;
-        }
-        else
-        {
-            //*
-            Camera_mgr::getInstance().sup( pPleiade );
-            bPleiade = false;
-            pPleiade = NULL;
-            //delete pPleiade;
-            //*/
-        }
-        }
-    	break;
-
-    case 'O':
-        {
-    	bAutorisationSuivi = !bAutorisationSuivi;
-        var.set("bAutorisationSuivi", bAutorisationSuivi);
-
-        if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
-        else                            pMode->changeText((char*)"Mode souris");
-        }
-    	break;
-
-    case 'l':
-        {            
-        Connexion_mgr::getInstance().print_list();
-        Camera_mgr::getInstance().print_list();
-        Captures::getInstance().print_list();
-        }
-        break;
-
-    case 'L':
-        {            
-        VarManager::dbMap & db = var.getDB();
-        VarManager::dbMap::iterator p;
-        
-        for(p = db.begin(); p!=db.end(); ++p)
-        {
-            switch(p->second.type)
-            {
-            case 'f':
-                {
-                float f = var.getf(p->first);
-                logf( (char*)"%s -> %f", p->first.c_str(), f );
-                }
-                break;
-            case 'i':
-                {
-                int i = var.geti(p->first);
-                logf( (char*)"%s -> %d", p->first.c_str(), i );
-                }
-                break;
-            case 'b':
-                {
-                bool b = var.getb(p->first);
-                if (b)                      logf( (char*)"%s -> %s", p->first.c_str(), (char*)"TRUE" );
-                else                        logf( (char*)"%s -> %s", p->first.c_str(), (char*)"FALSE" );
-                break;
-                }
-             }
-        }
-            
-        }
-        break;
-
-    case 'f':  // '-'
-        {
-        bFileBrowser = FileBrowser::getInstance().getVisible();
-        FileBrowser::getInstance().setFiltre( "" );
-        FileBrowser::getInstance().change_dir( workDirFileBrowser );
-        bFileBrowser = !bFileBrowser;
-        FileBrowser::getInstance().setCallBack( &cb_file_browser );
-        
-        if ( bFileBrowser )         FileBrowser::getInstance().affiche();
-        else                        FileBrowser::getInstance().cache();
-        }
-        break;
-
-
-    case 'v':  // '-'
-        {
-        if ( !bSauve ) 
-        {
-            FileBrowser& fb = FileBrowser::getInstance();
-
-            bFileBrowser = fb.getVisible();
-            fb.setFiltre( ".guid" );
-            fb.change_dir( workDirSauvegardes );
-            fb.setCallBack( &cb_sguidage );
-            
-            fb.affiche();
-            
-            logf( (char*)"Sauvegarde !!!" );
-        }
-        else
-        {
-            bSauve = false;
-            logf( (char*)"Arret sauvegarde !!!" );
-        }
-        }
-        break;
-    case 'V':  // '-'
-        {
-        if (!bAutorisationSuivi)
-        {
-            int x = xClick;
-            int y = yClick;
-            tex2screen(x,y);
-
-            vOrigine.x = x;
-            vOrigine.y = y;
-            vOrigine.z = 0.0;
-        }
-        else
-        {
-            vOrigine.x = xSuivi;
-            vOrigine.y = ySuivi;
-            vOrigine.z = 0.0;
-        }
-        }
-        break;
-    case 'p':  // '-'
-        {
-        updatePanelPause(!bPause);
-        }
-        break;
-    case 'P':  // '-'
-        {
-        //photo();
-        bOneFrame = true;
-        }
-        break;
-
-/*
-    case '0':
-        {
-        Camera_mgr::getInstance().sup("video1");
-        log( (char*)"Sup camera !!!" );
-        }
-        break;
-*/
     case 'A':
         {
         if ( bAutorisationSuivi )
@@ -2197,6 +2023,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'b':
+        {
+        BluetoothManager::getInstance().start();
+        }
+        break;
+    
+    case 'B':
+        {
+        BluetoothManager::getInstance().disconnect();
+        }
+        break;
+
     case 'c':
         {
             bRecTrace = !bRecTrace;
@@ -2212,54 +2050,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             bAffTrace = !bAffTrace;
         }
         break;
-    case 'e':
-        {
-            int i = t_vTrace.size();
-            if ( i == 0 )       break;
-            
-            vector<vec2>* trace = t_vTrace[i-1];
-            trace->clear();
-            delete trace;
-            t_vTrace.pop_back();
-            trace = 0;
-        }
-        break;
-    case 'E':
-        {
-            sauve_traces();
-        }
-        break;
-    case 'z':
-        {
-            charge_traces();
-        }
-        break;
-    case 'Z':
-        {
-            bFindStar = !bFindStar; 
-        }
-        break;
-    case 's':
-        {
-            logf( (char*)"case 's'" );
-            
-            if ( Captures::getInstance().isMouseOverCapture(x, y)  )
-            {
-                Captures::getInstance().findAllStar();
-            }
-            else
-            {
-                if ( Camera_mgr::getInstance().getCurrent() != NULL )
-                    Camera_mgr::getInstance().findAllStars();
-            }
-        }
-        break;
-    case 'S' :
-        {
-            bSuivi = !bSuivi;
-            var.set( "bSuivi", bSuivi );
-        }
-        break;
+
     case 'D':
         {
         if ( bAutorisationSuivi )
@@ -2283,6 +2074,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         bMouseDeplace = true;
         }
         break;
+
     case 'd':
         {
         
@@ -2309,6 +2101,153 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'e':
+        {
+            int i = t_vTrace.size();
+            if ( i == 0 )       break;
+            
+            vector<vec2>* trace = t_vTrace[i-1];
+            trace->clear();
+            delete trace;
+            t_vTrace.pop_back();
+            trace = 0;
+        }
+        break;
+
+    case 'E':
+        {
+            sauve_traces();
+        }
+        break;
+
+    case 'f':  // '-'
+        {
+        bFileBrowser = FileBrowser::getInstance().getVisible();
+        FileBrowser::getInstance().setFiltre( "" );
+        FileBrowser::getInstance().change_dir( workDirFileBrowser );
+        bFileBrowser = !bFileBrowser;
+        FileBrowser::getInstance().setCallBack( &cb_file_browser );
+        
+        if ( bFileBrowser )         FileBrowser::getInstance().affiche();
+        else                        FileBrowser::getInstance().cache();
+        }
+        break;
+
+    case 'H':
+        {
+        Camera* p = Camera_mgr::getInstance().getCurrent();
+        if ( p!=NULL )
+        {
+    	    logf( (char*)"'H' - Enregistre  une photo de la camera courante !!" );
+            FileBrowser::getInstance().setCallBack( p );
+            FileBrowser::getInstance().setExtra( 0 );
+            FileBrowser::getInstance().change_dir( workDirCaptures );
+            FileBrowser::getInstance().setNewline(true);
+            FileBrowser::getInstance().affiche();
+            //p->enregistre();
+        }
+        }
+        break;
+
+    case 'h':
+        {
+        Camera* p = Camera_mgr::getInstance().getCurrent();
+        if ( p!=NULL )
+        {
+            p->enregistre();
+    	    //logf( (char*)"Enregistre  une photo de la camera courante !!" );
+        }
+        }
+        break;
+
+    case 'i':
+        {
+            decal_resultat += 100;
+            if ( decal_resultat >= t_vResultat.size() )            decal_resultat -= 100;
+        }
+        break;
+
+    case 'I':
+        {
+            decal_resultat -= 100;
+            if ( decal_resultat < 0 )            decal_resultat = 0;
+        }
+        break;
+
+    case 'J':
+        {
+        delta_courbe1 *= 0.8;
+        var.set("delta_courbe1", delta_courbe1);
+        delta_courbe2 *= 0.8;
+        var.set("delta_courbe2", delta_courbe2);
+        }
+        break;
+
+    case 'j':
+        {
+        delta_courbe1 /= 0.8;
+        var.set("delta_courbe1", delta_courbe1);
+        delta_courbe2 /= 0.8;
+        var.set("delta_courbe2", delta_courbe2);
+        }
+        break;
+
+    case 'k':
+        {
+            decal_resultat ++;
+            if ( decal_resultat >= t_vResultat.size() )            decal_resultat --;
+        }
+        break;
+
+    case 'K':
+        {
+            decal_resultat --;
+            if ( decal_resultat < 0 )            decal_resultat = 0;
+        }
+        break;
+
+    case 'l':
+        {            
+        Connexion_mgr::getInstance().print_list();
+        Camera_mgr::getInstance().print_list();
+        Captures::getInstance().print_list();
+        }
+        break;
+
+    case 'L':
+        {            
+        VarManager::dbMap & db = var.getDB();
+        VarManager::dbMap::iterator p;
+        
+        for(p = db.begin(); p!=db.end(); ++p)
+        {
+            switch(p->second.type)
+            {
+            case 'f':
+                {
+                float f = var.getf(p->first);
+                logf( (char*)"%s -> %f", p->first.c_str(), f );
+                }
+                break;
+            case 'i':
+                {
+                int i = var.geti(p->first);
+                logf( (char*)"%s -> %d", p->first.c_str(), i );
+                }
+                break;
+            case 'b':
+                {
+                bool b = var.getb(p->first);
+                if (b)                      logf( (char*)"%s -> %s", p->first.c_str(), (char*)"TRUE" );
+                else                        logf( (char*)"%s -> %s", p->first.c_str(), (char*)"FALSE" );
+                break;
+                }
+             }
+        }
+            
+        }
+        break;
+
     case 'M':
         {
         compute_matrix();
@@ -2325,118 +2264,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         else                            pDeplacement->changeText((char*)"----");
         }
         break;
-    case 'y':
-        {
-        bAfficheVec = !bAfficheVec;
-        var.set("bAfficheVec", bAfficheVec);
-        }
-        break;
-    case 'U':
-        {
-        courbe1 *= 0.8;
-        var.set("courbe1", courbe1);
-        courbe2 *= 0.8;
-        var.set("courbe2", courbe2);
-        }
-        break;
-    case 'u':
-        {
-        courbe1 /= 0.8;
-        var.set("courbe1", courbe1);
-        courbe2 /= 0.8;
-        var.set("courbe2", courbe2);
-        }
-        break;
-    case 'J':
-        {
-        delta_courbe1 *= 0.8;
-        var.set("delta_courbe1", delta_courbe1);
-        delta_courbe2 *= 0.8;
-        var.set("delta_courbe2", delta_courbe2);
-        }
-        break;
-    case 'j':
-        {
-        delta_courbe1 /= 0.8;
-        var.set("delta_courbe1", delta_courbe1);
-        delta_courbe2 /= 0.8;
-        var.set("delta_courbe2", delta_courbe2);
-        }
-        break;
-    case 'k':
-        {
-            decal_resultat ++;
-            if ( decal_resultat >= t_vResultat.size() )            decal_resultat --;
-        }
-        break;
-    case 'K':
-        {
-            decal_resultat --;
-            if ( decal_resultat < 0 )            decal_resultat = 0;
-        }
-        break;
-    case 'i':
-        {
-            decal_resultat += 100;
-            if ( decal_resultat >= t_vResultat.size() )            decal_resultat -= 100;
-        }
-        break;
-    case 'I':
-        {
-            decal_resultat -= 100;
-            if ( decal_resultat < 0 )            decal_resultat = 0;
-        }
-        break;
-    case 'H':
-        {
-        Camera* p = Camera_mgr::getInstance().getCurrent();
-        if ( p!=NULL )
-        {
-            FileBrowser::getInstance().setCallBack( p );
-            FileBrowser::getInstance().setExtra( 0 );
-            FileBrowser::getInstance().change_dir( workDirCaptures );
-            FileBrowser::getInstance().setNewline(true);
-            FileBrowser::getInstance().affiche();
-            //p->enregistre();
-    	    logf( (char*)"Enregistre  une photo de la camera courante !!" );
-        }
-        }
-        break;
-    case 'h':
-        {
-        Camera* p = Camera_mgr::getInstance().getCurrent();
-        if ( p!=NULL )
-        {
-            p->enregistre();
-    	    //logf( (char*)"Enregistre  une photo de la camera courante !!" );
-        }
-        }
-        break;
-    case 'Y':
-        {
-        bCorrection = !bCorrection; 
-        var.set( "bCorrection", bCorrection);
 
-        fTimeCpt = 0.0; 
-
-        /*
-        vOrigine.x = xSuivi;
-        vOrigine.y = ySuivi;
-        vOrigine.z = 0.0;
-        */
-        var.set("vOrigine.x", vOrigine.x);
-        var.set("vOrigine.y", vOrigine.y);
-
-        if ( bCorrection )      pAsservi->changeText((char*)"Asservissemnent");
-        else                    pAsservi->changeText((char*)"");
-        }
-        break;
     case 'n':
         {
         bAffIconeCapture = !bAffIconeCapture;
         Captures::getInstance().switchAffIcones();
         }
         break;
+
     case 'N':
         {
         bNuit = !bNuit;
@@ -2457,6 +2292,51 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         FileBrowser::getInstance().setColor(color);
         }
         break;
+
+    case 'o':
+        {
+        if ( !bPleiade )
+        {
+            if ( pPleiade == NULL )             pPleiade = new Pleiade();
+            Camera_mgr::getInstance().add( pPleiade );
+            bPleiade = true;
+            //bOneFrame = true;
+        }
+        else
+        {
+            //*
+            Camera_mgr::getInstance().sup( pPleiade );
+            bPleiade = false;
+            pPleiade = NULL;
+            //delete pPleiade;
+            //*/
+        }
+        }
+    	break;
+
+    case 'O':
+        {
+    	bAutorisationSuivi = !bAutorisationSuivi;
+        var.set("bAutorisationSuivi", bAutorisationSuivi);
+
+        if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
+        else                            pMode->changeText((char*)"Mode souris");
+        }
+    	break;
+
+    case 'p':  // '-'
+        {
+        updatePanelPause(!bPause);
+        }
+        break;
+
+    case 'P':  // '-'
+        {
+        //photo();
+        bOneFrame = true;
+        }
+        break;
+
     case 'r' :
         {
             FileBrowser::getInstance().setCallBack(&cb_cguidage);
@@ -2465,17 +2345,184 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             FileBrowser::getInstance().affiche();
         }
         break;
+
     case 'R' :
         {
         bAlert = !bAlert;
         alertBox( "TEST ALERT BOX" );
         }
         break;
+
+    case 's':
+        {
+            logf( (char*)"case 's'" );
+            
+            if ( Captures::getInstance().isMouseOverCapture(x, y)  )
+            {
+                Captures::getInstance().findAllStar();
+            }
+            else
+            {
+                if ( Camera_mgr::getInstance().getCurrent() != NULL )
+                    Camera_mgr::getInstance().findAllStars();
+            }
+        }
+        break;
+
+    case 'S' :
+        {
+            bSuivi = !bSuivi;
+            var.set( "bSuivi", bSuivi );
+        }
+        break;
+
+	case 't':
+		{;
+    		fTimeCorrection *= 0.9f;
+    		fTimeCpt = 0.0;
+            logf( (char*)"Augmente de temps : %0.2f", fTimeCorrection );
+        }
+		break;
+	case 'T':
+		{
+    		fTimeCorrection /= 0.9f;
+    		fTimeCpt = 0.0;
+            logf( (char*)"Diminue de temps : %0.2f", fTimeCorrection );
+        }
+		break;
+
+    case 'U':
+        {
+        courbe1 *= 0.8;
+        var.set("courbe1", courbe1);
+        courbe2 *= 0.8;
+        var.set("courbe2", courbe2);
+        }
+        break;
+
+    case 'u':
+        {
+        courbe1 /= 0.8;
+        var.set("courbe1", courbe1);
+        courbe2 /= 0.8;
+        var.set("courbe2", courbe2);
+        }
+        break;
+
+    case 'v':  // '-'
+        {
+        if ( !bSauve ) 
+        {
+            FileBrowser& fb = FileBrowser::getInstance();
+
+            bFileBrowser = fb.getVisible();
+            fb.setFiltre( ".guid" );
+            fb.change_dir( workDirSauvegardes );
+            fb.setCallBack( &cb_sguidage );
+            
+            fb.affiche();
+            
+            logf( (char*)"Sauvegarde !!!" );
+        }
+        else
+        {
+            bSauve = false;
+            logf( (char*)"Arret sauvegarde !!!" );
+        }
+        }
+        break;
+
+    case 'V':  // '-'
+        {
+        if (!bAutorisationSuivi)
+        {
+            int x = xClick;
+            int y = yClick;
+            tex2screen(x,y);
+
+            vOrigine.x = x;
+            vOrigine.y = y;
+            vOrigine.z = 0.0;
+        }
+        else
+        {
+            vOrigine.x = xSuivi;
+            vOrigine.y = ySuivi;
+            vOrigine.z = 0.0;
+        }
+        }
+        break;
+/*
+    case '0':
+        {
+        Camera_mgr::getInstance().sup("video1");
+        log( (char*)"Sup camera !!!" );
+        }
+        break;
+*/
+    case 'y':
+        {
+        bAfficheVec = !bAfficheVec;
+        var.set("bAfficheVec", bAfficheVec);
+        }
+        break;
+
+    case 'Y':
+        {
+        bCorrection = !bCorrection; 
+        var.set( "bCorrection", bCorrection);
+
+        fTimeCpt = 0.0; 
+
+        /*
+        vOrigine.x = xSuivi;
+        vOrigine.y = ySuivi;
+        vOrigine.z = 0.0;
+        */
+        var.set("vOrigine.x", vOrigine.x);
+        var.set("vOrigine.y", vOrigine.y);
+
+        if ( bCorrection )      pAsservi->changeText((char*)"Asservissemnent");
+        else                    pAsservi->changeText((char*)"");
+        }
+        break;
+
+    case 'z':
+        {
+            charge_traces();
+        }
+        break;
+
+    case 'Z':
+        {
+            bFindStar = !bFindStar; 
+        }
+        break;
+
     case 'w' :
         {
         BluetoothManager::getInstance().centre_joystick();
         }
         break;
+
+    case 'W' :
+        {
+            Surveillance& su = Surveillance::getInstance();
+            
+            FileBrowser& fb = FileBrowser::getInstance();
+
+            bFileBrowser = fb.getVisible();
+            fb.setFiltre( "" );
+            fb.setNewline( true );
+            fb.change_dir( workDirCaptures );
+            fb.setCallBack( &su );
+            fb.setExtra( 12 );
+
+            fb.affiche();
+
+       }
+        break;
+
     default:
         {
         logf((char*)"key: %d", key);

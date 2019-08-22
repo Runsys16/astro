@@ -69,7 +69,7 @@ Capture::Capture()
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture(string dirname, string name)
 {
-    logf((char*)"----------- Constructeur Capture() -----------" );
+    logf((char*)"----------- Constructeur Capture(%s, %s) -----------", (char*)dirname.c_str(), (char*)name.c_str() );
 
     
     filename = dirname + name;
@@ -86,7 +86,7 @@ Capture::Capture(string dirname, string name)
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture(string f )
 {
-    logf((char*)"----------- Constructeur Capture() -----------" );
+    logf((char*)"----------- Constructeur Capture(%s) -----------", (char*)f.c_str() );
 
     
     filename = f;
@@ -171,7 +171,7 @@ void Capture::update()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::create_preview()	{
     logf((char*)"----------- CreatePreview -------------" );
-    logf((char*)"-- %s", (char*)filename.c_str() );
+    logf((char*)"  -- %s", (char*)filename.c_str() );
 
 	WindowsManager& wm = WindowsManager::getInstance();
 
@@ -185,10 +185,12 @@ void Capture::create_preview()	{
 	panelPreview = new PanelCapture(NULL, this);
 	if ( readBgr.ptr == NULL )
 	{
+	    logf( (char*)"  Pointeur sur background readBgr.ptr == NULL");
         panelPreview->setRB( NULL );
     }
     else
     {
+	    logf( (char*)"  setBackground( ..., %d, %d, %d)", readBgr.w, readBgr.h, readBgr.d);
         panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
         panelPreview->setRB( &readBgr );
     }

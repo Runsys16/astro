@@ -212,7 +212,7 @@ void FileBrowser::change_dir( int n )
     else
         dirname = workingDir + dirname + "/";
     
-    logf( (char*)"nouveau repertoire '%s'", (char*)dirname.c_str() );
+    logf( (char*)"FileBrowser::change_dir() nouveau repertoire '%s'", (char*)dirname.c_str() );
 
     //-----------------------------------------    
        
@@ -233,7 +233,7 @@ void FileBrowser::change_dir( int n )
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::change_dir( string dirname )
 {
-    logf( (char*)"nouveau repertoire '%s'", (char*)dirname.c_str() );
+    logf( (char*)"FileBrowser::change_dir('%s')", (char*)dirname.c_str() );
 
     //-----------------------------------------    
        
@@ -329,7 +329,7 @@ void FileBrowser::affiche()
 
     if ( !wm.is_call_back_keyboard( panelFilename ) )
     {
-        logf( (char*)"Ajout callback" );
+        logf( (char*)"FileBrowser::affiche() Ajout callback keyboard" );
         wm.call_back_keyboard( panelFilename );
         wm.startKeyboard();
     }
@@ -361,14 +361,14 @@ bool FileBrowser::keyboard(char key, int x, int y)
         while ( wm.is_call_back_keyboard(panelFilename) )
         {
             wm.sup_call_back_keyboard( panelFilename );
-            logf( (char*)"FileBrowser::keyboard() Suppression callback" );
+            logf( (char*)"FileBrowser::keyboard() Suppression callback keyboard" );
         }
         return false;
     }
     
     if ( !wm.is_call_back_keyboard( panelFilename ) )
     {
-        logf( (char*)"FileBrowser::keyboard() Ajout callback" );
+        logf( (char*)"FileBrowser::keyboard() Ajout callback keyboard" );
         wm.call_back_keyboard( panelFilename );
         wm.startKeyboard();
     }
@@ -388,7 +388,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
 	    break;
 	case 13:
 	    {
-            logf( (char*)"ENTRE" );
+            logf( (char*)"FileBrowser::keyboard() KEY RETRUN ***" );
             if ( bNewline )
             {
                 string s = getWorkingDir() + getFilename();
@@ -396,24 +396,34 @@ bool FileBrowser::keyboard(char key, int x, int y)
 
                 if ( panelOK->getCallback() != NULL )
                 {
-                    logf( (char*)"callback NON null " );
-                    if ( panelOK->getCallback()->getExtra() == 10 )
+                    logf( (char*)"  callback NON null " );
+
+                    switch(panelOK->getCallback()->getExtra())
+                    {
+                    case 10:
                     {
                         panelOK->getCallback()->callback( true, 10, (char*)s.c_str() );
-                    }
-                    else
-                    if ( panelOK->getCallback()->getExtra() == 11 )
+                        logf( (char*)"  Extra %d", panelOK->getCallback()->getExtra() ); 
+                    }    
+                    break;
+                    case 11:
                     {
                         panelOK->getCallback()->callback( true, 11, (char*)s.c_str() );
-                    }
-                    else
+                        logf( (char*)"  Extra %d", panelOK->getCallback()->getExtra() ); 
+                    }    
+                    break;
+                    case 12:
                     {
-                        panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
+                        panelOK->getCallback()->callback( true, 12, (char*)s.c_str() );
+                        logf( (char*)"  Extra %d", panelOK->getCallback()->getExtra() );
+                        cache();
+                    }    
+                    break;
                     }
                 }
                 else
                 {
-                    logf( (char*)"callback null " );
+                    logf( (char*)"  callback null " );
                 }
                 
                 //if ( panelOK->getCallback() != NULL &&  panelOK->getCallback()->getExtra() == 10)       
@@ -560,26 +570,38 @@ void ButtonOK::releaseLeft( int xm, int ym )
     logf( (char*)"ButtonOK::releaseLeft(xm, ym) " );
     
     string s = pFB->getWorkingDir() + pFB->getFilename();
-    logf( (char*)"  %s", (char*)s.c_str() );
+    logf( (char*)"  extra: %d '%s'", getExtra(), (char*)s.c_str() );
     
-    if ( pCallBack == NULL )                logf( (char*)"callback null " );
-    else                                    logf( (char*)"callback NON null " );
+    if ( pCallBack == NULL )                logf( (char*)"  callback null " );
+    else                                    logf( (char*)"  callback NON null " );
 
-    if ( getExtra() == 0 )
+    switch(getExtra())
+    {
+    case 0:
     {
         if ( pCallBack == NULL )                setCurrentDirectory( s );
         else                                    pCallBack->callback( true, 1, (char*)s.c_str() );
     }
-    else if (getExtra() == 10)
+    break;
+    case 10:
     {
         pCallBack->callback( true, 10, (char*)s.c_str() );
         logf( (char*)"  Extra %d", getExtra() ); 
     }    
-    else if (getExtra() == 11)
+    break;
+    case 11:
     {
         pCallBack->callback( true, 11, (char*)s.c_str() );
         logf( (char*)"  Extra %d", getExtra() ); 
     }    
+    break;
+    case 12:
+    {
+        pCallBack->callback( true, 12, (char*)s.c_str() );
+        logf( (char*)"  Extra %d", getExtra() );
+    }    
+    break;
+    }
 
     pFB->cache();
 }

@@ -313,16 +313,35 @@ int Camera::addControl()	{
     int yt  = 10;
     int dyt = 16;
     int n = 0;
-
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Brightness" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Contrast" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Saturation" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Hue" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Gamma" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Sharpness" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Exposure, Auto" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Exposure (Absolute)" );
-    createControlID(     panelControl, xt, yt + n++*dyt, (char*)"Power Line" );
+    string name;
+    name = "Brightness";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Contrast";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Saturation";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Hue";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Gamma";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Sharpness";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Exposure, Auto";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Exposure (Absolute)";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Power Line";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    //createControlID(     panelControl, xt, yt + n++*dyt, (char*)"" );
     createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance (auto)", 0x0098090C );
     createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance", 0x0098091A );
 
@@ -527,7 +546,7 @@ bool Camera::keyboard(char key)
         capability_list();
         break;
 
-    case 'a':  // '-'
+    case 'A':  // '-'
         //capability_save();
         FileBrowser::getInstance().setFiltre(".cam");
         setExtra(10);
@@ -537,7 +556,7 @@ bool Camera::keyboard(char key)
         FileBrowser::getInstance().affiche();
         break;
 
-    case 'A':  // '-'
+    case 'a':  // '-'
         //capability_save();
         FileBrowser::getInstance().setFiltre(".cam");
         setExtra(11);

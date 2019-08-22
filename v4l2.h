@@ -87,7 +87,7 @@ class Control;
 //--------------------------------------------------------------------------------------------------------------------
 class Device_cam : public ButtonCallBack
 {
-private:
+protected:
     string                  dev_name;
     enum io_method          io;
     int                     fd;
@@ -166,6 +166,7 @@ public :
     
     Control*                getControl( string s );
     Control*                getControl( int id );
+    bool                    isControl( string s );
 
     //inline  void            enregistre()            { bEnregistre = true; }
     void                    enregistre(); //            { bEnregistre = true; }

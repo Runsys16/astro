@@ -1205,6 +1205,19 @@ Control*  Device_cam::getControl(int id)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+bool  Device_cam::isControl(string s)
+{
+    int si;
+    si = pControl.size();    
+    
+    for(int i=0; i<si; i++ ) {
+        if ( pControl[i]->getName().find(s) != string::npos )          return true;
+    }
+    return NULL;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 int nbJPG = 0;
 void jpeg_saver_error_exit (j_common_ptr cinfo)
 {
@@ -1347,6 +1360,7 @@ void Device_cam::callback(bool b, int ii, char* str)
     logf( (char*)"Device_cam::callback( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
     
     if ( b && ii == 1 )         bEnregistre = true;
+
     if ( ii == 10 )
     {
         callback_enregistre_cam( str );

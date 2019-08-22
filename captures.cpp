@@ -140,6 +140,8 @@ void Captures::resize_normal(Capture* p, int dx, int dy)
 void Captures::resize_all()
 {
     logf( (char*)"Captures::resize_all" );
+    //if ( captures.size() == 0 )             return;
+    
 
     bool bFull = false;
     if ( current_capture != -1 )        bFull = captures[current_capture]->getFullScreen();
@@ -196,6 +198,7 @@ void Captures::resize_all()
             logf( (char*)"  Current %d icone:%s", i, BOOL2STR(captures[i]->getIcone()) );
         }
     } 
+    //if ( m <= 0 )            return;
     //--------------------------------------------------
     // Affiche les icones
     //--------------------------------------------------
