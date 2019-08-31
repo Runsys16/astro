@@ -86,7 +86,7 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
         thread t = thread(&Surveillance::thread_charge_fichier, this, dir, basename);
         t.detach();
         
-        //iState = 3;
+        iState = 0;
     }
     //return;
 
@@ -123,7 +123,7 @@ void Surveillance::thread_surveille( string dir )
 
     logf( (char*)"  Watching '%s' using wd = %d", (char*)dir.c_str(), wd);
 
-    for (;;) {                                  /* Read events forever */
+    while(bRun) {                                  /* Read events forever */
         numRead = read(inotifyFd, buf, BUF_LEN);
         if (numRead == 0)           logf( (char*)"read() from inotify fd returned 0!");
         if (numRead == -1)          logf( (char*)"[ERREUR] read");
@@ -147,6 +147,7 @@ void Surveillance::thread_surveille( string dir )
 //--------------------------------------------------------------------------------------------------------------------
 void Surveillance::start(string dir)
 {
+    bRun = true;
     th = std::thread(&Surveillance::thread_surveille, this, dir);
     th.detach();
 }

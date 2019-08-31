@@ -24,7 +24,8 @@ private:
     thread              th;
     string              dir;
     int                 iState;
-
+    bool                bRun;
+    
 public:
     //---------------------------------------------------------
     // Gestion du singleton
@@ -53,7 +54,8 @@ public:
     void                displayInotifyEvent(struct inotify_event *);
     void                thread_charge_fichier(string, string);
     void                thread_surveille(string);
-    void                start(string);    
+    void                start(string); 
+    inline void         stop()                  { bRun = false; }
 
     virtual void        callback( bool, int, char* );
 
