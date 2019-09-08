@@ -16,7 +16,7 @@ Surveillance::Surveillance()
 //--------------------------------------------------------------------------------------------------------------------
 void Surveillance::idleGL()
 {
-    if ( bCharge )
+    if ( bCharge && iState == 2 )
     {
         change_file( dirname, basename);
         iState = -1;
@@ -62,9 +62,9 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
     if ( (i->mask & IN_CLOSE_WRITE) && (i->len > 0) && iState == 1)
     {
         iState = 2;
-    }
-    if ( (i->mask & IN_ATTRIB) && (i->len > 0) && iState == 2)
-    {
+    //}
+    //if ( (i->mask & IN_ATTRIB) && (i->len > 0) && iState == 2)
+    //{
         //inotify_rm_watch(inotifyFd, wd);
         
         logf( (char*)"  Notification : file ecrit \"%s\"",i->name );
@@ -86,7 +86,7 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
         logf( (char*)"  charge(%s, %s )", (char*)dir.c_str(), (char*)basename.c_str() );
         dirname = dir;
 
-        iState = 0;
+        //iState = 0;
         bCharge = true;
     }
 }
