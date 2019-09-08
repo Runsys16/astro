@@ -1702,6 +1702,13 @@ static void idleGL(void)
 	}
     //------------------------------------------------------
     //------------------------------------------------------
+	// CHARGEMENT IMAGE SUR SURVEILLANCE
+    //------------------------------------------------------
+    //------------------------------------------------------
+    Surveillance::getInstance().idleGL();
+
+    //------------------------------------------------------
+    //------------------------------------------------------
 	// CALCUL DE L' ASSERVISSEMENT
     //------------------------------------------------------
     //------------------------------------------------------
@@ -2945,9 +2952,9 @@ static void CreateHelp()
 	addString( "" );
 	addString( "f:   Ouvrir un fichier image");
 	addString( "TAB: Change l'affichage des fichiers" );
-	addString( "q:   Toutes les images sont affichees en icones");
-	addString( "7:   Charge la prochaine image");
-	addString( "8:   Efface la derniere image");
+	addString( "²:   Toutes les images sont affichees en icones");
+	addString( "F11: Charge la prochaine image");
+	addString( "F12: Efface la derniere image");
 
 	addString( "");
 	addString( "a/A: Vecteur en ascension droite");
@@ -2978,6 +2985,8 @@ static void CreateHelp()
 	addString( "R: Test alert BOX");
 	addString( "l: List les ports /dev/ +  les controles ");
 	addString( "L: List les variables");
+
+	addString( "w: Centre le joystick");
 	
 	addString( "");
 	addString( "S: Stop le suivi");
@@ -2985,6 +2994,9 @@ static void CreateHelp()
 	addString( "Y: Lance l' asservissement");
 	addString( "V: Initialise les coordonnees de suivi");
 	addString( "v: Sauvegarde des coordonnees dans le fichier .astropilot/sauvegarde.text");
+	addString( "W: Surveille un repertoire");
+
+	addString( "");
 	addString( "ESC: --- SORTIE DU LOGICIEL ---" );
 
 	WindowsManager::getInstance().add(panelHelp);

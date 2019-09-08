@@ -25,6 +25,11 @@ private:
     string              dir;
     int                 iState;
     bool                bRun;
+    bool                bCharge;
+
+    string              dirname;
+    string              basename;
+    string              filename;
     
 public:
     //---------------------------------------------------------
@@ -51,8 +56,8 @@ public:
     //---------------------------------------------------------
     Surveillance();
 
+    void                idleGL();
     void                displayInotifyEvent(struct inotify_event *);
-    void                thread_charge_fichier(string, string);
     void                thread_surveille(string);
     void                start(string); 
     inline void         stop()                  { bRun = false; }

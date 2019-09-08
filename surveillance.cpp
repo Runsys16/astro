@@ -8,20 +8,21 @@ Surveillance* Surveillance::s_pInstance;	// Instance de la classe
 //--------------------------------------------------------------------------------------------------------------------
 Surveillance::Surveillance()
 {
+    bCharge = false;
+    bRun    = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Surveillance::thread_charge_fichier(string dirname, string basename)
+void Surveillance::idleGL()
 {
-    logf( (char*)"5..." );  sleep(1);
-    logf( (char*)"4..." );  sleep(1);
-    logf( (char*)"3..." );  sleep(1);
-    logf( (char*)"2..." );  sleep(1);
-    logf( (char*)"1..." );  sleep(1);
+    if ( bCharge )
+    {
+        change_file( dirname, basename);
+        iState = -1;
+    }
     
-    change_file(dirname, basename);
-    iState = -1;
+    bCharge = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -67,12 +68,12 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
         //inotify_rm_watch(inotifyFd, wd);
         
         logf( (char*)"  Notification : file ecrit \"%s\"",i->name );
-        string filename = string(i->name);
-        vector<string> vff = split( filename, "/" );
+        string f = string(i->name);
+        vector<string> vff = split( f, "/" );
         
         int n = vff.size();
-        string dirname = "/";
-        string basename;
+        dirname = "/";
+        basename;
         int i;
 
         for ( i=0; i<(n-1); i++ )
@@ -80,18 +81,14 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
             dirname = dirname + vff[i] + "/";
         }
 
-        basename = vff[i];
+        basename = string(vff[i]);
+        filename = dirname + basename;
         logf( (char*)"  charge(%s, %s )", (char*)dir.c_str(), (char*)basename.c_str() );
+        dirname = dir;
 
-        thread t = thread(&Surveillance::thread_charge_fichier, this, dir, basename);
-        t.detach();
-        
         iState = 0;
+        bCharge = true;
     }
-    //return;
-
-    
-    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
