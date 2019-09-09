@@ -56,7 +56,7 @@ public:
     //---------------------------------------------------------
     Surveillance();
 
-    void                idleGL();
+    bool                idleGL();
     void                displayInotifyEvent(struct inotify_event *);
     void                thread_surveille(string);
     void                start(string); 

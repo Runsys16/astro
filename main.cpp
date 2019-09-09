@@ -1705,7 +1705,10 @@ static void idleGL(void)
 	// CHARGEMENT IMAGE SUR SURVEILLANCE
     //------------------------------------------------------
     //------------------------------------------------------
-    Surveillance::getInstance().idleGL();
+    if ( Surveillance::getInstance().idleGL() )
+    {
+        Captures::getInstance().rotate_capture_plus(true);
+    }
 
     //------------------------------------------------------
     //------------------------------------------------------
@@ -1829,6 +1832,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	int modifier = glutGetModifiers();
 	
     bFileBrowser = FileBrowser::getInstance().getVisible();
+    
+        
+    logf( (char*)"glutKeyboardFunc(%d)", (int)key );
     
     if (tAlert.size() != 0 )
     {
@@ -1971,6 +1977,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		}
     	break;
     case 178:
+    // touche '-'
+    case 45:
     //case 'q':
     	{
             //Captures::getInstance().showIcones();
