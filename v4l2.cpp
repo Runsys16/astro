@@ -1359,7 +1359,7 @@ void Device_cam::callback(bool b, int ii, char* str)
 {
     logf( (char*)"Device_cam::callback( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
     
-    if ( b && ii == 1 )         bEnregistre = true;
+    //if ( b && ii == 1 )         bEnregistre = true;
 
     if ( ii == 10 )
     {
@@ -1378,7 +1378,10 @@ void Device_cam::callback(bool b, int ii, char* str)
         callback_charge_cam( (char*)filename.c_str() );
         capability_load(filename);
     }
-    else                        callback_enregistre(b, extra, str);
+    else
+    {
+        callback_enregistre(b, extra, str);
+    }
     
 }
 

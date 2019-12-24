@@ -396,10 +396,15 @@ bool FileBrowser::keyboard(char key, int x, int y)
 
                 if ( panelOK->getCallback() != NULL )
                 {
-                    logf( (char*)"  callback NON null " );
+                    logf( (char*)"  callback NON null extra : %d", panelOK->getCallback()->getExtra() );
 
                     switch(panelOK->getCallback()->getExtra())
                     {
+                    case 0:
+                    {
+                        panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
+                    }
+                    break;
                     case 10:
                     {
                         panelOK->getCallback()->callback( true, 10, (char*)s.c_str() );

@@ -357,6 +357,17 @@ void callback_enregistre( bool b, int ii, char* str)
     
     Camera* p = Camera_mgr::getInstance().getCurrent();
     if ( p )        p->setFilenameRec( string(str) );
+
+    FileBrowser::getInstance().cache();    
+    /*
+    vector<string> cc = split( string(str), "/" );
+    string rep = "/";
+    for( int i=0; i<cc.size()-1; i++ )    rep = rep + cc[i] + "/";
+    
+    logf( (char*)"  surveillande de : %s", (char*)rep.c_str() );
+    Surveillance::getInstance().start(rep);
+    */
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -365,6 +376,7 @@ void callback_enregistre_cam(char* str)
 {
     logf( (char*)"callback_enregistre_cam( \"%s\" )", (char*)str );
     FileBrowser::getInstance().cache();
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2150,11 +2162,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'H':
         {
-        Camera* p = Camera_mgr::getInstance().getCurrent();
-        if ( p!=NULL )
+        Camera* pCam = Camera_mgr::getInstance().getCurrent();
+        if ( pCam != NULL )
         {
     	    logf( (char*)"'H' - Enregistre  une photo de la camera courante !!" );
-            FileBrowser::getInstance().setCallBack( p );
+            FileBrowser::getInstance().setCallBack( pCam );
             FileBrowser::getInstance().setExtra( 0 );
             FileBrowser::getInstance().change_dir( workDirCaptures );
             FileBrowser::getInstance().setNewline(true);
@@ -2944,6 +2956,9 @@ static void CreateHelp()
 
 	
 	addString( "   --- Touche de fonction  DU LOGICIEL ---" );
+
+	addString( " -- Mode Camera" );
+    
 	addString( "Brightness      B/b" );
 	addString( "Contrast        C/c" );
 	addString( "Saturation      S/s" );
@@ -2952,8 +2967,11 @@ static void CreateHelp()
 	addString( "Sharpness       Z/z" );
 	addString( "Exposure        E/e" );
 	addString( "White balance   W/w" );
+	addString( "A: enregistre les parametres de la camera");
+	addString( "a: rappelle les parametres de la camera");
 	
 	addString( "" );
+	addString( " -- Mode normal" );
 	addString( "ctrl+TAB: camera suivante" );
 	addString( "o: Ouvre/Ferme la fenetre pleiades");
 	addString( "p: Pause de l'affichage de pleiades");
@@ -2983,6 +3001,7 @@ static void CreateHelp()
 	addString( "E: Sauvegarde les traces");
 	addString( "z: Charge les traces");
 	addString( "");
+	addString( "H: Change le nom d une image de la camera");
 	addString( "h: Enregistre une image de la camera courante");
 	addString( "u/U: Echelle en x sur les courbes");
 	addString( "j/J: Echelle en y sur les courbes");
