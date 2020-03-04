@@ -107,6 +107,14 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+class CallbackFits : public ButtonCallBack
+{
+public :
+    virtual     void    callback( bool, int, char* );
+};
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void                callback_enregistre(bool, int, char*);
 void                callback_enregistre_cam(char*);
 void                callback_charge_cam(char*);
@@ -191,6 +199,7 @@ void                charge_fichier(string);
 void                sauve_traces(void);
 void                charge_traces(void);
 void                suivi(void);
+void                charge_fits(string);
 
 void                getSuiviParameter();
 

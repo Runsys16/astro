@@ -172,7 +172,7 @@ void Capture::update()
 void Capture::create_preview()	{
     logf((char*)"----------- CreatePreview -------------" );
     logf((char*)"  -- %s", (char*)filename.c_str() );
-
+    
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	//panelPreview = new PanelSimple();
@@ -181,7 +181,17 @@ void Capture::create_preview()	{
     pW->setDisplayGL(displayGLnuit_cb);
 
 
-    readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+    if ( filename.find( ".fits" ) != std::string::npos )
+    {
+        logf((char*)"Fichier fits %s", (char*)filename.c_str() );
+        Fits f = Fits(filename);
+        readBgr.ptr = f.getPTR();
+    }
+    else
+    {
+        readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+    }
+
 	panelPreview = new PanelCapture(NULL, this);
 	if ( readBgr.ptr == NULL )
 	{

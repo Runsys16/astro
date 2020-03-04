@@ -1,9 +1,16 @@
 #ifndef MAIN_CPP
 #define MAIN_CPP
 
-
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <unistd.h>
+
+
+#include "Python.h"
+
+
 
 #include "main.h"
 #include "v4l2.h"
@@ -124,6 +131,7 @@ bool                bStellarium    = false;
 bool                bPleiade       = false;
 bool                bSauve         = false;
 bool                bOneFrame      = false;
+bool                bStdOut        = false;
 
 int                 wImg;
 int                 hImg;
@@ -226,10 +234,12 @@ string workDirCaptures = "/home/rene/Documents/astronomie/logiciel/script/image/
 string workDirSauvegardes = "/home/rene/.astropilot/";
 string workDirFileBrowser = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/";
 string filenameSauve = "/home/rene/.astropilot/sauvegarde.txt";
+string workDirFits = "/home/rene/Documents/astronomie/fits/";
 //--------------------------------------------------------------------------------------------------------------------
-CallbackSauveGuidage cb_sguidage;
-CallbackChargeGuidage cb_cguidage;
-CallbackFileBrowser  cb_file_browser;
+CallbackSauveGuidage    cb_sguidage;
+CallbackChargeGuidage   cb_cguidage;
+CallbackFileBrowser     cb_file_browser;
+CallbackFits            cb_fits;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -336,10 +346,28 @@ void CallbackFileBrowser::callback( bool bb, int ii, char* str)
     {
         string f = fb.getFilename();
         string d = fb.getWorkingDir();
-        logf( (char*)"  charge capture %s %s", (char*)d.c_str(), (char*)f.c_str() );
+        logf( (char*)"  charge capture %s%s", (char*)d.c_str(), (char*)f.c_str() );
         change_file( d, f );
     }
     workDirFileBrowser = fb.getWorkingDir();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CallbackFits::callback( bool bb, int ii, char* str)
+{
+    FileBrowser& fb = FileBrowser::getInstance();
+    
+    logf( (char*)"CallbackFits::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+    if ( bb && ii == 1)     
+    {
+        string f = fb.getFilename();
+        string d = fb.getWorkingDir();
+        logf( (char*)"  charge fichier fits %s%s", (char*)d.c_str(), (char*)f.c_str() );
+        //charge_fits( d+f );
+        change_file( d, f );
+    }
+    workDirFits = fb.getWorkingDir();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1148,6 +1176,7 @@ static void displayGL(void)
 
 	glutSwapBuffers();
 
+    bStdOut = true;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1441,6 +1470,61 @@ void charge_traces(void)
     fichier.close();
     logf( (char*)"Lecture de %d lignes %d", nbl );
     
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void charge_fits(string filename)
+{
+    logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
+
+    std::ifstream fichier;
+    fichier.open(filename, std::ios_base::app);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        return;
+    }
+
+    fichier.seekg( 0, fichier.end );
+    int lenght = fichier.tellg();
+    fichier.seekg( 0, fichier.beg );
+
+    #define LENGTH_HDU      2880
+    char buffer[LENGTH_HDU];
+    fichier.read(buffer, LENGTH_HDU);
+    
+    for( int i=0; i<(LENGTH_HDU/80); i++ )
+    {
+        string k = "";
+        string v = "";
+        for( int j=0; j<8; j++ )
+        {
+            k = k + buffer[i*80+j];
+        }
+        
+        if ( i==0 )
+        {
+            if ( k.find("SIMPLE") == std::string::npos )
+            {
+                logf( (char*)"[ERREUR] Ce n'est pas unfichier FITS standard 'SIMPLE' non trouve" );
+                return;
+            }
+        }
+
+        for( int j=10; j<32; j++ )
+        {
+            v = v + buffer[i*80+j];
+        }
+        logf( (char*)"%s : %s", (char*)k.c_str(), (char*)v.c_str() );
+
+        if ( k.find("END") == 0 )       break;
+    }
+
+    fichier.close();
+    
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1846,7 +1930,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     bFileBrowser = FileBrowser::getInstance().getVisible();
     
         
-    logf( (char*)"glutKeyboardFunc(%d)", (int)key );
+    logf( (char*)"glutKeyboardFunc (%d) \'%c\'", (int)key, key );
     
     if (tAlert.size() != 0 )
     {
@@ -1991,7 +2075,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 178:
     // touche '-'
     case 45:
-    //case 'q':
     	{
             //Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_plus(true);
@@ -1999,7 +2082,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    break;
     
     case 126:
-    //case 'Q':
     	{
            // Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_moins(true);
@@ -2364,6 +2446,25 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'q':
+        {
+            //Py_SetProgramName(argv[0]);  /* optional but recommended */
+            Py_Initialize();
+            PyRun_SimpleString("from time import time,ctime\n"
+                             "print( 'Hello Word' )\n");
+            Py_Finalize();
+        }
+        break;
+
+
+    case 'Q':
+        {
+            FileBrowser::getInstance().setCallBack(&cb_fits);
+            FileBrowser::getInstance().setFiltre( ".fits" );
+            FileBrowser::getInstance().change_dir( workDirFits );
+            FileBrowser::getInstance().affiche();
+        }
+        break;
     case 'r' :
         {
             FileBrowser::getInstance().setCallBack(&cb_cguidage);
@@ -2400,6 +2501,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             bSuivi = !bSuivi;
             var.set( "bSuivi", bSuivi );
+            logf( (char*)"Toggle suivi (%s)", (bSuivi? "true" : "false") );
         }
         break;
 
@@ -3254,7 +3356,7 @@ void changeRetourPos( bool b )
 //--------------------------------------------------------------------------------------------------------------------
 void log( char* chaine )
 {
-    if ( panelStdOut )          panelStdOut->affiche( chaine );
+    if ( panelStdOut && bStdOut )          panelStdOut->affiche( chaine );
     
     printf( "log : %s\n", chaine);
 }
@@ -3314,7 +3416,7 @@ void parse_option( int argc, char**argv )
     }
     */
     
-    if (!bOK)           cout <<"Pas de camera !!!" << endl;
+    //if (!bOK)           cout <<"Pas de camera !!!" << endl;
 
     char        cSize[100];
 
@@ -3732,6 +3834,7 @@ int main(int argc, char **argv)
     WindowsManager::genereMipMap( false );
     
     compute_matrix();
+    //bStdOut = true;
     glutMainLoop();
 
 

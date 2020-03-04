@@ -3,11 +3,11 @@ GPP = g++
 
 OBJDIR = ./build/
 
-INCS     =  -I"/usr/include" -I"/usr/include/freetype2"
+INCS     =  -I"/usr/include" -I"/usr/include/freetype2" -I"/usr/include/python3.5m"
 CFLAGS   = $(INCS) -g -std=c++11 -O2 -fpermissive -mtune=core2 -Wno-deprecated -Wno-unused-result
 
 PATHLIBS = -L"/usr/local/lib" -L"/usr/lib"
-LIBS	 =  $(PATHLIBS) -lbluetooth -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
+LIBS	 =  $(PATHLIBS) -lpython3.5m -lbluetooth -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
 
 BIN_NAME = astro
 
@@ -104,7 +104,7 @@ $(OBJDIR)stars.o: stars.cpp stars.h star.h panel_zoom.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)captures.o: captures.cpp captures.h stars.h capture.h main.h
+$(OBJDIR)captures.o: captures.cpp captures.h stars.h capture.h main.h fits.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
@@ -124,6 +124,10 @@ $(OBJDIR)surveillance.o: surveillance.cpp surveillance.h main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
+$(OBJDIR)fits.o: fits.cpp fits.h main.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
 
 $(BIN_NAME): $(OBJDIR)main.o $(OBJDIR)v4l2.o $(OBJDIR)control.o $(OBJDIR)timer.o $(OBJDIR)camera.o \
              $(OBJDIR)camera_mgr.o $(OBJDIR)pleiade.o $(OBJDIR)serial.o $(OBJDIR)connexion_mgr.o \
@@ -131,7 +135,7 @@ $(BIN_NAME): $(OBJDIR)main.o $(OBJDIR)v4l2.o $(OBJDIR)control.o $(OBJDIR)timer.o
              $(OBJDIR)var_mgr.o $(OBJDIR)alert_box.o $(OBJDIR)file_browser.o $(OBJDIR)panel_capture.o \
              $(OBJDIR)stars.o $(OBJDIR)star.o $(OBJDIR)panel_camera.o $(OBJDIR)panel_zoom.o \
              $(OBJDIR)captures.o $(OBJDIR)panel_dir.o $(OBJDIR)panel_file.o $(OBJDIR)bluetooth.o \
-             $(OBJDIR)surveillance.o
+             $(OBJDIR)surveillance.o $(OBJDIR)fits.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 

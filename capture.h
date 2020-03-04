@@ -8,6 +8,7 @@
 #include <WindowsManager.h>
 #include "main.h"
 #include "panel_capture.h"
+#include "fits.h"
 
 
 using namespace std;
