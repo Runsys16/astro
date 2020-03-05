@@ -32,6 +32,7 @@ protected:
     PanelText*                  pTitre;
     
     struct readBackground       readBgr;
+    Fits *                      fits;
 
 public :
     Capture();
@@ -77,6 +78,9 @@ inline bool                     getIcone()                                  { re
 
 inline void                     setFullScreen(bool b)                       { bFullScreen = b; }
 inline bool                     getFullScreen()                             { return bFullScreen; }
+
+inline bool                     isFits()                                    { return bFits; }
+inline void                     afficheFits()                               { if (fits) fits->afficheDatas(); }
 };
 
 

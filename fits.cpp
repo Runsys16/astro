@@ -30,12 +30,8 @@ Fits::Fits(string filename)
     logf( (char*)" dCD2_1 %f", dCD2_1 );    
     logf( (char*)" dCD2_2 %f", dCD2_2 );
     */
-    int nb = datas.size();
-    for( int i=0; i<nb; i++ )
-    {
-        logf( (char*)"%s : %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
-    }
     
+    afficheDatas();
     unsigned long l = (long)nNAXIS * (long)nNAXIS1 * (long)nNAXIS2;
     
     logf( (char*)"Longueur du buffer : %ld", l ); 
@@ -219,6 +215,17 @@ void Fits::getRB( struct readBackground* p )
     p->w   = readBgr.w;
     p->h   = readBgr.h;
     p->d   = readBgr.d;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::afficheDatas()
+{
+    int nb = datas.size();
+    for( int i=0; i<nb; i++ )
+    {
+        logf( (char*)"%s : %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

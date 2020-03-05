@@ -405,6 +405,7 @@ void Captures::onTop(Capture* p)
     
     logf( (char*)"  trouve  -> %s", (char*)p->getBasename().c_str() );
 
+    if ( p->isFits() )          p->afficheFits();
     bool bFull = false;
     if ( current_capture != -1 )            bFull = captures[current_capture]->getFullScreen();
     

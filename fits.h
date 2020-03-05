@@ -67,6 +67,9 @@ public :
         void                        readCD( string, string );
         void                        readCTYPE( string, string );
 
+        void                        afficheDatas();
+
+
 inline  GLubyte*                    getPTR()                { return (bValid ?  readBgr.ptr : NULL); };
 inline  int                         getW()                  { return (bValid ?  readBgr.w : 0); };
 inline  int                         getH()                  { return (bValid ?  readBgr.h : 0); };
