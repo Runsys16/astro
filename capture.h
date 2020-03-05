@@ -20,6 +20,8 @@ protected:
     bool                        bFirst;
     bool                        bIcone;
     bool                        bFullScreen;
+    bool                        bFits;
+    
     vector<string>              filenames;
     string                      filename;
     string                      dirname;

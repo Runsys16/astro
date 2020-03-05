@@ -185,11 +185,13 @@ void Capture::create_preview()	{
     {
         logf((char*)"Fichier fits %s", (char*)filename.c_str() );
         Fits f = Fits(filename);
-        readBgr.ptr = f.getPTR();
+        f.getRB(&readBgr);
+        bFits = true;
     }
     else
     {
         readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+        bFits = false;
     }
 
 	panelPreview = new PanelCapture(NULL, this);

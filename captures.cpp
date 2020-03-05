@@ -83,6 +83,7 @@ void Captures::rotate_capture_moins(bool b)
     }
     
     if ( bIcones )      { bShowIcones = true; bFullPreview = false; bShowPreview = false; }
+    else                bShowPreview = true;
     resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -116,6 +117,8 @@ void Captures::rotate_capture_plus(bool b)
     if ( bIcones )      { bShowIcones = true; bFullPreview = false; bShowPreview = false; }
     else                bShowPreview = true;
     resize_all();
+    
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

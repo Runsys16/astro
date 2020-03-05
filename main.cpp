@@ -2073,11 +2073,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		}
     	break;
     case 178:
+    	{
+            //Captures::getInstance().showIcones();
+	        //Captures::getInstance().rotate_capture_plus(true);
+	        Captures::getInstance().rotate_capture_moins(false);
+    	}
+    	break;
     // touche '-'
     case 45:
     	{
             //Captures::getInstance().showIcones();
-	        Captures::getInstance().rotate_capture_plus(true);
+	        //Captures::getInstance().rotate_capture_plus(true);
+	        Captures::getInstance().rotate_capture_moins(true);
     	}
 	    break;
     
