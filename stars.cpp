@@ -60,8 +60,9 @@ void Stars::sup(Star * p)
 Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 {
     logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
-    xm = (float) ((float)xm - (float)dx_screen)/e; 
-    ym = (float) ((float)ym - (float)dy_screen)/e; 
+    float X = (float) ((float)xm - (float)dx_screen)/e; 
+    float Y = (float) ((float)ym - (float)dy_screen)/e; 
+    logf( (char*)"  (%d, %d) => (%0.4f, %0.4f)", xm, ym, X, Y);
     
 
 
@@ -70,16 +71,27 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     pp->setWidth( RB->w );
     pp->setHeight( RB->h );
 
-    pp->chercheLum(xm, ym, 50);
+    pp->chercheLum((int)X, (int)Y, 50);
     
     int x_find = pp->getX();
     int y_find = pp->getY();
 
-    if ( starExist(x_find, y_find) )        { delete pp; logf( (char*)"Etoile existe deja ..." ); return NULL; }
+    if ( starExist(x_find, y_find) )        { 
+        delete pp;
+        logf( (char*)"Etoile existe deja ..." );
+        return NULL;
+    }
 
     pp->setXY( x_find, y_find );
     pp->find();
     //pp->setView(pView);
+    if ( x_find == -1 || y_find == -1 ) {
+        delete pp;
+        logf( (char*)"Pas d'Etoile ..." );
+        return NULL;
+    }
+    
+    logf( (char*)"Stars::addStar() appelle star::updatePos()" );
     pp->updatePos( dx_screen, dy_screen, e ); 
     pp->computeMag();
     pp->getMagnitude();
@@ -87,7 +99,8 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
     v_tStars.push_back( pp );
 
-    logf( (char*)"Nouvelle etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), xm, ym, pp->getMagnitude() );
+    logf( (char*)"Stars::addStar( Nouvelle etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), xm, ym, pp->getMagnitude() );
+    logf( (char*)"  x_find, y_find (%d, %d)", x_find, y_find );
     
     return pp;
     
@@ -305,6 +318,9 @@ void Stars::selectRight( int xp, int yp)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
 {
+    int nb = v_tStars.size();
+    if (nb == 0)        return;
+
     if ( rb != NULL )       RB = rb;
     if ( pview != NULL )    pView = pview;
     
@@ -316,7 +332,7 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
     //logf( (char*)"Stars::update() dx=%d, dy=%d, ech=%0.2f", dx, dy, ech );
     //logf( (char*)"     w=%d, h=%d", RB->w, RB->h );
 
-    int nb = v_tStars.size();
+
     for( int i=0; i<nb; i++ )
     {
         v_tStars[i]->setRB( RB );

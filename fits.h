@@ -55,7 +55,10 @@ protected:
 
 public :
         Fits(string);
+        ~Fits();
+        
         void                        charge(string);
+        void                        chargeTexture();
         
         int                         getInt( string );
         double                      getDouble( string );
@@ -67,6 +70,7 @@ public :
         void                        readCD( string, string );
         void                        readCTYPE( string, string );
 
+        void                        afficheDic();
         void                        afficheDatas();
 
 

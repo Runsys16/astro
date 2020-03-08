@@ -135,7 +135,7 @@ void PanelZoom::setPosAndSize(int xx, int yy, int ddx, int ddy)
         pFond->setPosAndSize( xFond, yFond, dxFond, dyFond );
         //logf( (char*)"pFond->SetPosAndSizep(%0.2f, %0.2f, %0.2f, %0.2f)", xFond, yFond, dxFond, dyFond );
         pFond->deleteBackground();
-        pFond->setBackground( pReadBgr->ptr, pReadBgr->w, pReadBgr->h, 3);
+        pFond->setBackground( pReadBgr->ptr, pReadBgr->w, pReadBgr->h, pReadBgr->d);
         ajuste();
     }
     else
@@ -251,8 +251,9 @@ void PanelZoom::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelZoom::releaseLeft(int xm, int ym)
 {
+    logf( (char*)"PanelZoom::releaseLeft(xm=%d, ym=%d)", xm, ym );
 }
-
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

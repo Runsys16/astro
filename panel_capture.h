@@ -64,8 +64,15 @@ public:
     void                setCentX(float f);
     void                setCentY(float f);
     
+    int                 screen2texX( int );
+    int                 screen2texY( int );
     void                screen2tex( int&, int& );
+
+    int                 tex2screenX( int );
+    int                 tex2screenY( int );
     void                tex2screen( int&, int& );
+    
+    void                printObjet();
     
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
 inline float            getEchelle()                                    { return ech_user; }

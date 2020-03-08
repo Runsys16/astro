@@ -120,7 +120,7 @@ void PanelCapture::setEchelle(float f)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::update()
 {
-    if  ( pReadBgr==NULL )      logf( (char*)"PanelCamera::update()   pointeur RB NULL" );
+    if  ( pReadBgr==NULL )      logf( (char*)"PanelCapture::update()   pointeur RB NULL" );
 
     //Panel* pParent = getParent();
     stars.update( getX(), getY(), this, pReadBgr );
@@ -145,7 +145,9 @@ void PanelCapture::updatePos()
     
     if ( coef != ech_geo )
     {
-        logf( (char*)"Changement d'echelle ech_geo=%0.2f ech_user=%0.2f", coef, ech_user );
+        logf( (char*)"PanelCapture::updatePos() Changement d'echelle" );
+        logf( (char*)"  %s", pCapture!=NULL? (char*)pCapture->getBasename().c_str() : (char*)"" );
+        logf( (char*)"  ech_geo=%0.2f ech_user=%0.2f", coef, ech_user );
         ech_geo = coef;
     }
     
@@ -155,7 +157,9 @@ void PanelCapture::updatePos()
 
     setSize( fDX*ech_user, fDY*ech_user );
     setCent();
-    
+
+    stars.update(getParent()->getX(), getParent()->getY(), this, NULL );
+
     PanelSimple::updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -281,9 +285,9 @@ void PanelCapture::clickRight(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::releaseRight(int xm, int ym)
 {
-    logf( (char*)"PanelCamera::releaseRight(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCapture::releaseRight(%d,%d) ...", xm, ym );
+    printObjet();
     if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
-    logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
     
     //float e = (float)getDX() / (float)pReadBgr->w; 
     float e = (float)getDX() / (float)1920.0; 
@@ -293,15 +297,17 @@ void PanelCapture::releaseRight(int xm, int ym)
     
     stars.setView( this->getParent() );
     stars.setRB( pReadBgr );
+    /*
     if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         stars.selectRight(xx, yy);
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::wheelUp(int xm, int ym)
 {
-    logf( (char*)"PanelCamera::wheelUp(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCapture::wheelUp(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
     Captures::getInstance().glutSpecialFunc(104, xm, ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -309,7 +315,7 @@ void PanelCapture::wheelUp(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::wheelDown(int xm, int ym)
 {
-    logf( (char*)"PanelCamera::wheelDown(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCapture::wheelDown(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
     Captures::getInstance().glutSpecialFunc(105, xm, ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -319,7 +325,7 @@ void PanelCapture::clickMiddle(int xm, int ym)
 {
     xm_old = xm;
     ym_old = ym;
-    logf( (char*)"PanelCamera::clickMiddle(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCapture::clickMiddle(%d,%d) ...", xm, ym );
     Captures::getInstance().setCurrent( pCapture );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -327,7 +333,7 @@ void PanelCapture::clickMiddle(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::motionMiddle(int xm, int ym)
 {
-    //logf( (char*)"PanelCamera::motionMiddle(%d,%d) ...", xm, ym );
+    //logf( (char*)"PanelCapture::motionMiddle(%d,%d) ...", xm, ym );
     //logf( (char*)"    delta (%d,%d) ...", xm-xm_old, ym-ym_old );
     float deltaX, deltaY;
     
@@ -347,28 +353,71 @@ void PanelCapture::releaseMiddle(int xm, int ym)
 {
     xm_old = -1;
     ym_old = -1;
-    logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCapture::releaseMiddle(%d,%d) ...", xm, ym );
     logf( (char*)"  ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int PanelCapture::screen2texX( int x )
+{
+    return (float)x * ech_geo / ech_user + dx;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int PanelCapture::screen2texY( int y )
+{
+    return (float)y * ech_geo / ech_user + dy;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::screen2tex(int& x, int& y)
 {
-    x = (float)x * ech_geo / ech_user + dx;
-    y = (float)y * ech_geo / ech_user + dy;
+    x = screen2texX(x);
+    y = screen2texY(y);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int PanelCapture::tex2screenX( int x )
+{
+    return (float)( x-dx) * ech_user / ech_geo;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int PanelCapture::tex2screenY( int y )
+{
+    return (float)( y-dy) * ech_user / ech_geo;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::tex2screen(int& x, int& y)
 {
-    x = (float)( x-dx) * ech_user / ech_geo;
-    y = (float)( y-dy) * ech_user / ech_geo;
+    x = tex2screenX(x);
+    y = tex2screenY(y);
 }
-
-
-
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::printObjet()
+{
+    logf( (char*)"   this->dx=%d", dx );
+    logf( (char*)"   this->dy=%d", dy );
+    logf( (char*)"   this->ech_geo=%0.4f",  ech_geo );
+    logf( (char*)"   this->ech_user=%0.4f", ech_user );
+    if ( pReadBgr == NULL )    {
+        logf( (char*)"   pReadBgr = NULL" );
+    } else {
+        logf( (char*)"  this->pReadBgr->w %d", pReadBgr->w );
+        logf( (char*)"  this->pReadBgr->h %d", pReadBgr->h );
+        logf( (char*)"  this->pReadBgr->d %d", pReadBgr->d );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

@@ -35,6 +35,7 @@ Star::Star(int X, int Y)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::init(int xx, int yy)
 {
+    logf( (char*)"Star::init(%d,%d)", xx, yy );
     x           = xx;
     y           = yy;
     ech         = 1.0;
@@ -47,6 +48,7 @@ void Star::init(int xx, int yy)
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
     panelZoom   = NULL;
     RB          = NULL;
+    pView       = NULL;
     
     ra_rad      = 9999.0;
     dc_rad      = 9999.0;
@@ -94,7 +96,10 @@ void Star::setView(Panel* p)
 //--------------------------------------------------------------------------------------------------------------------
 int Star::getOffset( int X, int Y )
 {
-    return 3*(X) + 3*(Y)* width;
+    int d = 3;
+    if (RB!= NULL)          d = RB->d;
+
+    return d*(X) + d*(Y)* width;
 }
 /*
 //--------------------------------------------------------------------------------------------------------------------
@@ -500,16 +505,32 @@ void Star::getFWHM( int xx, int yy, int size)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCercle(int rayon)
 {
-    int x = x_screen;
-    int y = y_screen;
+    int delta_x = 0;
+    int delta_y = 0;
+    
+    if (pView!=NULL) {
+        delta_x = pView->getX();
+        delta_y = pView->getY();
+        //logf( (char*)"Star::glCercle() : delta(%d, %d)", delta_x, delta_y );
+    }
+    delta_x = 0;
+    delta_y = 0;
 
+    int xx = x_screen - delta_x;
+    int yy = y_screen - delta_y;
 
+    /*
+    xx = x;
+    yy = y;
+    screen2tex(x, y);
+    */
+    //logf( (char*)"Star::glCercle() : (%d, %d)  (%d, %d)", xx, yy, x, y );
 	glBegin(GL_LINE_LOOP);
 
         for( float i=0; i<=360.0; i+=1.0 )
         {
-            float fx = (float)x+ (float)rayon*cos(DEG2RAD(i));
-            float fy = (float)y+ (float)rayon*sin(DEG2RAD(i));
+            float fx = (float)xx+ (float)rayon*cos(DEG2RAD(i));
+            float fy = (float)yy+ (float)rayon*sin(DEG2RAD(i));
             glVertex2i(fx,fy);
         }
         
@@ -587,6 +608,7 @@ void Star::screen2tex(int& X, int& Y)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::updatePos(int X, int Y, float e)
 {
+    //logf( (char*)"Star::updatePos(int %d, int %d, float %f)", X, Y, e );
     dx_screen = X;
     dy_screen = Y;
     

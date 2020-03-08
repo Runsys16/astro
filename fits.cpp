@@ -10,81 +10,18 @@ Fits::Fits(string filename)
     bValid = false;
 
     charge(filename);
-    /*
-    logf( (char*)" nBITPIX %d", nBITPIX );    
-
-    logf( (char*)" nNAXIS  %d", nNAXIS );    
-    logf( (char*)" nNAXIS1 %d", nNAXIS1 );    
-    logf( (char*)" nNAXIS2 %d", nNAXIS2 );    
-    logf( (char*)" nNAXIS3 %d", nNAXIS3 );    
-
-    logf( (char*)" dCRPIX1 %f", dCRPIX1 );    
-    logf( (char*)" dCRVAL1 %f", dCRVAL1 );    
-
-    logf( (char*)" dCRPIX2 %f", dCRPIX2 );    
-    logf( (char*)" dCRVAL2 %f", dCRVAL2 );    
-
-    logf( (char*)" dCD1_1 %f", dCD1_1 );    
-    logf( (char*)" dCD1_2 %f", dCD1_2 );    
-
-    logf( (char*)" dCD2_1 %f", dCD2_1 );    
-    logf( (char*)" dCD2_2 %f", dCD2_2 );
-    */
+    chargeTexture();
     
+    afficheDic();
     afficheDatas();
-    unsigned long l = (long)nNAXIS * (long)nNAXIS1 * (long)nNAXIS2;
-    
-    logf( (char*)"Longueur du buffer : %ld", l ); 
-
-    if ( l>0 )      
-    {
-        bValid = true;
-        readBgr.w = nNAXIS1;
-        readBgr.h = nNAXIS2;
-        readBgr.d = nNAXIS;
-    }
-
-    GLubyte* pBuffer;
-    pBuffer = (GLubyte*)malloc( l );
-
-    std::ifstream fichier;
-    fichier.open(filename, std::ios_base::app);
-    if ( !fichier ) 
-    {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
-        return;
-    }
-
-
-    fichier.seekg( LENGTH_HDU, fichier.beg );
-
-    fichier.read(pBuffer, l );
-    fichier.close();    
-
-
-    GLubyte* pBuffer0;
-    pBuffer0 = (GLubyte*)malloc( l );
-    
-    unsigned long s = (long)nNAXIS1 * (long)nNAXIS2;
-
-    for( unsigned long ll=0; ll<s; ll++ )
-    {
-    
-        GLubyte R, G, B;
-        R = pBuffer[ll+0];
-        G = pBuffer[ll+s];
-        B = pBuffer[ll+2*s];
-        
-        pBuffer0[ll*3+0] = R;
-        pBuffer0[ll*3+1] = G;
-        pBuffer0[ll*3+2] = B;
-        
-    }
-
-    free( pBuffer );
-    readBgr.ptr = pBuffer0;
-
-
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+Fits::~Fits()
+{
+    if ( readBgr.ptr != NULL )          free( readBgr.ptr );
+    readBgr.ptr = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -96,7 +33,7 @@ void Fits::charge(string filename)
     logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
 
     std::ifstream fichier;
-    fichier.open(filename, std::ios_base::app);
+    fichier.open(_filename, std::ios_base::app);
 
     if ( !fichier ) 
     {
@@ -129,17 +66,15 @@ void Fits::charge(string filename)
             }
         }
         
-
         for( int j=10; j<80; j++ )
         {
             v = v + buffer[i*80+j];
         }
-        //logf( (char*)"%s : %s", (char*)k.c_str(), (char*)v.c_str() );
 
-             if ( k.find("BITPIX") != std::string::npos )           readBITPIX(v);
-        else if ( k.find("NAXIS")  != std::string::npos )           readNAXIS( k, v );
-        else if ( k.find("CR")     == 0 )                           readCR( k, v );
-        else if ( k.find("CD")     == 0 )                           readCD( k, v );
+             if ( k.find("BITPIX") == 0 )               readBITPIX(v);
+        else if ( k.find("NAXIS")  == 0 )               readNAXIS( k, v );
+        else if ( k.find("CR")     == 0 )               readCR( k, v );
+        else if ( k.find("CD")     == 0 )               readCD( k, v );
         
         row r;
         r.key = k;
@@ -153,6 +88,63 @@ void Fits::charge(string filename)
     fichier.close();
     
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::chargeTexture()
+{
+    unsigned long l = (long)nNAXIS * (long)nNAXIS1 * (long)nNAXIS2;
+    
+    logf( (char*)"Longueur du buffer : %ld", l ); 
+
+    if ( l>0 )      
+    {
+        bValid = true;
+        readBgr.w = nNAXIS1;
+        readBgr.h = nNAXIS2;
+        readBgr.d = nNAXIS;
+    }
+
+    GLubyte* pBuffer;
+    pBuffer = (GLubyte*)malloc( l );
+
+    std::ifstream fichier;
+    fichier.open(_filename, std::ios_base::app);
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)_filename.c_str() );
+        return;
+    }
+
+
+    fichier.seekg( LENGTH_HDU, fichier.beg );
+
+    fichier.read((char*)pBuffer, l );
+    fichier.close();    
+
+    // Buffer sous la forme
+    // RRRGGGBBB => RGBRGBRGB
+
+    GLubyte* pBuffer0;
+    pBuffer0 = (GLubyte*)malloc( l );
+    
+    unsigned long s = (long)nNAXIS1 * (long)nNAXIS2;
+
+    for( unsigned long ll=0; ll<s; ll++ )
+    {
+        GLubyte R, G, B;
+        R = pBuffer[ll+0];
+        G = pBuffer[ll+s];
+        B = pBuffer[ll+2*s];
+        
+        pBuffer0[ll*3+0] = R;
+        pBuffer0[ll*3+1] = G;
+        pBuffer0[ll*3+2] = B;   
+    }
+
+    free( pBuffer );
+    readBgr.ptr = pBuffer0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -219,13 +211,39 @@ void Fits::getRB( struct readBackground* p )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::afficheDatas()
+void Fits::afficheDic()
 {
+    logf( (char*)"Affichage des donnes FITS" );
+
     int nb = datas.size();
     for( int i=0; i<nb; i++ )
     {
-        logf( (char*)"%s : %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
+        logf( (char*)" - %s : %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::afficheDatas()
+{
+    logf( (char*)"Resultat parser" );
+    logf( (char*)" - nBITPIX %d", nBITPIX );    
+    logf( (char*)" - nNAXIS  %d", nNAXIS );    
+    logf( (char*)" - nNAXIS1 %d", nNAXIS1 );    
+    logf( (char*)" - nNAXIS2 %d", nNAXIS2 );    
+    logf( (char*)" - nNAXIS3 %d", nNAXIS3 );    
+
+    logf( (char*)" - dCRPIX1 %f", dCRPIX1 );    
+    logf( (char*)" - dCRVAL1 %f", dCRVAL1 );    
+
+    logf( (char*)" - dCRPIX2 %f", dCRPIX2 );    
+    logf( (char*)" - dCRVAL2 %f", dCRVAL2 );    
+
+    logf( (char*)" - dCD1_1 %f", dCD1_1 );    
+    logf( (char*)" - dCD1_2 %f", dCD1_2 );    
+
+    logf( (char*)" - dCD2_1 %f", dCD2_1 );    
+    logf( (char*)" - dCD2_2 %f", dCD2_2 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

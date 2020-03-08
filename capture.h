@@ -57,6 +57,7 @@ public :
     void                        setColor(long);
     
     virtual void                update();
+    void                        afficheFits();
     
 inline rb_t *                   getRB()                                     { return &readBgr; }
 
@@ -80,7 +81,6 @@ inline void                     setFullScreen(bool b)                       { bF
 inline bool                     getFullScreen()                             { return bFullScreen; }
 
 inline bool                     isFits()                                    { return bFits; }
-inline void                     afficheFits()                               { if (fits) fits->afficheDatas(); }
 };
 
 
