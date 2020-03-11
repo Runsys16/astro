@@ -297,6 +297,10 @@ void PanelCapture::releaseRight(int xm, int ym)
     
     stars.setView( this->getParent() );
     stars.setRB( pReadBgr );
+    if ( pCapture != NULL )
+    {
+        if ( pCapture->isFits() )       pCapture->afficheFits();
+    }
     /*
     if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         stars.selectRight(xx, yy);

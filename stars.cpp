@@ -110,6 +110,13 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 //--------------------------------------------------------------------------------------------------------------------
 bool Stars::starExist(int xp, int yp )
 {
+    return starExist( xp, yp, -1 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool Stars::starExist(int xp, int yp, int no )
+{
     int nb = v_tStars.size();
     for( int n=0; n<nb; n++ )
     {
@@ -120,7 +127,7 @@ bool Stars::starExist(int xp, int yp )
         int dy = abs(yp-y_star);
         
         //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
-        if ( dx < 8 && dy < 8 )       return true;
+        if ( dx < 8 && dy < 8 && n!=no )          return true;
     }
     
     return false;
@@ -259,14 +266,28 @@ void Stars::suivi(rb_t* p)
 {
     int nb = v_tStars.size();
     setRB(p);
+    int j = 0;
+    vector<int> t;
+    
     for (int i=0; i<nb; i++ )
     {
         float e = (float)pView->getDX() / (float)RB->w; 
         //logf((char*)"Stars::suivi() w=%d h=%d  delta window (%d, %d)", p->w, p->h, pView->getDX(), pView->getDY() );
 
-        v_tStars[i]->find();
+        if ( !v_tStars[i]->find()   )
+        {
+            t.push_back(i);
+        }
         v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
         v_tStars[i]->suivi();
+    }
+ 
+    nb = t.size();   
+    logf( (char*)" Erase NB %d ", nb );
+    
+    for (int i=0; i<nb; i++ )
+    {
+        logf( (char*)" Erase %d ", t[i] );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -318,6 +339,8 @@ void Stars::selectRight( int xp, int yp)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
 {
+    //logf( (char*)"Stars::update()  --- DEB ---" );
+    
     int nb = v_tStars.size();
     if (nb == 0)        return;
 
@@ -332,16 +355,55 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
     //logf( (char*)"Stars::update() dx=%d, dy=%d, ech=%0.2f", dx, dy, ech );
     //logf( (char*)"     w=%d, h=%d", RB->w, RB->h );
 
+    vector<int> t;
+    t.clear();
 
     for( int i=0; i<nb; i++ )
     {
         v_tStars[i]->setRB( RB );
-        v_tStars[i]->find();
+
+        if ( !v_tStars[i]->find()   )
+        {
+            t.push_back(i);
+            //logf( (char*)" Stars::update() push_back = %d", i );
+        }
+        //*
+        else
+        {
+            int x_find = v_tStars[i]->getX();
+            int y_find = v_tStars[i]->getY();
+
+            if ( starExist(x_find, y_find, i) )        { 
+                t.push_back(i);
+            }
+        }
+        //*/       
         //v_tStars[i]->computeMag();
         v_tStars[i]->updatePos( dx, dy, ech );
     }
+    //* 
+    nb = t.size();
+    int tot = v_tStars.size();    
+    if ( nb!= 0 )
+    {   
+        //logf( (char*)" Stars::update() debut Erase NB %d/%d  = %d", nb, tot, tot-nb );
+    
+        for (int i=nb; i!=0; i-- )
+        {
+            int j = t[i-1];
+            
+            //logf( (char*)" Stars::update() erase no %d  (%d) ", j, tot );
+            delete v_tStars[j];
+            v_tStars.erase( v_tStars.begin()+j );
 
+            tot = v_tStars.size();
+        
+            //logf( (char*)" Stars::update()  reste %d", tot );
+        }
+    }
 
+    //logf( (char*)"Stars::update()  --- FIN ---" );
+    //*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

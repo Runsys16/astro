@@ -39,8 +39,8 @@ public:
     bool                chercheLum(int X, int Y, int size);
     bool                chercheLum(int X, int Y, int size, int limit);
 
-    void                find(int);
-    void                find();
+    bool                find(int);
+    bool                find();
     
     
     float               getColorR(int);

@@ -10,8 +10,15 @@ Star::~Star()
     if (panelZoom != NULL)
     {
         pView->sup( panelZoom );
+        //pView->sup( pInfo );
+
+        Panel*  panelPreview = pInfo->getParent();
+        panelPreview->sup(pInfo);
+
         delete panelZoom;
         panelZoom = NULL;
+        delete pInfo;
+        pInfo = NULL;
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -369,12 +376,12 @@ bool Star::chercheLum(int X, int Y, int size, int limit)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::find( int size)
+bool Star::find( int size)
 {
     struct sky_point point;
     
-
-    for( int i=0; i<size; i++ )
+    int i;
+    for( i=0; i<size; i++ )
     {
         limitLum = 20.0;
         bool bTrouve = cherche(x, y, i);
@@ -395,13 +402,19 @@ void Star::find( int size)
             break;
         }
     }
+
+    if ( i == size )    {
+        logf( (char*)"Iteration Max : %d", size );
+        return false;
+    }
+    return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::find()
+bool Star::find()
 {
-    find(500);
+    return find(500);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
