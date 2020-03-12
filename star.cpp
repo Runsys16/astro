@@ -10,13 +10,16 @@ Star::~Star()
     if (panelZoom != NULL)
     {
         pView->sup( panelZoom );
-        //pView->sup( pInfo );
-
-        Panel*  panelPreview = pInfo->getParent();
-        panelPreview->sup(pInfo);
 
         delete panelZoom;
         panelZoom = NULL;
+    }
+
+    if (pInfo != NULL)
+    {
+        Panel*  pp = pInfo->getParent();
+        if ( pp != NULL )     pp->sup(pInfo);
+
         delete pInfo;
         pInfo = NULL;
     }

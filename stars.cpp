@@ -46,10 +46,11 @@ void Stars::sup(Star * p)
         Star* ps = v_tStars[n];
         if ( ps == p )
         {
-            Panel* pPanel = p->getInfo()->getParent();
-            pPanel->sup( p->getInfo() );
+            
+            //Panel* pPanel = p->getInfo()->getParent();
+            //pPanel->sup( p->getInfo() );
             v_tStars.erase( v_tStars.begin() + n );
-            p = 0;
+            delete p;
             return;
         }
     }
@@ -214,8 +215,8 @@ void Stars::deleteAllStars()
     for( int n = nb-1; n>=0; n-- )
     {
         Star* p = v_tStars[n];
-        Panel*  panelPreview = p->getInfo()->getParent();
-        panelPreview->sup(p->getInfo());
+        //Panel*  panelPreview = p->getInfo()->getParent();
+        //panelPreview->sup(p->getInfo());
         delete p;
         v_tStars.pop_back();
         p=0;

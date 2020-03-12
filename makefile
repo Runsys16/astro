@@ -3,14 +3,14 @@ GPP = g++
 
 OBJDIR = ./build/
 
-CFLAG_PYTHON = `pkg-config --cflags python3`
+CFLAGS_PYTHON = `pkg-config --cflags python3`
 CLIBS_PYTHON = `pkg-config --libs python3`
 
-INCS     =  -I"/usr/include" -I"/usr/include/freetype2" -I"/usr/include/python3.5m"
-CFLAGS   = $(INCS) $(CFLAG_PYTHON) -g -std=c++11 -O2 -fpermissive -mtune=core2 -Wno-deprecated -Wno-unused-result
+INCS     =  -I"/usr/include" -I"/usr/include/freetype2" $(CFLAGS_PYTHON)
+CFLAGS   = $(INCS) -g -std=c++11 -O2 -fpermissive -mtune=core2 -Wno-deprecated -Wno-unused-result
 
 PATHLIBS = -L"/usr/local/lib" -L"/usr/lib"
-LIBS	 =  $(PATHLIBS) $(CLIBS_PYTHON) -lpython3.5m -lbluetooth -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
+LIBS	 =  $(PATHLIBS) $(CLIBS_PYTHON) -lbluetooth -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
 
 BIN_NAME = astro
 
