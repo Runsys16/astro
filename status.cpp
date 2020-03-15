@@ -54,6 +54,8 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
 void cb_up_fleche_haut(PanelButton* pPanel)
 {
     char s[20];
+    float err = panelCourbe->get_err();
+    
     if ( pPanel == pFlecheHaut )
     {
         err /= 0.9;
@@ -63,15 +65,16 @@ void cb_up_fleche_haut(PanelButton* pPanel)
         err *= 0.9;
     }
 
+    panelCourbe->set_err( err );
     var.set( "err", err );
 
     sprintf( s, "+%0.2f", err );
-    pXMax->changeText( (char*)s );
-    pYMax->changeText( (char*)s );
+    panelCourbe->get_pXMax()->changeText( (char*)s );
+    panelCourbe->get_pYMax()->changeText( (char*)s );
 
     sprintf( s, "-%0.2f", err );
-    pXMin->changeText( (char*)s );
-    pYMin->changeText( (char*)s );
+    panelCourbe->get_pXMin()->changeText( (char*)s );
+    panelCourbe->get_pYMin()->changeText( (char*)s );
 
 	logf( (char*)"Button fleche up() : err=%0.2f", err );
 }

@@ -28,13 +28,14 @@
 #include "file_browser.h"
 #include "captures.h"
 #include "bluetooth.h"
+#include "panel_courbe.h"
 //#include "star.h"
 
 //#define DEBUG 1
 #define SIZEPT  20
 //#define AXE_X   (300.0/4.0)
 //#define AXE_Y   (3.0*300.0/4.0)
-float   xStartAxe = 50.0;
+//float   xStartAxe = 50.0;
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -50,7 +51,8 @@ string              currentDirectory = "/home/rene/Documents/astronomie/logiciel
 //PanelConsole *      pConsoleSerial;
 PanelWindow *       panelHelp;
 PanelWindow *       panelResultat;
-PanelWindow *       panelCourbe;
+//PanelWindow *       panelCourbe;
+PanelCourbe *       panelCourbe;
 PanelWindow *       panelStdOutW;
 
 //PanelSimple *       panelPreView;
@@ -72,10 +74,12 @@ PanelText*          pAD;
 PanelText*          pDC;
 PanelText*          pMode;
 PanelText*          pAsservi;
+/*
 PanelText*          pXMax;
 PanelText*          pXMin;
 PanelText*          pYMax;
 PanelText*          pYMin;
+*/
 
 PanelText*          pHertz;
 PanelText*          pFPS;
@@ -173,12 +177,14 @@ vector<vec2>        t_vSauve;
 vector<vector<vec2> * >        t_vTrace;
 bool                bAffTrace = false;
 bool                bRecTrace = false;
+/*
 float               offset_x;
 float               offset_y;
 float               delta_courbe1 = 1.0;
 float               delta_courbe2 = 1.0;
 float               courbe1 = 1.0;
 float               courbe2 = 1.0;
+*/
 int                 decal_resultat = 0;
 vec4                colorTraces[] = 
                         {
@@ -208,8 +214,8 @@ vec3                vTr;
 bool                bCorrection = false;
 float               fTimeCorrection = 3.0;
 float               fTimeCpt = 0.0;
-float               err = 2.0;
-#define err         err
+//float               err = 2.0;
+//#define err         err
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -834,201 +840,6 @@ void displayGLCamera_cb(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void glEchelleAxe( int AXE, int SIZE, float max, float min, PanelText* pMax, PanelText* pMin )
-{
-    float gris = 0.3;
-    vec4 color, colorLimit, colorAxe;
-    
-    if ( var.getb("bNuit") )
-    {
-        color       = vec4( 0.15, 0.0, 0.0, 1.0 );    
-        colorLimit  = vec4( 0.8, 0.0, 0.0, 1.0 );    
-        colorAxe    = vec4( 1.0, 0.0, 0.0, 1.0 );
-    }
-    else                            
-    {
-        gris = 0.15;
-        color       = vec4( gris, gris, gris, 1.0 );
-        colorLimit  = vec4( 1.0, 0.0, 1.0, 1.0 );
-        colorAxe    = vec4( 1.0, 1.0, 1.0, 1.0 );
-    }
-    
-    glBegin(GL_LINES);
-
-        //
-        // graduation horizontale
-        //
-        glColor4fv( (GLfloat*)&color );
-        int pas = delta_courbe1;
-        float fPas = delta_courbe1;
-        while( fPas < 10.0 )     fPas += courbe1;
-
-        for( float i=0; i<SIZE/2; i+=fPas )
-        {
-            int x = xStartAxe;
-            int y = AXE + i;
-            panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(y);
-            glVertex2i( x, y );
-            x += panelCourbe->getPosDX();
-            glVertex2i( x, y );
-
-            x = xStartAxe;
-            y = AXE - i;
-            panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(y);
-            glVertex2i( x, y );
-            x += panelCourbe->getPosDX();
-            glVertex2i( x, y );
-        }
-        //
-        // graduation verticale
-        //
-        fPas = courbe1;
-        while( fPas < 10.0 )     fPas += courbe1;
-        for( float i=xStartAxe; i<2000; i+=fPas )
-        {
-            int x = i;
-            int y = AXE;
-            panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(y);
-            y -= SIZE/2;
-            glVertex2i( x, y );
-            
-            y += SIZE;
-            glVertex2i( x, y );
-        }
-        //
-        // axe horizontale centrale
-        //
-        glColor4fv( (GLfloat*)&colorAxe );
-        int y = AXE;
-        int x = xStartAxe;
-
-        panelCourbe->x2Screen(x);
-        panelCourbe->y2Screen(y);
-
-        glVertex2i( x, y );
-        x += panelCourbe->getPosDX();
-        glVertex2i( x, y );
-        //
-        // Limite horizontale
-        // Min et Max
-        //
-        glColor4fv( (GLfloat*)&colorLimit );
-
-        y = (float)(delta_courbe1*(min) + AXE);
-        if ( pMax != NULL )     pMax->setPos( 5, y-7 );
-        panelCourbe->y2Screen(y);
-        glVertex2i( xStartAxe, y );
-        glVertex2i( x, y );
-
-        y = (float)(delta_courbe1*(max) + AXE);
-        if ( pMin != NULL )     pMin->setPos( 5, y-7 );
-        panelCourbe->y2Screen(y);
-        glVertex2i( xStartAxe, y );
-        glVertex2i( x, y );
-
-        glColor4fv( (GLfloat*)&colorAxe );
-    glEnd();        
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void glEchelle()
-{
-    int  AXE_X = (float)panelCourbe->getDY()/4.0;
-    int  AXE_Y = (3.0*(float)panelCourbe->getDY()/4.0);
-    
-    int dy_axe = (float)panelCourbe->getDY() / 2.0;
-    
-    glEchelleAxe( AXE_X, dy_axe, (float)+err, (float)-err, pXMax, pXMin );
-    glEchelleAxe( AXE_Y, dy_axe, (float)+err, (float)-err, pYMax, pYMin );
-
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void displayResultat_cb(void)
-{
-    
-    int DY = panelCourbe->getY();
-    int n = t_vResultat.size();
-    
-    int  AXE_X = (float)panelCourbe->getDY()/4.0;
-    int  AXE_Y   (3.0*(float)panelCourbe->getDY()/4.0);
-
-    /*
-    if ( bCorrection || bRestauration )
-    {
-        offset_x = vOrigine.x;
-        offset_y = vOrigine.y;
-    }
-    */
-    offset_x = vOrigine.x;
-    offset_y = vOrigine.y;
-
-    glEchelle();
-    
-    if ( decal_resultat >= t_vResultat.size() )     return;
-    
-    if ( n != 0  )
-    {
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-        else                            glColor4f( 0.0, 0.0, 1.0, 1.0 );
-        
-        glBegin(GL_LINE_STRIP);
-        int deb = decal_resultat;
-        int fin = deb + 2000.0/courbe1;
-        
-        if ( fin >= t_vResultat.size() )        fin = t_vResultat.size();
-        if ( deb <= 0 )                          deb = 0;
-        //int fin = t_vResultat.size()-decal_resultat;
-        //logf( 
-        //for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
-        for( int i=deb; i<fin; i++ )
-        {
-            float y = t_vResultat[n-i-1].x - offset_x;
-            y = (float)(delta_courbe1*(y) + AXE_X);
-            int x = (i-deb)*courbe1 + xStartAxe;
-
-            int Y = y;
-            panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(Y);
-
-
-            glVertex2i( x, Y );
-            //logf( "%d %0.2f %0.2f y=%0.2f", n-i-1, t_vResultat[i].x, offset_x, y );
-        }
-        glEnd();        
-
-        
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-        else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
-        glBegin(GL_LINE_STRIP);
-        //for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
-        for( int i=deb; i<fin; i++ )
-        {
-            float y = t_vResultat[n-i-1].y - offset_y;
-            y = (float)(delta_courbe2*(y) + AXE_Y);
-            int x = (i-deb)*courbe2 + xStartAxe;
-
-            int Y = y;
-            panelCourbe->x2Screen(x);
-            panelCourbe->y2Screen(Y);
-
-            glVertex2i( x, Y );
-        }
-        glEnd();   
-        
-    }     
-    
-    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 int getOffset( int x, int y, int width )
 {
     return 3*(x) + 3*(y)* width;
@@ -1631,10 +1442,10 @@ void getSuiviParameter(void)
     Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
     //cam_mgr.active();
 
-    xCam = cam_mgr.get_xCam();
-    yCam = cam_mgr.get_yCam();
-    dxCam = cam_mgr.get_dxCam();
-    dyCam = cam_mgr.get_dyCam();
+    panelCourbe->set_xCam( cam_mgr.get_xCam() );
+    panelCourbe->set_yCam( cam_mgr.get_yCam() );
+    panelCourbe->set_dxCam( cam_mgr.get_dxCam() );
+    panelCourbe->set_dyCam( cam_mgr.get_dyCam() );
 
     vCameraSize.x = 1920.0;
     vCameraSize.y = 1080;
@@ -1642,8 +1453,8 @@ void getSuiviParameter(void)
 
     //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
     //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
-    rw = (float)vCameraSize.x/(float)dxCam;
-    rh = (float)vCameraSize.y/(float)dyCam;
+    rw = (float)vCameraSize.x/(float)panelCourbe->get_dxCam();
+    rh = (float)vCameraSize.y/(float)panelCourbe->get_dyCam();
 
     /* 
     logf( (char*)"-------------------------------------" );
@@ -1822,7 +1633,7 @@ static void idleGL(void)
 
 	        float dx = xSuivi - vOrigine.x;
 	        float dy = ySuivi - vOrigine.y;
-	        if ( fabs(dx) > err || fabs(dy) > err )
+	        if ( fabs(dx) > panelCourbe->get_err() || fabs(dy) > panelCourbe->get_err() )
 	        {
 	            vec3 w = vec3( xSuivi, ySuivi, 0.0);
 	            vec3 v = vOrigine - w;
@@ -2292,19 +2103,21 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'J':
         {
-        delta_courbe1 *= 0.8;
-        var.set("delta_courbe1", delta_courbe1);
-        delta_courbe2 *= 0.8;
-        var.set("delta_courbe2", delta_courbe2);
+        panelCourbe->set_delta_courbe1( panelCourbe->get_delta_courbe1() * 0.8);
+        var.set("delta_courbe1", panelCourbe->get_delta_courbe1());
+        panelCourbe->set_delta_courbe2( panelCourbe->get_delta_courbe2() * 0.8);
+        var.set("delta_courbe2", panelCourbe->get_delta_courbe2());
         }
         break;
 
     case 'j':
         {
-        delta_courbe1 /= 0.8;
-        var.set("delta_courbe1", delta_courbe1);
-        delta_courbe2 /= 0.8;
-        var.set("delta_courbe2", delta_courbe2);
+        panelCourbe->set_delta_courbe1( panelCourbe->get_delta_courbe1() / 0.8);
+        //delta_courbe1 /= 0.8;
+        var.set("delta_courbe1", panelCourbe->get_delta_courbe1());
+        //delta_courbe2 /= 0.8;
+        panelCourbe->set_delta_courbe2( panelCourbe->get_delta_courbe2() / 0.8);
+        var.set("delta_courbe2", panelCourbe->get_delta_courbe2());
         }
         break;
 
@@ -2529,19 +2342,32 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'U':
         {
+        /*
         courbe1 *= 0.8;
         var.set("courbe1", courbe1);
         courbe2 *= 0.8;
         var.set("courbe2", courbe2);
+        */
+        panelCourbe->set_courbe1( panelCourbe->get_courbe1() * 0.8);
+        var.set("courbe1", panelCourbe->get_courbe1());
+        panelCourbe->set_courbe2( panelCourbe->get_courbe2() * 0.8);
+        var.set("courbe2", panelCourbe->get_courbe2());
         }
         break;
 
     case 'u':
         {
+        /*
         courbe1 /= 0.8;
         var.set("courbe1", courbe1);
         courbe2 /= 0.8;
         var.set("courbe2", courbe2);
+        */
+        panelCourbe->set_courbe1( panelCourbe->get_courbe1() / 0.8);
+        var.set("courbe1", panelCourbe->get_courbe1());
+        panelCourbe->set_courbe2( panelCourbe->get_courbe2() / 0.8);
+        var.set("courbe2", panelCourbe->get_courbe2());
+        
         }
         break;
 
@@ -2950,27 +2776,31 @@ void resizeCourbe(int width, int height)	{
     //printf("resizeControl(%d, %d\n", width, height);
     //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void update_err()
 {
     char s[20];
-    sprintf( s, "+%0.2f", err );
-    pXMax->changeText( (char*)s );
-    pYMax->changeText( (char*)s );
+    sprintf( s, "+%0.2f", panelCourbe->get_err() );
+    panelCourbe->get_pXMax->changeText( (char*)s );
+    panelCourbe->get_pYMax->changeText( (char*)s );
 
-    sprintf( s, "-%0.2f", err );
+    sprintf( s, "-%0.2f", panelCourbe->get_err()  );
     pXMin->changeText( (char*)s );
     pYMin->changeText( (char*)s );
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateCourbe()	{
+/*
 	WindowsManager& wm = WindowsManager::getInstance();
 
-    panelCourbe = new PanelWindow();
+    //panelCourbe = new PanelWindow();
+    panelCourbe = new PanelCourbe();
     panelCourbe->setDisplayGL(displayGLnuit_cb);
     resizeCourbe( width, height );
 
@@ -2993,6 +2823,7 @@ static void CreateCourbe()	{
 	panelCourbe->add( pYMin );
 
     update_err();
+*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3613,16 +3444,16 @@ void init_var()
     var.set( "bAfficheVec", bAfficheVec);
     var.set( "bCorrection", bCorrection);
 
-    var.set( "err", err );
+    var.set( "err", panelCourbe->get_err() );
 
     var.set("bPause", bPause);
     var.set("bFull", bFull);
     var.set("bNuit", bNuit);
 
-    var.set("courbe1", courbe1);
-    var.set("delta_courbe1", delta_courbe1);
-    var.set("courbe2", courbe2);
-    var.set("delta_courbe2", delta_courbe2);
+    var.set("courbe1", panelCourbe->get_courbe1());
+    var.set("delta_courbe1", panelCourbe->get_delta_courbe1());
+    var.set("courbe2", panelCourbe->get_courbe2());
+    var.set("delta_courbe2", panelCourbe->get_delta_courbe2());
 
     var.set("vecAD[0].x", vecAD[0].x);
     var.set("vecAD[0].y", vecAD[0].y);
@@ -3685,13 +3516,13 @@ void charge_var()
     bNuit               = var.getb("bNuit");
 
 
-    err                 = var.getf("err");
+    panelCourbe->set_err( var.getf("err") );
     //update_err();
     
-    courbe1             = var.getf("courbe1");
-    delta_courbe1       = var.getf("delta_courbe1");
-    courbe2             = var.getf("courbe2");
-    delta_courbe2       = var.getf("delta_courbe2");
+    panelCourbe->set_courbe1( var.getf("courbe1"));
+    panelCourbe->set_delta_courbe1( var.getf("delta_courbe1"));
+    panelCourbe->set_courbe2( var.getf("courbe2"));
+    panelCourbe->set_delta_courbe2( var.getf("delta_courbe2"));
 
     vecAD[0].x          = var.getf("vecAD[0].x");
     vecAD[0].y          = var.getf("vecAD[0].y");
