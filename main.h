@@ -72,6 +72,7 @@ typedef struct readBackground       rb_t;
     extern bool         bFindStar;
     extern bool         bOneFrame;
     extern bool         bPause;
+    extern bool         bPanelCourbe;
 
     extern int          width;
     extern int          height;

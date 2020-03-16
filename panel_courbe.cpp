@@ -40,7 +40,7 @@ PanelCourbe::PanelCourbe()
     get_vOrigine().y          = var.getf("vOrigine.y");
     get_vOrigine().z          = 0.0;
 
-
+    setVisible( var.getb( "bPanelCourbe" ) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -115,7 +115,7 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
             x2Screen(x);
             y2Screen(y);
             glVertex2i( x, y );
-            x += getPosDX();
+            x += getPosDX()-xStartAxe;
             glVertex2i( x, y );
 
             x = xStartAxe;
@@ -123,7 +123,7 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
             x2Screen(x);
             y2Screen(y);
             glVertex2i( x, y );
-            x += getPosDX();
+            x += getPosDX()-xStartAxe;
             glVertex2i( x, y );
         }
         //
@@ -131,7 +131,8 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         //
         fPas = courbe1;
         while( fPas < 10.0 )     fPas += courbe1;
-        for( float i=xStartAxe; i<2000; i+=fPas )
+        float M = getPosDX();
+        for( float i=xStartAxe; i<M; i+=fPas )
         {
             int x = i;
             int y = AXE;
@@ -154,7 +155,7 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         y2Screen(y);
 
         glVertex2i( x, y );
-        x += getPosDX();
+        x += getPosDX()-xStartAxe;
         glVertex2i( x, y );
         //
         // Limite horizontale
@@ -164,14 +165,20 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
 
         y = (float)(delta_courbe1*(min) + AXE);
         if ( pMax != NULL )     pMax->setPos( 5, y-7 );
+        x = xStartAxe;
+        x2Screen(x);
         y2Screen(y);
-        glVertex2i( xStartAxe, y );
+        glVertex2i( x, y );
+        x += getPosDX()-xStartAxe;
         glVertex2i( x, y );
 
         y = (float)(delta_courbe1*(max) + AXE);
         if ( pMin != NULL )     pMin->setPos( 5, y-7 );
+        x = xStartAxe;
+        x2Screen(x);
         y2Screen(y);
-        glVertex2i( xStartAxe, y );
+        glVertex2i( x, y );
+        x += getPosDX()-xStartAxe;
         glVertex2i( x, y );
 
         glColor4fv( (GLfloat*)&colorAxe );
