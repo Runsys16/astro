@@ -5,16 +5,17 @@
 //--------------------------------------------------------------------------------------------------------------------
 PanelCourbe::PanelCourbe()
 {
-	WindowsManager& wm = WindowsManager::getInstance();
+	WindowsManager&     wm  = WindowsManager::getInstance();
+    VarManager&         var = VarManager::getInstance();
 
     //setDisplayGL(displayGLnuit_cb);
-    resizeCourbe( width, height );
+    //resizeCourbe( width, height );
 
     wm.add(this);
     
     //setVisible(bPanelCourbe);
  	setBackground((char*)"images/background.tga");
-    setDisplayGL( PanelCourbe::displayResultat_cb );
+    //setDisplayGL( PanelCourbe::displayResultat_cb );
 
     pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
 	add( pXMax );
@@ -29,6 +30,16 @@ PanelCourbe::PanelCourbe()
 	add( pYMin );
 
     update_err();
+    
+    set_courbe1( var.getf("courbe1"));
+    set_delta_courbe1( var.getf("delta_courbe1"));
+    set_courbe2( var.getf("courbe2"));
+    set_delta_courbe2( var.getf("delta_courbe2"));
+
+    get_vOrigine().x          = var.getf("vOrigine.x");
+    get_vOrigine().y          = var.getf("vOrigine.y");
+    get_vOrigine().z          = 0.0;
+
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -185,10 +196,12 @@ void PanelCourbe::glEchelle()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::displayResultat_cb(void)
+//void PanelCourbe::displayResultat_cb(void)
+void PanelCourbe::displayGL(void)
 {
     VarManager& var = VarManager::getInstance();
-
+	if ( !visible )			return;
+    PanelWindow::displayGL();
     
     int DY = getY();
     int n = t_vResultat.size();

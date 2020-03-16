@@ -166,13 +166,13 @@ void call_back_up(PanelButton* pPanel)
         var.set("bCorrection", bCorrection);
         fTimeCpt = 0.0; 
         /*
-        vOrigine.x = xSuivi;
-        vOrigine.y = ySuivi;
-        vOrigine.z = 0.0;
+        panelCourbe->get_vOrigine().x = xSuivi;
+        panelCourbe->get_vOrigine().y = ySuivi;
+        panelCourbe->get_vOrigine().z = 0.0;
         */
 
-        var.set("vOrigine.x", vOrigine.x);
-        var.set("vOrigine.y", vOrigine.y);
+        var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
+        var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
         if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
         else                        pAsservi->changeText((char*)" ");

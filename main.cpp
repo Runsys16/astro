@@ -184,8 +184,8 @@ float               delta_courbe1 = 1.0;
 float               delta_courbe2 = 1.0;
 float               courbe1 = 1.0;
 float               courbe2 = 1.0;
-*/
 int                 decal_resultat = 0;
+*/
 vec4                colorTraces[] = 
                         {
                         vec4(1.0,0.0,0.0,1.0), vec4(0.0,1.0,0.0,1.0), vec4(0.0,0.0,1.0,1.0),
@@ -209,7 +209,7 @@ vec3                vecAD[2];
 vec3                vecDC[2];
 vec3                vDepl[2];
 mat3                mChange;
-vec3                vOrigine;
+//vec3                vOrigine;
 vec3                vTr;
 bool                bCorrection = false;
 float               fTimeCorrection = 3.0;
@@ -947,7 +947,8 @@ void updatePanelResultat(float x, float y, float mag)
     char sG[255];
     char sB[255];
     char sL[255];
-    sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, vOrigine.x, vOrigine.y, mag );
+    vec3& v = panelCourbe->get_vOrigine();
+    sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, v.x, v.y, mag );
     
     //logf( (char*)"updatePanelResultat(%d, %d) => %s", x, y, (char*)sSkyPoint );
     
@@ -1123,7 +1124,7 @@ void sauve()
     for(int i=0; i<t_vSauve.size(); i++)
     {
         fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " ) / ";
-        fichier << "( " << vOrigine.x << " , " <<  vOrigine.y << " )\n";
+        fichier << "( " << panelCourbe->get_vOrigine().x << " , " <<  panelCourbe->get_vOrigine().y << " )\n";
     }
 
     fichier.close();
@@ -1149,8 +1150,8 @@ void charge_fichier(string filename)
     }
 
     
-    vOrigine.x = 0.0;
-    vOrigine.y = 0.0;
+    panelCourbe->get_vOrigine().x = 0.0;
+    panelCourbe->get_vOrigine().y = 0.0;
     
     t_vResultat.clear();
     
@@ -1167,8 +1168,8 @@ void charge_fichier(string filename)
         //logf( (char*) line.c_str() );
         sscanf( line.c_str(), "( %f , %f ) / ( %f , %f )", &rx, &ry, &ox, &oy );
 
-        vOrigine.x = ox;
-        vOrigine.y = oy;
+        panelCourbe->get_vOrigine().x = ox;
+        panelCourbe->get_vOrigine().y = oy;
 
         t_vResultat.push_back( vec2(rx,ry) );
         nbLigne++;
@@ -1631,12 +1632,12 @@ static void idleGL(void)
             fTimeCpt -= fTimeCorrection;
             if ( fTimeCpt > 0.0 )    fTimeCpt = 0.0;//-= fTimeCorrection;
 
-	        float dx = xSuivi - vOrigine.x;
-	        float dy = ySuivi - vOrigine.y;
+	        float dx = xSuivi - panelCourbe->get_vOrigine().x;
+	        float dy = ySuivi - panelCourbe->get_vOrigine().y;
 	        if ( fabs(dx) > panelCourbe->get_err() || fabs(dy) > panelCourbe->get_err() )
 	        {
 	            vec3 w = vec3( xSuivi, ySuivi, 0.0);
-	            vec3 v = vOrigine - w;
+	            vec3 v = panelCourbe->get_vOrigine() - w;
 
                 vec3 res = mChange * v;
                 int ad = (int) (res.x * -1000.0);
@@ -2089,15 +2090,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'i':
         {
-            decal_resultat += 100;
-            if ( decal_resultat >= t_vResultat.size() )            decal_resultat -= 100;
+            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat() + 100 );
+            if ( panelCourbe->get_decal_resultat() >= t_vResultat.size() )            
+                panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat() - 100 );
         }
         break;
 
     case 'I':
         {
-            decal_resultat -= 100;
-            if ( decal_resultat < 0 )            decal_resultat = 0;
+            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat() - 100 );
+            if ( panelCourbe->get_decal_resultat() < 0 )            panelCourbe->set_decal_resultat( 0 );
         }
         break;
 
@@ -2123,15 +2125,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'k':
         {
-            decal_resultat ++;
-            if ( decal_resultat >= t_vResultat.size() )            decal_resultat --;
+            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat()+1 );
+            if ( panelCourbe->get_decal_resultat() >= t_vResultat.size() )            
+                panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat()-1 );
         }
         break;
 
     case 'K':
         {
-            decal_resultat --;
-            if ( decal_resultat < 0 )            decal_resultat = 0;
+            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat()-1 );
+            if ( panelCourbe->get_decal_resultat() < 0 )            panelCourbe->set_decal_resultat( 0 );
         }
         break;
 
@@ -2402,15 +2405,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             int y = yClick;
             tex2screen(x,y);
 
-            vOrigine.x = x;
-            vOrigine.y = y;
-            vOrigine.z = 0.0;
+            panelCourbe->get_vOrigine().x = x;
+            panelCourbe->get_vOrigine().y = y;
+            panelCourbe->get_vOrigine().z = 0.0;
         }
         else
         {
-            vOrigine.x = xSuivi;
-            vOrigine.y = ySuivi;
-            vOrigine.z = 0.0;
+            panelCourbe->get_vOrigine().x = xSuivi;
+            panelCourbe->get_vOrigine().y = ySuivi;
+            panelCourbe->get_vOrigine().z = 0.0;
         }
         }
         break;
@@ -2437,12 +2440,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         fTimeCpt = 0.0; 
 
         /*
-        vOrigine.x = xSuivi;
-        vOrigine.y = ySuivi;
-        vOrigine.z = 0.0;
+        panelCourbe->get_vOrigine().x = xSuivi;
+        panelCourbe->get_vOrigine().y = ySuivi;
+        panelCourbe->get_vOrigine().z = 0.0;
         */
-        var.set("vOrigine.x", vOrigine.x);
-        var.set("vOrigine.y", vOrigine.y);
+        var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
+        var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
         if ( bCorrection )      pAsservi->changeText((char*)"Asservissemnent");
         else                    pAsservi->changeText((char*)"");
@@ -2796,11 +2799,11 @@ void update_err()
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateCourbe()	{
+    panelCourbe = new PanelCourbe();
 /*
 	WindowsManager& wm = WindowsManager::getInstance();
 
     //panelCourbe = new PanelWindow();
-    panelCourbe = new PanelCourbe();
     panelCourbe->setDisplayGL(displayGLnuit_cb);
     resizeCourbe( width, height );
 
@@ -3465,8 +3468,8 @@ void init_var()
     var.set("vecDC[1].x", vecDC[1].x);
     var.set("vecDC[1].y", vecDC[1].y);
 
-    var.set("vOrigine.x", vOrigine.x);
-    var.set("vOrigine.y", vOrigine.y);
+    var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
+    var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
     var.set("xSuivi", xSuivi);
     var.set("ySuivi", ySuivi);
@@ -3515,7 +3518,8 @@ void charge_var()
     bCorrection         = var.getb("bCorrection");
     bNuit               = var.getb("bNuit");
 
-
+    if ( panelCourbe == NULL )          logf( (char*)"[ERREUR] Erreur panelCourbe NULL ..." );
+    /*
     panelCourbe->set_err( var.getf("err") );
     //update_err();
     
@@ -3524,6 +3528,10 @@ void charge_var()
     panelCourbe->set_courbe2( var.getf("courbe2"));
     panelCourbe->set_delta_courbe2( var.getf("delta_courbe2"));
 
+    panelCourbe->get_vOrigine().x          = var.getf("vOrigine.x");
+    panelCourbe->get_vOrigine().y          = var.getf("vOrigine.y");
+    panelCourbe->get_vOrigine().z          = 0.0;
+    */
     vecAD[0].x          = var.getf("vecAD[0].x");
     vecAD[0].y          = var.getf("vecAD[0].y");
     vecAD[0].z          = 0.0;
@@ -3548,20 +3556,17 @@ void charge_var()
 
     logf( (char*)"MATRIX %02f", mChange.mat[0] );
 
-    vOrigine.x          = var.getf("vOrigine.x");
-    vOrigine.y          = var.getf("vOrigine.y");
-    vOrigine.z          = 0.0;
 
     xSuivi              = var.getf("xSuivi");
     ySuivi              = var.getf("ySuivi");
     
-    xSuivi              = vOrigine.x;
-    ySuivi              = vOrigine.y;
+    //xSuivi              = panelCourbe->get_vOrigine().x;
+    //ySuivi              = panelCourbe->get_vOrigine().y;
 
 	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 	cam_mgr.active();
 
-    getSuiviParameter();
+    //getSuiviParameter();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

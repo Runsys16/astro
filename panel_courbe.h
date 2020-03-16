@@ -13,6 +13,7 @@
 
 #include <WindowsManager.h>
 #include "main.h"
+#include "Mathlib.h"
 #include "console.h"
 #include "var_mgr.h"
 
@@ -30,6 +31,7 @@ private:
     float               delta_courbe2 = 1.0;
     float               courbe1 = 1.0;
     float               courbe2 = 1.0;
+    int                 decal_resultat = 0;
 
     int                 xCam;
     int                 yCam;
@@ -45,6 +47,9 @@ private:
     PanelText*          pYMin;
 
     bool                bPanelCourbe;
+    
+    vec3                vOrigine;
+
 
 public :
     PanelCourbe();
@@ -56,10 +61,13 @@ public :
     void                glEchelle();
     void                displayResultat_cb(void);
     
+virtual void            displayGL( void );
+    
 inline     float        get_offset_x()              { return offset_x; }   
 inline     float        get_offset_y()              { return offset_y; }   
 inline     float        get_courbe1()               { return courbe1; }   
 inline     float        get_courbe2()               { return courbe2; }   
+inline     int          get_decal_resultat()        { return decal_resultat; }   
 inline     float        get_delta_courbe1()         { return delta_courbe1; }   
 inline     float        get_delta_courbe2()         { return delta_courbe2; }   
 inline     int          get_xCam()                  { return xCam; }   
@@ -71,11 +79,13 @@ inline     PanelText*   get_pXMax()                 { return pXMax; }
 inline     PanelText*   get_pXMin()                 { return pXMin; }
 inline     PanelText*   get_pYMax()                 { return pYMax; }
 inline     PanelText*   get_pYMin()                 { return pYMin; }
+inline     vec3&        get_vOrigine()              { return vOrigine; }
 
 inline     void         set_offset_x(float f)           { offset_x = f; }   
 inline     void         set_offset_y(float f)           { offset_y = f; }   
 inline     void         set_courbe1(float f)            { courbe1 = f; }   
 inline     void         set_courbe2(float f)            { courbe2 = f; }   
+inline     void         set_decal_resultat(int n)       { decal_resultat = n; }   
 inline     void         set_delta_courbe1(float f)      { delta_courbe1 = f; }   
 inline     void         set_delta_courbe2(float f)      { delta_courbe2 = f; }   
 inline     void         set_xCam(int n)                 { xCam = n; }   

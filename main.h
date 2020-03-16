@@ -20,6 +20,7 @@
 #include "button_callback.h"
 
 #include "surveillance.h"
+#include "Mathlib.h"
 
 
 #define BOOL2STR(b) b?(char*)"true":(char*)"false"
@@ -74,6 +75,8 @@ typedef struct readBackground       rb_t;
 
     extern int          width;
     extern int          height;
+    extern vector<vec2> t_vResultat;
+
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------
