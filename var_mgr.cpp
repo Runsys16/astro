@@ -40,6 +40,18 @@ void VarManager::set(const std::string& name, bool val)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void VarManager::set(const std::string& name, const std::string& val)
+{
+    string* p = new string(val);
+    
+    //logf((char*)"set boolean");
+    m_VarDB[name].type = 's';
+    m_VarDB[name].sval = p;
+    sauve();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void VarManager::sauve()
 {
     if (!bSauve)        return;
@@ -92,6 +104,13 @@ void VarManager::sauve()
             //logf( (char*)"  bool : %s", val.c_str() );
 
             fichier << "bool "<< key << " = " << val << "\n";
+         }
+         
+        else if ( c == (int)'s' )
+        {
+            string* pS = p->second.sval;
+
+            fichier << "string "<< key << " = \"" << *pS << "\"\n";
          }
          
          
@@ -149,6 +168,15 @@ void VarManager::charge()
         {
             if ( val.find("TRUE") != string::npos )         set( key, true );
             else                                            set( key, false );
+        }
+        else if ( type.find("string") != string::npos )
+        {
+            int deb = val.find("\"");
+            int fin = val.find("\"", deb+1 );
+            cout << val <<"deb :"<< deb <<" fin :"<< fin  << endl;
+            string S = val.substr(deb+1, fin-1);
+            set( key, S );
+            cout << key <<" : "<< S << endl;
         }
         
     }

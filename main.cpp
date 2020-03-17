@@ -209,7 +209,7 @@ vec3                vecAD[2];
 vec3                vecDC[2];
 vec3                vDepl[2];
 mat3                mChange;
-//vec3                vOrigine;
+vec3                vOri;
 vec3                vTr;
 bool                bCorrection = false;
 float               fTimeCorrection = 3.0;
@@ -301,7 +301,16 @@ void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
     if ( bb )     
     {
         logf( (char*)"Charge guidage %s", (char*)str );
+        VarManager& var = VarManager::getInstance();
+
+        var.set( "FileResultat", string(str) );
+
         charge_fichier( string(str) );
+        if ( panelCourbe != NULL )  
+        {
+            panelCourbe->get_vOrigine().x = vOri.x;
+            panelCourbe->get_vOrigine().y = vOri.y;
+        }
     }
     workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
     FileBrowser::getInstance().setFiltre( "" );
@@ -1150,8 +1159,8 @@ void charge_fichier(string filename)
     }
 
     
-    panelCourbe->get_vOrigine().x = 0.0;
-    panelCourbe->get_vOrigine().y = 0.0;
+    //panelCourbe->get_vOrigine().x = 0.0;
+    //panelCourbe->get_vOrigine().y = 0.0;
     
     t_vResultat.clear();
     
@@ -1168,8 +1177,8 @@ void charge_fichier(string filename)
         //logf( (char*) line.c_str() );
         sscanf( line.c_str(), "( %f , %f ) / ( %f , %f )", &rx, &ry, &ox, &oy );
 
-        panelCourbe->get_vOrigine().x = ox;
-        panelCourbe->get_vOrigine().y = oy;
+        vOri.x = ox;
+        vOri.y = oy;
 
         t_vResultat.push_back( vec2(rx,ry) );
         nbLigne++;
@@ -2172,6 +2181,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 bool b = var.getb(p->first);
                 if (b)                      logf( (char*)"%s -> %s", p->first.c_str(), (char*)"TRUE" );
                 else                        logf( (char*)"%s -> %s", p->first.c_str(), (char*)"FALSE" );
+                break;
+                }
+            case 's':
+                {
+                string* s = var.gets(p->first);
+                logf( (char*)"%s -> \"%s\"", p->first.c_str(), (*s).c_str() );
                 break;
                 }
              }
@@ -3647,6 +3662,8 @@ int main(int argc, char **argv)
     charge_var();
 
     CreateAllWindows();
+    panelCourbe->get_vOrigine().x = vOri.x;
+    panelCourbe->get_vOrigine().y = vOri.y;
 
     parse_option(argc, argv);
     

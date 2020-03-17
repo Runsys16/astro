@@ -6,6 +6,7 @@
 #include <WindowsManager.h>
 #include "main.h"
 #include "capture.h"
+#include "var_mgr.h"
 
 
 using namespace std;
@@ -45,6 +46,7 @@ public:
     void                        switchAffIcones();
     
     void                        setColor(long);
+    vector<Capture*>&           get_captures()          { return captures; }
 
 private:
     vector<Capture*>            captures;

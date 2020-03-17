@@ -478,6 +478,8 @@ void Captures::sauve(void)
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::charge(void)
 {
+    VarManager&         var = VarManager::getInstance();
+
     string filename = "/home/rene/.astropilot/captures.txt";
     logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
     
@@ -492,6 +494,7 @@ void Captures::charge(void)
 
     string line;
     int nbLigne = 0;
+    int noFile = 0;
     
     
     while ( getline (fichier, line) )
@@ -503,6 +506,12 @@ void Captures::charge(void)
         current_capture = captures.size() - 1;
         captures[current_capture]->setIcone(true);
         captures[current_capture]->setFullScreen(false);
+        
+        //logf( (char*)"charge : %s", (char*)filename.c_str() );
+        string name = "FileCapture" + to_string( noFile++ );
+        logf( (char*)"charge : %s %s ", (char*)name.c_str(), (char*)filename.c_str() );
+        var.set( name, filename );
+        
     }    
     fichier.close();
 }

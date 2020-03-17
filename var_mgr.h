@@ -26,6 +26,7 @@ public:
 	        float       fval;
 	        int         ival;
 	        bool        bval;
+	        string*     sval;
 	     };
 	 };
 
@@ -34,10 +35,12 @@ public:
 	void set(const std::string& name, float val);
 	void set(const std::string& name, int val);
 	void set(const std::string& name, bool val);
+	void set(const std::string& name, const std::string& val);
 
-	inline float getf(const std::string& name)				{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].fval;}
-	inline int   geti(const std::string& name)				{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].ival;}
-	inline bool  getb(const std::string& name)				{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].bval;}
+	inline float    getf(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].fval;}
+	inline int      geti(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].ival;}
+	inline bool     getb(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].bval;}
+	inline string*  gets(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].sval;}
 	
 	inline dbMap &											getDB()			{return	m_VarDB;}
 

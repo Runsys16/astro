@@ -42,6 +42,12 @@ PanelCourbe::PanelCourbe()
 
     update_err();
 
+    if ( var.existe("FileResultat") )
+    {
+        string* pFile = var.gets( "FileResultat" );
+        charge_fichier( *pFile );
+    }
+    
     setVisible( var.getb( "bPanelCourbe" ) );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -351,6 +357,9 @@ void PanelCourbe::motionMiddle( int xm, int ym )
     
     deltaX = 1.0 + 2.0 * deltaX / ((float)getDX()/2.0);
     deltaY = 1.0 - 2.0 * deltaY / ((float)getDY()/2.0);
+
+    if ( deltaX < 0.1 )         return;
+    if ( deltaY < 0.1 )         return;
     
     courbe1 = deltaX * courbe1_svg;
     courbe2 = deltaX * courbe2_svg;
@@ -358,7 +367,7 @@ void PanelCourbe::motionMiddle( int xm, int ym )
     delta_courbe1 = deltaY * delta_courbe1_svg;
     delta_courbe2 = deltaY * delta_courbe2_svg;
 
-    //logf( (char*)"  %0.2f, %0.2f )", deltaX, deltaY );
+    //logf( (char*)"  %0.2f, %0.2f )", courbe1, courbe2 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
