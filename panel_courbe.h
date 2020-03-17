@@ -33,10 +33,21 @@ private:
     float               courbe2 = 1.0;
     int                 decal_resultat = 0;
 
+
+    float               delta_courbe1_svg = 1.0;
+    float               delta_courbe2_svg = 1.0;
+    float               courbe1_svg = 1.0;
+    float               courbe2_svg = 1.0;
+    
+
+
     int                 xCam;
     int                 yCam;
     int                 dxCam;
     int                 dyCam;
+    
+    int                 xm_svg;
+    int                 ym_svg;
     
     float               xStartAxe = 50.0;
     float               err = 2.0;
@@ -59,9 +70,19 @@ public :
     void                update_err();
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
-    void                displayResultat_cb(void);
+    void                glCourbe();
+//    void                displayResultat_cb(void);
+    int                 sc2winX(int);
+    int                 sc2winY(int);
     
 virtual void            displayGL( void );
+
+virtual void            clickMiddle( int, int);
+virtual void            motionMiddle( int, int);
+virtual void            releaseMiddle( int, int);
+virtual void            clickLeft( int, int);
+virtual void            motionLeft( int, int);
+virtual void            releaseLeft( int, int);
     
 inline     float        get_offset_x()              { return offset_x; }   
 inline     float        get_offset_y()              { return offset_y; }   
