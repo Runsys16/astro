@@ -48,6 +48,8 @@ PanelCourbe::PanelCourbe()
         charge_fichier( *pFile );
     }
     
+    if ( var.existe("decal_resultat") )         decal_resultat = var.geti( "decal_resultat" );
+    
     setVisible( var.getb( "bPanelCourbe" ) );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -386,6 +388,7 @@ void PanelCourbe::releaseMiddle( int xm, int ym )
     var.set("delta_courbe1", delta_courbe1);
     var.set("courbe2", courbe2);
     var.set("delta_courbe2", delta_courbe2);
+    
     //courbe1 = delta_courbe1_svg;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -424,6 +427,8 @@ void PanelCourbe::releaseLeft( int xm, int ym )
 {
     VarManager& var = VarManager::getInstance();
     logf( (char*)"PanelCourbe::releaseLeft( %d, %d )", xm, ym );
+
+    var.set( "decal_resultat", decal_resultat );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
