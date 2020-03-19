@@ -75,9 +75,9 @@ void Camera::init()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::update()
 {
-    //logf((char*)"Camera::update() -------------");
     if ( readBgr.ptr != NULL )
     {
+        //logf((char*)"Camera::update() w=%d h=%d d=%d ", readBgr.w, readBgr.h, readBgr.d);
         panelPreview->setRB( &readBgr );
         panelPreview->update();
     }
@@ -548,6 +548,7 @@ bool Camera::keyboard(char key)
 
     case 'A':  // '-'
         //capability_save();
+        logf( (char*)"capability_save()" );
         FileBrowser::getInstance().setFiltre(".cam");
         setExtra(10);
         FileBrowser::getInstance().setNewline(true);
@@ -557,7 +558,8 @@ bool Camera::keyboard(char key)
         break;
 
     case 'a':  // '-'
-        //capability_save();
+        //capability_load();
+        logf( (char*)"capability_load()" );
         FileBrowser::getInstance().setFiltre(".cam");
         setExtra(11);
         FileBrowser::getInstance().setNewline(true);

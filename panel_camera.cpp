@@ -200,7 +200,8 @@ void PanelCamera::releaseLeft(int xm, int ym)
     
     stars.setView( this );
     stars.setRB( pReadBgr );
-    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+    
+    if ( bAutorisationSuivi && stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         stars.selectLeft(xx, yy);
 }
 //--------------------------------------------------------------------------------------------------------------------

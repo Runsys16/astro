@@ -425,6 +425,8 @@ int Device_cam::read_frame(void)
 {
     if (fd == -1)       return -1;
 
+	//logf((char*)"read_frame");
+
     struct v4l2_buffer buf;
     unsigned int i;
 

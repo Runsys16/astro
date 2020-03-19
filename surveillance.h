@@ -9,6 +9,7 @@
 #include "main.h"
 
 #include "button_callback.h"
+#include "var_mgr.h"
 //#include "file_browser.h"
 //--------------------------------------------------------------------------------------------------------------------
 //

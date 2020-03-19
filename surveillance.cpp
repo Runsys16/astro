@@ -161,12 +161,16 @@ void Surveillance::callback( bool b, int ii, char* str )
     if ( b )
     {
         //---------------------------------------------------------
+        VarManager&         var = VarManager::getInstance();
+    
         vector<string> cc = split( string(str), "/" );
         cc.pop_back();
         string rep = "/";
         for( int i=0; i<cc.size(); i++ )    rep = rep + cc[i] + "/";
         //---------------------------------------------------------
         logf( (char*)"  repertoire de surveillance : %s", (char*) rep.c_str() );
+        var.set( "DirSurveillance", rep );
+        
         dir = rep;
 
         iState = -1;

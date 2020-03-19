@@ -365,6 +365,8 @@ void CallbackFileBrowser::callback( bool bb, int ii, char* str)
         change_file( d, f );
     }
     workDirFileBrowser = fb.getWorkingDir();
+    VarManager& var = VarManager::getInstance();
+    var.set( "DirFileBrowser", workDirFileBrowser );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2061,6 +2063,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bFileBrowser = FileBrowser::getInstance().getVisible();
         FileBrowser::getInstance().setFiltre( "" );
+        if ( var.existe("DirFileBrowser") )
+        {
+            workDirFileBrowser = *var.gets( "DirFileBrowser" );
+        }
+
         FileBrowser::getInstance().change_dir( workDirFileBrowser );
         bFileBrowser = !bFileBrowser;
         FileBrowser::getInstance().setCallBack( &cb_file_browser );
@@ -2423,23 +2430,46 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             panelCourbe->get_vOrigine().x = x;
             panelCourbe->get_vOrigine().y = y;
             panelCourbe->get_vOrigine().z = 0.0;
+            
+            logf( (char*)"initilise vOrigine(click) : (%d,%d)", x, y);
         }
         else
         {
             panelCourbe->get_vOrigine().x = xSuivi;
             panelCourbe->get_vOrigine().y = ySuivi;
             panelCourbe->get_vOrigine().z = 0.0;
+            logf( (char*)"initilise vOrigine(suivi) : (%d,%d)", xSuivi, ySuivi);
         }
         }
         break;
-/*
-    case '0':
+    case 'w' :
         {
-        Camera_mgr::getInstance().sup("video1");
-        log( (char*)"Sup camera !!!" );
+        BluetoothManager::getInstance().centre_joystick();
         }
         break;
-*/
+
+    case 'W' :
+        {
+            Surveillance& su = Surveillance::getInstance();
+            
+            FileBrowser& fb = FileBrowser::getInstance();
+
+            bFileBrowser = fb.getVisible();
+            fb.setFiltre( "" );
+            fb.setNewline( true );
+            if ( var.existe("DirSurveillance") )
+            {
+                workDirCaptures = *var.gets( "DirSurveillance" );
+            }
+            fb.change_dir( workDirCaptures );
+            fb.setCallBack( &su );
+            fb.setExtra( 12 );
+
+            fb.affiche();
+
+        }
+        break;
+
     case 'y':
         {
         bAfficheVec = !bAfficheVec;
@@ -2477,30 +2507,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             bFindStar = !bFindStar; 
         }
-        break;
-
-    case 'w' :
-        {
-        BluetoothManager::getInstance().centre_joystick();
-        }
-        break;
-
-    case 'W' :
-        {
-            Surveillance& su = Surveillance::getInstance();
-            
-            FileBrowser& fb = FileBrowser::getInstance();
-
-            bFileBrowser = fb.getVisible();
-            fb.setFiltre( "" );
-            fb.setNewline( true );
-            fb.change_dir( workDirCaptures );
-            fb.setCallBack( &su );
-            fb.setExtra( 12 );
-
-            fb.affiche();
-
-       }
         break;
 
     default:

@@ -177,7 +177,12 @@ float Star::getLumLimit(int offset, float limit )
     float g;
     float b;
 
-
+    if ( offset < 0 )   
+    {
+        logf ( (char*)"offset negatif" );
+        return 0.0;
+    }
+    
     try
     {
         r = ptr[offset+0]; 
