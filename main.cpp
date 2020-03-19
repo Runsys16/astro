@@ -1079,7 +1079,7 @@ void change_ad(float ad)
     rad2hms( HMS, ad);
     
     char    buff[255];
-    sprintf( buff, "AsDr : %02d:%02d:%0.2f", (int)HMS.h, (int)HMS.m, HMS.s );
+    sprintf( buff, "AsDr : %02dh%02dm%0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
     
     pAD->changeText( buff );
 
@@ -1094,7 +1094,7 @@ void change_dc(float dc)
     rad2dms( DMS, dc);
     
     char    buff[255];
-    sprintf( buff, "Decl : %02d:%02d:%0.2f", (int)DMS.d, (int)DMS.m, DMS.s );
+    sprintf( buff, "Decl : %02dd%02dm%0.2fs", (int)DMS.d, (int)DMS.m, DMS.s );
     
     pDC->changeText( buff );
 
@@ -3042,7 +3042,7 @@ static void CreateStatus()	{
     pStellarium = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-230, 2 );
 	panelStatus->add( pStellarium );
 
-    pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 80, 2 );
+    pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 60, 2 );
 	panelStatus->add( pAD );
     pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 200, 2 );
 	panelStatus->add( pDC );

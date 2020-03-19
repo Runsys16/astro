@@ -177,6 +177,7 @@ float Star::getLumLimit(int offset, float limit )
     float g;
     float b;
 
+
     try
     {
         r = ptr[offset+0]; 

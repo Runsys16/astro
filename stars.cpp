@@ -399,7 +399,7 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
 
             tot = v_tStars.size();
         
-            //logf( (char*)" Stars::update()  reste %d", tot );
+            logf( (char*)" reste %d", tot );
         }
     }
 
