@@ -52,6 +52,7 @@ public:
 	void Destroy();
 	
 	bool existe( const std::string& );
+	void erase( const std::string& );
 
 protected:
     VarManager();

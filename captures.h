@@ -37,6 +37,7 @@ public:
     void                        print_list();
     void                        sauve();
     void                        charge();
+    void                        charge2();
     void                        position(double, double);
     void                        setCurrent(Capture*);
     

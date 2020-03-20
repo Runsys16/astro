@@ -12,7 +12,7 @@ Captures::Captures()
     logf((char*)"----------- Constructeur Captures() -----------" );
     current_capture = -1;
 
-    charge();
+    charge2();
     rotate_capture_plus(true);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -178,6 +178,8 @@ void Captures::resize_all()
     int m = n;
     
     if ( bShowPreview )      m--;
+
+    if ( m<=0 )      return;
 
     if ( m>1 )      DY = (height-20-dyi) / (m-1);    
     else            DY = (height-20-dyi) / (m);    
@@ -367,6 +369,7 @@ void Captures::ajoute(string filename)
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::supprime()
 {
+    logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
     int n = captures.size();
     if ( current_capture != -1 )
     {
@@ -384,6 +387,8 @@ void Captures::supprime()
     
         showIcones();
     }
+    else 
+        logf( (char*)" supprime()  current_capture = -1" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -454,24 +459,33 @@ void Captures::print_list()
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::sauve(void)
 {
-    string filename = "/home/rene/.astropilot/captures.txt";
-    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filename.c_str() );
-    
-    std::ofstream fichier;
-    fichier.open(filename, std::ios_base::trunc);
+    VarManager&         var = VarManager::getInstance();
 
-    if ( !fichier ) 
+
+    int no = 0;
+    
+    while( true )
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
-        return;
+        string key = "FileCapture" + to_string(no++);
+        if ( var.existe( key ) )
+        {
+            var.erase( key );
+            logf( (char*)" suppression de  %s", key.c_str() );
+        }
+        else
+        {
+            break;
+        }
     }
+
+    if ( captures.size() == 0 )         var.sauve();
 
     for(int i=0; i<captures.size(); i++)
     {
-        fichier << captures[i]->getFilename() << "\n";
+        string key = "FileCapture" + to_string(i);
+        var.set( key, captures[i]->getFilename() );
+        logf( (char*)" %s : %s", key.c_str(), captures[i]->getFilename().c_str() );
     }
-
-    fichier.close();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -514,6 +528,35 @@ void Captures::charge(void)
         
     }    
     fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::charge2(void)
+{
+    VarManager&         var = VarManager::getInstance();
+
+    int no = 0;
+    
+    while( true )
+    {
+        string key = "FileCapture" + to_string(no++);
+        if ( var.existe( key ) )
+        {
+            string filename = *var.gets( key );;
+            captures.push_back( new Capture(filename) );
+            current_capture = captures.size() - 1;
+            captures[current_capture]->setIcone(true);
+            captures[current_capture]->setFullScreen(false);
+            
+            logf( (char*)"charge2 : %s %s ", (char*)key.c_str(), (char*)filename.c_str() );
+            //var.set( name, filename );
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
