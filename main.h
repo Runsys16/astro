@@ -21,6 +21,7 @@
 
 #include "surveillance.h"
 #include "Mathlib.h"
+#include "panel_courbe.h"
 
 
 #define BOOL2STR(b) b?(char*)"true":(char*)"false"
@@ -73,11 +74,15 @@ typedef struct readBackground       rb_t;
     extern bool         bOneFrame;
     extern bool         bPause;
     extern bool         bPanelCourbe;
+    extern bool         bSimu;
 
     extern int          width;
     extern int          height;
     extern vector<vec2> t_vResultat;
     extern bool         bAutorisationSuivi;
+    
+    extern float        xSuivi;
+    extern float        ySuivi;
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -251,5 +256,15 @@ void                logf( char *, ...);
 void                parse_option( int argc, char**argv );
 void                parse_option_size( int argc, char**argv );
 int                 main(int argc, char **argv);
+
+
+//
+//  satatus.cpp
+//
+void set_asservissement(void);
+void inverse_texture(PanelButton *, bool, string);
+void set_courbe();
+
+
 
 #endif

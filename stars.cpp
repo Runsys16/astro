@@ -316,7 +316,7 @@ void Stars::selectLeft( int xp, int yp)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Stars::selectRight( int xp, int yp)
+void Stars::selectMiddle( int xp, int yp)
 {
     int nb = v_tStars.size();
     for( int n=0; n<nb; n++ )
@@ -330,9 +330,11 @@ void Stars::selectRight( int xp, int yp)
         //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
         if ( dx <20 && dy < 20 )
         {
-            v_tStars[n]->toggleSuivi();
+            v_tStars[n]->setSuivi(true);
             //logf( (char*)"Etoile trouve " );
         }
+        else
+            v_tStars[n]->setSuivi(false);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -417,7 +419,19 @@ vec2* Stars::getSuivi()
         if ( v_tStars[i]->getSuivi() )
         {
             vec2* pV = new vec2();
-            v_tStars[i]->getPos(*pV);
+            v_tStars[i]->getPos(pV);
+
+    //#ifndef PANELCOURBE_H
+    extern PanelCourbe* panelCourbe;
+    //#endif
+            if ( bSimu )
+            { 
+                vec3& vOrigine = panelCourbe->get_vOrigine();
+                pV->x = vOrigine.x + 4.0 * (float)rand()/(float)RAND_MAX-2.0;
+                pV->y = vOrigine.y + 4.0 * (float)rand()/(float)RAND_MAX-2.0;
+            }
+            //pV->y = v_tStars[i]->getSuiviY();
+            //logf( (char*)"Stars::getSuivi() OK (%0.2f,%0.2f)", pV->x, pV->y );
             return pV;
         }
     }

@@ -32,7 +32,7 @@ public:
     virtual void		update();
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);
-    virtual void        releaseRight( int, int);
+    virtual void        releaseMiddle( int, int);
 
     virtual void        wheelUp( int, int)                              {;};
     virtual void        wheelDown( int, int)                            {;};

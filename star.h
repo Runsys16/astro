@@ -69,10 +69,15 @@ public:
     
     void                position(double, double);
     
+    inline bool         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
     inline bool         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
+    inline bool         getSuivi(vec2& v)                               { v.x=xSuivi; v.y=ySuivi; }
+    inline float        getSuiviX()                                     { xSuivi; }
+    inline float        getSuiviY()                                     { ySuivi; }
 
     inline bool         getSuivi()                                      { return bSuivi; }
     inline void         toggleSuivi()                                   { bSuivi = !bSuivi; }
+    inline void         setSuivi(bool b)                                { bSuivi = b; }
 
     inline bool         getZoom()                                       { return bZoom; }
     inline void         toggleZoom()                                    { bZoom = !bZoom; }
@@ -99,6 +104,9 @@ private:
 
     int                 x;
     int                 y;
+
+    float               xSuivi;
+    float               ySuivi;
 
     int                 dx_screen;
     int                 dy_screen;

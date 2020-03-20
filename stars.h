@@ -37,7 +37,7 @@ public:
     void                    displayGL();
     
     void                    selectLeft(int, int);
-    void                    selectRight(int, int);
+    void                    selectMiddle(int, int);
     void                    suivi(rb_t*);
     
     void                    position(double, double);

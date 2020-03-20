@@ -207,9 +207,9 @@ void PanelCamera::releaseLeft(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::releaseRight(int xm, int ym)
+void PanelCamera::releaseMiddle(int xm, int ym)
 {
-    logf( (char*)"PanelCamera::releaseRight(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
     if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
     logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
     
@@ -222,7 +222,12 @@ void PanelCamera::releaseRight(int xm, int ym)
     stars.setView( this );
     stars.setRB( pReadBgr );
     if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
-        stars.selectRight(xx, yy);
+    {
+        stars.selectMiddle(xx, yy);
+        logf( (char*)" releaseMiddle(%d,%d) selects star...", xm, ym );
+    }
+    else
+        stars.selectMiddle(xx, yy);
 }
 
 

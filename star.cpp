@@ -136,7 +136,7 @@ void Star::computeMag()
 {
     magnitude = -(log( ponderation ) / log(2.0)) + 17.0;
     
-    if ( bZoom )
+    if ( bSuivi )
         sprintf( p_sInfo, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
     else
         sprintf( p_sInfo, "mag=%0.2f", magnitude );
@@ -541,12 +541,16 @@ void Star::glCercle(int rayon)
     int xx = x_screen - delta_x;
     int yy = y_screen - delta_y;
 
+    xSuivi = pos.x;
+    ySuivi = pos.y;
     /*
     xx = x;
     yy = y;
     screen2tex(x, y);
     */
-    //logf( (char*)"Star::glCercle() : (%d, %d)  (%d, %d)", xx, yy, x, y );
+    
+    //logf( (char*)"Star::glCercle() : (%d, %d)  (%d, %d) pos(%0.2f,%0.2f)", xx, yy, x, y, pos.x, pos.y );
+
 	glBegin(GL_LINE_LOOP);
 
         for( float i=0; i<=360.0; i+=1.0 )

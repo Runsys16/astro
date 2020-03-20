@@ -16,7 +16,42 @@ PanelButton *       pFlecheBas;
 PanelButton *       pButtonMode;
 PanelButton *       pButtonAsserv;
 
+void inverse_texture(PanelButton *, bool, string);
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void                logf( char *, ...);
+void set_courbe(void)
+{
+    inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void set_asservissement(void)
+{
+    var.set("bCorrection", bCorrection);
+    fTimeCpt = 0.0; 
+    /*
+    panelCourbe->get_vOrigine().x = xSuivi;
+    panelCourbe->get_vOrigine().y = ySuivi;
+    panelCourbe->get_vOrigine().z = 0.0;
+    */
 
+    var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
+    var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
+
+    if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
+    else                        pAsservi->changeText((char*)" ");
+    
+    inverse_texture( pButtonAsserv, bCorrection, "cadena" );
+
+    //if (bCorrection)            pButtonAsserv->texDown();
+    //else                        pButtonAsserv->texUp();
+    
+    logf( (char*)"asservissement = %s", bCorrection?(char*)"true":(char*)"false" );
+
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -38,14 +73,14 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
     if ( !b )
     {
         pButton->setUp(   (char*)over.c_str() );
-        pButton->setDown( (char*)over.c_str() );
-        pButton->setOver( (char*)over.c_str() );
+        pButton->setDown( (char*)down.c_str() );
+        pButton->setOver( (char*)down.c_str() );
     }
     else
     {
         pButton->setUp(   (char*)down.c_str() );
-        pButton->setDown( (char*)down.c_str() );
-        pButton->setOver( (char*)down.c_str() );
+        pButton->setDown( (char*)over.c_str() );
+        pButton->setOver( (char*)over.c_str() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -163,22 +198,8 @@ void call_back_up(PanelButton* pPanel)
 	if ( pPanel == pButtonAsserv )
 	{
         bCorrection = !bCorrection; 
-        var.set("bCorrection", bCorrection);
-        fTimeCpt = 0.0; 
-        /*
-        panelCourbe->get_vOrigine().x = xSuivi;
-        panelCourbe->get_vOrigine().y = ySuivi;
-        panelCourbe->get_vOrigine().z = 0.0;
-        */
-
-        var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
-        var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
-
-        if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
-        else                        pAsservi->changeText((char*)" ");
-        
-        inverse_texture( pPanel, bCorrection, "cadena" );
-	}
+        set_asservissement();
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

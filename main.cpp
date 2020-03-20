@@ -136,6 +136,7 @@ bool                bPleiade       = false;
 bool                bSauve         = false;
 bool                bOneFrame      = false;
 bool                bStdOut        = false;
+bool                bSimu          = false;
 
 int                 wImg;
 int                 hImg;
@@ -237,7 +238,7 @@ bool bRet = false;
 //
 //--------------------------------------------------------------------------------------------------------------------
 string workDirCaptures = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame/";
-string workDirSauvegardes = "/home/rene/.astropilot/";
+string workDirSauveCourbe = "/home/rene/.astropilot/";
 string workDirFileBrowser = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/";
 string filenameSauve = "/home/rene/.astropilot/sauvegarde.txt";
 string workDirFits = "/home/rene/Documents/astronomie/fits/";
@@ -297,11 +298,12 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 {
+    VarManager& var = VarManager::getInstance();
     logf( (char*)"CallbackChargeGuidage::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+    
     if ( bb )     
     {
         logf( (char*)"Charge guidage %s", (char*)str );
-        VarManager& var = VarManager::getInstance();
 
         var.set( "FileResultat", string(str) );
 
@@ -312,7 +314,9 @@ void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
             panelCourbe->get_vOrigine().y = vOri.y;
         }
     }
-    workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+    
+    workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
+    var.set( "DirSauveCourbe", workDirSauveCourbe );
     FileBrowser::getInstance().setFiltre( "" );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -320,7 +324,9 @@ void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 //--------------------------------------------------------------------------------------------------------------------
 void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
 {
+    VarManager& var = VarManager::getInstance();
     logf( (char*)"CallbackSauveGuidage::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+
     if ( bb )     
     {
         if ( ii == 1 )
@@ -330,7 +336,8 @@ void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
             filenameSauve = string(s);
             logf( (char*)"  Sauve guidage %s", (char*)s.c_str() );
             //charge_fichier( string(str) );
-            workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+            workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
+            var.set( "DirSauveCourbe", workDirSauveCourbe );
             FileBrowser::getInstance().setFiltre( "" );
             
             bSauve = true;
@@ -338,13 +345,15 @@ void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
         else
         {
             logf( (char*)"  selection souris %s", (char*)str );
-            workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+            workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
+            var.set( "DirSauveCourbe", workDirSauveCourbe );
         }
     }
     else
     {
         logf( (char*)"  ABANDON Sauve guidage %s", (char*)str );
-        workDirSauvegardes = FileBrowser::getInstance().getWorkingDir();
+        workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
+        var.set( "DirSauveCourbe", workDirSauveCourbe );
         bSauve = false;
     }
     
@@ -1406,12 +1415,8 @@ void suivi(void)
 
 
     vec2*       pV = Camera_mgr::getInstance().getSuivi();
-    if ( pV == NULL )
-    {
-        //logf( (char*)"Suivi NULL");
-        return;
-    }
-    else
+    
+    if ( bSuivi && pV != NULL )
     {
         //logf( (char*)"Suivi (%0.2f, %0.2f)", pV->x, pV->y ); 
 
@@ -1638,7 +1643,8 @@ static void idleGL(void)
 	{
 	    fTimeCpt += elapsedTime;
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCpt );
-	    if ( bCorrection && fTimeCpt > 0.0 && bAutorisationSuivi)
+	    //if ( bCorrection && fTimeCpt > 0.0 && bAutorisationSuivi)
+	    if ( bCorrection && fTimeCpt > 0.0 && bSuivi)
 	    {
             fTimeCpt -= fTimeCorrection;
             if ( fTimeCpt > 0.0 )    fTimeCpt = 0.0;//-= fTimeCorrection;
@@ -2077,6 +2083,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'F':  // '-'
+        {
+        bSimu = !bSimu;
+        logf( (char*)"bSimu = %s", bSimu ? (char*)"TRUE": (char*)"FALSE" );
+        }
+        break;
+
     case 'H':
         {
         Camera* pCam = Camera_mgr::getInstance().getCurrent();
@@ -2085,6 +2098,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	    logf( (char*)"'H' - Enregistre  une photo de la camera courante !!" );
             FileBrowser::getInstance().setCallBack( pCam );
             FileBrowser::getInstance().setExtra( 0 );
+            if ( var.existe("DirSurveillance") )    workDirCaptures = *var.gets( "DirSurveillance" );
             FileBrowser::getInstance().change_dir( workDirCaptures );
             FileBrowser::getInstance().setNewline(true);
             FileBrowser::getInstance().affiche();
@@ -2314,15 +2328,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             FileBrowser::getInstance().setCallBack(&cb_cguidage);
             FileBrowser::getInstance().setFiltre( ".guid" );
-            FileBrowser::getInstance().change_dir( workDirSauvegardes );
+            if ( var.existe("DirSauveCourbe") )     workDirSauveCourbe = *var.gets( "DirSauveCourbe" );
+            FileBrowser::getInstance().change_dir( workDirSauveCourbe );
             FileBrowser::getInstance().affiche();
         }
         break;
 
     case 'R' :
         {
-        bAlert = !bAlert;
-        alertBox( "TEST ALERT BOX" );
+        t_vResultat.clear();
+        t_vSauve.clear();
+        //bAlert = !bAlert;
+        //alertBox( "TEST ALERT BOX" );
         }
         break;
 
@@ -2404,7 +2421,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
             bFileBrowser = fb.getVisible();
             fb.setFiltre( ".guid" );
-            fb.change_dir( workDirSauvegardes );
+            fb.change_dir( workDirSauveCourbe );
             fb.setCallBack( &cb_sguidage );
             
             fb.affiche();
@@ -2431,14 +2448,23 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             panelCourbe->get_vOrigine().y = y;
             panelCourbe->get_vOrigine().z = 0.0;
             
-            logf( (char*)"initilise vOrigine(click) : (%d,%d)", x, y);
+            logf( (char*)"initialise vOrigine(click) : (%d,%d)", x, y);
         }
         else
         {
+            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            //panelCourbe->get_vOrigine().x = xSuivi;
+            //panelCourbe->get_vOrigine().y = ySuivi;
+            if ( pv != NULL )
+            {
+                xSuivi = pv->x;
+                ySuivi = pv->y;
+            }
             panelCourbe->get_vOrigine().x = xSuivi;
             panelCourbe->get_vOrigine().y = ySuivi;
             panelCourbe->get_vOrigine().z = 0.0;
-            logf( (char*)"initilise vOrigine(suivi) : (%d,%d)", xSuivi, ySuivi);
+            
+            logf( (char*)"initialise vOrigine(suivi) : (%0.2f,%0.2f)", xSuivi, ySuivi);
         }
         }
         break;
@@ -2480,20 +2506,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'Y':
         {
         bCorrection = !bCorrection; 
-        var.set( "bCorrection", bCorrection);
-
-        fTimeCpt = 0.0; 
-
-        /*
-        panelCourbe->get_vOrigine().x = xSuivi;
-        panelCourbe->get_vOrigine().y = ySuivi;
-        panelCourbe->get_vOrigine().z = 0.0;
-        */
-        var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
-        var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
-
-        if ( bCorrection )      pAsservi->changeText((char*)"Asservissemnent");
-        else                    pAsservi->changeText((char*)"");
+        set_asservissement();
         }
         break;
 
@@ -2566,6 +2579,9 @@ static void glutSpecialFunc(int key, int x, int y)	{
         bPanelCourbe = !bPanelCourbe;
         var.set("bPanelCourbe", bPanelCourbe);
         panelCourbe->setVisible(bPanelCourbe);
+        //( pButtonCourbe,  bPanelCourbe,       "courbe" );
+        set_courbe();
+        
         if ( bPanelCourbe )       WindowsManager::getInstance().onTop(panelCourbe);
         log( (char*)"Toggle panelCourbe !!!" );
         }
@@ -2980,11 +2996,11 @@ static void CreateHelp()
 	addString( "w: Centre le joystick");
 	
 	addString( "");
-	addString( "S: Stop le suivi");
+	addString( "S: Lance/Stop le suivi");
 	addString( "t/T: change le temps de correction");
 	addString( "Y: Lance l' asservissement");
 	addString( "V: Initialise les coordonnees de suivi");
-	addString( "v: Sauvegarde des coordonnees dans le fichier .astropilot/sauvegarde.text");
+	addString( "v: Sauvegarde des coordonnees de suivi dans un fichier .guid");
 	addString( "W: Surveille un repertoire");
 
 	addString( "");
@@ -3056,7 +3072,7 @@ static void CreateStatus()	{
     pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 350, 2 );
 	panelStatus->add( pMode );
  
-    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 650, 2 );
+    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 850, 2 );
 	panelStatus->add( pAsservi );
 
     pDeplacement = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, width-410, 2 );
@@ -3666,8 +3682,16 @@ int main(int argc, char **argv)
     glewInit();
     
     charge_var();
-
+    
     CreateAllWindows();
+
+    set_asservissement();
+    inverse_texture( pButtonSerial,  bPanelSerial,       "arduino" );
+    inverse_texture( pButtonStdOut,  bPanelStdOut,       "" );
+    inverse_texture( pButtonHelp,    bPanelHelp,         "help" );
+    inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
+    inverse_texture( pButtonMode,    bAutorisationSuivi, "cible" );
+
     panelCourbe->get_vOrigine().x = vOri.x;
     panelCourbe->get_vOrigine().y = vOri.y;
 
