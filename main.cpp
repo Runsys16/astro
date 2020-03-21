@@ -29,7 +29,7 @@
 #include "captures.h"
 #include "bluetooth.h"
 #include "panel_courbe.h"
-//#include "star.h"
+#include <GL/freeglut_ext.h>
 
 //#define DEBUG 1
 #define SIZEPT  20
@@ -178,15 +178,6 @@ vector<vec2>        t_vSauve;
 vector<vector<vec2> * >        t_vTrace;
 bool                bAffTrace = false;
 bool                bRecTrace = false;
-/*
-float               offset_x;
-float               offset_y;
-float               delta_courbe1 = 1.0;
-float               delta_courbe2 = 1.0;
-float               courbe1 = 1.0;
-float               courbe2 = 1.0;
-int                 decal_resultat = 0;
-*/
 vec4                colorTraces[] = 
                         {
                         vec4(1.0,0.0,0.0,1.0), vec4(0.0,1.0,0.0,1.0), vec4(0.0,0.0,1.0,1.0),
@@ -223,8 +214,6 @@ float               fTimeCpt = 0.0;
 vector<AlertBox*>   tAlert;
 bool                bAlert = false;
 string              sAlert;
-
-bool                bFindStar = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -778,11 +767,13 @@ void displayGLTrace(void)
 {
     if ( !bAffTrace )              return;
 
+    //logf( (char*)"Affiche les traces" );
     int nbv = t_vTrace.size();
     
     glBegin(GL_LINES);
         
     int m = sizeof(colorTraces) / 16;
+    //int m = 12;
     //logf( (char*)"Modulo : %d", m );
 
     for( int j=0; j<nbv; j++ )
@@ -791,7 +782,7 @@ void displayGLTrace(void)
         glColor4fv( (GLfloat*)&colorTraces[j%m] );
             
         vector<vec2> *   trace = t_vTrace[j];
-        int nb = (*trace).size();
+        int nb = trace->size();
         if ( nb == 1 )                  continue;
     
         for ( int i=0; i<nb-1; i++ )
@@ -1222,7 +1213,7 @@ void sauve_traces(void)
     if ( nbt < 1 )          return;
     
     std::ofstream fichier;
-    fichier.open(filename, std::ios_base::app);
+    fichier.open(filename, std::ios_base::trunc);
 
     if ( !fichier ) 
     {
@@ -1602,7 +1593,14 @@ static void idleGL(void)
         if ( i >= 0 )
         {
             vector<vec2>* trace = t_vTrace[i];
-            trace->push_back( vec2(xSuivi, ySuivi) );
+            int nb = trace->size();
+        
+            vec2* vv = Camera_mgr::getInstance().getSuivi();
+            if( vv != NULL )
+            {
+                logf( (char*)"trace[%d][%d] = (%0.2f,%0.2f)", i, nb, vv->x, vv->y );
+                trace->push_back( vec2(vv->x, vv->y) );
+            }
         }
     }
     //-----------------------------------------------------------------------
@@ -1766,9 +1764,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	int modifier = glutGetModifiers();
 	
     bFileBrowser = FileBrowser::getInstance().getVisible();
+    Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
     
         
-    logf( (char*)"glutKeyboardFunc (%d) \'%c\'", (int)key, key );
     
     if (tAlert.size() != 0 )
     {
@@ -1780,29 +1778,21 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         alertBoxQuit();
         return;
     }
-    
-    if ( PanelConsoleSerial::getInstance().keyboard(key, x, y) )      return;;
-
+    else
+    if ( PanelConsoleSerial::getInstance().keyboard(key, x, y) )      return;
+    else
     if ( bFileBrowser )
     {
         FileBrowser::getInstance().keyboard( key, x, y);
         return;
     }
-
-    Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+    else
     if (        cam_mgr.getCurrent() 
             &&  cam_mgr.getCurrent()->getControlVisible()       )
     {
         if ( cam_mgr.getCurrent()->keyboard(key) )      return;
     }
-    /*
-	if (modifier == GLUT_ACTIVE_CTRL)
-	{
-        logf( (char*)" Touche CTRL %d", (int)key );
-        glutKeyboardFuncCtrl(key,  x,  y);
-        return;
-	}
-	*/
+    else
 	if (modifier == GLUT_ACTIVE_ALT)
 	{
         logf( (char*)" Touche ALT %c", key );
@@ -1816,6 +1806,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	// CTRL q
 	case 17:
 	    {
+	    logf( (char*)"Key (ctrl+Q) : ByeBye !!" );
 	    quit();
 	    }
         break;
@@ -1823,77 +1814,79 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	// touche escape
 	case 27:
 	    {
+	    logf( (char*)"Key (ESC) : ByeBye !!" );
 	    alertBox( "Confirmez la sortie du programme 'ESC'" );
 	    bQuit = true;
 	    }
         break;
-
-
+	// CTRL D
     case 4:
 		{
-            logf( (char*)"case 'ctrl+D'" );
-            Captures& cap = Captures::getInstance();
-            if ( cap.isMouseOverCapture(x, y)  )
-            {
-                cap.deleteAllStars();
-            }
-            else
-            {
-                if ( Camera_mgr::getInstance().getCurrent() != NULL )
-        		    Camera_mgr::getInstance().deleteAllStars();
-            }
+	    logf( (char*)"Key (ctrl+d) : Efface les etoiles !!" );
+        Captures& cap = Captures::getInstance();
+        if ( cap.isMouseOverCapture(x, y)  )
+        {
+            cap.deleteAllStars();
+        }
+        else
+        {
+            if ( Camera_mgr::getInstance().getCurrent() != NULL )
+    		    Camera_mgr::getInstance().deleteAllStars();
+        }
         }
         break;
-    
+	// CTRL P
     case 16:
 		{
-            logf( (char*)"case 'ctrl+P'" );
+	    logf( (char*)"Key (ctrl+p) : Noop" );
         }
         break;
-    
+	// CTRL F
     case 6:
 		{
-            logf( (char*)"case 'ctrl+F'" );
+            logf( (char*)"Key (ctrl+f) : FullScreen" );
             Captures::getInstance().fullscreen();
-            //Captures::getInstance().hideIcones();
         }
         break;
-    
-    
+	// CTRL I
     // touche tab
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
-        	if (modifier == GLUT_ACTIVE_CTRL)
-        	{
-	            logf( (char*)"-------------- Touche CTRL+TAB" );
-		        Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
-		        cam_mgr.active();
+        logf( (char*)"Key (TAB) : Image suivante/(shift)precedente" );
+    	if (modifier == GLUT_ACTIVE_CTRL)
+    	{
+            logf( (char*)"-------------- Touche CTRL+TAB" );
+	        Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+	        cam_mgr.active();
 
-                getSuiviParameter();
-                break;
-        	}
-        	else if (modifier == GLUT_ACTIVE_SHIFT)
-        	{
-	            logf( (char*)"-------------- Touche SHIFT+TAB" );
-                //Captures::getInstance().showIcones();
-    	        Captures::getInstance().rotate_capture_moins(false);
-                break;
-        	}
-        	else if (modifier == GLUT_ACTIVE_ALT)
-        	{
-	            logf( (char*)"-------------- Touche ALT+TAB" );
-                break;
-        	}
-
-            logf( (char*)"-------------- Touche TAB" );
+            getSuiviParameter();
+            break;
+    	}
+    	else if (modifier == GLUT_ACTIVE_SHIFT)
+    	{
+            logf( (char*)"-------------- Touche SHIFT+TAB" );
             //Captures::getInstance().showIcones();
-	        Captures::getInstance().rotate_capture_plus(false);
+	        Captures::getInstance().rotate_capture_moins(false);
+            break;
+    	}
+    	else if (modifier == GLUT_ACTIVE_ALT)
+    	{
+            logf( (char*)"-------------- Touche ALT+TAB" );
+            break;
+    	}
+
+        logf( (char*)"-------------- Touche TAB" );
+        //Captures::getInstance().showIcones();
+        Captures::getInstance().rotate_capture_plus(false);
         }
 		break;
+	// CTRL J  LF
 	case 10:
 		break;
+	// CTRL M  CR
 	case 13:
+        logf( (char*)"Key (CR) : Plein ecran" );
 	    bFull = !bFull;
         var.set("bFull", bFull);
 
@@ -1920,9 +1913,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     // touche '-'
     case 45:
     	{
-            //Captures::getInstance().showIcones();
-	        //Captures::getInstance().rotate_capture_plus(true);
-	        Captures::getInstance().rotate_capture_moins(true);
+        logf( (char*)"Key (2) : Image precedente" );
+        Captures::getInstance().rotate_capture_moins(true);
     	}
 	    break;
     
@@ -1934,6 +1926,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    break;
     
     case 'A':
+        logf( (char*)"Key (A) : Pt1 Ascension droite" );
         {
         if ( bAutorisationSuivi )
         {
@@ -1954,6 +1947,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'a':
         {
+        logf( (char*)"Key (a) : Pt0 Ascension droite" );
         if ( bAutorisationSuivi )
         {
             vecAD[0].x = xSuivi;
@@ -1979,34 +1973,36 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'b':
         {
+        logf( (char*)"Key (b) : Bluetooth start" );
         BluetoothManager::getInstance().start();
         }
         break;
     
     case 'B':
         {
+        logf( (char*)"Key (b) : Bluetooth disconnect" );
         BluetoothManager::getInstance().disconnect();
         }
         break;
 
     case 'c':
         {
-            bRecTrace = !bRecTrace;
-            if ( bRecTrace )
-            {
-                logf( (char*)"Sauvegarde ...");
-                t_vTrace.push_back( new (vector<vec2>)() );
-            }
+        logf( (char*)"Key (c) :  une nouvelle traces" );
+        t_vTrace.push_back( new (vector<vec2>)() );
+        logf( (char*)"  nb trace = %d", t_vTrace.size() );
         }
         break;
     case 'C':
         {
-            bAffTrace = !bAffTrace;
+        logf( (char*)"Key (C) : Rec trace" );
+        bRecTrace = !bRecTrace;
+        logf( (char*)"bRecTrace = %s", BOOL2STR(bRecTrace) );
         }
         break;
 
     case 'D':
         {
+        logf( (char*)"Key (D) : Pt1 Declinaison" );
         if ( bAutorisationSuivi )
         {
             vecDC[1].x = xSuivi;
@@ -2031,6 +2027,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'd':
         {
+        logf( (char*)"Key (d) : Pt0 Declinaison" );
         
         if ( bAutorisationSuivi )
         {
@@ -2057,25 +2054,33 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'e':
         {
-            int i = t_vTrace.size();
-            if ( i == 0 )       break;
-            
-            vector<vec2>* trace = t_vTrace[i-1];
-            trace->clear();
-            delete trace;
-            t_vTrace.pop_back();
-            trace = 0;
+        logf( (char*)"Key (e) : Affiche les traces" );
+        bAffTrace = !bAffTrace;
+        logf( (char*)"  bAffTrace = %s", BOOL2STR(bAffTrace) );
         }
         break;
 
     case 'E':
         {
-            sauve_traces();
+        logf( (char*)"Key (E) : Efface les traces" );
+
+        int i = t_vTrace.size();
+        if ( i <= 0 ){
+            logf( (char*)"  derniere atteinte" );
+            break;
+        }
+        vector<vec2>* trace = t_vTrace[i-1];
+        trace->clear();
+        delete trace;
+        t_vTrace.pop_back();
+        trace = 0;
+        logf( (char*)"  reste : %d trace", t_vTrace.size() );
         }
         break;
 
     case 'f':  // '-'
         {
+        logf( (char*)"Key (f) : File browser affiche une image" );
         bFileBrowser = FileBrowser::getInstance().getVisible();
         FileBrowser::getInstance().setFiltre( "" );
         if ( var.existe("DirFileBrowser") )
@@ -2094,18 +2099,23 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'F':  // '-'
         {
+        logf( (char*)"Key (F) : Simu pour les courbes de suivis" );
         bSimu = !bSimu;
-        logf( (char*)"bSimu = %s", bSimu ? (char*)"TRUE": (char*)"FALSE" );
+        logf( (char*)"  bSimu = %s", BOOL2STR(bSimu) );
         VarManager::getInstance().set( "bSimu", bSimu );
         }
         break;
 
+    case 'g':
+    case 'G':
+        break;
+        
     case 'H':
         {
+        logf( (char*)"Key (H) : Choisir le repertoire pour enregistre" );
         Camera* pCam = Camera_mgr::getInstance().getCurrent();
         if ( pCam != NULL )
         {
-    	    logf( (char*)"'H' - Enregistre  une photo de la camera courante !!" );
             FileBrowser::getInstance().setCallBack( pCam );
             FileBrowser::getInstance().setExtra( 0 );
             if ( var.existe("DirSurveillance") )    workDirCaptures = *var.gets( "DirSurveillance" );
@@ -2119,67 +2129,26 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'h':
         {
+        logf( (char*)"Key (h) : Enregistre uneimage" );
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
             p->enregistre();
-    	    //logf( (char*)"Enregistre  une photo de la camera courante !!" );
         }
         }
         break;
 
     case 'i':
-        {
-            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat() + 100 );
-            if ( panelCourbe->get_decal_resultat() >= t_vResultat.size() )            
-                panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat() - 100 );
-        }
-        break;
-
     case 'I':
-        {
-            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat() - 100 );
-            if ( panelCourbe->get_decal_resultat() < 0 )            panelCourbe->set_decal_resultat( 0 );
-        }
-        break;
-
     case 'J':
-        {
-        panelCourbe->set_delta_courbe1( panelCourbe->get_delta_courbe1() * 0.8);
-        var.set("delta_courbe1", panelCourbe->get_delta_courbe1());
-        panelCourbe->set_delta_courbe2( panelCourbe->get_delta_courbe2() * 0.8);
-        var.set("delta_courbe2", panelCourbe->get_delta_courbe2());
-        }
-        break;
-
     case 'j':
-        {
-        panelCourbe->set_delta_courbe1( panelCourbe->get_delta_courbe1() / 0.8);
-        //delta_courbe1 /= 0.8;
-        var.set("delta_courbe1", panelCourbe->get_delta_courbe1());
-        //delta_courbe2 /= 0.8;
-        panelCourbe->set_delta_courbe2( panelCourbe->get_delta_courbe2() / 0.8);
-        var.set("delta_courbe2", panelCourbe->get_delta_courbe2());
-        }
-        break;
-
     case 'k':
-        {
-            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat()+1 );
-            if ( panelCourbe->get_decal_resultat() >= t_vResultat.size() )            
-                panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat()-1 );
-        }
-        break;
-
     case 'K':
-        {
-            panelCourbe->set_decal_resultat( panelCourbe->get_decal_resultat()-1 );
-            if ( panelCourbe->get_decal_resultat() < 0 )            panelCourbe->set_decal_resultat( 0 );
-        }
         break;
 
     case 'l':
         {            
+        logf( (char*)"Key (l) : Affiche les connexions" );
         Connexion_mgr::getInstance().print_list();
         Camera_mgr::getInstance().print_list();
         Captures::getInstance().print_list();
@@ -2188,6 +2157,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'L':
         {            
+        logf( (char*)"Key (L) : Affiche les variables" );
         VarManager::dbMap & db = var.getDB();
         VarManager::dbMap::iterator p;
         
@@ -2228,16 +2198,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'M':
         {
+        logf( (char*)"Key (M) : Calcul la matrice de transformation" );
         compute_matrix();
         }
         break;
     case 'm':
         {
+        logf( (char*)"Key (m) : Autorisation du deplcament par la souris (bouton du milieu) ...");
         bMouseDeplace = !bMouseDeplace;
-        if ( bMouseDeplace )
-        {
-            logf( (char*)"Autorisation du deplcament par la souris (bouton du milieu) ...");
-        }
+        logf( (char*)"  bMouseDeplace = %s", BOOL2STR(bMouseDeplace) );
+
 	    if (bMouseDeplace)              pDeplacement->changeText((char*)"Deplacement");
         else                            pDeplacement->changeText((char*)"----");
         }
@@ -2245,14 +2215,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'n':
         {
+        logf( (char*)"Key (n) : Affiche/cache les capture");
         bAffIconeCapture = !bAffIconeCapture;
+        logf( (char*)"  bAffIconeCapture = %s", BOOL2STR(bAffIconeCapture) );
         Captures::getInstance().switchAffIcones();
         }
         break;
 
     case 'N':
         {
+        logf( (char*)"Key (N) : Mode NUIT");
         bNuit = !bNuit;
+        logf( (char*)"  bNuit = %s", BOOL2STR(bNuit) );
         var.set("bNuit", bNuit);
         long color;
         if (bNuit)                  color = 0xFFFF0000;
@@ -2273,6 +2247,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'o':
         {
+        logf( (char*)"Key (o) : Affiche/cache la simu pleiade");
         if ( !bPleiade )
         {
             if ( pPleiade == NULL )             pPleiade = new Pleiade();
@@ -2294,7 +2269,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'O':
         {
+        logf( (char*)"Key (O) : AutorisationSuivi");
     	bAutorisationSuivi = !bAutorisationSuivi;
+        logf( (char*)"  bAutorisationSuivi = %s", BOOL2STR(bAutorisationSuivi) );
         var.set("bAutorisationSuivi", bAutorisationSuivi);
 
         if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
@@ -2304,12 +2281,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'p':  // '-'
         {
+        logf( (char*)"Key (p) : Pause on/off");
         updatePanelPause(!bPause);
         }
         break;
 
     case 'P':  // '-'
         {
+        logf( (char*)"Key (P) : Une image");
         //photo();
         bOneFrame = true;
         }
@@ -2317,25 +2296,29 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'q':
         {
-            //Py_SetProgramName(argv[0]);  /* optional but recommended */
-            Py_Initialize();
-            PyRun_SimpleString("from time import time,ctime\n"
-                             "print( 'Hello Word' )\n");
-            Py_Finalize();
+        logf( (char*)"Key (q) : Lance un script python");
+        //Py_SetProgramName(argv[0]);  /* optional but recommended */
+        Py_Initialize();
+        PyRun_SimpleString("from time import time,ctime\n"
+                         "print( 'Hello Word' )\n");
+        Py_Finalize();
         }
         break;
 
 
     case 'Q':
         {
-            FileBrowser::getInstance().setCallBack(&cb_fits);
-            FileBrowser::getInstance().setFiltre( ".fits" );
-            FileBrowser::getInstance().change_dir( workDirFits );
-            FileBrowser::getInstance().affiche();
+        logf( (char*)"Key (Q) : Ouvre un fichier fits (.fits)");
+        FileBrowser::getInstance().setCallBack(&cb_fits);
+        FileBrowser::getInstance().setFiltre( ".fits" );
+        FileBrowser::getInstance().change_dir( workDirFits );
+        FileBrowser::getInstance().affiche();
         }
         break;
     case 'r' :
         {
+        logf( (char*)"Key (Q) : Ouvre un fichier de suivi (.guid)");
+
             FileBrowser::getInstance().setCallBack(&cb_cguidage);
             FileBrowser::getInstance().setFiltre( ".guid" );
             if ( var.existe("DirSauveCourbe") )     workDirSauveCourbe = *var.gets( "DirSauveCourbe" );
@@ -2346,16 +2329,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'R' :
         {
+        logf( (char*)"Key (R) : Reset les datas de suivi" );
         t_vResultat.clear();
         t_vSauve.clear();
-        //bAlert = !bAlert;
-        //alertBox( "TEST ALERT BOX" );
         }
         break;
 
     case 's':
         {
-            logf( (char*)"case 's'" );
+        logf( (char*)"Key (s) : Trouve toutes les etoies" );
             
             if ( Captures::getInstance().isMouseOverCapture(x, y)  )
             {
@@ -2371,14 +2353,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'S' :
         {
+        logf( (char*)"Key (S) : Suivi on/off" );
             bSuivi = !bSuivi;
             var.set( "bSuivi", bSuivi );
-            logf( (char*)"Toggle suivi (%s)", (bSuivi? "true" : "false") );
+            logf( (char*)"  bSuivi (%s)", BOOL2STR(bSuivi) );
         }
         break;
 
 	case 't':
-		{;
+		{
     		fTimeCorrection *= 0.9f;
     		fTimeCpt = 0.0;
             logf( (char*)"Augmente de temps : %0.2f", fTimeCorrection );
@@ -2393,34 +2376,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		break;
 
     case 'U':
-        {
-        /*
-        courbe1 *= 0.8;
-        var.set("courbe1", courbe1);
-        courbe2 *= 0.8;
-        var.set("courbe2", courbe2);
-        */
-        panelCourbe->set_courbe1( panelCourbe->get_courbe1() * 0.8);
-        var.set("courbe1", panelCourbe->get_courbe1());
-        panelCourbe->set_courbe2( panelCourbe->get_courbe2() * 0.8);
-        var.set("courbe2", panelCourbe->get_courbe2());
-        }
-        break;
-
     case 'u':
-        {
-        /*
-        courbe1 /= 0.8;
-        var.set("courbe1", courbe1);
-        courbe2 /= 0.8;
-        var.set("courbe2", courbe2);
-        */
-        panelCourbe->set_courbe1( panelCourbe->get_courbe1() / 0.8);
-        var.set("courbe1", panelCourbe->get_courbe1());
-        panelCourbe->set_courbe2( panelCourbe->get_courbe2() / 0.8);
-        var.set("courbe2", panelCourbe->get_courbe2());
-        
-        }
         break;
 
     case 'v':  // '-'
@@ -2527,19 +2483,22 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'z':
         {
-            charge_traces();
+        logf( (char*)"Key (z) : Charge les traces" );
+        charge_traces();
         }
         break;
 
     case 'Z':
         {
-            bFindStar = !bFindStar; 
+        logf( (char*)"Key (Z) : Sauve les traces" );
+        sauve_traces();
         }
         break;
 
     default:
         {
-        logf((char*)"key: %d", key);
+        if ( key != 14 )
+            logf((char*)"key: %d", key);
         }
         break;
 	}
@@ -2636,9 +2595,18 @@ static void glutSpecialFunc(int key, int x, int y)	{
         Captures::getInstance().supprime();
         }
         break;
-	default:	
+        
+    case GLUT_KEY_SHIFT_L:
+    case GLUT_KEY_SHIFT_R:
+    case GLUT_KEY_CTRL_L:
+    case GLUT_KEY_CTRL_R:
+    case GLUT_KEY_ALT_L:
+    case GLUT_KEY_ALT_R:
+        break;
+    default:	
 	    {
         //logf( (char*)"glutSpecialFunc %d", key );
+        logf( (char*)"glutSpecialFunc (%d) \'%c\'", (int)key, key );
 
 		}
 		break;
@@ -2950,73 +2918,66 @@ static void CreateHelp()
 	int l=50;
 
 	
-	addString( "   --- Touche de fonction  DU LOGICIEL ---" );
+	addString( "           ---- CAMERA ----");
+	addString( "H: Change le nom d une image de la camera");
+	addString( "h: Enregistre une image de la camera courante");
 
-	addString( " -- Mode Camera" );
-    
-	addString( "Brightness      B/b" );
-	addString( "Contrast        C/c" );
-	addString( "Saturation      S/s" );
-	addString( "Hue             H/h" );
-	addString( "Gamma           G/g" );
-	addString( "Sharpness       Z/z" );
-	addString( "Exposure        E/e" );
-	addString( "White balance   W/w" );
-	addString( "A: enregistre les parametres de la camera");
-	addString( "a: rappelle les parametres de la camera");
+	addString( "    Brightness      B/b" );
+	addString( "    Contrast        C/c" );
+	addString( "    Saturation      S/s" );
+	addString( "    Hue             H/h" );
+	addString( "    Gamma           G/g" );
+	addString( "    Sharpness       Z/z" );
+	addString( "    Exposure        E/e" );
+	addString( "    White balance   W/w" );
+	addString( "    A: enregistre les parametres de la camera");
+	addString( "    a: rappelle les parametres de la camera");
 	
-	addString( "" );
-	addString( " -- Mode normal" );
+	addString( "           ---- MODE NORMAL ----");
 	addString( "ctrl+TAB: camera suivante" );
 	addString( "o: Ouvre/Ferme la fenetre pleiades");
 	addString( "p: Pause de l'affichage de pleiades");
 	addString( "" );
-	addString( "f:   Ouvrir un fichier image");
+	addString( "   f: Ouvrir un fichier image");
+	addString( "   F: Active/Desactive la simu");
 	addString( "TAB: Change l'affichage des fichiers" );
-	addString( "²:   Toutes les images sont affichees en icones");
+	addString( "   2:   Toutes les images sont affichees en icones");
 	addString( "F11: Charge la prochaine image");
 	addString( "F12: Efface la derniere image");
+	addString( "   r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
+	addString( "   R: Test alert BOX");
+	addString( "   l: List les ports /dev/ +  les controles ");
+	addString( "   L: List les variables");
+	addString( "   w: Centre le joystick");
+	addString( "   W: Surveille un repertoire");
 
-	addString( "");
+	addString( "           ---- TRANSFORM MATRIX ----");
 	addString( "a/A: Vecteur en ascension droite");
 	addString( "  a: Debut");
 	addString( "  A: Fin");
 	addString( "d/D: Vecteur en declinaison");
 	addString( "  d: Debut");
 	addString( "  D: Fin");
-	addString( "M  : Calcul la matrice de transformation");
-	addString( "y  : Affiche les vecteurs");
-	addString( "m  : Deplacement à la souris");
-	addString( "O  : Mode souris / mode suivi");
+	addString( "  M  : Calcul la matrice de transformation");
+	addString( "  y  : Affiche les vecteurs");
+	addString( "  m  : Deplacement à la souris");
+	addString( "  O  : Mode souris / mode suivi");
 
-	addString( "");
-	addString( "c: Lance/arrete l\'enregistrement de trace");
-	addString( "C: Affiche les traces");
-	addString( "e: Efface la derniere trace");
-	addString( "E: Sauvegarde les traces");
+	addString( "           ---- TRACES ----");
+	addString( "C: Lance/arrete l\'enregistrement de trace");
+	addString( "c: Nouvelle trace");
+	addString( "e: Affiche les traces (ctrl+tab)");
+	addString( "E: Supprime la derniere trace");
 	addString( "z: Charge les traces");
-	addString( "");
-	addString( "H: Change le nom d une image de la camera");
-	addString( "h: Enregistre une image de la camera courante");
-	addString( "u/U: Echelle en x sur les courbes");
-	addString( "j/J: Echelle en y sur les courbes");
-	addString( "k/K: Decalage sur les courbes de 1");
-	addString( "i/I: Decalage sur les courbes de 100");
+	addString( "Z: Sauve les traces");
 
-	addString( "r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
-	addString( "R: Test alert BOX");
-	addString( "l: List les ports /dev/ +  les controles ");
-	addString( "L: List les variables");
-
-	addString( "w: Centre le joystick");
-	
-	addString( "");
-	addString( "S: Lance/Stop le suivi");
+	addString( "           ---- SUIVI ----");
+	addString( "  S: Lance/Stop le suivi");
 	addString( "t/T: change le temps de correction");
 	addString( "Y: Lance l' asservissement");
 	addString( "V: Initialise les coordonnees de suivi");
 	addString( "v: Sauvegarde des coordonnees de suivi dans un fichier .guid");
-	addString( "W: Surveille un repertoire");
+	
 
 	addString( "");
 	addString( "ESC: --- SORTIE DU LOGICIEL ---" );
@@ -3141,8 +3102,8 @@ static void CreateStdOut()	{
 	panelStdOutW = new PanelWindow();
     panelStdOutW->setDisplayGL(displayGLnuit_cb);
 
-	panelStdOut = new PanelScrollText(dy/13,50);
-	panelStdOut->setPrompt(string(">"));
+	panelStdOut = new PanelScrollText(dy/13+1,50);
+	//panelStdOut->setPrompt(string(">"));
 
 	panelStdOutW->setPosAndSize( x, y, dx, dy );
  	panelStdOutW->setVisible(bPanelStdOut);

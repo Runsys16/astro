@@ -64,6 +64,7 @@ void PanelCapture::setCent()
     if ( deltay < maxY )        deltay = maxY;
 
     setPos( deltax, deltay );
+    stars.set_delta( deltax, deltay );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -344,6 +345,8 @@ void PanelCapture::motionMiddle(int xm, int ym)
     setCentX( dx + deltaX );
     setCentY( dy + deltaY );
     
+    //stars.set_delta( deltaX, deltaY );
+    
     xm_old = xm;
     ym_old = ym;
 }
@@ -356,6 +359,26 @@ void PanelCapture::releaseMiddle(int xm, int ym)
     ym_old = -1;
     logf( (char*)"PanelCapture::releaseMiddle(%d,%d) ...", xm, ym );
     logf( (char*)"  ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
+
+    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
+    
+    logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
+    
+    //float e = (float)getDX() / (float)pReadBgr->w; 
+    float e = (float)getDX() / (float)pReadBgr->w; 
+    
+    int xx = ((float)xm-(float)getX()) / e;
+    int yy = ((float)ym-(float)getY()) / e;
+    
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+    {
+        stars.selectStar(xx, yy);
+        logf( (char*)" releaseMiddle(%d,%d) selects star...", xm, ym );
+    }
+    else
+        stars.selectStar(xx, yy);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -7,8 +7,9 @@
 Stars::Stars()
 {
     logf( (char*)"Constructeur Stars()" );
-    RB      = NULL;
-    pView   = NULL;
+    RB       = NULL;
+    pView    = NULL;
+    pNbStars = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -32,6 +33,10 @@ void Stars::add(Star * p)
         if ( ps == p )              return;
     }
     v_tStars.push_back( p );
+
+    char t[] = "00000000000";  
+    sprintf( t, "%d", size() );
+    pNbStars->changeText( t );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -54,6 +59,10 @@ void Stars::sup(Star * p)
             return;
         }
     }
+
+    char t[] = "00000000000";  
+    sprintf( t, "%d", size() );
+    pNbStars->changeText( t );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -67,7 +76,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     
 
 
-    Star * pp = new Star();
+    Star * pp = new Star((int) X, (int) Y);
     pp->setPtr( RB->ptr );
     pp->setWidth( RB->w );
     pp->setHeight( RB->h );
@@ -102,6 +111,11 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
     logf( (char*)"Stars::addStar( Nouvelle etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), xm, ym, pp->getMagnitude() );
     logf( (char*)"  x_find, y_find (%d, %d)", x_find, y_find );
+
+
+    char t[] = "00000000000";  
+    sprintf( t, "%d", size() );
+    pNbStars->changeText( t );
     
     return pp;
     
@@ -205,6 +219,11 @@ void Stars::findAllStars()
         }
     }
     delete p;
+
+    char t[] = "00000000000";  
+    sprintf( t, "%d", size() );
+    pNbStars->changeText( t );
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -223,6 +242,11 @@ void Stars::deleteAllStars()
         
     }
     v_tStars.clear();
+
+    char t[] = "00000000000";  
+    sprintf( t, "%d", size() );
+    pNbStars->changeText( t );
+
     logf( (char*)"Delete  %d Star()", nb );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -238,6 +262,13 @@ void Stars::setView(Panel* p)
         v_tStars[n]->setView( p );
     }
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::setPanelNbStars(PanelText* p)
+{
+    pNbStars = p;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -277,8 +308,11 @@ void Stars::suivi(rb_t* p)
 
         if ( !v_tStars[i]->find()   )
         {
-            t.push_back(i);
+            if ( v_tStars[i]->getNotFound() > 10   )
+                t.push_back(i);
         }
+        else v_tStars[i]->resetNotFound();
+        
         v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
         v_tStars[i]->suivi();
     }
@@ -289,6 +323,13 @@ void Stars::suivi(rb_t* p)
     for (int i=0; i<nb; i++ )
     {
         logf( (char*)" Erase %d ", t[i] );
+    }
+
+    if ( t.size() != 0 )
+    {
+        char t[] = "00000000000";  
+        sprintf( t, "%d", size() );
+        pNbStars->changeText( t );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -329,12 +370,30 @@ void Stars::selectMiddle( int xp, int yp)
         
         //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
         if ( dx <20 && dy < 20 )
-        {
-            v_tStars[n]->setSuivi(true);
-            //logf( (char*)"Etoile trouve " );
-        }
+            v_tStars[n]->toggleSuivi();
         else
             v_tStars[n]->setSuivi(false);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::selectStar( int xp, int yp)
+{
+    int nb = v_tStars.size();
+    for( int n=0; n<nb; n++ )
+    {
+        int x_star = v_tStars[n]->getX();
+        int y_star = v_tStars[n]->getY();
+        
+        int dx = abs(xp-x_star);
+        int dy = abs(yp-y_star);
+        
+        //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
+        if ( dx <20 && dy < 20 )
+            v_tStars[n]->toggleSelect();
+        else
+            v_tStars[n]->setSelect(false);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -363,26 +422,30 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
 
     for( int i=0; i<nb; i++ )
     {
-        v_tStars[i]->setRB( RB );
+        Star* pStar = v_tStars[i];
+        pStar->setRB( RB );
 
-        if ( !v_tStars[i]->find()   )
+        if ( !pStar->find() && pStar->getNotFound() > 10   )
         {
             t.push_back(i);
-            //logf( (char*)" Stars::update() push_back = %d", i );
+            logf( (char*)" Stars::update() push_back = %d", i );
         }
         //*
         else
         {
-            int x_find = v_tStars[i]->getX();
-            int y_find = v_tStars[i]->getY();
+            pStar->resetNotFound();
+            
+            int x_find = pStar->getX();
+            int y_find = pStar->getY();
 
             if ( starExist(x_find, y_find, i) )        { 
                 t.push_back(i);
+                logf( (char*)" Stars::update() push_back existe = %d", i );
             }
         }
         //*/       
         //v_tStars[i]->computeMag();
-        v_tStars[i]->updatePos( dx, dy, ech );
+        pStar->updatePos( dx, dy, ech );
     }
     //* 
     nb = t.size();
@@ -406,6 +469,12 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
     }
 
     //logf( (char*)"Stars::update()  --- FIN ---" );
+    if ( nb != 0 )
+    {
+        char t[] = "00000000000";  
+        sprintf( t, "%d", size() );
+        pNbStars->changeText( t );
+    }
     //*/
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -480,7 +549,19 @@ void Stars::position(double ra, double dc)
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
     {
-        if ( v_tStars[i]->getSuivi() )      v_tStars[i]->position(ra, dc);
+        if ( v_tStars[i]->getSelect() )      v_tStars[i]->position(ra, dc);
+        if ( v_tStars[i]->getSuivi() )       v_tStars[i]->position(ra, dc);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::set_delta(float xx, float yy)
+{
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        v_tStars[i]->set_delta(xx, yy);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

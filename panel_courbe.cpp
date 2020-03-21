@@ -322,6 +322,8 @@ void PanelCourbe::glCourbe()
 //void PanelCourbe::displayResultat_cb(void)
 void PanelCourbe::displayGL(void)
 {
+    displayGLTrace();
+
     VarManager& var = VarManager::getInstance();
 	if ( !visible )			return;
 

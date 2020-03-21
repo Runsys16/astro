@@ -28,6 +28,7 @@ public:
     void                    deleteAllStars();
     
     void                    setView( Panel* );
+    void                    setPanelNbStars( PanelText * );
 
     void                    setRB(rb_t*);
     void                    updateRB(rb_t*);
@@ -38,14 +39,20 @@ public:
     
     void                    selectLeft(int, int);
     void                    selectMiddle(int, int);
+    void                    selectStar(int, int);
     void                    suivi(rb_t*);
     
     void                    position(double, double);
+    void                    set_delta(float, float);
+
+inline int                  size(void)                  { return v_tStars.size(); }    
+
            
 private:
     vector<Star*>           v_tStars;
     rb_t*                   RB;
     Panel*                  pView;
+    PanelText*              pNbStars;
     
     int                     dx;
     int                     dy;

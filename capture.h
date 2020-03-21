@@ -30,6 +30,7 @@ protected:
     PanelWindow*                pW;
     PanelCapture*               panelPreview;
     PanelText*                  pTitre;
+    PanelText*                  pNbStars;
     
     struct readBackground       readBgr;
     Fits *                      fits;

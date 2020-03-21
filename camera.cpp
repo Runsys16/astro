@@ -24,6 +24,7 @@ Camera::~Camera()
 
     vm.sup( panelPreview );
     vm.sup( panelControl );
+    vm.sup( panelControl );
     
     delete panelPreview;
     delete panelControl;
@@ -103,6 +104,10 @@ void Camera::CreatePreview()	{
 	//pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
 	pCamFilename = new PanelText( (char*)getDevName(),		PanelText::LARGE_FONT, 20, 10 );
 	panelPreview->add( pCamFilename );
+	
+	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, wsc-50, 10 );
+	panelPreview->add( pNbStars );
+	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
 	
 	//string pStr = getName();

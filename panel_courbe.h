@@ -71,7 +71,7 @@ public :
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
     void                glCourbe();
-//    void                displayResultat_cb(void);
+//    void                displayGLTrace(void);
     int                 sc2winX(int);
     int                 sc2winY(int);
     

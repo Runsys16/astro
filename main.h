@@ -69,21 +69,26 @@ struct readBackground
 typedef struct readBackground       rb_t;
 
 #ifndef MAIN_CPP
-    extern bool         bNuit;
-    extern bool         bFindStar;
-    extern bool         bOneFrame;
-    extern bool         bPause;
-    extern bool         bPanelCourbe;
-    extern bool         bSimu;
-    extern bool         bMouseDeplace;
+    extern bool                     bNuit;
+    extern bool                     bFindStar;
+    extern bool                     bOneFrame;
+    extern bool                     bPause;
+    extern bool                     bPanelCourbe;
+    extern bool                     bSimu;
+    extern bool                     bMouseDeplace;
 
-    extern int          width;
-    extern int          height;
-    extern vector<vec2> t_vResultat;
-    extern bool         bAutorisationSuivi;
-    
-    extern float        xSuivi;
-    extern float        ySuivi;
+    extern int                      width;
+    extern int                      height;
+    extern vector<vec2>             t_vResultat;
+    extern bool                     bAutorisationSuivi;
+
+    extern float                    xSuivi;
+    extern float                    ySuivi;
+        
+    extern vector<vector<vec2> * >  t_vTrace;
+    extern bool                     bAffTrace;
+    extern bool                     bRecTrace;
+    extern vec4                     colorTraces[];
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -165,6 +170,7 @@ void                displayGLCourbe(void);
 void                displayGLCamera_cb(void);
 void                glEchelle();
 
+void                displayGLTrace();
 void                displayGLnuit_cb();
 void                displayResultat_cb(void);
 void                displayCourbe(void);

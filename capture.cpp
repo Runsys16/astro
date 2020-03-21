@@ -226,6 +226,9 @@ void Capture::create_preview()	{
 	pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
 	pW->add( pTitre );
 	
+	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, getWidth()-50, 10 );
+	panelPreview->add( pNbStars );
+	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
  	wm.add( pW );
 

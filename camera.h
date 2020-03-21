@@ -21,11 +21,10 @@ class Camera : public Device_cam
 {
 protected:
     PanelWindow *               panelControl;
-    //PanelWindow *               panelWindow;
     PanelCamera *               panelPreview;
-    //PanelSimple *               panelPreview;
-
     PanelText*                  pCamFilename;
+    PanelText*                  pNbStars;
+
     int                         xCam, yCam, dxCam, dyCam;
     
     bool                        bChargingCamera;
@@ -94,6 +93,7 @@ virtual    ~Camera();
 inline bool                     getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
 inline PanelCamera *            getPanelPreview()               { return panelPreview; }
 inline float                    getHertz()                      { return hz; }
+inline PanelText *              getPanelNbStars()               { return pNbStars; }
 //inline Stars*                   getStars()                      { return &stars; }
 
     //inline int                  getFd()                         { return getFd

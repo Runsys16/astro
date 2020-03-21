@@ -460,6 +460,11 @@ void Camera_mgr::findAllStars()
     pCurrent->getPanelPreview()->getStars()->setView( pCurrent->getPanelPreview() );
     pCurrent->getPanelPreview()->getStars()->setRB( pCurrent->getRB() );
     pCurrent->getPanelPreview()->getStars()->findAllStars();
+
+    char t[] = "00000000000";  
+    PanelText* p = pCurrent->getPanelNbStars();
+    sprintf( t, "%d", pCurrent->getPanelPreview()->getStars()->size() );
+    p->changeText( t );
     /*
     pCurrent->getStars()->setView( pCurrent->getPanelPreview() );
     pCurrent->getStars()->setRB(pCurrent->getRB());

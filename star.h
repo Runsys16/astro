@@ -56,8 +56,9 @@ public:
     void                glMark(int dx,  int dy );
     void                glCroix(int dx,  int dy );
 
-    void                screen2tex(int&, int&);
-    void                screen2tex(int&, int&, int, int, int, int);
+    void                set_delta(float, float);
+    //void                screen2tex(int&, int&, int, int, int, int);
+    
     void                updatePos(int, int, float);
     void                updatePos(int, int);
     void                suivi();
@@ -79,6 +80,10 @@ public:
     inline void         toggleSuivi()                                   { bSuivi = !bSuivi; }
     inline void         setSuivi(bool b)                                { bSuivi = b; }
 
+    inline bool         getSelect()                                     { return bSelect; }
+    inline void         toggleSelect()                                  { bSelect = !bSelect; }
+    inline void         setSelect(bool b)                               { bSelect = b; }
+
     inline bool         getZoom()                                       { return bZoom; }
     inline void         toggleZoom()                                    { bZoom = !bZoom; }
 
@@ -89,9 +94,16 @@ public:
     inline PanelText*   getInfo()                                       { return pInfo; }
     inline void         select()                                        { bSelect = !bSelect; }
     
-    inline bool         haveCoord()                                      { return ra_rad != 9999.0; }
-    inline double       getRA()                                          { return ra_rad; }
-    inline double       getDC()                                          { return dc_rad; }
+    inline bool         haveCoord()                                     { return ra_rad != 9999.0; }
+    inline double       getRA()                                         { return ra_rad; }
+    inline double       getDC()                                         { return dc_rad; }
+
+    inline void         setRA(double d)                                 { ra_rad = d; }
+    inline void         setDC(double d)                                 { dc_rad = d; }
+
+    inline int          getNotFound()                                   { return nbNotFound; }
+    inline int          resetNotFound()                                 { nbNotFound = 0; }
+
     
 private:
     vec2                pos;
@@ -101,6 +113,7 @@ private:
     
     int                 xFound;
     int                 yFound;
+    int                 nbNotFound;
 
     int                 x;
     int                 y;
@@ -108,8 +121,9 @@ private:
     float               xSuivi;
     float               ySuivi;
 
-    int                 dx_screen;
-    int                 dy_screen;
+    float               dx_screen;
+    float               dy_screen;
+    
     int                 x_screen;
     int                 y_screen;
 
