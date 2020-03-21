@@ -13,7 +13,15 @@ Captures::Captures()
     current_capture = -1;
 
     charge2();
-    rotate_capture_plus(true);
+
+    VarManager&         var = VarManager::getInstance();
+    
+    if( var.existe("bShowIcones") )         bShowIcones = var.getb( "bShowIcones" );
+    bFullPreview = false;
+    bIcones  = true;
+    resize_all();
+    
+//    rotate_capture_plus(true);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -543,6 +551,7 @@ void Captures::charge2(void)
         string key = "FileCapture" + to_string(no++);
         if ( var.existe( key ) )
         {
+            
             string filename = *var.gets( key );;
             captures.push_back( new Capture(filename) );
             current_capture = captures.size() - 1;
@@ -615,6 +624,11 @@ void Captures::hideIcones()
 void Captures::switchAffIcones()
 {
     bShowIcones = !bShowIcones;
+
+    VarManager&         var = VarManager::getInstance();
+    
+    var.set( "bShowIcones", bShowIcones );
+
     resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------

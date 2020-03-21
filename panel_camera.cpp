@@ -209,8 +209,16 @@ void PanelCamera::releaseLeft(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::releaseMiddle(int xm, int ym)
 {
+    if ( bMouseDeplace ) 
+    {
+        logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ... deplacement MOUSE", xm, ym );
+        return;
+    }
+
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
+    
     if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
+    
     logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
     
     //float e = (float)getDX() / (float)pReadBgr->w; 

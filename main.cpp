@@ -1077,7 +1077,16 @@ void change_arduino(bool b)
 void change_joy(int x, int y)
 {
     static char sJoyXY[255];
-    sprintf( sJoyXY, "Joy(%d, %d)", x, y);
+    sprintf( sJoyXY, "Lock(%d, %d)", x, y);
+    pJoyXY->changeText((char*)sJoyXY );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void change_joy(float x, float y)
+{
+    static char sJoyXY[255];
+    sprintf( sJoyXY, "Lock(%0.2f, %0.2f)", x, y);
     pJoyXY->changeText((char*)sJoyXY );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -2087,6 +2096,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bSimu = !bSimu;
         logf( (char*)"bSimu = %s", bSimu ? (char*)"TRUE": (char*)"FALSE" );
+        VarManager::getInstance().set( "bSimu", bSimu );
         }
         break;
 
@@ -2448,6 +2458,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             panelCourbe->get_vOrigine().y = y;
             panelCourbe->get_vOrigine().z = 0.0;
             
+            change_joy( x, y );
+
             logf( (char*)"initialise vOrigine(click) : (%d,%d)", x, y);
         }
         else
@@ -2459,10 +2471,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             {
                 xSuivi = pv->x;
                 ySuivi = pv->y;
+
+                change_joy( xSuivi, ySuivi );
             }
             panelCourbe->get_vOrigine().x = xSuivi;
             panelCourbe->get_vOrigine().y = ySuivi;
             panelCourbe->get_vOrigine().z = 0.0;
+            
             
             logf( (char*)"initialise vOrigine(suivi) : (%0.2f,%0.2f)", xSuivi, ySuivi);
         }
@@ -3058,7 +3073,7 @@ static void CreateStatus()	{
     pArduino = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-300, 2 );
 	panelStatus->add( pArduino );
 
-    pJoyXY = new PanelText( (char*)"Joy(---, ---)",		PanelText::NORMAL_FONT, width-550, 2 );
+    pJoyXY = new PanelText( (char*)"Joy(---, ---)",		PanelText::NORMAL_FONT, width-620, 2 );
 	panelStatus->add( pJoyXY );
 
     pStellarium = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-230, 2 );
@@ -3603,6 +3618,7 @@ void charge_var()
 	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 	cam_mgr.active();
 
+    if ( var.existe("bSimu") )      bSimu = var.getb("bSimu");
     //getSuiviParameter();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3694,7 +3710,8 @@ int main(int argc, char **argv)
 
     panelCourbe->get_vOrigine().x = vOri.x;
     panelCourbe->get_vOrigine().y = vOri.y;
-
+    change_joy( vOri.x, vOri.y );
+    
     parse_option(argc, argv);
     
     

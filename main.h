@@ -75,6 +75,7 @@ typedef struct readBackground       rb_t;
     extern bool         bPause;
     extern bool         bPanelCourbe;
     extern bool         bSimu;
+    extern bool         bMouseDeplace;
 
     extern int          width;
     extern int          height;
