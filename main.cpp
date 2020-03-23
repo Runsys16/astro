@@ -1070,7 +1070,7 @@ void change_arduino(bool b)
 void change_joy(int x, int y)
 {
     static char sJoyXY[255];
-    sprintf( sJoyXY, "Lock(%d, %d)", x, y);
+    sprintf( sJoyXY, "Suivi(%d, %d)", x, y);
     pJoyXY->changeText((char*)sJoyXY );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1079,7 +1079,7 @@ void change_joy(int x, int y)
 void change_joy(float x, float y)
 {
     static char sJoyXY[255];
-    sprintf( sJoyXY, "Lock(%0.2f, %0.2f)", x, y);
+    sprintf( sJoyXY, "Suivi(%0.2f, %0.2f)", x, y);
     pJoyXY->changeText((char*)sJoyXY );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -2387,7 +2387,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'u':
         {
-        logf( (char*)"Key (U) : Affichage du centre de la camera on/off");
+        logf( (char*)"Key (u) : Affichage du suivi on/off");
         bAffSuivi = !bAffSuivi;
         var.set( "bAffSuivi", bAffSuivi );
         }
@@ -2443,6 +2443,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 ySuivi = pv->y;
 
                 change_joy( xSuivi, ySuivi );
+
                 var.set("xSuivi", xSuivi );
                 var.set("ySuivi", ySuivi );
             }
@@ -2986,9 +2987,11 @@ static void CreateHelp()
 	addString( "           ---- SUIVI ----");
 	addString( "  S: Lance/Stop le suivi");
 	addString( "t/T: change le temps de correction");
-	addString( "Y: Lance l' asservissement");
-	addString( "V: Initialise les coordonnees de suivi");
-	addString( "v: Sauvegarde des coordonnees de suivi dans un fichier .guid");
+	addString( "  Y: Lance l' asservissement");
+	addString( "  V: Initialise les coordonnees de suivi");
+	addString( "  v: Sauvegarde des coordonnees de suivi dans un fichier .guid");
+    addString( "  U: Affichage du centre de la camera on/off");
+    addString( "  u: Affichage du suivi on/off");
 	
 
 	addString( "");
@@ -3684,7 +3687,7 @@ int main(int argc, char **argv)
 
     panelCourbe->get_vOrigine().x = vOri.x;
     panelCourbe->get_vOrigine().y = vOri.y;
-    change_joy( vOri.x, vOri.y );
+    change_joy( xSuivi, ySuivi );
     
     parse_option(argc, argv);
     
