@@ -674,6 +674,7 @@ vec2* Camera::getSuivi()
 void Camera::setColor( long color )
 {
     panelPreview->setColor( color );
+    panelControl->setColor( color );
 }
 
 

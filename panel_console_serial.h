@@ -29,6 +29,17 @@ class Console;
 //
 //--------------------------------------------------------------------------------------------------------------------
 SINGLETON_BEGIN( PanelConsoleSerial )
+protected:
+
+    PanelWindow*                    pw;
+    PanelConsole*                   pc;
+    Console*                        cb;
+    bool                            bVisible;
+    float                           ad;
+    float                           dc;
+    float                           ad_change;
+    float                           dc_change;
+
 
 public :
     PanelConsoleSerial();
@@ -43,17 +54,8 @@ inline PanelConsole*                getConsole()                { return pc; }
 inline bool                         getVisible()                { return pw->getVisible(); }
 inline void                         setVisible(bool b)          { bVisible=b;  pw->setVisible(b); }
 inline PanelWindow*                 getWindow()                 { return pw; }
-    
-protected:
 
-    PanelWindow*                    pw;
-    PanelConsole*                   pc;
-    Console*                        cb;
-    bool                            bVisible;
-    float                           ad;
-    float                           dc;
-    float                           ad_change;
-    float                           dc_change;
+    void                            setColor(long l )           { pw->setColor(l); }
 
    
 SINGLETON_END()

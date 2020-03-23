@@ -130,6 +130,92 @@ void PanelCamera::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::tex2screen(float& xx, float& yy)
+{
+    if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+
+	WindowsManager& wm = WindowsManager::getInstance();
+    
+    //      Dimension ecran
+    float wSc = (float)wm.getWidth();
+    float hSc = (float)wm.getHeight();
+
+    //      Dimension texture
+    float wTex = (float)pReadBgr->w;
+    float hTex = (float)pReadBgr->h;
+
+    //      Facteur d'echelle
+    float ew = wSc / wTex;
+    float eh = hSc / hTex;
+    float e = ew<eh ? ew : eh;
+
+    xx = e * xx + (float)getX();    
+    yy = e * yy + (float)getY();    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::tex2screen(int& xx, int& yy)
+{
+    if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+
+    float XX = xx;
+    float YY = yy;
+    
+    tex2screen(XX, YY);
+
+    xx = (int)XX;
+    yy = (int)YY;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::glCercle(int x, int y, int rayon)
+{
+	glBegin(GL_LINE_LOOP);
+
+        for( float i=0; i<=360.0; i+=1.0 )
+        {
+            float fx = (float)x+ (float)rayon*cos(DEG2RAD(i));
+            float fy = (float)y+ (float)rayon*sin(DEG2RAD(i));
+            glVertex2i(fx,fy);
+        }
+        
+    glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::glCarre( int x,  int y,  int dx,  int dy )
+{
+	glBegin(GL_LINES);
+        x = x-dx;
+        y = y-dy;
+        
+        glVertex2i(x,y);                glVertex2i(x+2*dx,y);
+        glVertex2i(x+2*dx,y);           glVertex2i(x+2*dx,y+2*dy);
+        glVertex2i(x+2*dx,y+2*dy);      glVertex2i(x,y+2*dy);
+        glVertex2i(x,y+2*dy);           glVertex2i(x,y);
+
+    glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::glCroix( int x,  int y,  int dx,  int dy )
+{
+	glBegin(GL_LINES);
+
+	    glVertex2i(x, y-dy);         glVertex2i(x, y+dy);
+	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
+
+    glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displaySuivi()
 {
     if  ( panelCourbe==NULL )   return;
@@ -236,23 +322,39 @@ void PanelCamera::displayGL()
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
 
-    /*
-    int nb = v_tStars.size();
-    for( int i=0; i<nb; i++ )
-    {
-        float e = (float)getDX() / (float)pReadBgr->w; 
-        //logf( (char*)"Echelle %0.2f", v_tStars[i]->getMagnitude() );
-
-        v_tStars[i]->updatePos( getX(), getY(), e );
-        v_tStars[i]->displayGL();
-    }
-    */
 
     stars.displayGL();
     
     if ( bAffCentre )           displayCentre();
     if ( bAffSuivi )            displaySuivi();
 
+    //*
+    if ( !bAutorisationSuivi )
+    {
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
+	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
+	    
+	    int x = xClick;
+	    int y = yClick;
+
+	    //logf( (char*)"--(%d,%d)", x, y );
+	    tex2screen(x,y);
+	    //logf( (char*)"  (%d,%d)", x, y );
+
+	    glCroix(x, y, 50, 50);
+        glCercle(x, y, 25);
+
+    }
+
+    if ( bAfficheVec)
+    {
+        glVecAD();
+        glVecDC();
+    }
+
+    displayGLTrace();
+    //*/
+    
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 

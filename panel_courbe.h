@@ -67,6 +67,7 @@ public :
     
     //void                screen2tex( int& x, int& y );
     //void                tex2screen( int& x, int& y );
+    void                setColor(long l)            { PanelWindow::setColor(l); }
     void                update_err();
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();

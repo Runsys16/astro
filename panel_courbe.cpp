@@ -332,14 +332,16 @@ void PanelCourbe::glCourbe()
 //void PanelCourbe::displayResultat_cb(void)
 void PanelCourbe::displayGL(void)
 {
-    displayGLTrace();
+	if ( !visible )			return;
 
     VarManager& var = VarManager::getInstance();
-	if ( !visible )			return;
 
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
     else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
+
     PanelWindow::displayGL();
+
+    displayGLTrace();
 
     glEchelle();
     glCourbe();

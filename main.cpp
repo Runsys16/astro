@@ -195,6 +195,7 @@ struct etoile       electre = { 3, 44, 52.5368818, 24, 6, 48.011217 };
 
 int                 xClick;
 int                 yClick;
+
 float               pas = 4000;
 float               cAD;
 ivec2               calibreMove[2];
@@ -818,6 +819,7 @@ void displayGLnuit_cb(void)
 //--------------------------------------------------------------------------------------------------------------------
 void displayGLCamera_cb(void)
 {
+    /*
     if ( !bAutorisationSuivi )
     {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
@@ -832,13 +834,13 @@ void displayGLCamera_cb(void)
         glCercle(x, y, 25);
 
     }
-
+    */
     if ( bAfficheVec)
     {
         glVecAD();
         glVecDC();
     }
-
+    /*
     float gris = 0.3;
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.2 );    
@@ -848,7 +850,7 @@ void displayGLCamera_cb(void)
 
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
     else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
-    
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1932,9 +1934,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         if ( bAutorisationSuivi )
         {
-            vecAD[1].x = xSuivi;
-            vecAD[1].y = ySuivi;
-            vecAD[1].z = 0.0;
+            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            if ( pv != NULL )
+            {
+                float x   = pv->x;
+                float y   = pv->y;
+
+                //change_joy( xSuivi, ySuivi );
+
+                vecAD[1].x = x;
+                vecAD[1].y = y;
+                vecAD[1].z = 0.0;
+            }
         }
         else
         {
@@ -1952,9 +1963,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"Key (a) : Pt0 Ascension droite" );
         if ( bAutorisationSuivi )
         {
-            vecAD[0].x = xSuivi;
-            vecAD[0].y = ySuivi;
-            vecAD[0].z = 0.0;
+            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            if ( pv != NULL )
+            {
+                float x   = pv->x;
+                float y   = pv->y;
+
+                //change_joy( xSuivi, ySuivi );
+
+                vecAD[0].x = x;
+                vecAD[0].y = y;
+                vecAD[0].z = 0.0;
+            }
         }
         else
         {
@@ -2007,9 +2027,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"Key (D) : Pt1 Declinaison" );
         if ( bAutorisationSuivi )
         {
-            vecDC[1].x = xSuivi;
-            vecDC[1].y = ySuivi;
-            vecDC[1].z = 0.0;
+            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            if ( pv != NULL )
+            {
+                float x   = pv->x;
+                float y   = pv->y;
+
+                //change_joy( xSuivi, ySuivi );
+
+                vecDC[1].x = x;
+                vecDC[1].y = y;
+                vecDC[1].z = 0.0;
+            }
         }
         else
         {
@@ -2033,9 +2062,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         
         if ( bAutorisationSuivi )
         {
-            vecDC[0].x = xSuivi;
-            vecDC[0].y = ySuivi;
-            vecDC[0].z = 0.0;
+            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            if ( pv != NULL )
+            {
+                float x   = pv->x;
+                float y   = pv->y;
+
+                //change_joy( xSuivi, ySuivi );
+
+                vecDC[0].x = x;
+                vecDC[0].y = y;
+                vecDC[0].z = 0.0;
+            }
         }
         else
         {
@@ -2237,6 +2275,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         PanelConsoleSerial::getInstance().getConsole()->setColor(color);
 
         panelStdOut->setColor(color);
+        panelStdOutW->setColor(color);
         panelHelp->setColor(color);
         panelCourbe->setColor(color);
         panelStatus->setColor(color);
@@ -2244,6 +2283,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         Captures::getInstance().setColor(color);
         Camera_mgr::getInstance().setColor(color);
         FileBrowser::getInstance().setColor(color);
+        PanelConsoleSerial::getInstance().setColor(color);
         }
         break;
 
@@ -2488,12 +2528,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         bAfficheVec = !bAfficheVec;
         var.set("bAfficheVec", bAfficheVec);
+        logf( (char*)"Key (y) : Affiche les Vecteur AD et DC %s", BOOL2STR(bAfficheVec) );
         }
         break;
 
     case 'Y':
         {
         bCorrection = !bCorrection; 
+        logf( (char*)"Key (Y) : Asservissement de monture %s", BOOL2STR(bCorrection) );
         set_asservissement();
         }
         break;
@@ -2837,33 +2879,6 @@ void update_err()
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateCourbe()	{
     panelCourbe = new PanelCourbe();
-/*
-	WindowsManager& wm = WindowsManager::getInstance();
-
-    //panelCourbe = new PanelWindow();
-    panelCourbe->setDisplayGL(displayGLnuit_cb);
-    resizeCourbe( width, height );
-
-    wm.add(panelCourbe);
-    
-    panelCourbe->setVisible(bPanelCourbe);
- 	panelCourbe->setBackground((char*)"images/background.tga");
-    panelCourbe->setDisplayGL( displayResultat_cb );
-
-    pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
-	panelCourbe->add( pXMax );
-
-    pXMin = new PanelText( (char*)"-err",		PanelText::NORMAL_FONT, 5, 60 );
-	panelCourbe->add( pXMin );
-
-    pYMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 70 );
-	panelCourbe->add( pYMax );
-
-    pYMin = new PanelText( (char*)"-err",		PanelText::NORMAL_FONT, 5, 80 );
-	panelCourbe->add( pYMin );
-
-    update_err();
-*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3694,7 +3709,12 @@ int main(int argc, char **argv)
     
     logf ((char*)"############## START MANAGER ###################");
     
-    Camera_mgr::getInstance().reOrder();
+    Camera_mgr& cam_mgr = Camera_mgr::getInstance();
+
+    cam_mgr.reOrder();
+    //cam_mgr.getCurrent();
+    //cam_mgr.active();
+
     Connexion_mgr::getInstance().start();
     PanelConsoleSerial::getInstance();
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );

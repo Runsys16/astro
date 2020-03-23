@@ -78,6 +78,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bMouseDeplace;
     extern bool                     bAffCentre;
     extern bool                     bAffSuivi;
+    extern bool                     bAfficheVec;
 
     extern int                      width;
     extern int                      height;
@@ -86,6 +87,9 @@ typedef struct readBackground       rb_t;
 
     extern float                    xSuivi;
     extern float                    ySuivi;
+        
+    extern int                      xClick;
+    extern int                      yClick;
         
     extern vector<vector<vec2> * >  t_vTrace;
     extern bool                     bAffTrace;
@@ -169,6 +173,8 @@ float               dms2rad( struct dms& );
 void                rad2hms( struct hms&, float );
 void                rad2dms( struct dms&, float );
 
+void                glVecAD();
+void                glVecDC();
 void                glCercle(int x, int y, int rayon);
 void                glCarre( int x,  int y,  int dx,  int dy );
 void                glCroix( int x,  int y,  int dx,  int dy );

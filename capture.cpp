@@ -369,6 +369,8 @@ void Capture::hide()
 void Capture::setColor(long c)
 {
     pTitre->setColor( c);
+    pW->setColor( c);
+    panelPreview->setColor( c);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
