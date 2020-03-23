@@ -2429,6 +2429,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 ySuivi = pv->y;
 
                 change_joy( xSuivi, ySuivi );
+                var.set("vOrigine.x", xSuivi );
+                var.set("vOrigine.y", ySuivi );
             }
             panelCourbe->get_vOrigine().x = xSuivi;
             panelCourbe->get_vOrigine().y = ySuivi;
@@ -2941,7 +2943,7 @@ static void CreateHelp()
 	addString( "   f: Ouvrir un fichier image");
 	addString( "   F: Active/Desactive la simu");
 	addString( "TAB: Change l'affichage des fichiers" );
-	addString( "   2:   Toutes les images sont affichees en icones");
+	addString( "  -:   Toutes les images sont affichees en icones");
 	addString( "F11: Charge la prochaine image");
 	addString( "F12: Efface la derniere image");
 	addString( "   r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
@@ -2953,15 +2955,11 @@ static void CreateHelp()
 
 	addString( "           ---- TRANSFORM MATRIX ----");
 	addString( "a/A: Vecteur en ascension droite");
-	addString( "  a: Debut");
-	addString( "  A: Fin");
 	addString( "d/D: Vecteur en declinaison");
-	addString( "  d: Debut");
-	addString( "  D: Fin");
-	addString( "  M  : Calcul la matrice de transformation");
-	addString( "  y  : Affiche les vecteurs");
-	addString( "  m  : Deplacement à la souris");
-	addString( "  O  : Mode souris / mode suivi");
+	addString( "  M: Calcul la matrice de transformation");
+	addString( "  y: Affiche les vecteurs");
+	addString( "  m: Deplacement à la souris");
+	addString( "  O: Mode souris / mode suivi");
 
 	addString( "           ---- TRACES ----");
 	addString( "C: Lance/arrete l\'enregistrement de trace");

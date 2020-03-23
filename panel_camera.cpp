@@ -130,6 +130,30 @@ void PanelCamera::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::displayCentre()
+{
+    if  ( pReadBgr==NULL )  return;
+
+	WindowsManager& wm = WindowsManager::getInstance();
+
+    int x = wm.getWidth();
+    int y = wm.getHeight();
+
+    float gris = 0.3;
+    if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );
+    else                glColor4f( 0.0,   1.0,  0.0, gris );    
+    
+	glBegin(GL_LINES);
+        
+        glVertex2i(x/2,0);              glVertex2i(x/2, y );
+        glVertex2i(0,y/2);              glVertex2i(x, y/2 );
+
+    glEnd();
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displayGL()
 {
     //logf( (char*)"*** PanelCamera::displayGL() ***" );
@@ -178,6 +202,8 @@ void PanelCamera::displayGL()
     */
 
     stars.displayGL();
+    
+    displayCentre();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
