@@ -130,6 +130,54 @@ void PanelCamera::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::displaySuivi()
+{
+    if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+
+	WindowsManager& wm = WindowsManager::getInstance();
+    
+    //      Dimension ecran
+    float wSc = (float)wm.getWidth();
+    float hSc = (float)wm.getHeight();
+
+    //      Dimension texture
+    float wTex = (float)pReadBgr->w;
+    float hTex = (float)pReadBgr->h;
+
+    //      Facteur d'echelle
+    float ew = wSc / wTex;
+    float eh = hSc / hTex;
+    float e = ew<eh ? ew : eh;
+    
+    //      Coordonnées du point de suivi
+    float X = xSuivi;
+    float Y = ySuivi;
+
+    //      Convertion des coordonnées
+    float x = e * X + getX();
+    float y = e * Y + getY();
+
+    float gris = 0.8;
+
+    //      DEBUG
+    //logf( (char*)"Screen (%0.2f,%0.2f)  texture(%0.2f,%0.2f)", wSc, hSc, wTex, hTex );
+
+    //      Affichage en mode nuit ?
+    if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );
+    else                glColor4f( 0.5,   0.4,  0.5, gris );    
+    
+    //      Affichage de la croix
+	glBegin(GL_LINES);
+        
+        glVertex2i(x-50,y);             glVertex2i(x+50, y );
+        glVertex2i(x,y-50);             glVertex2i(x, y+50 );
+
+    glEnd();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displayCentre()
 {
     if  ( pReadBgr==NULL )  return;
@@ -150,7 +198,6 @@ void PanelCamera::displayCentre()
 
     glEnd();
 }
-
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -203,7 +250,8 @@ void PanelCamera::displayGL()
 
     stars.displayGL();
     
-    displayCentre();
+    if ( bAffCentre )           displayCentre();
+    if ( bAffSuivi )            displaySuivi();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

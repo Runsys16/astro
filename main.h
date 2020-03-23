@@ -76,6 +76,8 @@ typedef struct readBackground       rb_t;
     extern bool                     bPanelCourbe;
     extern bool                     bSimu;
     extern bool                     bMouseDeplace;
+    extern bool                     bAffCentre;
+    extern bool                     bAffSuivi;
 
     extern int                      width;
     extern int                      height;
@@ -89,6 +91,10 @@ typedef struct readBackground       rb_t;
     extern bool                     bAffTrace;
     extern bool                     bRecTrace;
     extern vec4                     colorTraces[];
+    
+    #ifndef PANELCOURBE_CPP
+    extern PanelCourbe*             panelCourbe;
+    #endif
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -211,7 +217,7 @@ void                change_dc(float);
 void                compute_matrix();
 
 void                sauve(void);
-void                charge_fichier(string);
+void                charge_guidage(string);
 void                sauve_traces(void);
 void                charge_traces(void);
 void                suivi(void);

@@ -30,6 +30,7 @@ public:
     PanelCamera();
     
     virtual void		update();
+            void		displaySuivi();
             void		displayCentre();
     virtual void		displayGL();
     virtual void        releaseLeft( int, int);

@@ -137,6 +137,8 @@ bool                bSauve         = false;
 bool                bOneFrame      = false;
 bool                bStdOut        = false;
 bool                bSimu          = false;
+bool                bAffCentre     = false;
+bool                bAffSuivi      = true;
 
 int                 wImg;
 int                 hImg;
@@ -296,7 +298,7 @@ void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 
         var.set( "FileResultat", string(str) );
 
-        charge_fichier( string(str) );
+        charge_guidage( string(str) );
         if ( panelCourbe != NULL )  
         {
             panelCourbe->get_vOrigine().x = vOri.x;
@@ -324,7 +326,7 @@ void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
             if ( s.find( ".guid" ) == string::npos )     s = s + ".guid";
             filenameSauve = string(s);
             logf( (char*)"  Sauve guidage %s", (char*)s.c_str() );
-            //charge_fichier( string(str) );
+            //charge_guidage( string(str) );
             workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
             var.set( "DirSauveCourbe", workDirSauveCourbe );
             FileBrowser::getInstance().setFiltre( "" );
@@ -1154,7 +1156,7 @@ void sauve()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void charge_fichier(string filename)
+void charge_guidage(string filename)
 {
     //string filename = "/home/rene/.astropilot/svg.txt";
     //string filename = "/home/rene/.astropilot/m57.txt";
@@ -2332,6 +2334,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"Key (R) : Reset les datas de suivi" );
         t_vResultat.clear();
         t_vSauve.clear();
+        var.set( "FileResultat", string("---"));
         }
         break;
 
@@ -2376,7 +2379,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		break;
 
     case 'U':
+        {
+        logf( (char*)"Key (U) : Affichage du centre de la camera on/off");
+        bAffCentre = !bAffCentre;
+        var.set( "bAffCentre", bAffCentre );
+        }
+        break;
     case 'u':
+        {
+        logf( (char*)"Key (U) : Affichage du centre de la camera on/off");
+        bAffSuivi = !bAffSuivi;
+        var.set( "bAffSuivi", bAffSuivi );
+        }
         break;
 
     case 'v':  // '-'
@@ -2429,8 +2443,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 ySuivi = pv->y;
 
                 change_joy( xSuivi, ySuivi );
-                var.set("vOrigine.x", xSuivi );
-                var.set("vOrigine.y", ySuivi );
+                var.set("xSuivi", xSuivi );
+                var.set("ySuivi", ySuivi );
             }
             panelCourbe->get_vOrigine().x = xSuivi;
             panelCourbe->get_vOrigine().y = ySuivi;
@@ -3577,8 +3591,9 @@ void charge_var()
 	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 	cam_mgr.active();
 
-    if ( var.existe("bSimu") )      bSimu = var.getb("bSimu");
-    //getSuiviParameter();
+    if ( var.existe("bSimu") )          bSimu       = var.getb("bSimu");
+    if ( var.existe("bAffSuivi") )      bAffSuivi   = var.getb("bAffSuivi");
+    if ( var.existe("bAffCentre") )     bAffCentre  = var.getb("bAffCentre");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

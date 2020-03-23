@@ -1,3 +1,6 @@
+#ifndef PANELCOURBE_CPP
+#define PANELCOURBE_CPP
+
 #include "panel_courbe.h"
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -45,7 +48,14 @@ PanelCourbe::PanelCourbe()
     if ( var.existe("FileResultat") )
     {
         string* pFile = var.gets( "FileResultat" );
-        charge_fichier( *pFile );
+        if ( pFile!=NULL )
+        {
+            logf( (char*)"Fichier : %s", pFile->c_str() );
+            if ( pFile->find( "---" ) == std::string::npos )
+            {
+                charge_guidage( *pFile );
+            }
+        }
     }
     
     if ( var.existe("decal_resultat") )         decal_resultat = var.geti( "decal_resultat" );
@@ -435,4 +445,4 @@ void PanelCourbe::releaseLeft( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-
+#endif
