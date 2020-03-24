@@ -172,6 +172,48 @@ void PanelCamera::tex2screen(int& xx, int& yy)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::screen2tex(float& xx, float& yy)
+{
+    if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+
+	WindowsManager& wm = WindowsManager::getInstance();
+    
+    //      Dimension ecran
+    float wSc = (float)wm.getWidth();
+    float hSc = (float)wm.getHeight();
+
+    //      Dimension texture
+    float wTex = (float)pReadBgr->w;
+    float hTex = (float)pReadBgr->h;
+
+    //      Facteur d'echelle
+    float ew = wSc / wTex;
+    float eh = hSc / hTex;
+    float e = ew<eh ? ew : eh;
+
+    xx = (xx - (float)getX()) /e;    
+    yy = (yy - (float)getY()) / e;    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::screen2tex(int& xx, int& yy)
+{
+    if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+
+    float XX = xx;
+    float YY = yy;
+    
+    screen2tex(XX, YY);
+
+    xx = (int)XX;
+    yy = (int)YY;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::glCercle(int x, int y, int rayon)
 {
 	glBegin(GL_LINE_LOOP);
@@ -222,7 +264,7 @@ void PanelCamera::displaySuivi()
     if  ( pReadBgr==NULL )      return;
 
 	WindowsManager& wm = WindowsManager::getInstance();
-    
+    /*
     //      Dimension ecran
     float wSc = (float)wm.getWidth();
     float hSc = (float)wm.getHeight();
@@ -237,17 +279,22 @@ void PanelCamera::displaySuivi()
     float e = ew<eh ? ew : eh;
     
     //      Coordonnées du point de suivi
-    float X = xSuivi;
-    float Y = ySuivi;
-
+    */
+    float x = xSuivi;
+    float y = ySuivi;
+    
     //      Convertion des coordonnées
-    float x = e * X + getX();
-    float y = e * Y + getY();
-
+    /*
+    x = e * x + getX();
+    y = e * y + getY();
+    */
+    
+    tex2screen( x, y );
     float gris = 0.8;
 
     //      DEBUG
     //logf( (char*)"Screen (%0.2f,%0.2f)  texture(%0.2f,%0.2f)", wSc, hSc, wTex, hTex );
+    //logf( (char*)"     suivi (%0.2f,%0.2f) -> (%0.2f,%0.2f)", xSuivi, ySuivi, x, y );
 
     //      Affichage en mode nuit ?
     if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );

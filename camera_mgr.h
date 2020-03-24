@@ -69,6 +69,12 @@ public:
     void                        position(double, double);
     
     void                        setColor(long);
+
+    void                        tex2screen(int&,int&);
+    void                        tex2screen(float&,float&);
+
+    void                        screen2tex(int&,int&);
+    void                        screen2tex(float&,float&);
    
 private:
     vector<Camera*>             pCameras;

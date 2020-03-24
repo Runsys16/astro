@@ -41,6 +41,10 @@ public:
 
     void                tex2screen(int&,int&);
     void                tex2screen(float&,float&);
+
+    void                screen2tex(int&,int&);
+    void                screen2tex(float&,float&);
+
     void                glCercle(int x, int y, int rayon);
     void                glCarre( int x,  int y,  int dx,  int dy );
     void                glCroix( int x,  int y,  int dx,  int dy );

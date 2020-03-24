@@ -1427,8 +1427,8 @@ void suivi(void)
         float xx = pV->x;
         float yy = pV->y;
 
-        xSuivi = xx;
-        ySuivi = yy;
+        //xSuivi = xx;
+        //ySuivi = yy;
         
 
         if ( t_vResultat.size()>20000)      t_vResultat.clear();
@@ -1452,7 +1452,7 @@ void suivi(void)
 
         t_vSauve.push_back(v);
         
-        updatePanelResultat( xSuivi, ySuivi, 0.0 );
+        updatePanelResultat( xx, yy, 0.0 );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1577,10 +1577,14 @@ static void idleGL(void)
     //-----------------------------------------------------------------------
     // Lance le suivi des etoiles
     //-----------------------------------------------------------------------
+    if ( bSuivi )   suivi();
+
+    /*
     if (bAutorisationSuivi)
     {
         suivi();
     }
+    */
     //-----------------------------------------------------------------------
     // Geqtion du suivi des eroiles
     //-----------------------------------------------------------------------
@@ -1660,22 +1664,29 @@ static void idleGL(void)
             fTimeCpt -= fTimeCorrection;
             if ( fTimeCpt > 0.0 )    fTimeCpt = 0.0;//-= fTimeCorrection;
 
-	        float dx = xSuivi - panelCourbe->get_vOrigine().x;
-	        float dy = ySuivi - panelCourbe->get_vOrigine().y;
-	        if ( fabs(dx) > panelCourbe->get_err() || fabs(dy) > panelCourbe->get_err() )
-	        {
-	            vec3 w = vec3( xSuivi, ySuivi, 0.0);
-	            vec3 v = panelCourbe->get_vOrigine() - w;
+            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            if ( pv != NULL )
+            {
+	            //float dx = xSuivi - panelCourbe->get_vOrigine().x;
+	            //float dy = ySuivi - panelCourbe->get_vOrigine().y;
+	            float dx = xSuivi - pv->x;
+	            float dy = ySuivi - pv->y;
+	            if ( fabs(dx) > panelCourbe->get_err() || fabs(dy) > panelCourbe->get_err() )
+	            {
+	                vec3 w = vec3( xSuivi, ySuivi, 0.0);
+	                //vec3 v = panelCourbe->get_vOrigine() - w;
+	                vec3 v = vec3( pv->x, pv->y, 0.0) - w;
 
-                vec3 res = mChange * v;
-                int ad = (int) (res.x * -1000.0);
-                int dc = (int) (res.y * 1000.0);
-                char cmd[255];
-                sprintf( cmd, "a%dp;d%dp", ad, dc );
-                logf( (char*)" main.cpp (Asservissement=>) '%s'",  cmd );
-                Serial::getInstance().write_string(cmd);
-                //fTimeCpt += 1.0;
-	        }
+                    vec3 res = mChange * v;
+                    int ad = (int) (res.x * -1000.0);
+                    int dc = (int) (res.y * 1000.0);
+                    char cmd[255];
+                    sprintf( cmd, "a%dp;d%dp", ad, dc );
+                    logf( (char*)" main.cpp (Asservissement=>) '%s'",  cmd );
+                    Serial::getInstance().write_string(cmd);
+                    //fTimeCpt += 1.0;
+	            }
+            }
 	    }
 	}
     //------------------------------------------------------
@@ -2448,7 +2459,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             int x = xClick;
             int y = yClick;
-            tex2screen(x,y);
+            //tex2screen(x,y);
+
+            xSuivi = x;
+            ySuivi = y;
+
+            var.set("xSuivi", xSuivi );
+            var.set("ySuivi", ySuivi );
 
             panelCourbe->get_vOrigine().x = x;
             panelCourbe->get_vOrigine().y = y;
@@ -2716,7 +2733,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    int X = x;
 	    int Y = y;
 	    
-	    screen2tex(X,Y);
+	    mgr.screen2tex(X,Y);
 	    
 	    xClick = X;
 	    yClick = Y;
@@ -2737,7 +2754,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    int X = x;
 	    int Y = y;
 	    
-	    screen2tex(X,Y);
+	    mgr.screen2tex(X,Y);
 	    
 	    xClick = X;
 	    yClick = Y;
@@ -2768,7 +2785,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    int X = x;
 	    int Y = y;
 	    
-	    screen2tex(X,Y);
+	    mgr.screen2tex(X,Y);
 	    
 	    xClick = X;
 	    yClick = Y;
@@ -3715,8 +3732,9 @@ int main(int argc, char **argv)
     inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
     inverse_texture( pButtonMode,    bAutorisationSuivi, "cible" );
 
-    panelCourbe->get_vOrigine().x = vOri.x;
-    panelCourbe->get_vOrigine().y = vOri.y;
+    panelCourbe->get_vOrigine().x = xSuivi;
+    panelCourbe->get_vOrigine().y = ySuivi;
+    panelCourbe->get_vOrigine().z = 0.0;
     change_joy( xSuivi, ySuivi );
     
     parse_option(argc, argv);
