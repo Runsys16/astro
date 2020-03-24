@@ -56,6 +56,13 @@ void Star::init(int xx, int yy)
     bZoom       = false;
     
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
+
+    unsigned long color;
+    if (bNuit)                  color = 0xFFFF0000;
+    else                        color = 0xFFFFFFFF;
+
+    pInfo->setColor(color);
+    
     panelZoom   = NULL;
     RB          = NULL;
     pView       = NULL;

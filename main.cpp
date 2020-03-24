@@ -2268,22 +2268,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         bNuit = !bNuit;
         logf( (char*)"  bNuit = %s", BOOL2STR(bNuit) );
         var.set("bNuit", bNuit);
-        long color;
-        if (bNuit)                  color = 0xFFFF0000;
-        else                        color = 0xFFFFFFFF;
 
-        PanelConsoleSerial::getInstance().getConsole()->setColor(color);
-
-        panelStdOut->setColor(color);
-        panelStdOutW->setColor(color);
-        panelHelp->setColor(color);
-        panelCourbe->setColor(color);
-        panelStatus->setColor(color);
-        panelResultat->setColor(color);
-        Captures::getInstance().setColor(color);
-        Camera_mgr::getInstance().setColor(color);
-        FileBrowser::getInstance().setColor(color);
-        PanelConsoleSerial::getInstance().setColor(color);
+        setColor();
         }
         break;
 
@@ -2638,6 +2624,14 @@ static void glutSpecialFunc(int key, int x, int y)	{
         log( (char*)"Toggle serial !!!" );
         }
         break;
+    case GLUT_KEY_F7:
+        {
+        logf( (char*)"Key (n) : Affiche/cache les capture");
+        bAffIconeCapture = !bAffIconeCapture;
+        logf( (char*)"  bAffIconeCapture = %s", BOOL2STR(bAffIconeCapture) );
+        Captures::getInstance().switchAffIcones();
+        }
+        break;
     case GLUT_KEY_F10:
         {
         bDebug = !bDebug;
@@ -2812,6 +2806,28 @@ static void glutPassiveMotionFunc(int x, int y)	{
 	WindowsManager::getInstance().passiveMotionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
     onTop();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void setColor()	
+{
+    long color;
+    if (bNuit)                  color = 0xFFFF0000;
+    else                        color = 0xFFFFFFFF;
+
+    PanelConsoleSerial::getInstance().getConsole()->setColor(color);
+
+    panelStdOut->setColor(color);
+    panelStdOutW->setColor(color);
+    panelHelp->setColor(color);
+    panelCourbe->setColor(color);
+    panelStatus->setColor(color);
+    panelResultat->setColor(color);
+    Captures::getInstance().setColor(color);
+    Camera_mgr::getInstance().setColor(color);
+    FileBrowser::getInstance().setColor(color);
+    PanelConsoleSerial::getInstance().setColor(color);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3692,7 +3708,6 @@ int main(int argc, char **argv)
     charge_var();
     
     CreateAllWindows();
-
     set_asservissement();
     inverse_texture( pButtonSerial,  bPanelSerial,       "arduino" );
     inverse_texture( pButtonStdOut,  bPanelStdOut,       "" );
@@ -3736,6 +3751,8 @@ int main(int argc, char **argv)
     FileBrowser::getInstance();
     BluetoothManager::getInstance();
     WindowsManager::genereMipMap( false );
+
+    setColor();
     
     compute_matrix();
     //bStdOut = true;

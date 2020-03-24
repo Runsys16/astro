@@ -249,6 +249,7 @@ void                onTop();
 void                resizeHelp  (int width, int height);
 void                resizeControl(int width, int height);
 void                resizeCourbe(int width, int height);
+void                setColor();
 
 static void         CreateResultat();
 static void         createControlID(PanelSimple * p, int x, int y, char* str);
