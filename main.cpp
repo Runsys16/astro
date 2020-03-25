@@ -139,6 +139,7 @@ bool                bStdOut        = false;
 bool                bSimu          = false;
 bool                bAffCentre     = false;
 bool                bAffSuivi      = true;
+bool                bSound         = true;
 
 int                 wImg;
 int                 hImg;
@@ -1072,7 +1073,7 @@ void change_arduino(bool b)
 void change_joy(int x, int y)
 {
     static char sJoyXY[255];
-    sprintf( sJoyXY, "Suivi(%d, %d)", x, y);
+    sprintf( sJoyXY, "Suivi(%d, %d) %s", x, y, BOOL2STR(bSuivi) );
     pJoyXY->changeText((char*)sJoyXY );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1081,7 +1082,7 @@ void change_joy(int x, int y)
 void change_joy(float x, float y)
 {
     static char sJoyXY[255];
-    sprintf( sJoyXY, "Suivi(%0.2f, %0.2f)", x, y);
+    sprintf( sJoyXY, "Suivi(%0.2f, %0.2f) %s", x, y, BOOL2STR(bSuivi) );
     pJoyXY->changeText((char*)sJoyXY );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1671,20 +1672,24 @@ static void idleGL(void)
 	            //float dy = ySuivi - panelCourbe->get_vOrigine().y;
 	            float dx = xSuivi - pv->x;
 	            float dy = ySuivi - pv->y;
+                logf( (char*)" Asservissement delta(%0.2f, %0.2f)", dx, dy );
+	            
 	            if ( fabs(dx) > panelCourbe->get_err() || fabs(dy) > panelCourbe->get_err() )
 	            {
 	                vec3 w = vec3( xSuivi, ySuivi, 0.0);
 	                //vec3 v = panelCourbe->get_vOrigine() - w;
-	                vec3 v = vec3( pv->x, pv->y, 0.0) - w;
+	                vec3 v = w - vec3( pv->x, pv->y, 0.0);
 
+                    logf( (char*)"  delta(%0.2f, %0.2f)", v.x, v.y );
                     vec3 res = mChange * v;
                     int ad = (int) (res.x * -1000.0);
                     int dc = (int) (res.y * 1000.0);
                     char cmd[255];
                     sprintf( cmd, "a%dp;d%dp", ad, dc );
                     logf( (char*)" main.cpp (Asservissement=>) '%s'",  cmd );
-                    Serial::getInstance().write_string(cmd);
-                    //fTimeCpt += 1.0;
+
+                    if ( !bMouseDeplace )
+                        Serial::getInstance().write_string(cmd);
 	            }
             }
 	    }
@@ -2007,14 +2012,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'b':
         {
         logf( (char*)"Key (b) : Bluetooth start" );
-        BluetoothManager::getInstance().start();
+        //BluetoothManager::getInstance().start();
         }
         break;
     
     case 'B':
         {
         logf( (char*)"Key (b) : Bluetooth disconnect" );
-        BluetoothManager::getInstance().disconnect();
+        //BluetoothManager::getInstance().disconnect();
         }
         break;
 
@@ -2193,7 +2198,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'I':
     case 'J':
     case 'j':
+        break;
     case 'k':
+        {
+        bSound = !bSound;
+        logf( (char*)"Key (k) : Active/desactive le son  %s ", BOOL2STR(bSound) );
+        var.set( "bSound", bSound );
+        }
+        break;
     case 'K':
         break;
 
@@ -2396,6 +2408,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"Key (S) : Suivi on/off" );
             bSuivi = !bSuivi;
             var.set( "bSuivi", bSuivi );
+            change_joy( xSuivi, ySuivi );
             logf( (char*)"  bSuivi (%s)", BOOL2STR(bSuivi) );
         }
         break;
@@ -2501,7 +2514,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'w' :
         {
-        BluetoothManager::getInstance().centre_joystick();
+        //BluetoothManager::getInstance().centre_joystick();
         }
         break;
 
@@ -2767,12 +2780,15 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    logf( (char*)"state = 1" );
 
         vec3 v = vDepl[1] - vDepl[0];
+	    logf( (char*)"  delta (%0.2f, %0.2f)", v.x, v.y );
+	    
         vTr = mChange * v;
         int ad = (int) (vTr.x * -1000.0);
         int dc = (int) (vTr.y * 1000.0);
         char cmd[255];
         sprintf( cmd, "a%dp;d%dp", ad, dc );
-        //logf( (char*)"Envoi de la commande",  cmd );
+        logf( (char*)"Envoi de la commande",  cmd );
+
         Serial::getInstance().write_string(cmd);
 	}
 
@@ -3645,13 +3661,14 @@ void charge_var()
     if ( var.existe("bSimu") )          bSimu       = var.getb("bSimu");
     if ( var.existe("bAffSuivi") )      bAffSuivi   = var.getb("bAffSuivi");
     if ( var.existe("bAffCentre") )     bAffCentre  = var.getb("bAffCentre");
+    if ( var.existe("bSound") )         bSound      = var.getb("bSound");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void exit_handler()
 {
-    BluetoothManager::getInstance().disconnect();
+    //BluetoothManager::getInstance().disconnect();
     Serveur_mgr::getInstance().close_all();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3767,7 +3784,7 @@ int main(int argc, char **argv)
     WindowsManager::getInstance().loadResourceImage( "images/file.png" );
     WindowsManager::getInstance().loadResourceImage( "images/dir.png" );
     FileBrowser::getInstance();
-    BluetoothManager::getInstance();
+    //BluetoothManager::getInstance();
     WindowsManager::genereMipMap( false );
 
     setColor();

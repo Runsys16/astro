@@ -501,7 +501,7 @@ int Device_cam::read_frame(void)
         if (-1 == xioctl(fd, VIDIOC_DQBUF, &buf)) {
             switch (errno) {
             case EAGAIN:
-                log((char*)"Erreur Device_cam::read_frame()");
+                log((char*)"Erreur Device_cam::read_frame() EAGAIN");
                 return 0;
 
             case EIO:
@@ -510,7 +510,7 @@ int Device_cam::read_frame(void)
                 /* fall through */
 
             default:
-                log((char*)"Erreur Device_cam::read_frame()");
+                log((char*)"Erreur Device_cam::read_frame()  default");
                 errno_exit("VIDIOC_DQBUF");
                 return -1;
             }

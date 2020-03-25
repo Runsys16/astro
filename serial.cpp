@@ -120,6 +120,7 @@ void Serial::read_thread()
                 if ( test.find("Change joy ...NOK") != string::npos )
                 {
                     changeJoy(false);
+                    
                     system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
                 }
                 else if ( test.find("Change joy ...OK") != string::npos )
@@ -150,7 +151,7 @@ void Serial::read_thread()
                 }
                 else if ( test.find("GOTO OK") != string::npos )
                 {
-                    system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
+                    if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
                 }
                 else if ( test.find("Rotation terre") != string::npos )
                 {
