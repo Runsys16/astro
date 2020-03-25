@@ -6,7 +6,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Stars::Stars()
 {
-    logf( (char*)"Constructeur Stars()" );
+    logf( (char*)"Constructeur Stars() ------------------" );
     RB       = NULL;
     pView    = NULL;
     pNbStars = NULL;
@@ -17,7 +17,9 @@ Stars::Stars()
 Stars::~Stars()
 {
     logf( (char*)"Destructeur Stars()" );
+    log_tab(true);
     deleteAllStars();
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

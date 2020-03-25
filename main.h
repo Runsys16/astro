@@ -270,6 +270,7 @@ void                changeJoy(bool);
 bool                getJoy();
 void                changeRetourPos(bool);
 
+void                log_tab( bool );
 void                log( char *);
 void                logf( char *, ...);
 

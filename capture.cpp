@@ -16,14 +16,16 @@ string old_dir = "";
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture()
 {
-    logf((char*)"----------- Constructeur Capture() -----------" );
-    logf((char*)"  old_dir : %s", (char*)old_dir.c_str() );
+    logf((char*)"Constructeur Capture() -----------" );
+    log_tab(true);
+    logf((char*)"old_dir : %s", (char*)old_dir.c_str() );
 
     if ( getCurrentDirectory() == "" )
     {
         logf( (char*)"[Erreur] Impossible de charger le repertoire : " );
         logf( (char*)"[Erreur] Veuillez fermer la fenetre touch'8'" );
         create_preview();
+        log_tab(false);
         return;
     }
 
@@ -63,6 +65,8 @@ Capture::Capture()
     create_preview();
     bIcone = false;
     bFullScreen = false;
+
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -70,7 +74,7 @@ Capture::Capture()
 Capture::Capture(string dirname, string name)
 {
     logf((char*)"----------- Constructeur Capture(%s, %s) -----------", (char*)dirname.c_str(), (char*)name.c_str() );
-
+    log_tab(true);
     
     filename = dirname + name;
     dirname = dirname;
@@ -80,6 +84,7 @@ Capture::Capture(string dirname, string name)
 
     logf( (char*)"image : %s", filename.c_str() );
     create_preview();
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -171,7 +176,8 @@ void Capture::update()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::create_preview()	{
     logf((char*)"----------- CreatePreview -------------" );
-    logf((char*)"  -- %s", (char*)filename.c_str() );
+    log_tab(true);
+    logf((char*)"ficier = %s", (char*)filename.c_str() );
     
 	WindowsManager& wm = WindowsManager::getInstance();
 
@@ -197,12 +203,12 @@ void Capture::create_preview()	{
 	panelPreview = new PanelCapture(NULL, this);
 	if ( readBgr.ptr == NULL )
 	{
-	    logf( (char*)"  Pointeur sur background readBgr.ptr == NULL");
+	    logf( (char*)"[Erreur]Pointeur sur background readBgr.ptr == NULL");
         panelPreview->setRB( NULL );
     }
     else
     {
-	    logf( (char*)"  setBackground( ..., %d, %d, %d)", readBgr.w, readBgr.h, readBgr.d);
+	    logf( (char*)"setBackground( ..., %d, %d, %d)", readBgr.w, readBgr.h, readBgr.d);
         panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
         panelPreview->setRB( &readBgr );
     }
@@ -231,7 +237,7 @@ void Capture::create_preview()	{
 	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
  	wm.add( pW );
-
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

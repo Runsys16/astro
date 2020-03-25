@@ -12,8 +12,8 @@ Fits::Fits(string filename)
     charge(filename);
     chargeTexture();
     
-    afficheDic();
-    afficheDatas();
+    //afficheDic();
+    //afficheDatas();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

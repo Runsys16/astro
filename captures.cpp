@@ -9,7 +9,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 Captures::Captures()
 {
-    logf((char*)"----------- Constructeur Captures() -----------" );
+    logf((char*)"Constructeur Captures() -----------" );
+    log_tab( true );
     current_capture = -1;
 
     charge2();
@@ -22,6 +23,8 @@ Captures::Captures()
     resize_all();
     
 //    rotate_capture_plus(true);
+    log_tab( false );
+    logf((char*)"Constructeur Captures() -----------FIN" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -187,7 +190,7 @@ void Captures::resize_all()
     
     if ( bShowPreview )      m--;
 
-    if ( m<=0 )      return;
+    if ( m<=0 )      { return };
 
     if ( m>1 )      DY = (height-20-dyi) / (m-1);    
     else            DY = (height-20-dyi) / (m);    
