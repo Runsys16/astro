@@ -5,6 +5,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 Fits::Fits(string filename)
 {
+    logf((char*)"Constructeur Fits::Fits() -------------" );
+    log_tab(true);
     readBgr.ptr = NULL;
     _filename = filename;
     bValid = false;
@@ -14,6 +16,8 @@ Fits::Fits(string filename)
     
     //afficheDic();
     //afficheDatas();
+    log_tab(false);
+    logf((char*)"Constructeur Fits::Fits() -------------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

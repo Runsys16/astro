@@ -6,7 +6,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Camera_mgr::Camera_mgr()
 {
-    logf((char*)"----------- Constructeur Camera_mgr() -------------" );
+    logf((char*)"Constructeur Camera_mgr() -------------" );
     pCurrent = NULL;
     nActive = 0;
 }
@@ -38,7 +38,7 @@ void Camera_mgr::add( string sdev_name )
     if ( camera_exist( sdev_name ) )            return;
 
     //logf( (char*)"    Not Exist" );
-    logf((char*)"----------- Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
+    logf((char*)"Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
 
     Camera *        pCamera = new Camera(1600,900);
     //pCameras.push_back( pCamera );
@@ -66,7 +66,7 @@ void Camera_mgr::add( string sdev_name )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::add( Camera* p )
 {
-    logf((char*)"----------- Camera_mgr::add() -------------" );
+    logf((char*)"Camera_mgr::add() -------------" );
 
 
     pCameras.push_back( p );
@@ -89,7 +89,7 @@ void Camera_mgr::add( Camera* p )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::addImages( Camera* p )
 {
-    logf((char*)"----------- Camera_mgr::addImages() -------------" );
+    logf((char*)"Camera_mgr::addImages() -------------" );
 
 
     pCameras.push_back( p );
@@ -113,7 +113,7 @@ void Camera_mgr::addImages( Camera* p )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::sup( string name )
 {
-    logf((char*)"----------- Camera_mgr::sup() -------------" );
+    logf((char*)"Camera_mgr::sup() -------------" );
 
     Camera* pCamera = getCamera( name );
     if ( pCamera )
@@ -135,7 +135,7 @@ void Camera_mgr::sup( string name )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::sup( Camera * p )
 {
-    logf((char*)"----------- Camera_mgr::sup() -------------" );
+    logf((char*)"Camera_mgr::sup() -------------" );
 
 
     for( int i=0; i<pCameras.size(); i++ )
@@ -157,7 +157,7 @@ void Camera_mgr::sup( Camera * p )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::change_background_camera( void )
 {
-    //logf((char*)"----------- Camera_mgr::change_background_camera() -------------");
+    //logf((char*)"Camera_mgr::change_background_camera() -------------");
     
     for( int i=0; i<pCameras.size(); i++ )
     {
@@ -170,7 +170,7 @@ void Camera_mgr::change_background_camera( void )
 //--------------------------------------------------------------------------------------------------------------------
 bool Camera_mgr::keyboard( char key )
 {
-    //logf((char*)"----------- Camera_mgr::change_background_camera() -------------");
+    //logf((char*)"Camera_mgr::change_background_camera() -------------");
     if ( pCurrent )                 return pCurrent->keyboard( key );
     return false;
 }
@@ -179,7 +179,7 @@ bool Camera_mgr::keyboard( char key )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::resize(int width, int height)
 {
-    logf((char*)"----------- Camera_mgr::resize(%d, %d) -------------", width, height);
+    logf((char*)"Camera_mgr::resize(%d, %d) -------------", width, height);
     for( int i=0; i<pCameras.size(); i++ )
     {
         pCameras[i]->resizeControl( width, height );
@@ -248,7 +248,7 @@ void Camera_mgr::update()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::active()
 {
-    logf((char*)"----------- Camera_mgr::active() -------------" );
+    logf((char*)"Camera_mgr::active() -------------" );
 
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
@@ -272,7 +272,7 @@ void Camera_mgr::active()
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::reOrder()
 {
-    logf((char*)"----------- Camera_mgr::reOrder() -------------" );
+    logf((char*)"Camera_mgr::reOrder() -------------" );
     int nb = pCameras.size();
 
     for( int i=0, a=0; i<nb; i++, a++ )

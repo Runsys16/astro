@@ -18,6 +18,7 @@ Capture::Capture()
 {
     logf((char*)"Constructeur Capture() -----------" );
     log_tab(true);
+    
     logf((char*)"old_dir : %s", (char*)old_dir.c_str() );
 
     if ( getCurrentDirectory() == "" )
@@ -67,13 +68,14 @@ Capture::Capture()
     bFullScreen = false;
 
     log_tab(false);
+    logf((char*)"Constructeur Capture() -----------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture(string dirname, string name)
 {
-    logf((char*)"----------- Constructeur Capture(%s, %s) -----------", (char*)dirname.c_str(), (char*)name.c_str() );
+    logf((char*)"Constructeur Capture(dirname, %s) -----------", (char*)name.c_str() );
     log_tab(true);
     
     filename = dirname + name;
@@ -85,14 +87,15 @@ Capture::Capture(string dirname, string name)
     logf( (char*)"image : %s", filename.c_str() );
     create_preview();
     log_tab(false);
+    logf((char*)"Constructeur Capture(%s, %s) -----------", (char*)dirname.c_str(), (char*)name.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture(string f )
 {
-    logf((char*)"----------- Constructeur Capture(%s) -----------", (char*)f.c_str() );
-
+    logf((char*)"Constructeur Capture(%s) -----------", (char*)f.c_str() );
+    log_tab(true);
     
     filename = f;
 
@@ -107,15 +110,18 @@ Capture::Capture(string f )
 
     basename = res[nb-1];
 
-    logf( (char*)"image : %s", filename.c_str() );
+    logf( (char*)"basename : %s", basename.c_str() );
     create_preview();
+
+    log_tab(false);
+    logf((char*)"Constructeur Capture(%s) -----------", (char*)f.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Capture::~Capture()
 {
-    logf((char*)"----------- Destructeur Capture() -----------" );
+    logf((char*)"Destructeur Capture() -----------" );
 
 	WindowsManager::getInstance().sup( pW );
 	delete pTitre;
@@ -148,6 +154,7 @@ void Capture::pooling()
         s = lecture->d_name;
         
         if (        s.find(".png") != string::npos
+               ||   s.find(".fits")!= string::npos
                ||   s.find(".jpg") != string::npos
                ||   s.find(".tga") != string::npos
                ||   s.find(".raw") != string::npos)
@@ -175,9 +182,10 @@ void Capture::update()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::create_preview()	{
-    logf((char*)"----------- CreatePreview -------------" );
+    logf((char*)"Capture::CreatePreview -------------" );
     log_tab(true);
-    logf((char*)"ficier = %s", (char*)filename.c_str() );
+    
+    logf((char*)"fichier = %s", (char*)filename.c_str() );
     
 	WindowsManager& wm = WindowsManager::getInstance();
 
@@ -237,7 +245,9 @@ void Capture::create_preview()	{
 	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
  	wm.add( pW );
+
     log_tab(false);
+    logf((char*)"Capture::CreatePreview -------------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

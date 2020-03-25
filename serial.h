@@ -41,6 +41,13 @@ protected:
     
     bool            bPrintInfo;
     float           fTimeOut;
+    
+    bool            bFree;
+    
+    vector<string>  tCommandes;
+
+private:
+    void            emet_commande();
 
 public :
     Serial();

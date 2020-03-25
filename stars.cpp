@@ -16,10 +16,11 @@ Stars::Stars()
 //--------------------------------------------------------------------------------------------------------------------
 Stars::~Stars()
 {
-    logf( (char*)"Destructeur Stars()" );
+    logf( (char*)"Destructeur Stars() ------------------" );
     log_tab(true);
     deleteAllStars();
     log_tab(false);
+    logf( (char*)"Destructeur Stars() ------------------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -27,18 +28,26 @@ Stars::~Stars()
 void Stars::add(Star * p)
 {
     logf( (char*)"Stars::add(Star *)" );
+    log_tab(true);
     int nb = v_tStars.size();
 
     for( int n=0; n<nb; n++ )
     {
         Star* ps = v_tStars[n];
-        if ( ps == p )              return;
+        if ( ps == p )              {
+            log_tab(false);
+            logf( (char*)"Stars::add(Star *)" );
+            return;
+        }
     }
     v_tStars.push_back( p );
 
     char t[] = "00000000000";  
     sprintf( t, "%d", size() );
     pNbStars->changeText( t );
+
+    log_tab(false);
+    logf( (char*)"Stars::add(Star *)" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -46,6 +55,8 @@ void Stars::add(Star * p)
 void Stars::sup(Star * p)
 {
     logf( (char*)"Stars::Sup Star()" );
+    log_tab(true);
+
     int nb = v_tStars.size();
 
     for( int n=0; n<nb; n++ )
@@ -58,6 +69,9 @@ void Stars::sup(Star * p)
             //pPanel->sup( p->getInfo() );
             v_tStars.erase( v_tStars.begin() + n );
             delete p;
+
+            log_tab(false);
+            logf( (char*)"Stars::Sup Star()" );
             return;
         }
     }
@@ -65,16 +79,21 @@ void Stars::sup(Star * p)
     char t[] = "00000000000";  
     sprintf( t, "%d", size() );
     pNbStars->changeText( t );
+    log_tab(false);
+    logf( (char*)"Stars::Sup Star()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 {
-    logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
+    logf( (char*)"Stars::addStar() souris(%d, %d)   dx_screen=%d, dy_screen%d, echelle =%0.2f)",
+                  xm, ym, dx_screen, dy_screen, e);
+    log_tab(true);
+
     float X = (float) ((float)xm - (float)dx_screen)/e; 
     float Y = (float) ((float)ym - (float)dy_screen)/e; 
-    logf( (char*)"  (%d, %d) => (%0.4f, %0.4f)", xm, ym, X, Y);
+    logf( (char*)"conversion  (%d, %d) => (%0.4f, %0.4f)", xm, ym, X, Y);
     
 
 
@@ -91,6 +110,9 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     if ( starExist(x_find, y_find) )        { 
         delete pp;
         logf( (char*)"Etoile existe deja ..." );
+
+        log_tab(false);
+        logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
         return NULL;
     }
 
@@ -100,10 +122,13 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     if ( x_find == -1 || y_find == -1 ) {
         delete pp;
         logf( (char*)"Pas d'Etoile ..." );
+
+        log_tab(false);
+        logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
         return NULL;
     }
     
-    logf( (char*)"Stars::addStar() appelle star::updatePos()" );
+    logf( (char*)"Appelle star::updatePos()" );
     pp->updatePos( dx_screen, dy_screen, e ); 
     pp->computeMag();
     pp->getMagnitude();
@@ -111,16 +136,17 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
     v_tStars.push_back( pp );
 
-    logf( (char*)"Stars::addStar( Nouvelle etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), xm, ym, pp->getMagnitude() );
-    logf( (char*)"  x_find, y_find (%d, %d)", x_find, y_find );
+    logf( (char*)"Nouvelle etoile no %d (%d,%d) mag=%0.2f find xy(%d,%d)", 
+                v_tStars.size(), xm, ym, pp->getMagnitude() , x_find, y_find );
 
 
     char t[] = "00000000000";  
     sprintf( t, "%d", size() );
     pNbStars->changeText( t );
     
+    log_tab(false);
+    logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
     return pp;
-    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

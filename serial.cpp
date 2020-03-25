@@ -7,19 +7,21 @@
 //--------------------------------------------------------------------------------------------------------------------
 Serial::Serial()
 {
-    logf((char*)"----------- Constructeur Serial -------------" );
+    logf((char*)"Constructeur Serial::Serial() -------------" );
     fTimeOut = 0.0;
     fd = -1;
 
     idx = 0;
     nbZero = 0;
+    
+    bFree = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Serial::init( string dev)
 {
-    logf((char*)"----------- Serial::init(%s) -------------", dev.c_str() );
+    logf((char*)"Serial::init(%s) -------------", dev.c_str() );
     fd = -1;
     dev_name = dev;
     idx = 0;
@@ -38,8 +40,8 @@ int Serial::write_byte( char b)
     if ( fd ==-1 )      return -1;
 
     int n = write(fd,&b,1);
-    if( n!=1)
-        return -1;
+
+    if( n!=1)           return -1;
     return 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -51,6 +53,16 @@ int Serial::write_string( const char* str)
     
     if ( fd ==-1 )                          return -1;
     if ( (fTimeMili - fTimeOut) < 1.0 )     return -1;
+    
+    if ( str[0] == 'a' && !bFree )
+    {
+        string s = string(str);
+        tCommandes.push_back(s);
+        return 0;
+    }
+    else
+        bFree = false;
+    
     
     fTimeOut = fTimeMili;
     
@@ -74,11 +86,49 @@ void Serial::sound()
     execv( "/usr/bin/aplay", arguments );
 
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Serial::sound_thread()
 {
     th_sound = std::thread(&Serial::sound, this);
     th_sound.detach();
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::emet_commande()
+{
+    logf((char*)"Serial::emet_commande()" );
+    log_tab(true);
+    
+    if (tCommandes.size()!=0 )
+    {
+        string s = tCommandes[0];
+        
+        char* str = (char*)s.c_str();
+        int len = strlen(str);
+        int n = write(fd, str, len);
+
+        if( n!=len ){
+            logf((char*)"[ERREUR]Il manque des caracteres !!" );
+            log_tab(false);
+            return;
+        }
+
+        len = 1;
+        n = write_byte('\n');
+
+        if( n!=len ){
+            logf((char*)"[ERREUR]Sur le retour chariot!!" );
+            log_tab(false);
+            return;
+        }
+        tCommandes.erase( tCommandes.begin()+0 );
+    }
+
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -152,6 +202,8 @@ void Serial::read_thread()
                 else if ( test.find("GOTO OK") != string::npos )
                 {
                     if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
+                    
+                    emet_commande();
                 }
                 else if ( test.find("Rotation terre") != string::npos )
                 {

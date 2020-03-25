@@ -8,7 +8,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Camera::~Camera()
 {
-    logf( (char*)"----------- Destructeur ~Camera() -----------" );
+    logf( (char*)"Destructeur ~Camera() -----------" );
     bChargingCamera = false;
 
     close_device();
@@ -34,25 +34,30 @@ Camera::~Camera()
 //--------------------------------------------------------------------------------------------------------------------
 Camera::Camera()
 {
-    logf((char*)"----------- Constructeur Camera() -------------" );
+    logf((char*)"Constructeur Camera() -------------" );
+    log_tab(true);
     //Device_cam();
 
     init();
 
     //CreatePreview();
+    log_tab(false);
+    logf((char*)"Constructeur Camera() -------------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Camera::Camera(int w, int h)
 {
-    logf((char*)"----------- Constructeur Camera(%d, %d) -------------", w, h);
+    logf((char*)"Constructeur Camera(%d, %d) -------------", w, h);
+    log_tab(true);
     //Device_cam();
     
     init();
     //setWidth(w);
     //setHeight(h);
-    
+    log_tab(false);
+    logf((char*)"Constructeur Camera(%d, %d) -------------", w, h);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -87,7 +92,8 @@ void Camera::update()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreatePreview()	{
-    logf((char*)"----------- CreatePreview ------------- %s", getName() );
+    logf((char*)"CreatePreview ------------- %s", getName() );
+    log_tab(true);
 
 	WindowsManager& wm = WindowsManager::getInstance();
 
@@ -97,7 +103,7 @@ void Camera::CreatePreview()	{
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
-    logf((char*)"    wsc=%d hsc=%d", wsc, hsc);
+    logf((char*)"wsc=%d hsc=%d", wsc, hsc);
 	resizePreview(wsc, hsc);
 	//panelPreview->setBackground( (char*)"frame-0.raw");
 	
@@ -122,6 +128,9 @@ void Camera::CreatePreview()	{
     logf((char*)"    name    %s ", getName() );
     logf((char*)"    devname %s ", getDevName() );
     logf((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
+
+    log_tab(false);
+    logf((char*)"CreatePreview ------------- %s", getName() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -159,7 +168,7 @@ void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
     int nb = Camera_mgr::getInstance().getSize();
     int y = 10+nb * (20+dy);
 
-    logf((char*) "Camera::resizeControlFirst x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
+    logf((char*) "x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
     panelControl->setPos( x, y );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -312,7 +321,8 @@ void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int i
 //
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::addControl()	{
-    logf((char*)"------------- Camera::addControl() ---------------");
+    logf((char*)"Camera::addControl() ---------------");
+    log_tab(true);
  
     int xt  = 10;
     int yt  = 10;
@@ -354,13 +364,17 @@ int Camera::addControl()	{
     panelControl->setSize( 200, dy);
     
     logf( (char*)"dy=%d", dy);
+    log_tab(false);
+    
     return dy;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreateControl()	{
-    logf((char*)"------------- Camera::CreateControl() --------------- %s", getDevName() );
+    logf((char*)"Camera::CreateControl() --------------- %s", getDevName() );
+    log_tab(true);
+    
     if ( getFd() == -1 )
     {
         logf((char*)"Le materiel n'est pas encore ouvert");
@@ -388,6 +402,8 @@ void Camera::CreateControl()	{
     dy = addControl();
     resizeControlFirst(wsc, hsc, dx, dy);
 
+    log_tab(false);
+    logf((char*)"Camera::CreateControl() --------------- %s", getDevName() );
     //logf((char*)"panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
 }
 //--------------------------------------------------------------------------------------------------------------------

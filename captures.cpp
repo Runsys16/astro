@@ -190,7 +190,7 @@ void Captures::resize_all()
     
     if ( bShowPreview )      m--;
 
-    if ( m<=0 )      { return };
+    if ( m<=0 )      { return; }
 
     if ( m>1 )      DY = (height-20-dyi) / (m-1);    
     else            DY = (height-20-dyi) / (m);    

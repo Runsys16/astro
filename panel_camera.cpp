@@ -412,8 +412,10 @@ void PanelCamera::displayGL()
 void PanelCamera::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelCamera::releaseLeft(%d,%d) ...", xm, ym );
-    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
-    logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
+    if ( pReadBgr == NULL )     { logf( (char*)" return Pointeur NULL" ); return; }
+    
+    log_tab(true);
+    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
     
     //float e = (float)getDX() / (float)pReadBgr->w; 
     float e = (float)getDX() / (float)1920.0; 
@@ -426,6 +428,9 @@ void PanelCamera::releaseLeft(int xm, int ym)
     
     if ( bAutorisationSuivi && stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         stars.selectLeft(xx, yy);
+
+    log_tab(false);
+    logf( (char*)"PanelCamera::releaseLeft(%d,%d) ...", xm, ym );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -439,10 +444,10 @@ void PanelCamera::releaseMiddle(int xm, int ym)
     }
 
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
-    
     if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
-    
-    logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
+    log_tab(true);
+        
+    logf( (char*)"panelCamera->getDX()=%d pReadBgr->w=%0.2f", getDX(), pReadBgr->w );
     
     //float e = (float)getDX() / (float)pReadBgr->w; 
     float e = (float)getDX() / (float)1920.0; 
@@ -455,10 +460,13 @@ void PanelCamera::releaseMiddle(int xm, int ym)
     if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
     {
         stars.selectMiddle(xx, yy);
-        logf( (char*)" releaseMiddle(%d,%d) selects star...", xm, ym );
+        logf( (char*)"releaseMiddle(%d,%d) selects star...", xm, ym );
     }
     else
         stars.selectMiddle(xx, yy);
+    
+    log_tab(false);
+    logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
 }
 
 

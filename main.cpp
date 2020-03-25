@@ -1015,7 +1015,7 @@ static void displayGL(void)
 //--------------------------------------------------------------------------------------------------------------------
 static void reshapeGL(int newWidth, int newHeight)
 {
-    logf((char*) "-------- reshapeGL(%d, %d)", newWidth, newHeight);
+    logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( newWidth, newHeight );
@@ -3307,9 +3307,10 @@ void log_tab( bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void log( char* chaine )
 {
-    if ( panelStdOut && bStdOut )          panelStdOut->affiche( chaine );
+    string aff = sTab + string(chaine);
+    if ( panelStdOut && bStdOut )          panelStdOut->affiche( aff.c_str() );
     
-    printf( "log : %s%s\n", sTab.c_str(), chaine);
+    printf( "log : %s\n", aff.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

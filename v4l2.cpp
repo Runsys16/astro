@@ -23,7 +23,7 @@ struct v4l2_querymenu querymenu;
 //--------------------------------------------------------------------------------------------------------------------
 Device_cam::Device_cam()
 {
-    logf((char*)"----------- Constructeur Device_cam() -------------" );
+    logf((char*)"Constructeur Device_cam() -------------" );
     dev_name        = "";
     io              = IO_METHOD_USERPTR;
     fd              = -1;
