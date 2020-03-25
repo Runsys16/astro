@@ -415,7 +415,7 @@ bool Star::find( int size)
         bool bTrouve = cherche(x, y, i);
         if ( bTrouve )
         {
-            if ( xFound > 0 )
+            if ( xFound > 0 && yFound>0.0)
             {
                 x = xFound;
                 y = yFound;
@@ -551,10 +551,11 @@ void Star::getFWHM( int xx, int yy, int size)
     {
         x = xx;
         y = yy;
+
+        pos.x = vFWHM.x +0.5;
+        pos.y = vFWHM.y +0.5;
     }
     
-    pos.x = vFWHM.x +0.5;
-    pos.y = vFWHM.y +0.5;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
