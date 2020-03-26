@@ -64,6 +64,7 @@ public :
     void            sound();
 
     void            start_thread();
+    void            reset();
 
 SINGLETON_END()
 

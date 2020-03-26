@@ -14,7 +14,7 @@ PanelButton *       pFlecheHaut;
 PanelButton *       pFlecheBas;
 
 PanelButton *       pButtonMode;
-PanelButton *       pButtonAsserv;
+PanelCheckBox *     pButtonAsserv;
 
 void inverse_texture(PanelButton *, bool, string);
 //--------------------------------------------------------------------------------------------------------------------
@@ -32,25 +32,16 @@ void set_asservissement(void)
 {
     var.set("bCorrection", bCorrection);
     fTimeCpt = 0.0; 
-    /*
-    panelCourbe->get_vOrigine().x = xSuivi;
-    panelCourbe->get_vOrigine().y = ySuivi;
-    panelCourbe->get_vOrigine().z = 0.0;
-    */
 
     var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
     var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
     if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
     else                        pAsservi->changeText((char*)" ");
-    
-    inverse_texture( pButtonAsserv, bCorrection, "cadena" );
-
-    //if (bCorrection)            pButtonAsserv->texDown();
-    //else                        pButtonAsserv->texUp();
+   
+    pButtonAsserv->setVal(bCorrection);
     
     logf( (char*)"asservissement = %s", bCorrection?(char*)"true":(char*)"false" );
-
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -194,12 +185,6 @@ void call_back_up(PanelButton* pPanel)
         inverse_texture( pPanel, bAutorisationSuivi, "cible" );
 
 	}
-	else
-	if ( pPanel == pButtonAsserv )
-	{
-        bCorrection = !bCorrection; 
-        set_asservissement();
-    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -241,6 +226,13 @@ void cb_rotationCheck(PanelCheckBox* p)	{
         char cmd[255];
         sprintf( cmd, "p" );
         Serial::getInstance().write_string(cmd);
+    }
+	else
+	if ( p == pButtonAsserv )
+	{
+        bCorrection = p->getVal(); 
+        logf( (char*)"Appui sur cadena !! %s %s", BOOL2STR(bCorrection), BOOL2STR(pButtonAsserv->getVal())  );
+        set_asservissement();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -332,7 +324,8 @@ void create_windows_button()
     pButtonSerial   = create_window_button( 5, "arduino" );
 
     pButtonMode     = create_window_button( 7, "cible" );
-    pButtonAsserv   = create_window_button( 8, "cadena" );
+
+    pButtonAsserv   = create_window_check_box( 8, "cadena" );
     
     pButtonAsc      = create_window_check_box( 10, "asc" );
     pButtonDec      = create_window_check_box( 11, "dec" );
@@ -341,6 +334,38 @@ void create_windows_button()
     pButtonRet      = create_window_check_box( 14, "retour" );
     
     create_fleches();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void idleStatus()
+{
+    //-----------------------------------------------------------------------
+    // Gestion des connexions logiciel /dev/:
+    // arduino et stellarium
+    //-----------------------------------------------------------------------
+    if ( Serveur_mgr::getInstance().isConnect() )
+    {
+       bStellarium = true;
+       pStellarium->changeText( (char*)"Stellarium" );
+    }
+    else
+    {
+       bStellarium = false;
+       pStellarium->changeText( (char*)"----" );
+    }
+    //-----------------------------------------------------------------------
+    // Gestion de apause
+    //-----------------------------------------------------------------------
+    if (!bPause || bOneFrame )    {
+        Camera_mgr::getInstance().change_background_camera();
+        if (bOneFrame)      { updatePanelPause(true); }
+        bOneFrame = false;
+    }
+    
+    //change_joy( xSuivi, ySuivi );
+    
+    if ( bCorrection != pButtonAsserv->getVal() )    set_asservissement();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

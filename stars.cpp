@@ -181,10 +181,12 @@ bool Stars::starExist(int xp, int yp, int no )
 void Stars::findAllStars()
 {
     logf( (char*)"Stars::findAllStars()" );
-
+    
     if (RB==NULL || RB->ptr==NULL)  return;
     if (pView==NULL )               return;
-    
+
+    log_tab(true);
+        
     int dx_view = pView->getDX();
     int dy_view = pView->getDY();
 
@@ -252,12 +254,17 @@ void Stars::findAllStars()
     sprintf( t, "%d", size() );
     pNbStars->changeText( t );
     
+    log_tab(false);
+    logf( (char*)"Stars::findAllStars()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::deleteAllStars()
 {
+    logf( (char*)"Stars::deleteAllStars()" );
+    log_tab(true);
+    
     int nb = v_tStars.size();
     for( int n = nb-1; n>=0; n-- )
     {
@@ -276,6 +283,9 @@ void Stars::deleteAllStars()
     pNbStars->changeText( t );
 
     logf( (char*)"Delete  %d Star()", nb );
+
+    log_tab(false);
+    logf( (char*)"Stars::deleteAllStars()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -54,15 +54,24 @@ int Serial::write_string( const char* str)
     if ( fd ==-1 )                          return -1;
     if ( (fTimeMili - fTimeOut) < 1.0 )     return -1;
     
-    if ( str[0] == 'a' && !bFree )
+
+    if ( str[0] == 'a' || str[0] == 'd' )
     {
-        string s = string(str);
-        tCommandes.push_back(s);
-        return 0;
+        if ( bFree )
+        {
+            bFree = false;
+        }
+        else
+        {
+            string s = string(str);
+            tCommandes.push_back(s);
+            logf( (char*)"Sauvearde de la commande: %s", (char*)s.c_str() );
+            return 0;
+        }
     }
-    else
-        bFree = false;
-    
+    else    
+    if ( str[0] == 'n' )                bFree = true;
+
     
     fTimeOut = fTimeMili;
     
@@ -107,6 +116,7 @@ void Serial::emet_commande()
     {
         string s = tCommandes[0];
         
+        logf( (char*)"Lance la comande en attente : %s", (char*)s.c_str() );        
         char* str = (char*)s.c_str();
         int len = strlen(str);
         int n = write(fd, str, len);
@@ -117,17 +127,19 @@ void Serial::emet_commande()
             return;
         }
 
-        len = 1;
         n = write_byte('\n');
 
-        if( n!=len ){
+        if( n!=0 ){
             logf((char*)"[ERREUR]Sur le retour chariot!!" );
             log_tab(false);
             return;
         }
         tCommandes.erase( tCommandes.begin()+0 );
+        bFree = false;
     }
-
+    else
+    logf( (char*)"Plus de commande en attente" );        
+    
     log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -202,7 +214,7 @@ void Serial::read_thread()
                 else if ( test.find("GOTO OK") != string::npos )
                 {
                     if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
-                    
+                    bFree = true;
                     emet_commande();
                 }
                 else if ( test.find("Rotation terre") != string::npos )
@@ -369,6 +381,14 @@ void Serial::sclose()
 
     close( fd );
     fd = -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::reset()
+{
+    tCommandes.clear();
+    bFree = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

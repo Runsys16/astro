@@ -287,6 +287,6 @@ void set_asservissement(void);
 void inverse_texture(PanelButton *, bool, string);
 void set_courbe();
 
-
+void idleStatus();
 
 #endif

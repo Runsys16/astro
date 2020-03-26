@@ -489,22 +489,25 @@ void ferme_file_browser()
 {
     FileBrowser::getInstance().cache();    
 }
+int timePentax = 1;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void photo()
+thread thread_pentax;
+void fonction_pentax()
 {
     string filename = " -o /home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/test";
-    string iso = " -i 100";
-    string stime = " -t 1";
-    string frames = " -F 2";
+    string iso = " -i 400";
+    string stime = " -t " + to_string(timePentax);
+    string frames = " -F 1";
     string timeout = " --timeout=3";
     string focus = " -f";
     string command = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli";
-    //command = command + filename + iso + stime + timeout;
-    command = command + focus + timeout + filename;
+    command = command + filename + iso + stime + timeout;
+    //command = command + stime + focus + timeout + filename;
     logf( (char*) command.c_str() );
-    
+
+   
     int ret = system( (char*) command.c_str() );
     if ( ret != 0 )
     {
@@ -512,6 +515,14 @@ void photo()
         alertBox(mes);
         logf( (char*)mes.c_str() );
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void photo()
+{
+    thread(fonction_pentax).detach();
+   
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1503,6 +1514,8 @@ static void idleGL(void)
     
 	timer.Idle();
 
+    idleStatus();
+
     //-----------------------------------------------------------------------
     // Gestion de alertbox
     //-----------------------------------------------------------------------
@@ -1512,20 +1525,6 @@ static void idleGL(void)
         AlertBox* p = new AlertBox( sAlert );
         tAlert.push_back( p );
         p->onTop();
-    }
-    //-----------------------------------------------------------------------
-    // Gestion des connexions logiciel /dev/:
-    // arduino et stellarium
-    //-----------------------------------------------------------------------
-    if ( Serveur_mgr::getInstance().isConnect() )
-    {
-       bStellarium = true;
-       pStellarium->changeText( (char*)"Stellarium" );
-    }
-    else
-    {
-       bStellarium = false;
-       pStellarium->changeText( (char*)"----" );
     }
     //-----------------------------------------------------------------------
     // Gestion de la sauvegarde des coordonnees
@@ -1570,11 +1569,6 @@ static void idleGL(void)
     // Mise a jour des buffers de la camera
     // et des pointeurs vers la texture background
     //-----------------------------------------------------------------------
-    if (!bPause || bOneFrame )    {
-        Camera_mgr::getInstance().change_background_camera();
-        if (bOneFrame)      { updatePanelPause(true); }
-        bOneFrame = false;
-    }
     Camera_mgr::getInstance().update();
     
     Captures::getInstance().update();
@@ -1795,7 +1789,20 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     {
         if ( bQuit )   
         {
-            if (key == 27 )     { quit(); return; }
+            if (key == 27 )     { 
+                //quit();
+                logf((char*)"**[ARRET D'URGENCE]**" );
+                bSuivi = false;
+                var.set( "bSuivi", bSuivi );
+                change_joy( xSuivi, ySuivi );
+
+                char cmd[]="n";
+
+                Serial::getInstance().write_string(cmd);
+                Serial::getInstance().reset();
+
+                bCorrection = false;
+            }
         }
         bQuit = false;
         alertBoxQuit();
@@ -2210,6 +2217,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
     case 'K':
+        logf( (char*)"Key (K) : Prend une photo" );
+        photo();
         break;
 
     case 'l':
@@ -2343,7 +2352,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'P':  // '-'
         {
         logf( (char*)"Key (P) : Une image");
-        //photo();
         bOneFrame = true;
         }
         break;
@@ -3810,6 +3818,7 @@ int main(int argc, char **argv)
     
     compute_matrix();
     //bStdOut = true;
+    bCorrection = false;
     glutMainLoop();
 
 
