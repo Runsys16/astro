@@ -29,6 +29,7 @@
 #include "captures.h"
 #include "bluetooth.h"
 #include "panel_courbe.h"
+#include "panel_apn.h"
 #include <GL/freeglut_ext.h>
 
 //#define DEBUG 1
@@ -51,11 +52,9 @@ string              currentDirectory = "/home/rene/Documents/astronomie/logiciel
 //PanelConsole *      pConsoleSerial;
 PanelWindow *       panelHelp;
 PanelWindow *       panelResultat;
-//PanelWindow *       panelCourbe;
 PanelCourbe *       panelCourbe;
 PanelWindow *       panelStdOutW;
-
-//PanelSimple *       panelPreView;
+PanelApn*           panelApn;
 PanelSimple *       panelStatus;
 
 PanelScrollText*    panelStdOut;
@@ -115,7 +114,7 @@ bool                bPng    = false;
 bool                bFull   = false;
 bool                bPause  = false;
 bool                bSuivi  = false;
-bool                bAutorisationSuivi = false;
+bool                bModeManuel = false;
 bool                bNuit   = false;
 bool                bDebug  = false;
 bool                bQuit;
@@ -835,7 +834,7 @@ void displayGLnuit_cb(void)
 void displayGLCamera_cb(void)
 {
     /*
-    if ( !bAutorisationSuivi )
+    if ( bModeManuel )
     {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
 	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
@@ -1578,7 +1577,7 @@ static void idleGL(void)
     if ( bSuivi )   suivi();
 
     /*
-    if (bAutorisationSuivi)
+    if (!bModeManuel)
     {
         suivi();
     }
@@ -1586,7 +1585,7 @@ static void idleGL(void)
     //-----------------------------------------------------------------------
     // Geqtion du suivi des eroiles
     //-----------------------------------------------------------------------
-    if (!bAutorisationSuivi)
+    if (bSuivi)
     {
         updatePanelResultat( xClick, yClick, 0 );
     }
@@ -1656,7 +1655,7 @@ static void idleGL(void)
 	{
 	    fTimeCpt += elapsedTime;
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCpt );
-	    //if ( bCorrection && fTimeCpt > 0.0 && bAutorisationSuivi)
+	    //if ( bCorrection && fTimeCpt > 0.0 && !bModeManuel)
 	    if ( bCorrection && fTimeCpt > 0.0 && bSuivi)
 	    {
             fTimeCpt -= fTimeCorrection;
@@ -1829,6 +1828,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         glutKeyboardFuncCtrl(key,  x,  y);
         return;
 	}
+    else
+    if ( panelApn && panelApn->keyboard(key, x, y) )      return;
 
 	
 	switch(key){ 
@@ -1845,7 +1846,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 27:
 	    {
 	    logf( (char*)"Key (ESC) : ByeBye !!" );
-	    alertBox( "Confirmez la sortie du programme 'ESC'" );
+	    alertBox( "Confirmez l'arret de la monture 'ESC'" );
 	    bQuit = true;
 	    }
         break;
@@ -1958,7 +1959,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'A':
         logf( (char*)"Key (A) : Pt1 Ascension droite" );
         {
-        if ( bAutorisationSuivi )
+        if ( !bModeManuel )
         {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
@@ -1987,7 +1988,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'a':
         {
         logf( (char*)"Key (a) : Pt0 Ascension droite" );
-        if ( bAutorisationSuivi )
+        if ( !bModeManuel )
         {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
@@ -2051,7 +2052,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'D':
         {
         logf( (char*)"Key (D) : Pt1 Declinaison" );
-        if ( bAutorisationSuivi )
+        if ( !bModeManuel )
         {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
@@ -2086,7 +2087,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         logf( (char*)"Key (d) : Pt0 Declinaison" );
         
-        if ( bAutorisationSuivi )
+        if ( !bModeManuel )
         {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
@@ -2205,6 +2206,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 
     case 'i':
+        {
+            if ( panelApn == NULL )         panelApn = new PanelApn();
+            else
+                panelApn->setVisible( !panelApn->getVisible() );
+        }
+        break;
     case 'I':
     case 'J':
     case 'j':
@@ -2333,11 +2340,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'O':
         {
         logf( (char*)"Key (O) : AutorisationSuivi");
-    	bAutorisationSuivi = !bAutorisationSuivi;
-        logf( (char*)"  bAutorisationSuivi = %s", BOOL2STR(bAutorisationSuivi) );
-        var.set("bAutorisationSuivi", bAutorisationSuivi);
+    	bModeManuel = !bModeManuel;
+        logf( (char*)"  !bModeManuel = %s", BOOL2STR(!bModeManuel) );
+        var.set("bModeManuel", !bModeManuel);
 
-        if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
+        if (!bModeManuel)         pMode->changeText((char*)"Mode suivi");
         else                            pMode->changeText((char*)"Mode souris");
         }
     	break;
@@ -2479,7 +2486,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'V':  // '-'
         {
-        if (!bAutorisationSuivi)
+        if (bModeManuel)
         {
             int x = xClick;
             int y = yClick;
@@ -2804,7 +2811,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	}
 
 	//if ( bPause && button == 0 && state == 0 )	{
-    if ( !bAutorisationSuivi && button == 0 && state == 0 )	{
+    if ( bModeManuel && button == 0 && state == 0 )	{
         getSuiviParameter();
 
         Camera_mgr::getInstance().onBottom();
@@ -2821,7 +2828,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    
 	} 
     else
-	if ( bAutorisationSuivi && button == 0 && state == 0 && pMouseOver == pPreviewCam )	{
+	if ( !bModeManuel && button == 0 && state == 0 && pMouseOver == pPreviewCam )	{
 
 	    logf( (char*)"xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
 	    //logf( (char*)"    l=%d rgb=%d,%d,%d" , r,g,b,  l );
@@ -2985,7 +2992,9 @@ int y_help = 0;
 static void addString( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
-	panelHelp->add( new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help ) );
+    PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help );
+    p->setTabSize(40);
+	panelHelp->add( p );
 	y_help += 15;
 }	
 //--------------------------------------------------------------------------------------------------------------------
@@ -3010,67 +3019,73 @@ static void CreateHelp()
 	int l=50;
 
 	
-	addString( "           ---- CAMERA ----");
+	addString( "---- CAMERA ----");
 	addString( "H: Change le nom d une image de la camera");
 	addString( "h: Enregistre une image de la camera courante");
 
-	addString( "    Brightness      B/b" );
-	addString( "    Contrast        C/c" );
-	addString( "    Saturation      S/s" );
-	addString( "    Hue             H/h" );
-	addString( "    Gamma           G/g" );
-	addString( "    Sharpness       Z/z" );
-	addString( "    Exposure        E/e" );
-	addString( "    White balance   W/w" );
+	addString( "    Brightness\t\tB/b" );
+	addString( "    Contrast\t\t\tC/c" );
+	addString( "    Saturation\t\tS/s" );
+	addString( "    Hue\t\t\tH/h" );
+	addString( "    Gamma\t\t\tG/g" );
+	addString( "    Sharpness\t\tZ/z" );
+	addString( "    Exposure\t\t\tE/e" );
+	addString( "    White balance\t\tW/w" );
 	addString( "    A: enregistre les parametres de la camera");
 	addString( "    a: rappelle les parametres de la camera");
 	
-	addString( "           ---- MODE NORMAL ----");
+	addString( "---- MODE NORMAL ----");
 	addString( "ctrl+TAB: camera suivante" );
-	addString( "o: Ouvre/Ferme la fenetre pleiades");
-	addString( "p: Pause de l'affichage de pleiades");
-	addString( "" );
-	addString( "   f: Ouvrir un fichier image");
-	addString( "   F: Active/Desactive la simu");
-	addString( "TAB: Change l'affichage des fichiers" );
-	addString( "  -:   Toutes les images sont affichees en icones");
-	addString( "F11: Charge la prochaine image");
-	addString( "F12: Efface la derniere image");
-	addString( "   r: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
-	addString( "   R: Test alert BOX");
-	addString( "   l: List les ports /dev/ +  les controles ");
-	addString( "   L: List les variables");
-	addString( "   w: Centre le joystick");
-	addString( "   W: Surveille un repertoire");
+	addString( "   o\t: Ouvre/Ferme la fenetre pleiades");
+	addString( "   p\t: Pause de l'affichage de pleiades");
+	addString( "   P\t: Image suivante");
+	addString( "   f\t: Ouvrir un fichier image");
+	addString( "   F\t: Active/Desactive la simu");
+	addString( "TAB\t: Change l'affichage des fichiers" );
+	addString( "  -\t: Toutes les images sont affichees en icones");
+	addString( "F11\t: Charge la prochaine image");
+	addString( "F12\t: Efface la derniere image");
+	addString( "   r\t: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
+	addString( "   R\t: Test alert BOX");
+	addString( "   l\t: List les ports /dev + les controles ");
+	addString( "   L\t: List les variables");
+	addString( "   w\t: Centre le joystick");
+	addString( "   W\t: Surveille un repertoire");
+	addString( "   K\t: Prend une photo sur le pentax");
+	addString( "   k\t: Active/desactive le son");
+	addString( "   n\t: Affiche/cache les images (F7)");
+	addString( "   N\t: Mode nuit on/off");
+	addString( "   q\t: Lance un script python");
+	addString( "   Q\t: Ouvre une image fits");
 
-	addString( "           ---- TRANSFORM MATRIX ----");
-	addString( "a/A: Vecteur en ascension droite");
-	addString( "d/D: Vecteur en declinaison");
-	addString( "  M: Calcul la matrice de transformation");
-	addString( "  y: Affiche les vecteurs");
-	addString( "  m: Deplacement à la souris");
-	addString( "  O: Mode souris / mode suivi");
+	addString( "---- TRANSFORM MATRIX ----");
+	addString( " a/A\t: Vecteur en ascension droite");
+	addString( " d/D\t: Vecteur en declinaison");
+	addString( "   M\t: Calcul la matrice de transformation");
+	addString( "   y\t: Affiche les vecteurs");
+	addString( "   m\t: Deplacement à la souris");
+	addString( "   O\t: Mode souris / mode suivi");
 
-	addString( "           ---- TRACES ----");
-	addString( "C: Lance/arrete l\'enregistrement de trace");
-	addString( "c: Nouvelle trace");
-	addString( "e: Affiche les traces (ctrl+tab)");
-	addString( "E: Supprime la derniere trace");
-	addString( "z: Charge les traces");
-	addString( "Z: Sauve les traces");
+	addString( "---- TRACES ----");
+	addString( "   C\t: Lance/arrete l\'enregistrement de trace");
+	addString( "   c\t: Nouvelle trace");
+	addString( "   e\t: Affiche les traces (ctrl+tab)");
+	addString( "   E\t: Supprime la derniere trace");
+	addString( "   z\t: Charge les traces");
+	addString( "   Z\t: Sauve les traces");
 
-	addString( "           ---- SUIVI ----");
-	addString( "  S: Lance/Stop le suivi");
-	addString( "t/T: change le temps de correction");
-	addString( "  Y: Lance l' asservissement");
-	addString( "  V: Initialise les coordonnees de suivi");
-	addString( "  v: Sauvegarde des coordonnees de suivi dans un fichier .guid");
-    addString( "  U: Affichage du centre de la camera on/off");
-    addString( "  u: Affichage du suivi on/off");
+	addString( "---- SUIVI ----");
+	addString( "  S\t: Lance/Stop le suivi");
+	addString( "t/T\t: change le temps de correction");
+	addString( "   Y\t: Lance l' asservissement");
+	addString( "   V\t: Initialise les coordonnees de suivi");
+	addString( "   v\t: Sauvegarde des coordonnees de suivi dans un fichier .guid");
+    addString( "   U\t: Affichage du centre de la camera on/off");
+    addString( "   u\t: Affichage du suivi on/off");
 	
 
 	addString( "");
-	addString( "ESC: --- SORTIE DU LOGICIEL ---" );
+	addString( "ESC\t: --- SORTIE DU LOGICIEL ---" );
 
 	WindowsManager::getInstance().add(panelHelp);
 	
@@ -3148,7 +3163,7 @@ static void CreateStatus()	{
 	if (bMouseDeplace)              pDeplacement->changeText((char*)"Deplacement");
     else                            pDeplacement->changeText((char*)"----");
 
-	if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
+	if (!bModeManuel)         pMode->changeText((char*)"Mode suivi");
     else                            pMode->changeText((char*)"Mode souris");
 
     if (bCorrection)                pAsservi->changeText((char*)"Asservissemnent");
@@ -3222,6 +3237,7 @@ static void CreateAllWindows()	{
     CreateStatus();
     CreateCourbe();
     CreateStdOut();
+    panelApn = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3513,7 +3529,7 @@ void getX11Screen()
 
     for (int i = 0; i < count_screens; ++i) {
         screen = ScreenOfDisplay(display, i);
-        printf("\tScreen %d: %dX%d\n", i + 1, screen->width, screen->height);
+        printf("Screen %d: %dX%d\n", i + 1, screen->width, screen->height);
         widthScreen = screen->width;
         heightScreen = screen->height;
     }
@@ -3555,7 +3571,7 @@ void init_var()
 {
     //VarManager& var = VarManager::getInstance();
 
-    var.set( "bAutorisationSuivi", bAutorisationSuivi );
+    var.set( "bModeManuel", bModeManuel );
     var.set( "bSuivi", bSuivi );
     var.set( "bPanelControl", bPanelControl );
     var.set( "bPanelHelp", bPanelHelp );
@@ -3609,7 +3625,7 @@ void charge_var()
 {
     var.charge();
 
-    bAutorisationSuivi  = var.getb( "bAutorisationSuivi" );
+    if ( var.existe("bModeManuel") )        bModeManuel         = var.getb( "bModeManuel" );
     //bSuivi              = var.getb( "bSuivi" );
 
     bPanelCourbe        = var.getb( "bPanelCourbe" );
@@ -3774,7 +3790,7 @@ int main(int argc, char **argv)
     inverse_texture( pButtonStdOut,  bPanelStdOut,       "" );
     inverse_texture( pButtonHelp,    bPanelHelp,         "help" );
     inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
-    inverse_texture( pButtonMode,    bAutorisationSuivi, "cible" );
+    inverse_texture( pButtonMode,    !bModeManuel, "cible" );
 
     panelCourbe->get_vOrigine().x = xSuivi;
     panelCourbe->get_vOrigine().y = ySuivi;

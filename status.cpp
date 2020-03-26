@@ -176,13 +176,13 @@ void call_back_up(PanelButton* pPanel)
 	else
 	if ( pPanel == pButtonMode )
 	{
-    	bAutorisationSuivi = !bAutorisationSuivi;
-        var.set("bAutorisationSuivi", bAutorisationSuivi);
+    	bModeManuel = !bModeManuel;
+        var.set("bModeManuel", bModeManuel);
 
-        if (bAutorisationSuivi)         pMode->changeText((char*)"Mode suivi");
+        if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
         else                            pMode->changeText((char*)"Mode souris");
 
-        inverse_texture( pPanel, bAutorisationSuivi, "cible" );
+        inverse_texture( pPanel, bModeManuel, "cible" );
 
 	}
 }

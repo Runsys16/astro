@@ -84,7 +84,7 @@ typedef struct readBackground       rb_t;
     extern int                      width;
     extern int                      height;
     extern vector<vec2>             t_vResultat;
-    extern bool                     bAutorisationSuivi;
+    extern bool                     bModeManuel;
 
     extern float                    xSuivi;
     extern float                    ySuivi;

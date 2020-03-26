@@ -376,7 +376,7 @@ void PanelCamera::displayGL()
     if ( bAffSuivi )            displaySuivi();
 
     //*
-    if ( !bAutorisationSuivi )
+    if ( bModeManuel )
     {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
 	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
@@ -426,7 +426,7 @@ void PanelCamera::releaseLeft(int xm, int ym)
     stars.setView( this );
     stars.setRB( pReadBgr );
     
-    if ( bAutorisationSuivi && stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+    if ( !bModeManuel && stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         stars.selectLeft(xx, yy);
 
     log_tab(false);
