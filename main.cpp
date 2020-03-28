@@ -30,6 +30,7 @@
 #include "bluetooth.h"
 #include "panel_courbe.h"
 #include "panel_apn.h"
+#include "panel_stdout.h"
 #include <GL/freeglut_ext.h>
 
 //#define DEBUG 1
@@ -53,11 +54,10 @@ string              currentDirectory = "/home/rene/Documents/astronomie/logiciel
 PanelWindow *       panelHelp;
 PanelWindow *       panelResultat;
 PanelCourbe *       panelCourbe;
-PanelWindow *       panelStdOutW;
+PanelStdOut *       panelStdOut;
 PanelApn*           panelApn;
 PanelSimple *       panelStatus;
 
-PanelScrollText*    panelStdOut;
 
 PanelText*          pCamFilename;
 PanelText*          R;
@@ -1494,16 +1494,16 @@ static void idleGL(void)
     // Gestion de la sauvegarde des coordonnees
     // ecran des differentes fenetres
     //-----------------------------------------------------------------------
-    if ( panelStdOutW->getHaveMove() )
+    if ( panelStdOut->getHaveMove() )
     {
-        panelStdOutW->resetHaveMove();
+        panelStdOut->resetHaveMove();
 
-        var.set("xPanelStdOut",  panelStdOutW->getX() );
-        var.set("yPanelStdOut",  panelStdOutW->getY() );
-        var.set("dxPanelStdOut", panelStdOutW->getDX() );
-        var.set("dyPanelStdOut", panelStdOutW->getDY() );
+        var.set("xPanelStdOut",  panelStdOut->getX() );
+        var.set("yPanelStdOut",  panelStdOut->getY() );
+        var.set("dxPanelStdOut", panelStdOut->getDX() );
+        var.set("dyPanelStdOut", panelStdOut->getDY() );
         
-        //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
+        //if ( panelStdOut->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
 
     if ( panelHelp->getHaveMove() )
@@ -1515,7 +1515,7 @@ static void idleGL(void)
         var.set("dxPanelHelp", panelHelp->getDX() );
         var.set("dyPanelHelp", panelHelp->getDY() );
         
-        //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
+        //if ( panelStdOut->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
 
     if ( panelCourbe->getHaveMove() )
@@ -1527,7 +1527,7 @@ static void idleGL(void)
         var.set("dxPanelCourbe", panelCourbe->getDX() );
         var.set("dyPanelCourbe", panelCourbe->getDY() );
         
-        //if ( panelStdOutW->getX() != 0 )    alertBox("xPanelStdOut != 0");
+        //if ( panelStdOut->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
     //-----------------------------------------------------------------------
     // Mise a jour des buffers de la camera
@@ -2620,8 +2620,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
         {
         bPanelStdOut = !bPanelStdOut;
         var.set("bPanelStdOut", bPanelStdOut);
-        panelStdOutW->setVisible(bPanelStdOut);
-        if ( bPanelStdOut )       WindowsManager::getInstance().onTop(panelStdOutW);
+        panelStdOut->setVisible(bPanelStdOut);
+        if ( bPanelStdOut )       WindowsManager::getInstance().onTop(panelStdOut);
         //log( (char*)"Toggle panelStdOut !!!" );
         }
         break;
@@ -2833,7 +2833,6 @@ void setColor()
     PanelConsoleSerial::getInstance().getConsole()->setColor(color);
 
     panelStdOut->setColor(color);
-    panelStdOutW->setColor(color);
     panelHelp->setColor(color);
     panelCourbe->setColor(color);
     panelStatus->setColor(color);
@@ -2849,7 +2848,7 @@ void setColor()
 void onTop()	
 {
     WindowsManager& wm = WindowsManager::getInstance();
-    wm.onTop(panelStdOutW);
+    wm.onTop(panelStdOut);
     wm.onTop(panelStatus);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3150,6 +3149,8 @@ static void CreateStatus()	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateStdOut()	{
+	panelStdOut = new PanelStdOut();
+    /*
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	int x=10;
@@ -3167,20 +3168,20 @@ static void CreateStdOut()	{
     if ( y<= 0 )        y = 10;
     if ( dy<= 100 )     dy = 400;
 
-	panelStdOutW = new PanelWindow();
-    panelStdOutW->setDisplayGL(displayGLnuit_cb);
+	panelStdOut = new PanelWindow();
+    panelStdOut->setDisplayGL(displayGLnuit_cb);
 
 	panelStdOut = new PanelScrollText(dy/13+1,50);
 	//panelStdOut->setPrompt(string(">"));
 
-	panelStdOutW->setPosAndSize( x, y, dx, dy );
- 	panelStdOutW->setVisible(bPanelStdOut);
+	panelStdOut->setPosAndSize( x, y, dx, dy );
+ 	panelStdOut->setVisible(bPanelStdOut);
 
 	panelStdOut->setPosAndSize( 0, 0, dx, dy );
 
 
- 	wm.add( panelStdOutW );
- 	panelStdOutW->add( panelStdOut );
+ 	wm.add( panelStdOut );
+ 	panelStdOut->add( panelStdOut );
 
  	panelStdOut->setBackground((char*)"images/background.tga");
  	panelStdOut->setTabSize(20);
@@ -3188,6 +3189,7 @@ static void CreateStdOut()	{
     string st = string("Bonjour\n");
        
     logf((char*)"** CreateStdOut()  panelStdOut  %d,%d %dx%d", x, y, dx, dy);
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3295,7 +3297,7 @@ void log_tab( bool b)
 void log( char* chaine )
 {
     string aff = sTab + string(chaine);
-    if ( panelStdOut && bStdOut )          panelStdOut->affiche( aff.c_str() );
+    if ( panelStdOut && bStdOut )          panelStdOut->affiche( (char*)aff.c_str() );
     
     printf( "log : %s\n", aff.c_str() );
 }
@@ -3573,12 +3575,12 @@ void init_var()
     var.set("ySuivi", ySuivi);
     
     /*
-    var.set("xPanelStdOut",  panelStdOutW->getX() );
-    var.set("yPanelStdOut",  panelStdOutW->getY() );
-    var.set("dxPanelStdOut", panelStdOutW->getDX() );
-    var.set("dyPanelStdOut", panelStdOutW->getDY() );
+    var.set("xPanelStdOut",  panelStdOut->getX() );
+    var.set("yPanelStdOut",  panelStdOut->getY() );
+    var.set("dxPanelStdOut", panelStdOut->getDX() );
+    var.set("dyPanelStdOut", panelStdOut->getDY() );
     */
-    //if ( panelStdOutW->getX() == 0 )    bAlert = true;
+    //if ( panelStdOut->getX() == 0 )    bAlert = true;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3601,7 +3603,7 @@ void charge_var()
     if (panelResultat)  panelResultat->setVisible( bPanelResultat );
     
     bPanelStdOut        = var.getb( "bPanelStdOut" );
-    if (panelStdOutW)   panelStdOutW->setVisible( bPanelStdOut );
+    if (panelStdOut)   panelStdOut->setVisible( bPanelStdOut );
     
     
     bPanelSerial        = var.getb( "bPanelSerial" );

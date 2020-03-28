@@ -125,7 +125,7 @@ void call_back_up(PanelButton* pPanel)
 	{
         bPanelStdOut = !bPanelStdOut;
         var.set("bPanelStdOut", bPanelStdOut);
-        panelStdOutW->setVisible(bPanelStdOut);
+        panelStdOut->setVisible(bPanelStdOut);
         logf( (char*)"Toggle panelStdOut !!!" );
 
         inverse_texture( pPanel, bPanelStdOut, "" );
