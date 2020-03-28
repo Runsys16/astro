@@ -61,6 +61,8 @@ void PanelStdOut::displayGL(void)
 void PanelStdOut::updatePos(void)
 {
     //cout << "PanelStdOut::updatePos" << endl;
+    int h = pScroll->getHeightLine() + 3;
+    if ( getDY() < h )              setSize(getPosDX(), h);
     PanelWindow::updatePos();
 	pScroll->setSize( getDX(), getDY() );
 	pScroll->updatePos();

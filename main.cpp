@@ -2702,7 +2702,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     //WindowsManager::getInstance().onBottom(panelPreView);
     if ( panelStatus->isMouseOver(x, y) )
     {
-        logf( (char*)"Souris sur la barre de status" );
+        //logf( (char*)"Souris sur la barre de status" );
         return;
     }
 
