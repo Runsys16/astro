@@ -488,41 +488,6 @@ void ferme_file_browser()
 {
     FileBrowser::getInstance().cache();    
 }
-int timePentax = 1;
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-thread thread_pentax;
-void fonction_pentax()
-{
-    string filename = " -o /home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/test";
-    string iso = " -i 400";
-    string stime = " -t " + to_string(timePentax);
-    string frames = " -F 1";
-    string timeout = " --timeout=3";
-    string focus = " -f";
-    string command = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli";
-    command = command + filename + iso + stime + timeout;
-    //command = command + stime + focus + timeout + filename;
-    logf( (char*) command.c_str() );
-
-   
-    int ret = system( (char*) command.c_str() );
-    if ( ret != 0 )
-    {
-        string mes = "Erreur de commande Pentax Valeur retourne : " +  to_string(ret);
-        alertBox(mes);
-        logf( (char*)mes.c_str() );
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void photo()
-{
-    thread(fonction_pentax).detach();
-   
-}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1733,10 +1698,10 @@ static void initGL(int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 static void rotateVisible()
 {
-    Panel*  pFocus = WindowsManager::getInstance().getFocus();
+    Panel*  pCapture = WindowsManager::getInstance().getCapture();
 
-    if ( pFocus == panelHelp)       pFocus->setVisible(!pFocus->getVisible());
-    //if ( pFocus == panelControl)    pFocus->setVisible(!pFocus->getVisible());
+    if ( pCapture == panelHelp)       pCapture->setVisible(!pCapture->getVisible());
+    //if ( pCapture == panelControl)    pCapture->setVisible(!pCapture->getVisible());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2079,7 +2044,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         compute_matrix();
         
-        bMouseDeplace = true;
+        //bMouseDeplace = true;
         }
         break;
 
@@ -2215,19 +2180,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'I':
     case 'J':
     case 'j':
-        break;
     case 'k':
+        break;
+    case 'K':
         {
         bSound = !bSound;
         logf( (char*)"Key (k) : Active/desactive le son  %s ", BOOL2STR(bSound) );
         var.set( "bSound", bSound );
         }
         break;
-    case 'K':
-        logf( (char*)"Key (K) : Prend une photo" );
-        photo();
-        break;
-
     case 'l':
         {            
         logf( (char*)"Key (l) : Affiche les connexions" );
@@ -2339,12 +2300,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'O':
         {
-        logf( (char*)"Key (O) : AutorisationSuivi");
     	bModeManuel = !bModeManuel;
-        logf( (char*)"  !bModeManuel = %s", BOOL2STR(!bModeManuel) );
-        var.set("bModeManuel", !bModeManuel);
+        logf( (char*)"Key (O) : Mode manuel (%s)", BOOL2STR(bModeManuel) );
+        var.set("bModeManuel", bModeManuel);
 
-        if (!bModeManuel)         pMode->changeText((char*)"Mode suivi");
+        if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
         else                            pMode->changeText((char*)"Mode souris");
         }
     	break;
@@ -2373,7 +2333,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         Py_Finalize();
         }
         break;
-
 
     case 'Q':
         {
@@ -2744,14 +2703,14 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     }
 
     PanelWindow*    pPreviewCam = NULL;
-    Panel *         pFocus = NULL;
+    Panel *         pCapture = NULL;
     Panel*          pMouseOver = NULL;
 
     Camera_mgr& mgr = Camera_mgr::getInstance(); 
     if ( mgr.getCurrent() != NULL  &&  mgr.getCurrent()->getPanelPreview() != NULL )
     {
         pPreviewCam = mgr.getCurrent()->getPanelPreview();
-        pFocus      = wm.getFocus();
+        pCapture      = wm.getCapture();
         pMouseOver  = wm.findPanelMouseOver(x, y);
     }
     
@@ -3051,8 +3010,8 @@ static void CreateHelp()
 	addString( "   L\t: List les variables");
 	addString( "   w\t: Centre le joystick");
 	addString( "   W\t: Surveille un repertoire");
-	addString( "   K\t: Prend une photo sur le pentax");
-	addString( "   k\t: Active/desactive le son");
+	addString( "   i\t: Prend une photo sur le pentax");
+	addString( "   K\t: Active/desactive le son");
 	addString( "   n\t: Affiche/cache les images (F7)");
 	addString( "   N\t: Mode nuit on/off");
 	addString( "   q\t: Lance un script python");
@@ -3163,7 +3122,7 @@ static void CreateStatus()	{
 	if (bMouseDeplace)              pDeplacement->changeText((char*)"Deplacement");
     else                            pDeplacement->changeText((char*)"----");
 
-	if (!bModeManuel)         pMode->changeText((char*)"Mode suivi");
+	if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
     else                            pMode->changeText((char*)"Mode souris");
 
     if (bCorrection)                pAsservi->changeText((char*)"Asservissemnent");
@@ -3790,7 +3749,7 @@ int main(int argc, char **argv)
     inverse_texture( pButtonStdOut,  bPanelStdOut,       "" );
     inverse_texture( pButtonHelp,    bPanelHelp,         "help" );
     inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
-    inverse_texture( pButtonMode,    !bModeManuel, "cible" );
+    inverse_texture( pButtonMode,    bModeManuel,        "cible" );
 
     panelCourbe->get_vOrigine().x = xSuivi;
     panelCourbe->get_vOrigine().y = ySuivi;

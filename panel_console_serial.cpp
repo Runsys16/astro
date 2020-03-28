@@ -57,7 +57,7 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
 {
     WindowsManager& wm = WindowsManager::getInstance();
 
-    Panel* p = wm.getFocus();
+    Panel* p = wm.getCapture();
     /*
     if      ( p == pc )              logf( (char*)"PanelConsoleSerial::keyboard() focus panel console" );
     else if ( p == pw )              logf( (char*)"PanelConsoleSerial::keyboard() focus panel window" );

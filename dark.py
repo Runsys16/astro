@@ -23,15 +23,16 @@ from time import sleep
 
 import os
 
-filename = " -o /home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/m101-dark"
+filename = " -o /home/rene/Documents/astronomie/capture/2020-03-27/triplet du lion/triplet"
 iso = " -i 800"
-stime = " -t 180"
-frames = " -F 12"
+stime = " -t 120"
+frames = " -F 20"
 timeout = " --timeout=3"
-focus = " -f";
+form = " --timeout=3"
+focus = " --file_format=DNG";
 cmd = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli"
 
-command = cmd + filename + iso + stime + timeout + frames
+command = cmd + filename + iso + stime + timeout + frames + form
 
 os.system( command );
 

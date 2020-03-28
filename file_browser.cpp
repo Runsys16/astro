@@ -325,7 +325,7 @@ void FileBrowser::affiche()
 
     pW->setVisible(true);
     wm.onTop( pW );
-    wm.changeFocus( panelFilename );
+    wm.changeCapture( panelFilename );
 
     if ( !wm.is_call_back_keyboard( panelFilename ) )
     {
@@ -353,7 +353,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
 {
     //logf( (char*)"Traitement FileBrowser::keyboard()" );
     WindowsManager& wm = WindowsManager::getInstance();
-    Panel* p = wm.getFocus();
+    Panel* p = wm.getCapture();
     
     if ( p != panelFilename )
     {

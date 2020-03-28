@@ -75,8 +75,8 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
         vector<string> vff = split( f, "/" );
         
         int n = vff.size();
-        dirname = "/";
-        basename;
+        //dirname = "/";
+        //basename;
         int i;
 
         for ( i=0; i<(n-1); i++ )
@@ -86,10 +86,11 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
 
         basename = string(vff[i]);
         filename = dirname + basename;
-        logf( (char*)"  charge(%s, %s )", (char*)dir.c_str(), (char*)basename.c_str() );
-        dirname = dir;
+        logf( (char*)"  charge(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
+        //dirname = dir;
 
         //iState = 0;
+        sleep(1);
         bCharge = true;
     }
 }
@@ -122,6 +123,7 @@ void Surveillance::thread_surveille( string dir )
     if (wd == -1)               logf( (char*)"[ERREUR] inotify_add_watch");
 
     logf( (char*)"  Watching '%s' using wd = %d", (char*)dir.c_str(), wd);
+    //dirname = string( dir );
 
     while(bRun) {                                  /* Read events forever */
         numRead = read(inotifyFd, buf, BUF_LEN);
@@ -147,6 +149,7 @@ void Surveillance::thread_surveille( string dir )
 //--------------------------------------------------------------------------------------------------------------------
 void Surveillance::start(string dir)
 {
+    dirname = string( dir );
     bRun = true;
     th = std::thread(&Surveillance::thread_surveille, this, dir);
     th.detach();
