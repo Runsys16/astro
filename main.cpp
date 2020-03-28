@@ -1621,7 +1621,7 @@ static void idleGL(void)
 	    fTimeCpt += elapsedTime;
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCpt );
 	    //if ( bCorrection && fTimeCpt > 0.0 && !bModeManuel)
-	    if ( bCorrection && fTimeCpt > 0.0 && bSuivi)
+	    if ( bCorrection && fTimeCpt > 0.0 )
 	    {
             fTimeCpt -= fTimeCorrection;
             if ( fTimeCpt > 0.0 )    fTimeCpt = 0.0;//-= fTimeCorrection;
@@ -1633,24 +1633,28 @@ static void idleGL(void)
 	            //float dy = ySuivi - panelCourbe->get_vOrigine().y;
 	            float dx = xSuivi - pv->x;
 	            float dy = ySuivi - pv->y;
-                logf( (char*)" Asservissement delta(%0.2f, %0.2f)", dx, dy );
+                //logf( (char*)" Asservissement delta(%0.2f, %0.2f)", dx, dy );
 	            
 	            if ( fabs(dx) > panelCourbe->get_err() || fabs(dy) > panelCourbe->get_err() )
 	            {
 	                vec3 w = vec3( xSuivi, ySuivi, 0.0);
-	                //vec3 v = panelCourbe->get_vOrigine() - w;
 	                vec3 v = w - vec3( pv->x, pv->y, 0.0);
+	                float l = v.length();
 
-                    logf( (char*)"  delta(%0.2f, %0.2f)", v.x, v.y );
+	                if ( l > 80.0 )
+	                    logf( (char*)"[ASSERVISSEMENT]Attention  l=%0.2f", l ); 
+
                     vec3 res = mChange * v;
                     int ad = (int) (res.x * -1000.0);
                     int dc = (int) (res.y * 1000.0);
                     char cmd[255];
                     sprintf( cmd, "a%dp;d%dp", ad, dc );
-                    logf( (char*)" main.cpp (Asservissement=>) '%s'",  cmd );
+                    logf( (char*)"Asservissement cmd='%s' delta(%0.2f,%0.2f) l=%0.2f",  
+                                  cmd, v.x, v.y, l );
 
-                    if ( !bMouseDeplace )
+                    if ( !bMouseDeplace ) {
                         Serial::getInstance().write_string(cmd);
+                    }
 	            }
             }
 	    }
