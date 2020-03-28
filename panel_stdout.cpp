@@ -16,6 +16,7 @@ PanelStdOut::PanelStdOut()	{
     dx = var.geti("dxPanelStdOut");
     dy = var.geti("dyPanelStdOut");
 
+    logf( (char*)"dy=%d", dy );
     if ( x<= 0 )        x = 10;
     if ( dx<= 10 )      dx = 350;
     if ( y<= 0 )        y = 10;
@@ -60,9 +61,9 @@ void PanelStdOut::displayGL(void)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelStdOut::updatePos(void)
 {
-    //cout << "PanelStdOut::updatePos" << endl;
+    //cout << "PanelStdOut::updatePos DY="<< getPosDY() << endl;
     int h = pScroll->getHeightLine() + 3;
-    if ( getDY() < h )              setSize(getPosDX(), h);
+    if ( getPosDY() < h )              setSize(getPosDX(), h);
     PanelWindow::updatePos();
 	pScroll->setSize( getDX(), getDY() );
 	pScroll->updatePos();

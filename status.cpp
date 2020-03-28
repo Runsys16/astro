@@ -9,11 +9,11 @@ PanelCheckBox *     pButtonDec;
 PanelCheckBox *     pButtonJoy;
 PanelCheckBox *     pButtonSui;
 PanelCheckBox *     pButtonRet;
+PanelCheckBox *     pButtonMode;
 
 PanelButton *       pFlecheHaut;
 PanelButton *       pFlecheBas;
 
-PanelButton *       pButtonMode;
 PanelCheckBox *     pButtonAsserv;
 
 void inverse_texture(PanelButton *, bool, string);
@@ -42,6 +42,20 @@ void set_asservissement(void)
     pButtonAsserv->setVal(bCorrection);
     
     logf( (char*)"asservissement = %s", bCorrection?(char*)"true":(char*)"false" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void set_mode(void)
+{
+    var.set("bModeManuel", bModeManuel);
+
+    if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
+    else                            pMode->changeText((char*)"Mode souris");
+   
+    pButtonMode->setVal(bModeManuel);
+    
+    logf( (char*)"bModeManuel = %s", bModeManuel?(char*)"true":(char*)"false" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -173,18 +187,6 @@ void call_back_up(PanelButton* pPanel)
 
         inverse_texture( pPanel, bPanelCourbe, "courbe" );
 	}
-	else
-	if ( pPanel == pButtonMode )
-	{
-    	bModeManuel = !bModeManuel;
-        var.set("bModeManuel", bModeManuel);
-
-        if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
-        else                            pMode->changeText((char*)"Mode souris");
-
-        inverse_texture( pPanel, bModeManuel, "cible" );
-
-	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -234,6 +236,13 @@ void cb_rotationCheck(PanelCheckBox* p)	{
         logf( (char*)"Appui sur cadena !! %s %s", BOOL2STR(bCorrection), BOOL2STR(pButtonAsserv->getVal())  );
         set_asservissement();
     }
+	else
+	if ( p == pButtonMode )
+	{
+    	bModeManuel = !bModeManuel;
+        var.set("bModeManuel", bModeManuel);
+        set_mode();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -323,10 +332,8 @@ void create_windows_button()
     pButtonStdOut   = create_window_button( 4, "" );
     pButtonSerial   = create_window_button( 5, "arduino" );
 
-    pButtonMode     = create_window_button( 7, "cible" );
-
+    pButtonMode     = create_window_check_box( 7, "cible" );
     pButtonAsserv   = create_window_check_box( 8, "cadena" );
-    
     pButtonAsc      = create_window_check_box( 10, "asc" );
     pButtonDec      = create_window_check_box( 11, "dec" );
     pButtonJoy      = create_window_check_box( 12, "joy" );
@@ -364,8 +371,17 @@ void idleStatus()
     }
     
     //change_joy( xSuivi, ySuivi );
+    //-----------------------------------------------------------------------
+    // Gestion de apause
+    //-----------------------------------------------------------------------
+    if (bModeManuel || bOneFrame )    {
+        Camera_mgr::getInstance().change_background_camera();
+        if (bOneFrame)      { updatePanelPause(true); }
+        bOneFrame = false;
+    }
     
-    if ( bCorrection != pButtonAsserv->getVal() )    set_asservissement();
+    if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
+    if ( bModeManuel != pButtonMode->getVal() )     set_mode();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

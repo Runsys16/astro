@@ -110,6 +110,7 @@ void Star::setRB(rb_t* p)
     width =         p->w;
     height =        p->h;
     RB =            p;
+    //logf((char*)"w x h (%d, %d)", width, height );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -202,9 +203,24 @@ float Star::getLumLimit(int offset, float limit )
     
     try
     {
+        
         r = ptr[offset+0]; 
         g = ptr[offset+1]; 
         b = ptr[offset+2]; 
+        /*
+        if ( bInverseCouleur )
+        {
+            r = 255.0-ptr[offset+0]; 
+            g = 255.0-ptr[offset+1]; 
+            b = 255.0-ptr[offset+2]; 
+        }
+        else
+        {
+            r = ptr[offset+0]; 
+            g = ptr[offset+1]; 
+            b = ptr[offset+2]; 
+        }
+        */
     }
     catch ( const std::exception& e )
     {
@@ -213,6 +229,8 @@ float Star::getLumLimit(int offset, float limit )
     }
 
     float l = 0.33 * r + 0.5 * g  + 0.16 * b;
+    if ( bInverseCouleur )   l = 255.0 - l;
+    
     if ( l<limit )       l = 0.0;
 
     return l;
@@ -774,27 +792,30 @@ void Star::displayGL()
 {
     //logf( (char*)"Star::displayGL()" );
     //glCroix(20,20);
+
     if ( bNuit )        glColor4f( 0.3,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
+    
+    if (bInverseCouleur)glColor4f( 0.0,   0.0,  0.0, 1.0 );
 
     glMark(ech*40, ech*40);
-    glCercle( ech*computeRayon() + 4 );
+    glCercle( ech*(computeRayon() + 4) );
     
     if ( bZoom )      
     {
         glColor4f( 1.0,  1.0,  0.0, 1.0 );
-        glCarre( ech*computeRayon() + 4 +10 );
+        glCarre( ech*(computeRayon() + 4 +10) );
     }
     else if ( bSelect )      
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
-        glCarre( ech*computeRayon() + 4 +10 );
+        glCarre( ech*(computeRayon() + 4 +10) );
     }
 
     if ( bSuivi )      
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
-        glCercle( 1.5*ech*computeRayon() + 4 +10 );
+        glCercle( 1.5*ech*(computeRayon() + 4 +10) );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

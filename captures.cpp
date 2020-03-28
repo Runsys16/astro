@@ -480,8 +480,8 @@ void Captures::sauve(void)
         string key = "FileCapture" + to_string(no++);
         if ( var.existe( key ) )
         {
+            logf( (char*)"Suppression de la var[\"%s\"]", key.c_str() );
             var.erase( key );
-            logf( (char*)" suppression de  %s", key.c_str() );
         }
         else
         {
@@ -495,7 +495,7 @@ void Captures::sauve(void)
     {
         string key = "FileCapture" + to_string(i);
         var.set( key, captures[i]->getFilename() );
-        logf( (char*)" %s : %s", key.c_str(), captures[i]->getFilename().c_str() );
+        logf( (char*)"Creation de var[\"%s\"]", key.c_str() );// captures[i]->getFilename().c_str() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

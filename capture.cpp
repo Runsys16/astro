@@ -122,12 +122,23 @@ Capture::Capture(string f )
 Capture::~Capture()
 {
     logf((char*)"Destructeur Capture() -----------" );
+    log_tab(true);
+
+    pW->sup(pTitre);
+    pW->sup(panelPreview);
+    pW->sup(pNbStars);
 
 	WindowsManager::getInstance().sup( pW );
+	
 	delete pTitre;
+	delete pNbStars;
 	delete panelPreview;
 	delete pW;
+	
 	filenames.clear();
+
+    log_tab(false);
+    logf((char*)"Destructeur Capture() -----------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

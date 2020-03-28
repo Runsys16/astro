@@ -404,6 +404,7 @@ void Camera::CreateControl()	{
 
     log_tab(false);
     logf((char*)"Camera::CreateControl() --------------- %s", getDevName() );
+    panelControl->setVisible(false);
     //logf((char*)"panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
 }
 //--------------------------------------------------------------------------------------------------------------------

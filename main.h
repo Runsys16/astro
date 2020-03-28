@@ -97,6 +97,8 @@ typedef struct readBackground       rb_t;
     extern bool                     bAffTrace;
     extern bool                     bRecTrace;
     extern vec4                     colorTraces[];
+
+    extern bool                     bInverseCouleur;
     
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;
@@ -284,6 +286,7 @@ int                 main(int argc, char **argv);
 //  satatus.cpp
 //
 void set_asservissement(void);
+void set_mode(void);
 void inverse_texture(PanelButton *, bool, string);
 void set_courbe();
 

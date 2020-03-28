@@ -139,6 +139,7 @@ bool                bSimu          = false;
 bool                bAffCentre     = false;
 bool                bAffSuivi      = true;
 bool                bSound         = true;
+bool                bInverseCouleur= false;
 
 int                 wImg;
 int                 hImg;
@@ -2181,10 +2182,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 panelApn->setVisible( !panelApn->getVisible() );
         }
         break;
-    case 'I':
     case 'J':
     case 'j':
     case 'k':
+        break;
+    case 'I':
+        {
+        bInverseCouleur = !bInverseCouleur;
+        logf( (char*)"Key (I) : Inversion de couleur on/off  %s ", BOOL2STR(bInverseCouleur) );
+        var.set( "bInverseCouleur", bInverseCouleur );
+        }
         break;
     case 'K':
         {
@@ -2306,10 +2313,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
     	bModeManuel = !bModeManuel;
         logf( (char*)"Key (O) : Mode manuel (%s)", BOOL2STR(bModeManuel) );
-        var.set("bModeManuel", bModeManuel);
-
-        if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
-        else                            pMode->changeText((char*)"Mode souris");
+        set_mode();
         }
     	break;
 
@@ -3150,46 +3154,6 @@ static void CreateStatus()	{
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateStdOut()	{
 	panelStdOut = new PanelStdOut();
-    /*
-	WindowsManager& wm = WindowsManager::getInstance();
-
-	int x=10;
-	int y=50;
-	int dx=350;
-	int dy=400;
-
-    x = var.geti("xPanelStdOut");
-    y = var.geti("yPanelStdOut");
-    dx = var.geti("dxPanelStdOut");
-    dy = var.geti("dyPanelStdOut");
-
-    if ( x<= 0 )        x = 10;
-    if ( dx<= 100 )     dx = 350;
-    if ( y<= 0 )        y = 10;
-    if ( dy<= 100 )     dy = 400;
-
-	panelStdOut = new PanelWindow();
-    panelStdOut->setDisplayGL(displayGLnuit_cb);
-
-	panelStdOut = new PanelScrollText(dy/13+1,50);
-	//panelStdOut->setPrompt(string(">"));
-
-	panelStdOut->setPosAndSize( x, y, dx, dy );
- 	panelStdOut->setVisible(bPanelStdOut);
-
-	panelStdOut->setPosAndSize( 0, 0, dx, dy );
-
-
- 	wm.add( panelStdOut );
- 	panelStdOut->add( panelStdOut );
-
- 	panelStdOut->setBackground((char*)"images/background.tga");
- 	panelStdOut->setTabSize(20);
-
-    string st = string("Bonjour\n");
-       
-    logf((char*)"** CreateStdOut()  panelStdOut  %d,%d %dx%d", x, y, dx, dy);
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3670,6 +3634,7 @@ void charge_var()
     if ( var.existe("bAffSuivi") )      bAffSuivi   = var.getb("bAffSuivi");
     if ( var.existe("bAffCentre") )     bAffCentre  = var.getb("bAffCentre");
     if ( var.existe("bSound") )         bSound      = var.getb("bSound");
+    if ( var.existe("bInverseCouleur")) bInverseCouleur = var.getb("bInverseCouleur");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3751,11 +3716,12 @@ int main(int argc, char **argv)
     
     CreateAllWindows();
     set_asservissement();
+    set_mode();
     inverse_texture( pButtonSerial,  bPanelSerial,       "arduino" );
     inverse_texture( pButtonStdOut,  bPanelStdOut,       "" );
     inverse_texture( pButtonHelp,    bPanelHelp,         "help" );
     inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
-    inverse_texture( pButtonMode,    bModeManuel,        "cible" );
+    //inverse_texture( pButtonMode,    bModeManuel,        "cible" );
 
     panelCourbe->get_vOrigine().x = xSuivi;
     panelCourbe->get_vOrigine().y = ySuivi;
