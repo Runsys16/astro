@@ -694,26 +694,20 @@ void Star::set_delta(float xx, float yy)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::updatePos(int X, int Y, float e)
 {
-    //logf( (char*)"Star::updatePos(int %d, int %d, float %f)", X, Y, e );
-    //dx_screen = X;
-    //dy_screen = Y;
-    
     ech = e;
     x_screen = e*(pos.x+0.5) + (float)X;
     y_screen = e*(pos.y+0.5) + (float)Y;
     
-    pInfo->setPos( e*x + 8, e*y + 8 );
+    pInfo->setPos( (x+8)*ech + dx_screen, (y+8)*ech + dy_screen );
     pInfo->updatePos();
+
     if (panelZoom!=NULL)
     {
-        //logf( (char*)"-------------" );
         panelZoom->setRB( RB );
         float xx = 1.0 * x;
         float yy = 1.0 * y;
         panelZoom->setPosStar(pos.x, pos.y);
-        //logf( (char*)"Appel de setPosAndSize() x,y(%d, %d)", x, y );
         panelZoom->setPosAndSize( (x+40)*ech + dx_screen, (y+40)*ech + dy_screen, 200, 200 );
-        //logf( (char*)"-------------" );
         panelZoom->updatePos();
     }
 }

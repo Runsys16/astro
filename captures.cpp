@@ -154,6 +154,7 @@ void Captures::resize_normal(Capture* p, int dx, int dy)
 void Captures::resize_all()
 {
     logf( (char*)"Captures::resize_all" );
+    log_tab(true);    
     //if ( captures.size() == 0 )             return;
     
 
@@ -234,6 +235,8 @@ void Captures::resize_all()
             //logf( (char*)"  %d icone %s", i, captures[i]->getIcone() ? (char*)"true":(char*)"false" );
         }        
     } 
+    log_tab(false);    
+    logf( (char*)"Captures::resize_all" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

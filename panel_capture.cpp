@@ -329,6 +329,8 @@ void PanelCapture::clickMiddle(int xm, int ym)
     ym_old = ym;
     logf( (char*)"PanelCapture::clickMiddle(%d,%d) ...", xm, ym );
     Captures::getInstance().setCurrent( pCapture );
+
+    bHaveMove = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -349,6 +351,8 @@ void PanelCapture::motionMiddle(int xm, int ym)
     
     xm_old = xm;
     ym_old = ym;
+    
+    bHaveMove = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -370,15 +374,19 @@ void PanelCapture::releaseMiddle(int xm, int ym)
     int xx = ((float)xm-(float)getX()) / e;
     int yy = ((float)ym-(float)getY()) / e;
     
-    stars.setView( this );
-    stars.setRB( pReadBgr );
-    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+    if ( !bHaveMove )
     {
-        stars.selectStar(xx, yy);
-        logf( (char*)" releaseMiddle(%d,%d) selects star...", xm, ym );
+        stars.setView( this );
+        stars.setRB( pReadBgr );
+        if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+        {
+            stars.selectStar(xx, yy);
+            logf( (char*)" releaseMiddle(%d,%d) selects star...", xm, ym );
+        }
+        else
+            stars.selectStar(xx, yy);
     }
-    else
-        stars.selectStar(xx, yy);
+    bHaveMove = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

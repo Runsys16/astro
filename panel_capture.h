@@ -22,6 +22,7 @@ protected:
     float               dx;
     float               dy;
     bool                bIcone;
+    bool                bHaveMove;
     
     int                 xm_old;
     int                 ym_old;

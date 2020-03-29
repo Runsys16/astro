@@ -1728,11 +1728,14 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
+		    /*
             logf( (char*)"-------------- Touche CTRL+TAB" );
+    	    logf( (char*)"Key (TAB) : ByeBye !!" );
 	        Camera* pCurrent = cam_mgr.getCurrent();
 	        cam_mgr.active();
 
             getSuiviParameter();
+            */
         }
 		break;
     default:
@@ -1854,10 +1857,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
 		{
-        logf( (char*)"Key (TAB) : Image suivante/(shift)precedente" );
+		
+        //logf( (char*)"Key (TAB) : Image suivante/(shift)precedente" );
     	if (modifier == GLUT_ACTIVE_CTRL)
     	{
-            logf( (char*)"-------------- Touche CTRL+TAB" );
+            logf( (char*)"Key (ctrl+TAB) : Camera suivante" );
 	        Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 	        cam_mgr.active();
 
@@ -1866,7 +1870,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	}
     	else if (modifier == GLUT_ACTIVE_SHIFT)
     	{
-            logf( (char*)"-------------- Touche SHIFT+TAB" );
+            logf( (char*)"Key (Shift+TAB) : Image precedente" );
             //Captures::getInstance().showIcones();
 	        Captures::getInstance().rotate_capture_moins(false);
             break;
@@ -1876,10 +1880,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             logf( (char*)"-------------- Touche ALT+TAB" );
             break;
     	}
+    	else
+    	{
 
-        logf( (char*)"-------------- Touche TAB" );
-        //Captures::getInstance().showIcones();
-        Captures::getInstance().rotate_capture_plus(false);
+            logf( (char*)"Key (TAB) : Image suivante" );
+            Captures::getInstance().rotate_capture_plus(false);
+        }
+                
         }
 		break;
 	// CTRL J  LF
@@ -1908,20 +1915,24 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	{
             //Captures::getInstance().showIcones();
 	        //Captures::getInstance().rotate_capture_plus(true);
+            logf( (char*)"Key (2) : Image precedente" );
+            log_tab(true);
 	        Captures::getInstance().rotate_capture_moins(false);
+            log_tab(false);
     	}
     	break;
     // touche '-'
     case 45:
     	{
-        logf( (char*)"Key (2) : Image precedente" );
-        Captures::getInstance().rotate_capture_moins(true);
+            logf( (char*)"Key (-) : Image icones" );
+            Captures::getInstance().rotate_capture_moins(true);
     	}
 	    break;
     
     case 126:
     	{
            // Captures::getInstance().showIcones();
+            logf( (char*)"Key (126) : Image precedente" );
 	        Captures::getInstance().rotate_capture_moins(true);
     	}
 	    break;
@@ -2319,8 +2330,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'p':  // '-'
         {
-        logf( (char*)"Key (p) : Pause on/off");
         updatePanelPause(!bPause);
+        logf( (char*)"Key (p) : Pause on/off (%s)", BOOL2STR(bPause));
         }
         break;
 
@@ -2343,6 +2354,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 
     case 'Q':
+        /*
         {
         logf( (char*)"Key (Q) : Ouvre un fichier fits (.fits)");
         FileBrowser::getInstance().setCallBack(&cb_fits);
@@ -2350,6 +2362,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         FileBrowser::getInstance().change_dir( workDirFits );
         FileBrowser::getInstance().affiche();
         }
+        */
         break;
     case 'r' :
         {
