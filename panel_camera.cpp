@@ -1,4 +1,5 @@
 #include "panel_camera.h"
+//#include "camera_mgr.h"
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -296,23 +297,38 @@ void PanelCamera::displaySuivi()
     //logf( (char*)"Screen (%0.2f,%0.2f)  texture(%0.2f,%0.2f)", wSc, hSc, wTex, hTex );
     //logf( (char*)"     suivi (%0.2f,%0.2f) -> (%0.2f,%0.2f)", xSuivi, ySuivi, x, y );
 
+    //-----------------------------------------------------------------------------
     //      Affichage en mode nuit ?
     if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );
     else                glColor4f( 0.5,   0.4,  0.5, gris );    
-    
-    //      Affichage de la croix
-	glBegin(GL_LINES);
+    //----- Affichage de la croix   ----------------------------------------------
+	glBegin(GL_LINES);   
         
         glVertex2i(x-50,y);             glVertex2i(x+50, y );
         glVertex2i(x,y-50);             glVertex2i(x, y+50 );
 
     glEnd();
-    
+    //-----------------------------------------------------------------------------
     if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
     else                glColor4f( 0.0,   0.0,  1.0, 0.2 );
 
     glCercle( x, y, echelle*(fLimitCorrection) );
+    //-----------------------------------------------------------------------------
+    if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
+    else                glColor4f( 0.5,   0.2,  1.0, 0.6 );
 
+    //vec2* pv = Camera_mgr::getInstance().getSuivi();
+    vec2* pv = getSuivi();
+    if ( pv != NULL )
+    {
+	    glBegin(GL_LINES);
+            glVertex2i(x, y);                  
+            x = pv->x;
+            y = pv->y;
+            tex2screen( x, y );
+            glVertex2i(x, y );
+        glEnd();
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
