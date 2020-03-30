@@ -210,6 +210,7 @@ vec3                vTr;
 bool                bCorrection = false;
 float               fTimeCorrection = 3.0;
 float               fTimeCpt = 0.0;
+float               fLimitCorrection = 80.0;
 //float               err = 2.0;
 //#define err         err
 //--------------------------------------------------------------------------------------------------------------------
@@ -1642,7 +1643,7 @@ static void idleGL(void)
 	                vec3 v = w - vec3( pv->x, pv->y, 0.0);
 	                float l = v.length();
 
-	                if ( l > 80.0 )
+	                if ( l > fLimitCorrection )
 	                    logf( (char*)"[WARNING]Suivi l=%0.2f", l ); 
 
                     if ( !bMouseDeplace && Serial::getInstance().getFree() ) {
@@ -2198,16 +2199,30 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 panelApn->setVisible( !panelApn->getVisible() );
         }
         break;
-    case 'J':
-    case 'j':
-    case 'k':
-        break;
+
     case 'I':
         {
         bInverseCouleur = !bInverseCouleur;
         logf( (char*)"Key (I) : Inversion de couleur on/off  %s ", BOOL2STR(bInverseCouleur) );
         var.set( "bInverseCouleur", bInverseCouleur );
         }
+        break;
+	case 'j':
+		{
+    		fLimitCorrection *= 0.9f;
+            logf( (char*)"Key (j) : Diminue La limite de correction : %0.2f", fLimitCorrection );
+            var.set("fLimitCorrection", (float)fLimitCorrection);
+        }
+		break;
+	case 'J':
+		{
+    		fLimitCorrection /= 0.9f;
+            logf( (char*)"Key (J) : Diminue La limite de correction : %0.2f", fLimitCorrection );
+            var.set("fLimitCorrection", (float)fLimitCorrection);
+        }
+		break;
+
+    case 'k':
         break;
     case 'K':
         {
@@ -3555,6 +3570,8 @@ void init_var()
 
     var.set("xSuivi", xSuivi);
     var.set("ySuivi", ySuivi);
+
+    var.set( "fLimitCorrection", (float)80.0);
     
     /*
     var.set("xPanelStdOut",  panelStdOut->getX() );
@@ -3653,6 +3670,7 @@ void charge_var()
     if ( var.existe("bAffCentre") )     bAffCentre  = var.getb("bAffCentre");
     if ( var.existe("bSound") )         bSound      = var.getb("bSound");
     if ( var.existe("bInverseCouleur")) bInverseCouleur = var.getb("bInverseCouleur");
+    if ( var.existe("fLimitCorrection")) fLimitCorrection = var.getf("fLimitCorrection");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

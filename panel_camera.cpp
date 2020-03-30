@@ -307,6 +307,12 @@ void PanelCamera::displaySuivi()
         glVertex2i(x,y-50);             glVertex2i(x, y+50 );
 
     glEnd();
+    
+    if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
+    else                glColor4f( 0.0,   0.0,  1.0, 0.2 );
+
+    glCercle( x, y, echelle*(fLimitCorrection) );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

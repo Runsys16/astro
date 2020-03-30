@@ -19,6 +19,7 @@ Captures::Captures()
     
     if( var.existe("bShowIcones") )         bShowIcones = var.getb( "bShowIcones" );
     bFullPreview = false;
+    bShowPreview = false;
     bIcones  = true;
     resize_all();
     

@@ -99,6 +99,7 @@ typedef struct readBackground       rb_t;
     extern vec4                     colorTraces[];
 
     extern bool                     bInverseCouleur;
+    extern float                    fLimitCorrection;
     
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;
