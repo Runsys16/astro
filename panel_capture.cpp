@@ -91,7 +91,7 @@ void PanelCapture::setEchelle(float f)
 {
     if ( f == 0.0 )     
     {
-        logf( (char*)"setEchelle(%0.2f)", f );
+        logf( (char*)"PanelCapture::setEchelle(%0.2f)", f );
         return;
     }
     if ( pReadBgr == NULL )         return;
@@ -113,8 +113,8 @@ void PanelCapture::setEchelle(float f)
     
     setSize( fDX*ech_user, fDY*ech_user );
     setCent();
-    logf( (char*)"setSize(%0.2f, %0.2f)", fDX, fDY );
-    logf( (char*)"  PanelCapture::setEchelle() ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
+    logf( (char*)"PanelCapture::setEchelle() ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
+    logf( (char*)"  setSize(%0.2f, %0.2f)", fDX, fDY );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -362,14 +362,15 @@ void PanelCapture::releaseMiddle(int xm, int ym)
     xm_old = -1;
     ym_old = -1;
     logf( (char*)"PanelCapture::releaseMiddle(%d,%d) ...", xm, ym );
-    logf( (char*)"  ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
+    log_tab(true);
+    logf( (char*)"ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
 
-    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
+    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); log_tab(false); return; }
     
-    logf( (char*)"   getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
     
     //float e = (float)getDX() / (float)pReadBgr->w; 
     float e = (float)getDX() / (float)pReadBgr->w; 
+    logf( (char*)"echelle%0.2f", e );
     
     int xx = ((float)xm-(float)getX()) / e;
     int yy = ((float)ym-(float)getY()) / e;
@@ -381,12 +382,13 @@ void PanelCapture::releaseMiddle(int xm, int ym)
         if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         {
             stars.selectStar(xx, yy);
-            logf( (char*)" releaseMiddle(%d,%d) selects star...", xm, ym );
+            logf( (char*)"releaseMiddle(%d,%d) selects star...", xm, ym );
         }
         else
             stars.selectStar(xx, yy);
     }
     bHaveMove = false;
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

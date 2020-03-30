@@ -311,14 +311,15 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 	case 104:	
 	    {
         if ( n == -1 )          return;
-	    logf( (char*)"Touche pgup !!" );
+	    logf( (char*)"Key (PGUP) : Zoom" );
+	    log_tab(true);
         Capture&  c = *captures[n];
 
         float e = c.getEchelle() / 0.9;
         c.setEchelle(e);
         
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
-
+	    log_tab(false);
 		}
 		break;
 	// pgdown
@@ -326,13 +327,15 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 	    {
         if ( n == -1 )          return;
 
-	    logf( (char*)"Touche pgdown !!" );
+	    logf( (char*)"Key (PGDN) : Zoom" );
+	    log_tab(true);
         Capture&  c = *captures[n];
 
         float e = c.getEchelle() * 0.9;
         c.setEchelle(e);
 
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+	    log_tab(false);
 
         }
 		break;
@@ -601,8 +604,8 @@ void Captures::fullscreen()
     bFullPreview = !bFullPreview;
     logf( (char*)"Captures::fullscreen  => %s", bFullPreview ? (char*)"true":(char*)"false" );
 
-    if ( bFullPreview )              bShowIcones = false;
-    else                            bShowIcones = true;
+    //if ( bFullPreview )                 bShowIcones = false;
+    //else                                bShowIcones = true;
 
     resize_all();
 }

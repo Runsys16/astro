@@ -28,43 +28,45 @@ using namespace std;
 
 SINGLETON_BEGIN( Serial )
 
-protected:
-    string          dev_name;
-    int             baudrate;
-    int             fd;
-    thread          th_serial;
-    thread          th_sound;
+    protected:
+        string          dev_name;
+        int             baudrate;
+        int             fd;
+        thread          th_serial;
+        thread          th_sound;
+        
+        char            buffer[1024];
+        int             idx;
+        int             nbZero;
+        
+        bool            bPrintInfo;
+        float           fTimeOut;
+        
+        bool            bFree;
+        
+        vector<string>  tCommandes;
+
+    private:
+        void            emet_commande();
+
+    public :
+        Serial();
+
+        void            init( string );
+        void            sopen();
+        void            sclose();
+
+        int             write_byte(char b);
+        int             write_string(const char* str);
+
+        void            read_thread();
+        void            sound_thread();
+        void            sound();
+
+        void            start_thread();
+        void            reset();
     
-    char            buffer[1024];
-    int             idx;
-    int             nbZero;
-    
-    bool            bPrintInfo;
-    float           fTimeOut;
-    
-    bool            bFree;
-    
-    vector<string>  tCommandes;
-
-private:
-    void            emet_commande();
-
-public :
-    Serial();
-
-    void            init( string );
-    void            sopen();
-    void            sclose();
-
-    int             write_byte(char b);
-    int             write_string(const char* str);
-
-    void            read_thread();
-    void            sound_thread();
-    void            sound();
-
-    void            start_thread();
-    void            reset();
+inline  bool            getFree()                               { return bFree; }
 
 SINGLETON_END()
 

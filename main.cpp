@@ -1643,18 +1643,23 @@ static void idleGL(void)
 	                float l = v.length();
 
 	                if ( l > 80.0 )
-	                    logf( (char*)"[ASSERVISSEMENT]Attention  l=%0.2f", l ); 
+	                    logf( (char*)"[WARNING]Suivi l=%0.2f", l ); 
 
-                    vec3 res = mChange * v;
-                    int ad = (int) (res.x * -1000.0);
-                    int dc = (int) (res.y * 1000.0);
-                    char cmd[255];
-                    sprintf( cmd, "a%dp;d%dp", ad, dc );
-                    logf( (char*)"Asservissement cmd='%s' delta(%0.2f,%0.2f) l=%0.2f",  
-                                  cmd, v.x, v.y, l );
+                    if ( !bMouseDeplace && Serial::getInstance().getFree() ) {
 
-                    if ( !bMouseDeplace ) {
+                        vec3 res = mChange * v;
+                        int ad = (int) (res.x * -1000.0);
+                        int dc = (int) (res.y * 1000.0);
+                        char cmd[255];
+                        sprintf( cmd, "a%dp;d%dp", ad, dc );
                         Serial::getInstance().write_string(cmd);
+                        logf( (char*)"cmd='%s' delta(%0.2f,%0.2f) l=%0.2f",  
+                                      cmd, v.x, v.y, l );
+
+                    }
+                    else
+                    {
+                        logf( (char*)"Arduino  pas pret" ); 
                     }
 	            }
             }
