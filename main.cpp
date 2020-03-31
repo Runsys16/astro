@@ -2222,9 +2222,37 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
 		break;
 
-    case 'k':
-        break;
     case 'K':
+        {
+            char cmd[255];
+            int ad, dc;
+
+            ad = 1000;
+            sprintf( cmd, "a%dp;", ad );
+            Serial::getInstance().write_string(cmd);
+
+            dc = 1000;
+            sprintf( cmd, "d%dp", dc );
+            Serial::getInstance().push_cmd(cmd);
+
+            ad = -1000;
+            sprintf( cmd, "a%dp;", ad );
+            Serial::getInstance().push_cmd(cmd);
+
+            dc = -1000;
+            sprintf( cmd, "d%dp", dc );
+            Serial::getInstance().push_cmd(cmd);
+
+            ad = -500; dc = -500;
+            sprintf( cmd, "a%dp;d%dp", ad, dc );
+            Serial::getInstance().push_cmd(cmd);
+
+            ad = 500; dc = 500;
+            sprintf( cmd, "a%dp;d%dp", ad, dc );
+            Serial::getInstance().push_cmd(cmd);
+        }
+        break;
+    case 'k':
         {
         bSound = !bSound;
         logf( (char*)"Key (k) : Active/desactive le son  %s ", BOOL2STR(bSound) );

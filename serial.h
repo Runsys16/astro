@@ -58,6 +58,8 @@ SINGLETON_BEGIN( Serial )
 
         int             write_byte(char b);
         int             write_string(const char* str);
+        void            push_cmd(string&);
+        void            push_cmd(char *);
 
         void            read_thread();
         void            sound_thread();
