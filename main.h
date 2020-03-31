@@ -100,6 +100,7 @@ typedef struct readBackground       rb_t;
 
     extern bool                     bInverseCouleur;
     extern float                    fLimitCorrection;
+    extern float                    fTimeMili;
     
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;

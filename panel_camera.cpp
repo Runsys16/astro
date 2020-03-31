@@ -10,6 +10,14 @@ PanelCamera::PanelCamera()
     dx      = 0.0;
     dy      = 0.0;
     pReadBgr = NULL;
+    fTime   = 0.0;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::idleGL()
+{
+    fTime = fTimeMili;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -308,26 +316,48 @@ void PanelCamera::displaySuivi()
         glVertex2i(x,y-50);             glVertex2i(x, y+50 );
 
     glEnd();
-    //-----------------------------------------------------------------------------
-    if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
-    else                glColor4f( 0.0,   0.0,  1.0, 0.2 );
-
-    glCercle( x, y, echelle*(fLimitCorrection) );
-    //-----------------------------------------------------------------------------
-    if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
-    else                glColor4f( 0.5,   0.2,  1.0, 0.6 );
-
-    //vec2* pv = Camera_mgr::getInstance().getSuivi();
+    //----- Cercle de correction --------------------------------------------------
+    vec2 u, v, w;
     vec2* pv = getSuivi();
     if ( pv != NULL )
     {
+        u = vec2(x, y);
+        v = vec2(*pv);
+        tex2screen( v.x, v.y );
+        w = v - u;
+    }
+    else
+         w = vec2(0.0,0.0);
+         
+         
+    /*
+    float T = 1.0;
+    float f = fmod( fTime, T );// / T;
+    logf( (char*)"%0.2f  %0.2f", fTime, f );
+    */
+    float f = 0.8;
+
+    if ( bNuit )                                    glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
+    else{
+        if ( w.length()>fLimitCorrection )          glColor4f( 1.0,   0.0,  0.0, f );
+        else                                        glColor4f( 0.0,   1.0,  0.0, f );
+    }
+    
+    glLineStipple(1, 0xFFF0);//  # [1]
+    glEnable(GL_LINE_STIPPLE);    
+    glCercle( x, y, echelle*(fLimitCorrection) );
+    glDisable(GL_LINE_STIPPLE);    
+    //----- Droite de correction --------------------------------------------------
+    if ( pv != NULL )
+    {
+        glLineStipple(1, 0xFFF0);//  # [1]
+        glEnable(GL_LINE_STIPPLE);    
 	    glBegin(GL_LINES);
-            glVertex2i(x, y);                  
-            x = pv->x;
-            y = pv->y;
-            tex2screen( x, y );
-            glVertex2i(x, y );
+            glVertex2i(u.x, u.y);                  
+            glVertex2i(v.x, v.y );
         glEnd();
+        //glLineStipple(1, 0xAAAA);//  # [1]
+        glDisable(GL_LINE_STIPPLE);    
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

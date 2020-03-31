@@ -24,11 +24,13 @@ protected:
     rb_t*               pReadBgr;
     
     Stars               stars;
+    float               fTime;
 
 
 public:
     PanelCamera();
     
+    virtual void		idleGL();
     virtual void		update();
             void		displaySuivi();
             void		displayCentre();

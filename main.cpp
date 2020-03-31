@@ -3056,6 +3056,7 @@ static void CreateHelp()
 	addString( "   N\t: Mode nuit on/off");
 	addString( "   q\t: Lance un script python");
 	addString( "   Q\t: Ouvre une image fits");
+	addString( " j/J\t: Change la taille du cercle d'asservissement");
 
 	addString( "---- TRANSFORM MATRIX ----");
 	addString( " a/A\t: Vecteur en ascension droite");
@@ -3074,8 +3075,8 @@ static void CreateHelp()
 	addString( "   Z\t: Sauve les traces");
 
 	addString( "---- SUIVI ----");
-	addString( "  S\t: Lance/Stop le suivi");
-	addString( "t/T\t: change le temps de correction");
+	addString( "   S\t: Lance/Stop le suivi");
+	addString( " t/T\t: change le temps de correction");
 	addString( "   Y\t: Lance l' asservissement");
 	addString( "   V\t: Initialise les coordonnees de suivi");
 	addString( "   v\t: Sauvegarde des coordonnees de suivi dans un fichier .guid");
