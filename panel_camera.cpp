@@ -11,6 +11,8 @@ PanelCamera::PanelCamera()
     dy      = 0.0;
     pReadBgr = NULL;
     fTime   = 0.5;
+    fTime1  = 0.0;
+    bTime1  = false;
     fSens   = 1.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -19,6 +21,14 @@ PanelCamera::PanelCamera()
 void PanelCamera::idle(float f)
 {
     fTime += fSens * f;
+    fTime1 += f;
+    
+    if ( fTime1 >1.0 )
+    {
+        bTime1 = true;
+        fTime1 -= 1.0;
+    }
+    
     if ( fTime > 1.0 )
     {
         fSens = -1.0;
@@ -167,6 +177,8 @@ void PanelCamera::tex2screen(float& xx, float& yy)
     //      Facteur d'echelle
     float ew = wSc / wTex;
     float eh = hSc / hTex;
+    ew = 1600.0/1920.0;
+    eh = 900.0/1080.0;
     float e = ew<eh ? ew : eh;
 
     xx = e * xx + (float)getX();    
@@ -209,6 +221,8 @@ void PanelCamera::screen2tex(float& xx, float& yy)
     //      Facteur d'echelle
     float ew = wSc / wTex;
     float eh = hSc / hTex;
+    ew = 1600.0/1920.0;
+    eh = 900.0/1080.0;
     float e = ew<eh ? ew : eh;
 
     xx = (xx - (float)getX()) /e;    
@@ -283,31 +297,11 @@ void PanelCamera::displaySuivi()
     if  ( pReadBgr==NULL )      return;
 
 	WindowsManager& wm = WindowsManager::getInstance();
-    /*
-    //      Dimension ecran
-    float wSc = (float)wm.getWidth();
-    float hSc = (float)wm.getHeight();
 
-    //      Dimension texture
-    float wTex = (float)pReadBgr->w;
-    float hTex = (float)pReadBgr->h;
-
-    //      Facteur d'echelle
-    float ew = wSc / wTex;
-    float eh = hSc / hTex;
-    float e = ew<eh ? ew : eh;
-    
-    //      Coordonnées du point de suivi
-    */
     float x = xSuivi;
     float y = ySuivi;
     
     //      Convertion des coordonnées
-    /*
-    x = e * x + getX();
-    y = e * y + getY();
-    */
-    
     tex2screen( x, y );
     float gris = 0.8;
 
@@ -326,19 +320,35 @@ void PanelCamera::displaySuivi()
         glVertex2i(x,y-50);             glVertex2i(x, y+50 );
 
     glEnd();
+    
     //----- Cercle de correction --------------------------------------------------
     vec2 u, v, w;
     vec2* pv = getSuivi();
+    
     if ( pv != NULL )
     {
         u = vec2(x, y);
-        v = vec2(*pv);
+        v = vec2(pv->x, pv->y);
         tex2screen( v.x, v.y );
+        if ( bTime1 )
+        {
+            logf( (char*)"Etoile(%0.2f,%0.2f)  suivi(%0.2f,%0.2f)  %ld", v.x, v.y, x, y,(long)panelCourbe );
+            logf( (char*)"      (%0.2f,%0.2f)  suivi(%0.2f,%0.2f)  %ld", pv->x, pv->y, x, y,(long)pReadBgr );
+            bTime1 = false;
+        }
         w = v - u;
     }
     else
-         w = vec2(0.0,0.0);
-         
+    {
+        u = vec2(x, y);
+        v = vec2(0.0,0.0);
+        w = vec2(0.0,0.0);
+        if ( bTime1 )
+        {
+            logf( (char*)"Pas d'etoile de reference");
+            bTime1 = false;
+        }
+    }     
        
     float f = fTime/2.0 + 0.5;
 
@@ -358,12 +368,13 @@ void PanelCamera::displaySuivi()
         glLineStipple(1, 0xFFF0);//  # [1]
         glEnable(GL_LINE_STIPPLE);    
 	    glBegin(GL_LINES);
-            glVertex2i(u.x, u.y);                  
-            glVertex2i(v.x, v.y );
+            glVertex2i((int)u.x, (int)u.y);                  
+            glVertex2i((int)v.x, (int)v.y );
         glEnd();
         //glLineStipple(1, 0xAAAA);//  # [1]
         glDisable(GL_LINE_STIPPLE);    
     }
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

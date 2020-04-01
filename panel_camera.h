@@ -26,6 +26,8 @@ protected:
     Stars               stars;
     float               fTime;
     float               fSens;
+    float               fTime1;
+    bool                bTime1;
 
 
 public:
