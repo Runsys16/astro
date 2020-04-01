@@ -111,6 +111,12 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelConsoleSerial::writeln(char* str)
 {
+    if ( str[0] == 0 || str[1] == 0)
+    {
+        logf( (char*)"[WARNING] PanelConsoleSerial::writeln chaine trop petite" );
+        return;
+    }
+    
     if ( str[0] == '-' )
     {
         if ( str[1] == 'a' )
@@ -197,7 +203,8 @@ void PanelConsoleSerial::writeln(char* str)
 
         return;
     }
-    pc->affiche( str );
+    else
+        pc->affiche( str );
     //logf( (char*)str );
 }
 //--------------------------------------------------------------------------------------------------------------------

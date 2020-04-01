@@ -10,14 +10,24 @@ PanelCamera::PanelCamera()
     dx      = 0.0;
     dy      = 0.0;
     pReadBgr = NULL;
-    fTime   = 0.0;
+    fTime   = 0.5;
+    fSens   = 1.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::idleGL()
+void PanelCamera::idle(float f)
 {
-    fTime = fTimeMili;
+    fTime += fSens * f;
+    if ( fTime > 1.0 )
+    {
+        fSens = -1.0;
+    }
+    else if ( fTime < 0.0 )
+    {
+        fSens = 1.0;
+    }
+    PanelWindow::idle(f);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -329,13 +339,8 @@ void PanelCamera::displaySuivi()
     else
          w = vec2(0.0,0.0);
          
-         
-    /*
-    float T = 1.0;
-    float f = fmod( fTime, T );// / T;
-    logf( (char*)"%0.2f  %0.2f", fTime, f );
-    */
-    float f = 0.8;
+       
+    float f = fTime/2.0 + 0.5;
 
     if ( bNuit )                                    glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
     else{
@@ -343,7 +348,7 @@ void PanelCamera::displaySuivi()
         else                                        glColor4f( 0.0,   1.0,  0.0, f );
     }
     
-    glLineStipple(1, 0xFFF0);//  # [1]
+    glLineStipple(1, 0xFFC0);//  # [1]
     glEnable(GL_LINE_STIPPLE);    
     glCercle( x, y, echelle*(fLimitCorrection) );
     glDisable(GL_LINE_STIPPLE);    

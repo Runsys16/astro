@@ -59,20 +59,25 @@ int Serial::write_string( const char* str)
     {
         if ( bFree )
         {
-            logf( (char*)"Arduino : %s", str );
             bFree = false;
         }
         else
         {
             string s = string(str);
             tCommandes.push_back(s);
-            logf( (char*)"Sauvearde de la commande: %s", (char*)s.c_str() );
+            logf( (char*)"Cmd en attent: %s", (char*)s.c_str() );
             return 0;
         }
     }
     else    
     if ( str[0] == 'n' )                bFree = true;
 
+
+    
+    //logf( (char*)"Arduino : %s", str );
+    //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
+    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
+    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
     
     fTimeOut = fTimeMili;
     
@@ -117,7 +122,6 @@ void Serial::sound_thread()
 {
     th_sound = std::thread(&Serial::sound, this);
     th_sound.detach();
-
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -135,6 +139,9 @@ void Serial::emet_commande()
         char* str = (char*)s.c_str();
         int len = strlen(str);
         int n = write(fd, str, len);
+
+        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
+        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
 
         if( n!=len ){
             logf((char*)"[ERREUR]Il manque des caracteres !!" );
@@ -181,12 +188,13 @@ void Serial::read_thread()
             continue;
         }
         //buf[i] = b[0]; i++;
+        if ( n>1 )          logf( (char*)"[ERREUR]Serial::read_thread() PERTE DE CARRACTERE nb=%d",  n );
         char c = b[0];
         //if ( c==10)
         //printf( "%c", c);
         bool bAffiche = true;
 
-        if ( c == '\n' )
+        if ( n == 1 && (c == '\n' || c == '\r') )
         {
             if ( idx != 0 )
             {
@@ -194,58 +202,60 @@ void Serial::read_thread()
                 
                 string test = buffer;
                 //sound_thread();
+                if ( test.find("=INFO START") != string::npos )
+                {
+                    bPrintInfo = false;
+                }
+                else
+                if ( test.find("=INFO STOP") != string::npos )
+                {
+                    bPrintInfo = true;
+                    bAffiche = false;
+                }
+                else
                 if ( test.find("Change joy ...NOK") != string::npos )
                 {
                     changeJoy(false);
                     
                     system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
                 }
-                else if ( test.find("Change joy ...OK") != string::npos )
+                else 
+                if ( test.find("Change joy ...OK") != string::npos )
                 {
                     changeJoy(true);
                     system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
                 }
-                else if ( test.find("Retour Stellarium on") != string::npos )
+                else
+                if ( test.find("Retour Stellarium on") != string::npos )
                 {
                     changeRetourPos( true );
                 }
-                else if ( test.find("Retour Stellarium off") != string::npos )
+                else
+                if ( test.find("Retour Stellarium off") != string::npos )
                 {
                     changeRetourPos( false );
                 }
-                else if ( test.find("=INFO START") != string::npos )
-                {
-                    bPrintInfo = false;
-                }
-                else if ( test.find("=INFO STOP") != string::npos )
-                {
-                    bPrintInfo = true;
-                    bAffiche = false;
-                }
-                else if ( test.find("dbl click") != string::npos )
+                else
+                if ( test.find("dbl click") != string::npos )
                 {
                     system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
                 }
-                else if ( test.find("GOTO OK") != string::npos )
-                {
-                    if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
-                    bFree = true;
-                    emet_commande();
-                }
-                else if ( test.find("Rotation terre") != string::npos )
+                else
+                if ( test.find("Rotation terre") != string::npos )
                 {
                     if ( test.find("OUI") != string::npos)
                     {
-                        //logf( (char*)"Declinaison : normale" );
+                        //logf( (char*)"ARDUINO Rotation terre : OUI" );
                         changeSui( true );
                     }
                     else
                     {
-                        //logf( (char*)"Declinaison : inverse" );
+                        //logf( (char*)"ARDUINO Rotation terre : NON" );
                         changeSui( false );
                     }
                 }
-                else if ( test.find("Rotation Declinaison") != string::npos )
+                else
+                if ( test.find("Rotation Declinaison") != string::npos )
                 {
                     if ( test.find("normal") != string::npos)
                     {
@@ -258,7 +268,8 @@ void Serial::read_thread()
                         changeDec( false );
                     }
                 }
-                else if ( test.find("Rotation  Asc Droite") != string::npos )
+                else
+                if ( test.find("Rotation  Asc Droite") != string::npos )
                 {
                     if ( test.find("normal") != string::npos)
                     {
@@ -271,15 +282,31 @@ void Serial::read_thread()
                         changeAsc( false );
                     }
                 }
+                else
+                if ( test.find("GOTO OK") != string::npos )
+                {
+                    if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
+                    bFree = true;
+                    emet_commande();
+                    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+                }
 
                 if ( bPrintInfo == true && bAffiche )
                 {
                     //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
+                    //logf( (char*)"Buffer : \"%s\"", (char*)buffer );
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
                 }    
 
             }
             idx = 0;
+            buffer[0] = 0;
+            /*
+            if ( buffer[0] != '-' )
+            {
+                PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+            }
+            */
         }
         else
         {

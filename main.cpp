@@ -1588,7 +1588,7 @@ static void idleGL(void)
 		prevTime = fTimeMili;
 	}
     
-    WindowsManager::getInstance().idleGL( elapsedTime );
+    //WindowsManager::getInstance().idleGL( elapsedTime );
     
 	if ( elapsedTime != -1 )
 	{
@@ -2224,6 +2224,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'K':
         {
+            char cmd[] = "C";
+            Serial::getInstance().write_string(cmd);
+            /*
             char cmd[255];
             int ad, dc;
 
@@ -2250,6 +2253,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             ad = 500; dc = 500;
             sprintf( cmd, "a%dp;d%dp", ad, dc );
             Serial::getInstance().push_cmd(cmd);
+            */
         }
         break;
     case 'k':
@@ -2762,7 +2766,10 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 static void glutMouseFunc(int button, int state, int x, int y)	{
     mouse.x = x;
     mouse.y = y;
-    WindowsManager& wm = WindowsManager::getInstance();
+
+    WindowsManager& wm  = WindowsManager::getInstance();
+    Camera_mgr&     mgr = Camera_mgr::getInstance(); 
+
 	wm.mouseFunc(button, state, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
     if ( panelStatus->isMouseOver(x, y) )
@@ -2775,7 +2782,6 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     Panel *         pCapture = NULL;
     Panel*          pMouseOver = NULL;
 
-    Camera_mgr& mgr = Camera_mgr::getInstance(); 
     if ( mgr.getCurrent() != NULL  &&  mgr.getCurrent()->getPanelPreview() != NULL )
     {
         pPreviewCam = mgr.getCurrent()->getPanelPreview();

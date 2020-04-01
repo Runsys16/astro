@@ -202,31 +202,31 @@ void cb_rotationCheck(PanelCheckBox* p)	{
     if (  p == pButtonAsc )
     {
         char cmd[255];
-        sprintf( cmd, "sa" );
+        sprintf( cmd, "sa;g" );
         Serial::getInstance().write_string(cmd);
     }
     else if (  p == pButtonDec )
     {
         char cmd[255];
-        sprintf( cmd, "sd" );
+        sprintf( cmd, "sd;g" );
         Serial::getInstance().write_string(cmd);
     }
     else if (  p == pButtonJoy )
     {
         char cmd[255];
-        sprintf( cmd, "j" );
+        sprintf( cmd, "j;g" );
         Serial::getInstance().write_string(cmd);
     }
     else if (  p == pButtonSui )
     {
         char cmd[255];
-        sprintf( cmd, "S" );
+        sprintf( cmd, "S;g" );
         Serial::getInstance().write_string(cmd);
     }
     else if (  p == pButtonRet )
     {
         char cmd[255];
-        sprintf( cmd, "p" );
+        sprintf( cmd, "p;g" );
         Serial::getInstance().write_string(cmd);
     }
 	else
@@ -369,7 +369,7 @@ void idleStatus()
         if (bOneFrame)      { updatePanelPause(true); }
         bOneFrame = false;
     }
-    
+    /*
     //change_joy( xSuivi, ySuivi );
     //-----------------------------------------------------------------------
     // Gestion de apause
@@ -379,6 +379,7 @@ void idleStatus()
         if (bOneFrame)      { updatePanelPause(true); }
         bOneFrame = false;
     }
+    */
     
     if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
     if ( bModeManuel != pButtonMode->getVal() )     set_mode();

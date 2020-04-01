@@ -25,12 +25,13 @@ protected:
     
     Stars               stars;
     float               fTime;
+    float               fSens;
 
 
 public:
     PanelCamera();
     
-    virtual void		idleGL();
+    virtual void		idle(float);
     virtual void		update();
             void		displaySuivi();
             void		displayCentre();
