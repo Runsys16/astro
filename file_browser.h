@@ -96,6 +96,7 @@ public :
     
     void                        affiche();
     void                        cache();
+    void                        supCallBacks();
     bool                        keyboard(char key, int x, int y);
     
     void                        scrollDir( int );

@@ -349,8 +349,18 @@ void FileBrowser::cache()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::supCallBacks()
+{
+    WindowsManager& wm = WindowsManager::getInstance();
+
+    while( wm.is_call_back_keyboard( panelFilename ) )      wm.sup_call_back_keyboard( panelFilename );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::keyboard(char key, int x, int y)
 {
+  /*
     //logf( (char*)"Traitement FileBrowser::keyboard()" );
     WindowsManager& wm = WindowsManager::getInstance();
     Panel* p = wm.getCapture();
@@ -376,6 +386,36 @@ bool FileBrowser::keyboard(char key, int x, int y)
     wm.startKeyboard();
     WindowsManager::getInstance().keyboardFunc( key, x, y);
     //logf( (char*)"Traitement PanelConsoleSerial::keyboard()" );
+*/
+   
+    WindowsManager& wm = WindowsManager::getInstance();
+    wm.changeFocus( panelFilename );
+    Panel* p = wm.getFocus();
+    logf( (char*)"Focus : %d", p->getID() );
+    /*
+    if      ( p == this )            logf( (char*)"PanelApn::keyboard() focus panel console" );
+    else if ( p == NULL )            logf( (char*)"PanelApn::keyboard() focus NULL" );
+    else                             logf( (char*)"PanelApn::keyboard() focus autre chose ID=%d", p->getID() );
+    */
+    
+    if ( p == panelFilename   )
+    {
+        supCallBacks();
+        wm.call_back_keyboard( p );
+    }
+    else
+    {
+        wm.stopKeyboard();
+        return false;
+    }
+        
+
+    wm.startKeyboard();
+
+    logf( (char*)"PanelApn::keyboard(%d) %c", key, key );
+
+    if (   0 <= key &&  key <  'z' )                wm.keyboardFunc( key, x, y);
+    
     
 	switch(key){ 
 	
