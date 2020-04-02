@@ -605,8 +605,8 @@ void Captures::fullscreen()
     bFullPreview = !bFullPreview;
     logf( (char*)"Captures::fullscreen  => %s", bFullPreview ? (char*)"true":(char*)"false" );
 
-    //if ( bFullPreview )                 bShowIcones = false;
-    //else                                bShowIcones = true;
+    if ( bFullPreview )                 bShowIcones = false;
+    else                                bShowIcones = true;
 
     resize_all();
 }

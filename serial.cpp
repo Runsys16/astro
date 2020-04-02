@@ -47,7 +47,7 @@ int Serial::write_byte( char b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Serial::write_string( const char* str)
+int Serial::write_string( const char* str, bool bAff)
 {
     //return -1;
     
@@ -74,7 +74,7 @@ int Serial::write_string( const char* str)
 
 
     
-    //logf( (char*)"Arduino : %s", str );
+    if ( bAff )             logf( (char*)"Arduino : %s", str );
     //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
     PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
     PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
@@ -90,6 +90,13 @@ int Serial::write_string( const char* str)
     if( n!=len ) 
         return -1;
     return 0;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Serial::write_string( const char* str)
+{
+    return write_string( str, false );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -128,8 +135,8 @@ void Serial::sound_thread()
 //--------------------------------------------------------------------------------------------------------------------
 void Serial::emet_commande()
 {
-    logf((char*)"Serial::emet_commande()" );
-    log_tab(true);
+    //logf((char*)"Serial::emet_commande()" );
+    //log_tab(true);
     
     if (tCommandes.size()!=0 )
     {
@@ -162,7 +169,7 @@ void Serial::emet_commande()
     else
     logf( (char*)"Plus de commande en attente" );        
     
-    log_tab(false);
+    //log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -288,25 +295,31 @@ void Serial::read_thread()
                     if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
                     bFree = true;
                     emet_commande();
-                    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+                    //PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
                 }
 
+                /*
                 if ( bPrintInfo == true && bAffiche )
                 {
                     //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
                     //logf( (char*)"Buffer : \"%s\"", (char*)buffer );
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
-                }    
+                }
+                */   
 
+
+                if ( buffer[0] != '-'  )
+                {
+                    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+                }
             }
+
+
+
             idx = 0;
             buffer[0] = 0;
-            /*
-            if ( buffer[0] != '-' )
-            {
-                PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
-            }
-            */
+            ///*
+            //*/
         }
         else
         {

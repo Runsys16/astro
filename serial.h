@@ -57,6 +57,7 @@ SINGLETON_BEGIN( Serial )
         void            sclose();
 
         int             write_byte(char b);
+        int             write_string(const char* str, bool);
         int             write_string(const char* str);
         void            push_cmd(string&);
         void            push_cmd(char *);

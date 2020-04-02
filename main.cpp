@@ -1599,7 +1599,7 @@ static void idleGL(void)
             
             char cmd[255];
             sprintf( cmd, "g" );
-            Serial::getInstance().write_string(cmd);
+            Serial::getInstance().write_string(cmd, false);
 	    }
 	    //logf( (char*)"%0.2f", fTimer );
 	}
@@ -1653,7 +1653,7 @@ static void idleGL(void)
                         int dc = (int) (res.y * 1000.0);
                         char cmd[255];
                         sprintf( cmd, "a%dp;d%dp", ad, dc );
-                        Serial::getInstance().write_string(cmd);
+                        Serial::getInstance().write_string(cmd, false);
                         logf( (char*)"cmd='%s' delta(%0.2f,%0.2f) l=%0.2f",  
                                       cmd, v.x, v.y, l );
 
@@ -2153,9 +2153,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'F':  // '-'
         {
-        logf( (char*)"Key (F) : Simu pour les courbes de suivis" );
-        bSimu = !bSimu;
-        logf( (char*)"  bSimu = %s", BOOL2STR(bSimu) );
+        //bSimu = !bSimu;
+        logf( (char*)"Key (F) : Simu pour les courbes de suivis (desactive) %s", BOOL2STR(bSimu) );
         VarManager::getInstance().set( "bSimu", bSimu );
         }
         break;
@@ -2210,29 +2209,31 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	case 'j':
 		{
     		fLimitCorrection *= 0.9f;
-            logf( (char*)"Key (j) : Diminue La limite de correction : %0.2f", fLimitCorrection );
+            logf( (char*)"Key (j) : Diminue la limite de correction : %0.2f", fLimitCorrection );
             var.set("fLimitCorrection", (float)fLimitCorrection);
         }
 		break;
 	case 'J':
 		{
     		fLimitCorrection /= 0.9f;
-            logf( (char*)"Key (J) : Diminue La limite de correction : %0.2f", fLimitCorrection );
+            logf( (char*)"Key (J) : Augmente la limite de correction : %0.2f", fLimitCorrection );
             var.set("fLimitCorrection", (float)fLimitCorrection);
         }
 		break;
 
     case 'K':
         {
+            /*
             char cmd[] = "C";
             Serial::getInstance().write_string(cmd);
-            /*
+            */
+            //*
             char cmd[255];
             int ad, dc;
 
             ad = 1000;
             sprintf( cmd, "a%dp;", ad );
-            Serial::getInstance().write_string(cmd);
+            Serial::getInstance().write_string(cmd, true);
 
             dc = 1000;
             sprintf( cmd, "d%dp", dc );
@@ -2253,7 +2254,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             ad = 500; dc = 500;
             sprintf( cmd, "a%dp;d%dp", ad, dc );
             Serial::getInstance().push_cmd(cmd);
-            */
+            //*/
         }
         break;
     case 'k':
