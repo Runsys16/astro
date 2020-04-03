@@ -100,7 +100,7 @@ void Fits::chargeTexture()
 {
     unsigned long l = (long)nNAXIS * (long)nNAXIS1 * (long)nNAXIS2;
     
-    logf( (char*)"Longueur du buffer : %ld", l ); 
+    logf( (char*)"Longueur du buffer : %ld = %ld x %ld x %ld", l, (long)nNAXIS, (long)nNAXIS1, (long)nNAXIS2 ); 
 
     if ( l>0 )      
     {
@@ -112,6 +112,14 @@ void Fits::chargeTexture()
 
     GLubyte* pBuffer;
     pBuffer = (GLubyte*)malloc( l );
+    GLubyte* pBuffer0;
+    pBuffer0 = (GLubyte*)malloc( l );
+
+    if (  pBuffer == NULL || pBuffer0 == NULL ) 
+    {
+        logf( (char*)"[ERROR] Impossible d\'alloue la memoire ..." );
+        return;
+    }
 
     std::ifstream fichier;
     fichier.open(_filename, std::ios_base::app);
@@ -130,21 +138,23 @@ void Fits::chargeTexture()
     // Buffer sous la forme
     // RRRGGGBBB => RGBRGBRGB
 
-    GLubyte* pBuffer0;
-    pBuffer0 = (GLubyte*)malloc( l );
     
     unsigned long s = (long)nNAXIS1 * (long)nNAXIS2;
 
-    for( unsigned long ll=0; ll<s; ll++ )
+
+    for (unsigned long p=0; p<nNAXIS; p++ )
     {
-        GLubyte R, G, B;
-        R = pBuffer[ll+0];
-        G = pBuffer[ll+s];
-        B = pBuffer[ll+2*s];
-        
-        pBuffer0[ll*3+0] = R;
-        pBuffer0[ll*3+1] = G;
-        pBuffer0[ll*3+2] = B;   
+        for( unsigned long ll=0; ll<s; ll++ )
+        {
+            GLubyte R, G, B;
+            R = pBuffer[ll+ p*nNAXIS];
+            //G = pBuffer[ll+1*s];
+            //B = pBuffer[ll+2*s];
+            
+            pBuffer0[ll* (nNAXIS) + p] = R;
+            //pBuffer0[ll*3+1] = G;
+            //pBuffer0[ll*3+2] = B;   
+        }
     }
 
     free( pBuffer );
