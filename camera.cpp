@@ -225,7 +225,7 @@ void Camera::resizePreview(int width, int height)	{
 
 	
 	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
-	panelPreview->setDisplayGL(displayGLCamera_cb);
+	//panelPreview->setDisplayGL(displayGLCamera_cb);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

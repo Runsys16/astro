@@ -391,7 +391,9 @@ bool FileBrowser::keyboard(char key, int x, int y)
     WindowsManager& wm = WindowsManager::getInstance();
     //wm.changeFocus( panelFilename );
     Panel* p = wm.getFocus();
-    logf( (char*)"Focus : %d", p->getID() );
+    
+    
+    if ( p != NULL )        logf( (char*)"Focus : %d", p->getID() );
     /*
     if      ( p == this )            logf( (char*)"PanelApn::keyboard() focus panel console" );
     else if ( p == NULL )            logf( (char*)"PanelApn::keyboard() focus NULL" );
