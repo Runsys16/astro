@@ -294,7 +294,7 @@ bool FileBrowser::isInsideFile( int x, int y )
     panelFilename->changeText( string(tFileNames[n]) );
     
     if ( panelOK->getCallback() == NULL ){
-        change_file( workingDir, tFileNames[n] );
+        charge_image( workingDir, tFileNames[n] );
     }
     else
     {
@@ -302,7 +302,7 @@ bool FileBrowser::isInsideFile( int x, int y )
         if (panelOK->getExtra() != 10)      panelOK->getCallback()->callback( true, 0, (char*)s.c_str() );
     }
 
-    //change_file( workingDir, tFileNames[n] );
+    //charge_image( workingDir, tFileNames[n] );
     WindowsManager::getInstance().onTop(pW);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -389,7 +389,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
 */
    
     WindowsManager& wm = WindowsManager::getInstance();
-    wm.changeFocus( panelFilename );
+    //wm.changeFocus( panelFilename );
     Panel* p = wm.getFocus();
     logf( (char*)"Focus : %d", p->getID() );
     /*

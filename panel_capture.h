@@ -34,6 +34,7 @@ protected:
 
 public:
     PanelCapture( rb_t *, Capture* );
+    ~PanelCapture();
     
     
     virtual void		update();

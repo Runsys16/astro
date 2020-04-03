@@ -34,30 +34,35 @@ PanelApn::PanelApn()
     pTime->changeText( "200" );
     pTime->setPos( x+dx, p*dy );
     pTime->setSize( 200, dy );
+    pTime->setExtraString( "pTime" );
     p++;
 	add( new PanelText( (char*)"ISO\t:",		    PanelText::NORMAL_FONT, x, p*dy ) );
     pIso = new PanelEditText();
     pIso->changeText( "800" );
     pIso->setPos( x+dx, p*dy );
     pIso->setSize( 200, dy );
+    pIso->setExtraString( "pIso" );
     p++;
 	add( new PanelText( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy ) );
     pFrames = new PanelEditText();
     pFrames->changeText( "1" );
     pFrames->setPos( x+dx, p*dy );
     pFrames->setSize( 200, dy );
+    pFrames->setExtraString( "pFrames" );
     p++;
 	add( new PanelText( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy ) );
     pTimeOut = new PanelEditText();
     pTimeOut->changeText( "3" );
     pTimeOut->setPos( x+dx, p*dy );
     pTimeOut->setSize( 200, dy );
+    pTimeOut->setExtraString( "pTimeOut" );
     p++;
 	add( new PanelText( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy ) );
     pNum = new PanelEditText();
     pNum->changeText( "0" );
     pNum->setPos( x+dx, p*dy );
     pNum->setSize( 200, dy );
+    pNum->setExtraString( "pNum" );
     p++;
     
     setSize( 160, p*dy );
@@ -140,7 +145,11 @@ bool PanelApn::keyboard(char key, int x, int y)
     WindowsManager& wm = WindowsManager::getInstance();
    
     Panel* p = wm.getFocus();
+    
     /*
+    if ( p!= NULL && p->getID() == 9010 )
+        logf( (char*)"Focus %s", (char*)p->getExtraString().c_str() );
+    
     if      ( p == this )            logf( (char*)"PanelApn::keyboard() focus panel console" );
     else if ( p == NULL )            logf( (char*)"PanelApn::keyboard() focus NULL" );
     else                             logf( (char*)"PanelApn::keyboard() focus autre chose ID=%d", p->getID() );
@@ -159,8 +168,9 @@ bool PanelApn::keyboard(char key, int x, int y)
         
 
     wm.startKeyboard();
+    //wm.keyboard(key, int x, int y)
 
-    logf( (char*)"PanelApn::keyboard(%d) %c", key, key );
+    //logf( (char*)"PanelApn::keyboard(%d) %c", key, key );
 
     if (   0 <= key &&  key <  32  )                wm.keyboardFunc( key, x, y);
     if (        key ==  '.'        )                wm.keyboardFunc( key, x, y);

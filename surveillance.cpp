@@ -18,7 +18,7 @@ bool Surveillance::idleGL()
 {
     if ( bCharge && iState == 2 )
     {
-        change_file( dirname, basename);
+        charge_image( dirname, basename);
         iState = -1;
         bCharge = false;
         

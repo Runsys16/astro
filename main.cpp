@@ -368,7 +368,7 @@ void CallbackFileBrowser::callback( bool bb, int ii, char* str)
         string f = fb.getFilename();
         string d = fb.getWorkingDir();
         logf( (char*)"  charge capture %s%s", (char*)d.c_str(), (char*)f.c_str() );
-        change_file( d, f );
+        charge_image( d, f );
     }
     workDirFileBrowser = fb.getWorkingDir();
     VarManager& var = VarManager::getInstance();
@@ -388,7 +388,7 @@ void CallbackFits::callback( bool bb, int ii, char* str)
         string d = fb.getWorkingDir();
         logf( (char*)"  charge fichier fits %s%s", (char*)d.c_str(), (char*)f.c_str() );
         //charge_fits( d+f );
-        change_file( d, f );
+        charge_image( d, f );
     }
     workDirFits = fb.getWorkingDir();
 }
@@ -515,9 +515,9 @@ void alertBox( string mes )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void change_file(string dirname, string filename)
+void charge_image(string dirname, string filename)
 {
-    Captures::getInstance().change_file(dirname, filename);
+    Captures::getInstance().charge_image(dirname, filename);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2494,7 +2494,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
-    case 'v':  // '-'
+    case 'v':
         {
         if ( !bSauve ) 
         {
@@ -2517,7 +2517,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
-    case 'V':  // '-'
+    case 'V':
         {
         if (bModeManuel)
         {

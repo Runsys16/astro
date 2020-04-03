@@ -160,7 +160,7 @@ void                updatePanelPause(bool);
 
 string              getCurrentDirectory();
 void                setCurrentDirectory(string);
-void                change_file( string, string );
+void                charge_image( string, string );
 
 void                alertBox( string mes );
 void                alertBoxQuit();

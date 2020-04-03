@@ -18,7 +18,7 @@ SINGLETON_BEGIN( Captures )
 public:
     Captures();
     bool                        isMouseOverCapture(int, int);
-    void                        change_file(string, string);
+    void                        charge_image(string, string);
     void                        update();
     void                        rotate_capture_plus(bool);
     void                        rotate_capture_moins(bool);

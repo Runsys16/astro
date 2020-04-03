@@ -124,15 +124,15 @@ Capture::~Capture()
     logf((char*)"Destructeur Capture() -----------" );
     log_tab(true);
 
+	WindowsManager::getInstance().sup( pW );
+	
     pW->sup(pTitre);
     pW->sup(panelPreview);
     pW->sup(pNbStars);
 
-	WindowsManager::getInstance().sup( pW );
-	
+	delete panelPreview;
 	delete pTitre;
 	delete pNbStars;
-	delete panelPreview;
 	delete pW;
 	
 	filenames.clear();

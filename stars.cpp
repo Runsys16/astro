@@ -42,9 +42,13 @@ void Stars::add(Star * p)
     }
     v_tStars.push_back( p );
 
-    char t[] = "00000000000";  
-    sprintf( t, "%d", size() );
-    pNbStars->changeText( t );
+
+    if ( pNbStars != NULL )
+    {
+        char t[] = "00000000000";  
+        sprintf( t, "%d", size() );
+        pNbStars->changeText( t );
+    }
 
     log_tab(false);
     logf( (char*)"Stars::add(Star *)" );
@@ -250,9 +254,12 @@ void Stars::findAllStars()
     }
     delete p;
 
-    char t[] = "00000000000";  
-    sprintf( t, "%d", size() );
-    pNbStars->changeText( t );
+    if ( pNbStars != NULL )
+    {
+        char t[] = "00000000000";  
+        sprintf( t, "%d", size() );
+        pNbStars->changeText( t );
+    }
     
     log_tab(false);
     logf( (char*)"Stars::findAllStars()" );
