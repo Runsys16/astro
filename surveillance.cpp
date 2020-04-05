@@ -18,10 +18,17 @@ bool Surveillance::idleGL()
 {
     if ( bCharge && iState == 2 )
     {
-        charge_image( dirname, basename);
-        iState = -1;
-        bCharge = false;
-        
+        if (    basename.find( ".jpg")  != string::npos
+             || basename.find( ".jpeg") != string::npos
+             || basename.find( ".JPG")  != string::npos
+             || basename.find( ".fits") != string::npos
+             || basename.find( ".tga")  != string::npos
+             || basename.find( ".png")  != string::npos
+        ){
+            charge_image( dirname, basename);
+            iState = -1;
+            bCharge = false;
+        }        
         return true;
     }
 

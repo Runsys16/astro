@@ -31,6 +31,9 @@ protected:
     PanelCapture*               panelPreview;
     PanelText*                  pTitre;
     PanelText*                  pNbStars;
+    PanelSimple*                pFermer;
+    PanelSimple*                pIconiser;
+    PanelSimple*                pMaximiser;
     
     struct readBackground       readBgr;
     Fits *                      fits;
@@ -42,6 +45,7 @@ public :
     ~Capture();
     
     void                        pooling();
+    void                        create_icones();
     void                        create_preview();
     void                        resize(int,int);
     void                        resize(int,int,int,int);

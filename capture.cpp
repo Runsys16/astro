@@ -192,6 +192,32 @@ void Capture::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Capture::create_icones()
+{
+	WindowsManager& wm = WindowsManager::getInstance();
+
+    pFermer = new PanelSimple();
+    pFermer->setBackground((char*)"images/fermer.tga");
+    pFermer->setSize( 24, 21);
+    pFermer->setPos(10, 2);
+    pW->add(pFermer);
+
+    pMaximiser = new PanelSimple();
+    pMaximiser->setBackground((char*)"images/maximiser.tga");
+    pMaximiser->setSize( 24, 21);
+    pMaximiser->setPos(10+28, 2);
+    pW->add(pMaximiser);
+
+    pIconiser = new PanelSimple();
+    pIconiser->setBackground((char*)"images/iconiser.tga");
+    pIconiser->setSize( 24, 21);
+    pIconiser->setPos(10+28*2, 2);
+    pW->add(pIconiser);
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Capture::create_preview()	{
     logf((char*)"Capture::CreatePreview -------------" );
     log_tab(true);
@@ -204,7 +230,6 @@ void Capture::create_preview()	{
 	//panelPreview = new PanelWindow();
     pW = new PanelWindow();
     pW->setDisplayGL(displayGLnuit_cb);
-
 
     bFits = false;
     if ( filename.find( ".fits" ) != std::string::npos )
@@ -235,6 +260,8 @@ void Capture::create_preview()	{
 
     pW->add(panelPreview);
 
+    create_icones();
+
     resize( getWidth(), getHeight() );
 
     char * pS = (char*)filename.c_str();
@@ -256,6 +283,10 @@ void Capture::create_preview()	{
 	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
  	wm.add( pW );
+
+
+    
+
 
     log_tab(false);
     logf((char*)"Capture::CreatePreview -------------" );
@@ -296,6 +327,8 @@ void Capture::resize(int w, int h )
     y = (getHeight()-dy)/2;
     
     pW->setPosAndSize( x, y, dx, dy );
+    //pMaximiser->setPos(dx-32*2, y-12);
+
     panelPreview->setPosAndSize( 0, 0, dx, dy );
     //panelPreview->setEchelle( (float)readBgr.w / (float)dx );
     
@@ -339,7 +372,13 @@ void Capture::resize(int x, int y, int w, int h )
     }
     
     pW->setPosAndSize( x, y, dx, dy );
+    //pMaximiser->setPos( dx-(32*2), y-12 );
     panelPreview->setPosAndSize( 0, 0, dx, dy );
+
+    pFermer->setPos(   dx - 28*3, 2);
+    pMaximiser->setPos(dx - 28*2, 2);
+    pIconiser->setPos( dx - 28*1, 2);
+
     
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -293,6 +293,31 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void commande_polaris()
+{
+    VarManager&         var = VarManager::getInstance();
+
+    string filename = "/home/rene/Documents/astronomie/logiciel/calcul/calcul.py";
+    string command = "";
+
+    command = command + filename;
+
+
+    logf( (char*) command.c_str() );
+
+    
+    int ret = system( (char*) command.c_str() );
+    if ( ret != 0 )
+    {
+        string mes = "Pyhton polaris : " +  to_string(ret);
+        alertBox(mes);
+        logf( (char*)mes.c_str() );
+    }
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 {
     VarManager& var = VarManager::getInstance();
@@ -515,9 +540,18 @@ void alertBox( string mes )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void charge_image(string dirname, string filename)
+void charge_image(string dirname, string basename)
 {
-    Captures::getInstance().charge_image(dirname, filename);
+    if (    basename.find( ".jpg")  != string::npos
+         || basename.find( ".jpeg") != string::npos
+         || basename.find( ".JPG")  != string::npos
+         || basename.find( ".fits") != string::npos
+         || basename.find( ".tga")  != string::npos
+         || basename.find( ".png")  != string::npos
+    ){
+
+        Captures::getInstance().charge_image(dirname, basename);
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2223,11 +2257,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'K':
         {
-            /*
+            //*
             char cmd[] = "C";
             Serial::getInstance().write_string(cmd);
-            */
-            //*
+            //*/
+            /*
             char cmd[255];
             int ad, dc;
 
@@ -2254,7 +2288,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             ad = 500; dc = 500;
             sprintf( cmd, "a%dp;d%dp", ad, dc );
             Serial::getInstance().push_cmd(cmd);
-            //*/
+            */
         }
         break;
     case 'k':
@@ -2407,15 +2441,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 
     case 'Q':
-        /*
         {
-        logf( (char*)"Key (Q) : Ouvre un fichier fits (.fits)");
-        FileBrowser::getInstance().setCallBack(&cb_fits);
-        FileBrowser::getInstance().setFiltre( ".fits" );
-        FileBrowser::getInstance().change_dir( workDirFits );
-        FileBrowser::getInstance().affiche();
+            thread( &commande_polaris).detach();
         }
-        */
         break;
     case 'r' :
         {
