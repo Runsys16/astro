@@ -16,6 +16,14 @@ Fits::Fits(string filename)
     
     //afficheDic();
     //afficheDatas();
+    dCRPIX1 = -1.0;
+    dCRVAL1 = -1.0;
+    dCRPIX2 = -1.0;
+    dCRVAL2 = -1.0;
+    dCD1_1  = -1.0;
+    dCD1_2  = -1.0;
+    dCD2_1  = -1.0;
+    dCD2_2  = -1.0;
     log_tab(false);
     logf((char*)"Constructeur Fits::Fits() -------------" );
 }

@@ -312,6 +312,8 @@ void Serial::read_thread()
                 {
                     PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
                 }
+                else
+                    PanelConsoleSerial::getInstance().writeln( (char*)buffer );
             }
 
 
