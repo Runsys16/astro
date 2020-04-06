@@ -181,13 +181,6 @@ vector<vec2>        t_vSauve;
 vector<vector<vec2> * >        t_vTrace;
 bool                bAffTrace = false;
 bool                bRecTrace = false;
-vec4                colorTraces[] = 
-                        {
-                        vec4(1.0,0.0,0.0,1.0), vec4(0.0,1.0,0.0,1.0), vec4(0.0,0.0,1.0,1.0),
-                        vec4(1.0,1.0,0.0,1.0), vec4(1.0,0.0,1.0,1.0), vec4(0.0,1.0,1.0,1.0),
-                        vec4(0.5,0.0,0.0,1.0), vec4(0.0,0.5,0.0,1.0), vec4(0.0,0.0,0.5,1.0),
-                        vec4(0.5,0.5,0.0,1.0), vec4(0.5,0.0,0.5,1.0), vec4(0.0,0.5,0.5,1.0)
-                        };
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -680,150 +673,6 @@ void rad2dms(struct dms& DMS, float r)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void glVecAD()
-{
-    float gris = 0.0;
-    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
-    else                            glColor4f( 1.0, gris, gris, 1.0 );
-    
-    glBegin(GL_LINES);
-        int x = vecAD[0].x;
-        int y = vecAD[0].y;
-        tex2screen(x, y);
-        glVertex2i( x, y );
-
-        x = vecAD[1].x;
-        y = vecAD[1].y;
-        tex2screen(x, y);
-        glVertex2i( x, y );
-
-        glVertex2i( vecAD[1].x, vecAD[1].y );
-    glEnd();        
-}
-void glVecDC()
-{
-    float gris = 0.0;
-    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
-    else                            glColor4f( gris, 1.0, gris, 1.0 );
-    
-    glBegin(GL_LINES);
-        /*
-        vec3 v = vecAD[1] - vecAD[0];
-        
-        int x = vecAD[0].x;
-        int y = vecAD[0].y;
-        tex2screen(x, y);
-        glVertex2i( x, y );
-
-        x = vecAD[0].x - v.y;
-        y = vecAD[0].y + v.x;
-        tex2screen(x, y);
-        glVertex2i( x, y );
-        */
-        int x = vecDC[0].x;
-        int y = vecDC[0].y;
-        tex2screen(x, y);
-        glVertex2i( x, y );
-
-        x = vecDC[1].x;
-        y = vecDC[1].y;
-        tex2screen(x, y);
-        glVertex2i( x, y );
-
-        glVertex2i( vecDC[1].x, vecDC[1].y );
-
-    glEnd();        
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void glCercle(int x, int y, int rayon)
-{
-	glBegin(GL_LINE_LOOP);
-
-        for( float i=0; i<=360.0; i+=1.0 )
-        {
-            float fx = (float)x+ (float)rayon*cos(DEG2RAD(i));
-            float fy = (float)y+ (float)rayon*sin(DEG2RAD(i));
-            glVertex2i(fx,fy);
-        }
-        
-    glEnd();        
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void glCarre( int x,  int y,  int dx,  int dy )
-{
-	glBegin(GL_LINES);
-        x = x-dx;
-        y = y-dy;
-        
-        glVertex2i(x,y);                glVertex2i(x+2*dx,y);
-        glVertex2i(x+2*dx,y);           glVertex2i(x+2*dx,y+2*dy);
-        glVertex2i(x+2*dx,y+2*dy);      glVertex2i(x,y+2*dy);
-        glVertex2i(x,y+2*dy);           glVertex2i(x,y);
-
-    glEnd();        
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void glCroix( int x,  int y,  int dx,  int dy )
-{
-	glBegin(GL_LINES);
-
-	    glVertex2i(x, y-dy);         glVertex2i(x, y+dy);
-	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
-
-    glEnd();        
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void displayGLTrace(void)
-{
-    if ( !bAffTrace )              return;
-
-    //logf( (char*)"Affiche les traces" );
-    int nbv = t_vTrace.size();
-    
-    glBegin(GL_LINES);
-        
-    int m = sizeof(colorTraces) / 16;
-    //int m = 12;
-    //logf( (char*)"Modulo : %d", m );
-
-    for( int j=0; j<nbv; j++ )
-    {
-        
-        glColor4fv( (GLfloat*)&colorTraces[j%m] );
-            
-        vector<vec2> *   trace = t_vTrace[j];
-        int nb = trace->size();
-        if ( nb == 1 )                  continue;
-    
-        for ( int i=0; i<nb-1; i++ )
-        {
-	        int x;
-	        int y;
-	        
-	        x = round((*trace)[i].x);
-	        y = round((*trace)[i].y);
-	        tex2screen(x,y);
-            glVertex2i(x,y);
-
-	        x = round((*trace)[i+1].x);
-	        y = round((*trace)[i+1].y);
-	        tex2screen(x,y);
-            glVertex2i(x,y);
-        }
-    }    
-    glEnd();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void displayGLnuit_cb(void)
 {
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
@@ -832,132 +681,11 @@ void displayGLnuit_cb(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void displayGLCamera_cb(void)
-{
-    /*
-    if ( bModeManuel )
-    {
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
-	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
-	    
-	    int x = xClick;
-	    int y = yClick;
-	    
-	    tex2screen(x,y);
-
-	    glCroix(x, y, 50, 50);
-        glCercle(x, y, 25);
-
-    }
-    */
-    if ( bAfficheVec)
-    {
-        glVecAD();
-        glVecDC();
-    }
-    /*
-    float gris = 0.3;
-    if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
-    else                glColor4f( 0.0,   1.0,  0.0, 0.2 );    
-
-
-    displayGLTrace();
-
-    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
-    */
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 int getOffset( int x, int y, int width )
 {
     return 3*(x) + 3*(y)* width;
 }
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void screen2tex( int& x, int& y )
-{
-    x = (float)(x-xCam) * rw;
-    y = (float)(y-yCam) * rh;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void tex2screen( int& x, int& y )
-{
-    x = (float)x / rw + xCam;
-    y = (float)y / rh + yCam;
-}
 #include <malloc.h>
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-float getSkyPoint_colorR(int offset)
-{
-    float r;
-
-    try
-    {
-        r = ptr[offset+0]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-    return r;
-}
-float getSkyPoint_colorG(int offset)
-{
-    float r;
-
-    try
-    {
-        r = ptr[offset+1]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-    return r;
-}
-float getSkyPoint_colorB(int offset)
-{
-    float r;
-
-    try
-    {
-        r = ptr[offset+2]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-    return r;
-}
-float getSkyPoint_colorL(int offset)
-{
-    float r;
-    float g;
-    float b;
-
-    try
-    {
-        r = ptr[offset+0]; 
-        g = ptr[offset+1]; 
-        b = ptr[offset+2]; 
-    }
-    catch ( const std::exception& e )
-    {
-        std::cout << e.what() << std::endl;
-        return -1;
-    }
-    return 0.33 * r + 0.5 * g  + 0.16 * b;
-}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -968,7 +696,8 @@ void updatePanelResultat(float x, float y, float mag)
     
     //mag = -1.0;
 
-    tex2screen(xPanel,yPanel);
+    Camera_mgr& mgr = Camera_mgr::getInstance();
+    mgr.tex2screen(xPanel,yPanel);
     panelResultat->setPos(xPanel+20 , yPanel+20);
 
     
@@ -1389,49 +1118,6 @@ void suivi(void)
     else
         return;
     
-    /*
-    //Camera_mgr::getInstance().suivi();
-    //change_background_pleiade();
-    getSuiviParameter();   
-    
-    //char   sSkyPoint[100];
-    
-    struct sky_point point;
-    point.xAverage = 0.0;
-    point.yAverage = 0.0;
-    point.ponderation = 0.0;
-    
-    //printf( "1-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
-
-    //getSkyPoint(&point, (int)xSuivi-xCam, (int)ySuivi-yCam, SIZEPT);
-    getSkyPoint(&point, (int)xSuivi, (int)ySuivi, SIZEPT);
-    
-    float xx;
-    float yy;
-
-    if ( point.ponderation > 0.1 ) {
-
-        xx = point.xAverage / point.ponderation;
-        yy = point.yAverage / point.ponderation;
-        
-        //float mag = -(log(point.ponderation ) / log(2.0)) + 17.0;
-        //float mag = point.ponderation;
-
-        //sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", xx, yy, vOrigine.x, vOrigine.y, pond2mag(point.ponderation) );
-        //SP->changeText(sSkyPoint);
-        //panelResultat->setVisible(true);
-
-        xSuivi = xx;
-        ySuivi = yy;
-        //printf( "2-Suivi x=%0.2f, y=%0.2f\n", xSuivi, ySuivi);
-    }
-    else 
-    {
-        logf( (char*)"Perte suivi !!!" );
-        rechercheSkyPoint( xSuivi, ySuivi);
-    }
-    */
-
 
     vec2*       pV = Camera_mgr::getInstance().getSuivi();
     
@@ -1487,17 +1173,9 @@ void getSuiviParameter(void)
     vCameraSize.y = 1080;
     vCameraSize = cam_mgr.get_vCameraSize();
 
-    //rw = (float)vCameraSize.x/(float)panelPreView->getDX();
-    //rh = (float)vCameraSize.y/(float)panelPreView->getDY();
     rw = (float)vCameraSize.x/(float)panelCourbe->get_dxCam();
     rh = (float)vCameraSize.y/(float)panelCourbe->get_dyCam();
 
-    /* 
-    logf( (char*)"-------------------------------------" );
-    logf( (char*)"width=%d height=%d" , width, height );
-    logf( (char*)"xCam=%d yCam=%d dxCam=%d dyCam=%d", xCam, yCam, dxCam, dyCam );
-    logf( (char*)"rw=%0.2f rh=%0.2f" , rw, rh );
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2822,7 +2500,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	{
         getSuiviParameter();
 
-        Camera_mgr::getInstance().onBottom();
+        mgr.onBottom();
         
 	    int X = x;
 	    int Y = y;
@@ -2843,7 +2521,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	{
         getSuiviParameter();
 
-        Camera_mgr::getInstance().onBottom();
+        mgr.onBottom();
         
 	    int X = x;
 	    int Y = y;
@@ -2877,7 +2555,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     if ( bModeManuel && button == 0 && state == 0 )	{
         getSuiviParameter();
 
-        Camera_mgr::getInstance().onBottom();
+        mgr.onBottom();
         
 	    int X = x;
 	    int Y = y;

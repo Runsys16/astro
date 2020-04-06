@@ -17,6 +17,8 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pCapture    = pc;
     bIcone      = false;
     stars.setView( this );
+    
+    setExtraString( "panelPreview" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -133,6 +135,7 @@ void PanelCapture::update()
 
     //Panel* pParent = getParent();
     stars.update( getX(), getY(), this, pReadBgr );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -232,7 +235,6 @@ Panel* PanelCapture::isMouseOver(int xm, int ym)	{
     int dxx = getParent()->getDX();
     int dyy = getParent()->getDY();
 
-
     /*
     int nb = childs.size();
 	for( int i=0; i<nb; i++ )	{
@@ -248,8 +250,10 @@ Panel* PanelCapture::isMouseOver(int xm, int ym)	{
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::clickLeft(int xm, int ym)
 {
+    logf( (char*)"PanelCapture::clickLeft(%d,%d) ...", xm, ym );
+    
     Captures::getInstance().setCurrent( pCapture );
-    PanelSimple::clickLeft(xm,ym);
+    Panel::clickLeft(xm,ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -264,7 +268,7 @@ void PanelCapture::releaseLeft(int xm, int ym)
     int yy = ((float)ym-(float)getY()) / e;
 
 
-    // Si en plei ecran on ajoute une etoile
+    // Si en plein ecran on ajoute une etoile
         
     if ( !bIcone     )
     {

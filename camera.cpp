@@ -279,7 +279,7 @@ void Camera::fullSizePreview(int width, int height)	{
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
 	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
-	panelPreview->setDisplayGL(displayGLCamera_cb);
+	//panelPreview->setDisplayGL(displayGLCamera_cb);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-class Capture
+class Capture : public PanelWindow
 {
 protected:
     bool                        bNewBackground;
@@ -27,13 +27,15 @@ protected:
     string                      dirname;
     string                      basename;
     
-    PanelWindow*                pW;
+    //PanelWindow*                pW;
     PanelCapture*               panelPreview;
     PanelText*                  pTitre;
     PanelText*                  pNbStars;
+
     PanelSimple*                pFermer;
     PanelSimple*                pIconiser;
     PanelSimple*                pMaximiser;
+
     
     struct readBackground       readBgr;
     Fits *                      fits;
@@ -45,8 +47,16 @@ public :
     ~Capture();
     
     void                        pooling();
+    
+    virtual void                update();
+    virtual void                updatePos();
+
+    virtual void                clickLeft( int, int);
+    virtual void                releaseLeft( int, int);
+
     void                        create_icones();
     void                        create_preview();
+    
     void                        resize(int,int);
     void                        resize(int,int,int,int);
     void                        fullscreen();
@@ -54,14 +64,13 @@ public :
     void                        onTop();
     void                        addStar(int,int);
 
-    bool                        isMouseOver(int, int);
+    //bool                        isMouseOver(int, int);
     
     void                        show();
     void                        hide();
     
     void                        setColor(long);
-    
-    virtual void                update();
+
     void                        afficheFits();
     
 inline rb_t *                   getRB()                                     { return &readBgr; }

@@ -64,8 +64,11 @@ Capture::Capture()
     //logf( (char*)"   basename : %s", (char*)basename.c_str() );
     
     create_preview();
+
     bIcone = false;
     bFullScreen = false;
+
+    setExtraString( "Capture ..." );
 
     log_tab(false);
     logf((char*)"Constructeur Capture() -----------" );
@@ -86,6 +89,9 @@ Capture::Capture(string dirname, string name)
 
     logf( (char*)"image : %s", filename.c_str() );
     create_preview();
+
+    setExtraString( "Capture ..." );
+
     log_tab(false);
     logf((char*)"Constructeur Capture(%s, %s) -----------", (char*)dirname.c_str(), (char*)name.c_str() );
 }
@@ -112,6 +118,9 @@ Capture::Capture(string f )
 
     logf( (char*)"basename : %s", basename.c_str() );
     create_preview();
+    create_icones();
+
+    setExtraString( "Capture ..." );
 
     log_tab(false);
     logf((char*)"Constructeur Capture(%s) -----------", (char*)f.c_str() );
@@ -124,16 +133,15 @@ Capture::~Capture()
     logf((char*)"Destructeur Capture() -----------" );
     log_tab(true);
 
-	WindowsManager::getInstance().sup( pW );
+	WindowsManager::getInstance().sup( this );
 	
-    pW->sup(pTitre);
-    pW->sup(panelPreview);
-    pW->sup(pNbStars);
+    sup(pTitre);
+    sup(panelPreview);
+    sup(pNbStars);
 
 	delete panelPreview;
 	delete pTitre;
 	delete pNbStars;
-	delete pW;
 	
 	filenames.clear();
 
@@ -192,27 +200,58 @@ void Capture::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Capture::updatePos()
+{
+    PanelSimple::updatePos();
+
+    int dx = getDX();
+
+    pFermer->setPos(    dx - 20*3, 2);
+    pMaximiser->setPos( dx - 20*2, 2);
+    pIconiser->setPos(  dx - 20*1, 2);
+
+    //pFermer->updatePos();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::clickLeft(int xm, int ym)
+{
+    logf( (char*)"Capture::clickLeft ..." );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::releaseLeft(int xm, int ym)
+{
+    logf( (char*)"Capture::releaseLeft ..." );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Capture::create_icones()
 {
-	WindowsManager& wm = WindowsManager::getInstance();
-
     pFermer = new PanelSimple();
     pFermer->setBackground((char*)"images/fermer.tga");
-    pFermer->setSize( 24, 21);
-    pFermer->setPos(10, 2);
-    pW->add(pFermer);
+    pFermer->setSize( 16, -14);
+    pFermer->setPos(10+20*1, 2);
+    add(pFermer);
+    //pFermer->setPanelClickLeft( this );
+    pFermer->setExtraString( "pFermer ..." );
 
     pMaximiser = new PanelSimple();
     pMaximiser->setBackground((char*)"images/maximiser.tga");
-    pMaximiser->setSize( 24, 21);
-    pMaximiser->setPos(10+28, 2);
-    pW->add(pMaximiser);
+    pMaximiser->setSize( 16, 14);
+    pMaximiser->setPos(10+20*2, 2);
+    add(pMaximiser);
+    pMaximiser->setExtraString( "pMaximiser ..." );
 
     pIconiser = new PanelSimple();
     pIconiser->setBackground((char*)"images/iconiser.tga");
-    pIconiser->setSize( 24, 21);
-    pIconiser->setPos(10+28*2, 2);
-    pW->add(pIconiser);
+    pIconiser->setSize( 16, 14);
+    pIconiser->setPos(10+20*3, 2);
+    add(pIconiser);
+    pIconiser->setExtraString( "pIconiser ..." );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -222,14 +261,14 @@ void Capture::create_preview()	{
     logf((char*)"Capture::CreatePreview -------------" );
     log_tab(true);
     
+    create_icones();
     logf((char*)"fichier = %s", (char*)filename.c_str() );
     
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	//panelPreview = new PanelSimple();
 	//panelPreview = new PanelWindow();
-    pW = new PanelWindow();
-    pW->setDisplayGL(displayGLnuit_cb);
+    setDisplayGL(displayGLnuit_cb);
 
     bFits = false;
     if ( filename.find( ".fits" ) != std::string::npos )
@@ -258,9 +297,9 @@ void Capture::create_preview()	{
     }
     //panelPreview->findAllStar();
 
-    pW->add(panelPreview);
+    add(panelPreview);
 
-    create_icones();
+    //create_icones();
 
     resize( getWidth(), getHeight() );
 
@@ -276,13 +315,13 @@ void Capture::create_preview()	{
 
 	//pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
 	pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
-	pW->add( pTitre );
+	add( pTitre );
 	
 	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, getWidth()-50, 10 );
 	panelPreview->add( pNbStars );
 	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
- 	wm.add( pW );
+ 	wm.add( this );
 
 
     
@@ -326,7 +365,7 @@ void Capture::resize(int w, int h )
     x = (getWidth()-dx)/2;
     y = (getHeight()-dy)/2;
     
-    pW->setPosAndSize( x, y, dx, dy );
+    setPosAndSize( x, y, dx, dy );
     //pMaximiser->setPos(dx-32*2, y-12);
 
     panelPreview->setPosAndSize( 0, 0, dx, dy );
@@ -371,14 +410,9 @@ void Capture::resize(int x, int y, int w, int h )
         filename = "pas de fichier dans " + getCurrentDirectory();
     }
     
-    pW->setPosAndSize( x, y, dx, dy );
+    setPosAndSize( x, y, dx, dy );
     //pMaximiser->setPos( dx-(32*2), y-12 );
     panelPreview->setPosAndSize( 0, 0, dx, dy );
-
-    pFermer->setPos(   dx - 28*3, 2);
-    pMaximiser->setPos(dx - 28*2, 2);
-    pIconiser->setPos( dx - 28*1, 2);
-
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -391,7 +425,7 @@ void Capture::fullscreen()
     logf((char*)"Capture::fullscreen()  dx=%d dy=%d", dx, dy);
 
     //resize( 0, 0, dx, dy);
-    pW->setPosAndSize(0, 0, dx, dy);
+    setPosAndSize(0, 0, dx, dy);
     bIcone = false;
     bFullScreen = true;
 }
@@ -400,7 +434,7 @@ void Capture::fullscreen()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::onTop()
 {
-    WindowsManager::getInstance().onTop( pW );
+    WindowsManager::getInstance().onTop( this );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -412,23 +446,16 @@ void Capture::addStar( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool Capture::isMouseOver( int xm, int ym )
-{
-    return panelPreview->isMouseOver(xm, ym);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void Capture::show()
 {
-    pW->setVisible( true );
+    setVisible( true );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::hide()
 {
-    pW->setVisible( false );
+    setVisible( false );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -436,7 +463,7 @@ void Capture::hide()
 void Capture::setColor(long c)
 {
     pTitre->setColor( c);
-    pW->setColor( c);
+    PanelWindow::setColor( c);
     panelPreview->setColor( c);
 }
 //--------------------------------------------------------------------------------------------------------------------

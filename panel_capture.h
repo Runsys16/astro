@@ -32,10 +32,11 @@ protected:
     Stars               stars;
     Capture*            pCapture;
 
+
+
 public:
     PanelCapture( rb_t *, Capture* );
-    ~PanelCapture();
-    
+    ~PanelCapture();    
     
     virtual void		update();
     virtual void		updatePos();

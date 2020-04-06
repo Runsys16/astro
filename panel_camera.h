@@ -55,6 +55,11 @@ public:
     void                glCarre( int x,  int y,  int dx,  int dy );
     void                glCroix( int x,  int y,  int dx,  int dy );
 
+    void                displayGLTrace(void);
+
+    void                glVecAD();
+    void                glVecDC();
+
     void                findAllStar();
     bool                starExist(int, int);    
     void                addStar(int,int);

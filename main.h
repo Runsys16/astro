@@ -105,6 +105,10 @@ typedef struct readBackground       rb_t;
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;
     #endif
+    
+    extern vec3                     vecAD[2];
+    extern vec3                     vecDC[2];
+
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------

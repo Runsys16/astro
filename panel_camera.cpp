@@ -1,5 +1,14 @@
 #include "panel_camera.h"
-//#include "camera_mgr.h"
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+vec4                colorTraces[] = 
+                        {
+                        vec4(1.0,0.0,0.0,1.0), vec4(0.0,1.0,0.0,1.0), vec4(0.0,0.0,1.0,1.0),
+                        vec4(1.0,1.0,0.0,1.0), vec4(1.0,0.0,1.0,1.0), vec4(0.0,1.0,1.0,1.0),
+                        vec4(0.5,0.0,0.0,1.0), vec4(0.0,0.5,0.0,1.0), vec4(0.0,0.0,0.5,1.0),
+                        vec4(0.5,0.5,0.0,1.0), vec4(0.5,0.0,0.5,1.0), vec4(0.0,0.5,0.5,1.0)
+                        };
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -286,6 +295,100 @@ void PanelCamera::glCroix( int x,  int y,  int dx,  int dy )
 
 	    glVertex2i(x, y-dy);         glVertex2i(x, y+dy);
 	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
+
+    glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::displayGLTrace(void)
+{
+    if ( !bAffTrace )              return;
+
+    //logf( (char*)"Affiche les traces" );
+    int nbv = t_vTrace.size();
+    
+    glBegin(GL_LINES);
+        
+    int m = sizeof(colorTraces) / 16;
+    //int m = 12;
+    //logf( (char*)"Modulo : %d", m );
+
+    for( int j=0; j<nbv; j++ )
+    {
+        
+        glColor4fv( (GLfloat*)&colorTraces[j%m] );
+            
+        vector<vec2> *   trace = t_vTrace[j];
+        int nb = trace->size();
+        if ( nb == 1 )                  continue;
+    
+        for ( int i=0; i<nb-1; i++ )
+        {
+	        int x;
+	        int y;
+	        
+	        x = round((*trace)[i].x);
+	        y = round((*trace)[i].y);
+	        tex2screen(x,y);
+            glVertex2i(x,y);
+
+	        x = round((*trace)[i+1].x);
+	        y = round((*trace)[i+1].y);
+	        tex2screen(x,y);
+            glVertex2i(x,y);
+        }
+    }    
+    glEnd();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::glVecAD()
+{
+    VarManager& var = VarManager::getInstance();
+
+    float gris = 0.0;
+    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
+    else                            glColor4f( 1.0, gris, gris, 1.0 );
+    
+    glBegin(GL_LINES);
+        int x = vecAD[0].x;
+        int y = vecAD[0].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        x = vecAD[1].x;
+        y = vecAD[1].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        glVertex2i( vecAD[1].x, vecAD[1].y );
+    glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::glVecDC()
+{
+    VarManager& var = VarManager::getInstance();
+
+    float gris = 0.0;
+    if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
+    else                            glColor4f( gris, 1.0, gris, 1.0 );
+    
+    glBegin(GL_LINES);
+        int x = vecDC[0].x;
+        int y = vecDC[0].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        x = vecDC[1].x;
+        y = vecDC[1].y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+
+        glVertex2i( vecDC[1].x, vecDC[1].y );
 
     glEnd();        
 }

@@ -126,7 +126,7 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         glColor4fv( (GLfloat*)&color );
         int pas = delta_courbe1;
         float fPas = delta_courbe1;
-        while( fPas < 100.0 )     fPas += courbe1;
+        while( fPas < 50.0 )     fPas += courbe1;
 
         for( float i=0; i<SIZE/2; i+=fPas )
         {
@@ -341,7 +341,7 @@ void PanelCourbe::displayGL(void)
 
     PanelWindow::displayGL();
 
-    displayGLTrace();
+    //displayGLTrace();
 
     glEchelle();
     glCourbe();
