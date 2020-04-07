@@ -60,11 +60,8 @@ PanelSimple *       panelStatus;
 
 
 PanelText*          pCamFilename;
-PanelText*          R;
-PanelText*          G;
-PanelText*          B;
-PanelText*          L;
-PanelText*          SP;
+PanelText*          pRef;
+PanelText*          pSuivi;
 PanelText*          pJoyXY;
 PanelText*          pArduino;
 PanelText*          pStellarium;
@@ -689,40 +686,35 @@ int getOffset( int x, int y, int width )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void updatePanelResultat(float x, float y, float mag)
+void updatePanelResultat()
 {
-    int xPanel = x;
-    int yPanel = y;
-    
-    //mag = -1.0;
-
     Camera_mgr& mgr = Camera_mgr::getInstance();
-    mgr.tex2screen(xPanel,yPanel);
-    panelResultat->setPos(xPanel+20 , yPanel+20);
 
-    
-    char sSkyPoint[255];
-    char sR[255];
-    char sG[255];
-    char sB[255];
-    char sL[255];
-    vec3& v = panelCourbe->get_vOrigine();
-    sprintf( sSkyPoint, "(%0.2f,%0.2f) / (%0.2f,%0.2f)  mag=%0.2f", x, y, v.x, v.y, mag );
-    
-    //logf( (char*)"updatePanelResultat(%d, %d) => %s", x, y, (char*)sSkyPoint );
-    
-    SP->changeText(sSkyPoint);
-    /* 
-    sprintf( sR, "r=%03d", (int)getSkyPoint_colorR(offset) );
-    sprintf( sG, "g=%03d", (int)getSkyPoint_colorG(offset) );
-    sprintf( sB, "b=%03d", (int)getSkyPoint_colorB(offset) );
-    sprintf( sL, "l=%03d", (int)getSkyPoint_colorL(offset) );
+    char sStr[255];
 
-    R->changeText(sR);
-    G->changeText(sG);
-    B->changeText(sB);
-    L->changeText(sL);
-    */
+    vec2* pv = Camera_mgr::getInstance().getSuivi();
+    if ( pv != NULL )
+    {
+        float dx = xSuivi - pv->x;
+        float dy = ySuivi - pv->y;
+
+        vec3 w = vec3( xSuivi, ySuivi, 0.0);
+        vec3 v = w - vec3( pv->x, pv->y, 0.0);
+        float l = v.length();
+
+
+        sprintf( sStr, "Reference\t(%0.2f, %0.2f)", xSuivi, ySuivi );
+        pRef->changeText(sStr);
+        sprintf( sStr, "Suivi\t(%0.2f, %0.2f)", pv->x, pv->y );
+        pSuivi->changeText(sStr);
+
+        float xx = pv->x;
+        float yy = pv->y + 35;
+        
+        mgr.tex2screen(xx,yy);
+
+        panelResultat->setPos( xx, yy );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1153,7 +1145,6 @@ void suivi(void)
 
         t_vSauve.push_back(v);
         
-        updatePanelResultat( xx, yy, 0.0 );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1194,6 +1185,10 @@ static void idleGL(void)
 
     idleStatus();
 
+    //-----------------------------------------------------------------------
+    // Gestion de alertbox
+    //-----------------------------------------------------------------------
+    updatePanelResultat();
     //-----------------------------------------------------------------------
     // Gestion de alertbox
     //-----------------------------------------------------------------------
@@ -1261,13 +1256,6 @@ static void idleGL(void)
         suivi();
     }
     */
-    //-----------------------------------------------------------------------
-    // Geqtion du suivi des eroiles
-    //-----------------------------------------------------------------------
-    if (bSuivi)
-    {
-        updatePanelResultat( xClick, yClick, 0 );
-    }
     //-----------------------------------------------------------------------
     //
     //-----------------------------------------------------------------------
@@ -2708,19 +2696,14 @@ static void CreateResultat()	{
 	int dx0 = 50;
 	int l = 0;
 
-	R = new PanelText( (char*)"r=0",  		PanelText::NORMAL_FONT, x0 + dx0*l++, y0  );
-	panelResultat->add( R ); 
-	G = new PanelText( (char*)"g=0",  		PanelText::NORMAL_FONT, x0 + dx0*l++, y0  );
-	panelResultat->add( G ); 
-	B = new PanelText( (char*)"b=0",  		PanelText::NORMAL_FONT, x0 + dx0*l++, y0  );
-	panelResultat->add( B ); 
-	L = new PanelText( (char*)"l=0",  		PanelText::NORMAL_FONT, x0 + dx0*l++, y0  );
-	panelResultat->add( L ); 
+	pRef   = new PanelText( (char*)"Reference ",  PanelText::NORMAL_FONT, x0, y0  );
+	pSuivi = new PanelText( (char*)"Suivi ",      PanelText::NORMAL_FONT, x0, y0+16  );
+	pRef->setTabSize(80);
+	pSuivi->setTabSize(80);
+	panelResultat->add( pRef ); 
+	panelResultat->add( pSuivi ); 
 
-	SP = new PanelText( (char*)" ",  		PanelText::NORMAL_FONT, x0, y0+16  );
-	panelResultat->add( SP ); 
-
-    panelResultat->setSize( x0 + l*dx0+100, dy+16);
+    panelResultat->setSize( x0 +200, dy+16);
     panelResultat->setBackground((char*)"images/background.tga");
     panelResultat->setVisible(bPanelResultat);
 }
@@ -3027,7 +3010,7 @@ void log_tab( bool b)
     sTab = "";
     for( int i=0; i<nb_tab; i++ )
     {
-        sTab = sTab + "   ";
+        sTab = sTab + "|  ";
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

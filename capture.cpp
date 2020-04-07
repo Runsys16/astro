@@ -206,11 +206,12 @@ void Capture::updatePos()
 
     int dx = getDX();
 
+    pFermer->updatePos();
+
     pFermer->setPos(    dx - 20*3, 2);
     pMaximiser->setPos( dx - 20*2, 2);
     pIconiser->setPos(  dx - 20*1, 2);
 
-    pFermer->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

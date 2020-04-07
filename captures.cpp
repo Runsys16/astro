@@ -168,7 +168,7 @@ void Captures::resize_all()
     if ( current_capture != -1 )        bFull = captures[current_capture]->getFullScreen();
     
     //logf( (char*)"  %d   full = %s", current_capture, bFull ? (char*)"true":(char*)"false" );
-    logf( (char*)"  %d   bFull:%s bIcones:%s bShowPreview:%s bShowIcones:%s"   
+    logf( (char*)"Current=%d   bFull:%s bIcones:%s bShowPreview:%s bShowIcones:%s"   
                                                                 , current_capture
                                                                 , BOOL2STR(bFull)
                                                                 , BOOL2STR(bIcones)
@@ -197,7 +197,7 @@ void Captures::resize_all()
     
     if ( bShowPreview )      m--;
 
-    if ( m<=0 )      { return; }
+    if ( m<=0 )      { log_tab(false); return; }
 
     if ( m>1 )      DY = (height-20-dyi) / (m-1);    
     else            DY = (height-20-dyi) / (m);    
@@ -218,7 +218,7 @@ void Captures::resize_all()
             else
             if ( !bIcones )                 resize_normal( p, dx, dy);
             
-            logf( (char*)"  Current %d icone:%s", i, BOOL2STR(captures[i]->getIcone()) );
+            logf( (char*)"Current %d icone:%s", i, BOOL2STR(captures[i]->getIcone()) );
         }
     } 
     //if ( m <= 0 )            return;

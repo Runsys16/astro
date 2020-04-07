@@ -126,7 +126,7 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         glColor4fv( (GLfloat*)&color );
         int pas = delta_courbe1;
         float fPas = delta_courbe1;
-        while( fPas < 50.0 )     fPas += courbe1;
+        while( fPas < 10.0 )     fPas += courbe1;
 
         for( float i=0; i<SIZE/2; i+=fPas )
         {
@@ -211,13 +211,15 @@ void PanelCourbe::glEchelle()
 {
     VarManager& var = VarManager::getInstance();
 
-    int  AXE_X = (float)getDY()/4.0;
-    int  AXE_Y = (3.0*(float)getDY()/4.0);
+    //int  AXE_X = (float)getDY()/4.0;
+    //int  AXE_Y = (3.0*(float)getDY()/4.0);
     
-    int dy_axe = (float)getDY() / 2.0;
+    int  AXE_X = (float)getDY()/2.0;
+
+    int dy_axe = (float)getDY() / 1.0;
     
     glEchelleAxe( AXE_X, dy_axe, (float)+err, (float)-err, pXMax, pXMin );
-    glEchelleAxe( AXE_Y, dy_axe, (float)+err, (float)-err, pYMax, pYMin );
+    //glEchelleAxe( AXE_Y, dy_axe, (float)+err, (float)-err, pYMax, pYMin );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -249,8 +251,11 @@ void PanelCourbe::glCourbe()
     int DY = getY();
     int n = t_vResultat.size();
     
-    int  AXE_X = (float)getDY()/4.0;
-    int  AXE_Y   (3.0*(float)getDY()/4.0);
+    //int  AXE_X = (float)getDY()/4.0;
+    //int  AXE_Y   (3.0*(float)getDY()/4.0);
+
+    int  AXE_X = (float)getDY()/2.0;
+    int  AXE_Y = (float)getDY()/2.0;
 
     offset_x = vOrigine.x;
     offset_y = vOrigine.y;

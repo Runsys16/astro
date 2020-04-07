@@ -331,6 +331,7 @@ void FileBrowser::affiche()
     if ( !wm.is_call_back_keyboard( panelFilename ) )
     {
         logf( (char*)"FileBrowser::affiche() Ajout callback keyboard" );
+        wm.changeFocus( panelFilename );
         wm.call_back_keyboard( panelFilename );
         wm.startKeyboard();
     }
