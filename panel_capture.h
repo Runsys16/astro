@@ -42,7 +42,7 @@ public:
     virtual void		updatePos();
     virtual void		displayGL();
 
-    virtual Panel*      isMouseOver( int, int);
+    //virtual Panel*      isMouseOver( int, int);
 
     virtual void        clickLeft( int, int);
     virtual void        releaseLeft( int, int);

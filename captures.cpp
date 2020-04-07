@@ -613,6 +613,11 @@ void Captures::fullscreen()
     if ( bFullPreview )                 bShowIcones = false;
     else                                bShowIcones = true;
 
+    if ( current_capture != -1 )
+    {
+        captures[current_capture]->setFullScreen(bFullPreview);
+    }
+
     resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 #include "capture.h"
+#include "captures.h"
 
 
 
@@ -209,7 +210,7 @@ void Capture::updatePos()
     pMaximiser->setPos( dx - 20*2, 2);
     pIconiser->setPos(  dx - 20*1, 2);
 
-    //pFermer->updatePos();
+    pFermer->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -224,6 +225,34 @@ void Capture::clickLeft(int xm, int ym)
 void Capture::releaseLeft(int xm, int ym)
 {
     logf( (char*)"Capture::releaseLeft ..." );
+
+    if ( pFermer == pFermer->isMouseOver(xm, ym) )
+    {
+        Captures::getInstance().setCurrent(this);
+        Captures::getInstance().supprime();
+        logf( (char*)"Capture::releaseLeft() Fermeture" );
+    }
+    else
+    if ( pMaximiser == pMaximiser->isMouseOver(xm, ym ) )
+    {
+        if ( bIcone )
+        {
+            Captures::getInstance().setCurrent(this);
+            Captures::getInstance().onTop(this);
+        }
+        else
+        {
+            Captures::getInstance().setCurrent(this);
+            Captures::getInstance().fullscreen();
+        }
+        logf( (char*)"Capture::releaseLeft() Maximiser" );
+    }
+    else
+    if ( pIconiser == pIconiser->isMouseOver(xm, ym ) )
+    {
+       Captures::getInstance().rotate_capture_plus(true);
+       logf( (char*)"Capture::releaseLeft() Iconiser" );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -234,23 +263,28 @@ void Capture::create_icones()
     pFermer->setBackground((char*)"images/fermer.tga");
     pFermer->setSize( 16, 14);
     pFermer->setPos(10+20*1, 2);
+    pFermer->setExtraString( "pFermer" );
+    pFermer->setPanelReleaseLeft(this);
+    
     panelPreview->add(pFermer);
-    pFermer->setExtraString( "pFermer ..." );
 
     pMaximiser = new PanelSimple();
     pMaximiser->setBackground((char*)"images/maximiser.tga");
     pMaximiser->setSize( 16, 14);
     pMaximiser->setPos(10+20*2, 2);
-    add(pMaximiser);
-    pMaximiser->setExtraString( "pMaximiser ..." );
+    pMaximiser->setExtraString( "pMaximiser" );
+    pMaximiser->setPanelReleaseLeft(this);
+
+    panelPreview->add(pMaximiser);
 
     pIconiser = new PanelSimple();
     pIconiser->setBackground((char*)"images/iconiser.tga");
     pIconiser->setSize( 16, 14);
     pIconiser->setPos(10+20*3, 2);
-    add(pIconiser);
-    pIconiser->setExtraString( "pIconiser ..." );
+    pIconiser->setExtraString( "pIconiser" );
+    pIconiser->setPanelReleaseLeft(this);
 
+    panelPreview->add(pIconiser);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

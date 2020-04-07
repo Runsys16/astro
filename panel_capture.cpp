@@ -219,10 +219,12 @@ void PanelCapture::addStar(int xm, int ym)
     stars.setRB( pReadBgr );
     //stars.addStar( xm, ym );
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Panel* PanelCapture::isMouseOver(int xm, int ym)	{
+    return Panel::isMouseOver(xm, ym );
 	#ifdef DEBUG
 	cout << "Panel::isMouseOver()" << x_raw <<", "<< y_raw <<", "<< dx_raw <<", "<< dy_raw << endl;
 	#endif
@@ -235,16 +237,17 @@ Panel* PanelCapture::isMouseOver(int xm, int ym)	{
     int dxx = getParent()->getDX();
     int dyy = getParent()->getDY();
 
-    /*
+    
     int nb = childs.size();
 	for( int i=0; i<nb; i++ )	{
 		Panel * p = childs[i]->isMouseOver(xm, ym);
 		if ( p )		return p;
 	}
-    */
+    
 	if ( xx <= xm && xm <= (xx+dxx) && yy <= ym && ym <= (yy+dyy) )		                    return this;
 	else																					return NULL;
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

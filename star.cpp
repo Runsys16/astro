@@ -62,7 +62,7 @@ void Star::init(int xx, int yy)
     bZoom       = false;
     
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
-
+    pInfo->setExtraString( "Star pInfo" );
     unsigned long color;
     if (bNuit)                  color = 0xFFFF0000;
     else                        color = 0xFFFFFFFF;
@@ -762,6 +762,7 @@ void Star::setZoom(bool b)
         {
             bZoom = bSelect = true;
             panelZoom = new PanelZoom();
+            panelZoom->setExtraString( "Star pInfo" );
             pView->add( panelZoom );
             //panelZoom->setPosStar(xFound, yFound);
             panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );

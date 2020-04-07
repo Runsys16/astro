@@ -41,6 +41,8 @@ PanelStdOut::PanelStdOut()	{
  	pScroll->setTabSize(20);
 
     string st = string("Bonjour\n");
+    
+    setExtraString( "panelStdOut" );
        
     logf((char*)"** CreateStdOut()  panelStdOut  %d,%d %dx%d", x, y, dx, dy);
 }

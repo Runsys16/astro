@@ -24,6 +24,9 @@ PanelCamera::PanelCamera()
     bTime1          = false;
     fSens           = 1.0;
     fTimeClign      = 0.8;
+    
+    setExtraString( "panelCamera" );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
