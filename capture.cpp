@@ -118,7 +118,6 @@ Capture::Capture(string f )
 
     logf( (char*)"basename : %s", basename.c_str() );
     create_preview();
-    create_icones();
 
     setExtraString( "Capture ..." );
 
@@ -202,7 +201,7 @@ void Capture::update()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::updatePos()
 {
-    PanelSimple::updatePos();
+    Panel::updatePos();
 
     int dx = getDX();
 
@@ -233,10 +232,9 @@ void Capture::create_icones()
 {
     pFermer = new PanelSimple();
     pFermer->setBackground((char*)"images/fermer.tga");
-    pFermer->setSize( 16, -14);
+    pFermer->setSize( 16, 14);
     pFermer->setPos(10+20*1, 2);
-    add(pFermer);
-    //pFermer->setPanelClickLeft( this );
+    panelPreview->add(pFermer);
     pFermer->setExtraString( "pFermer ..." );
 
     pMaximiser = new PanelSimple();
@@ -261,7 +259,7 @@ void Capture::create_preview()	{
     logf((char*)"Capture::CreatePreview -------------" );
     log_tab(true);
     
-    create_icones();
+    //create_icones();
     logf((char*)"fichier = %s", (char*)filename.c_str() );
     
 	WindowsManager& wm = WindowsManager::getInstance();
@@ -299,7 +297,6 @@ void Capture::create_preview()	{
 
     add(panelPreview);
 
-    //create_icones();
 
     resize( getWidth(), getHeight() );
 
@@ -325,6 +322,7 @@ void Capture::create_preview()	{
 
 
     
+    create_icones();
 
 
     log_tab(false);
