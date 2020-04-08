@@ -249,8 +249,10 @@ void Device_cam::capability_save( void )    {
 void Device_cam::enum_format()
 {
     //-------------------------------------------        
-    
-    logf( (char*)"-------------- VIDIOC_ENUM_FMT ------------------");
+    logf((char*)"Device_cam::enum_format()");
+    log_tab(true);
+
+    logf( (char*)"ioctl =  VIDIOC_ENUM_FMT ------------------");
     struct v4l2_fmtdesc fmtdesc;
     CLEAR(fmtdesc);
     
@@ -260,17 +262,19 @@ void Device_cam::enum_format()
 
     while (-1 != xioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc))
     {
-        logf( (char*)"-------   Description=%s   --------------------" , fmtdesc.description );
-        logf( (char*)"Type=%08X   " , fmtdesc.type );
-        logf( (char*)"Format=%08X   " , fmtdesc.pixelformat );
-        logf( (char*)"" );
+        logf( (char*)"description = %s" , fmtdesc.description );
+        logf( (char*)"type = %08X   " , fmtdesc.type );
+        logf( (char*)"pixelformat = %08X   " , fmtdesc.pixelformat );
         
         if ( fmtdesc.pixelformat == 0x47504A4D )       pixelformat = fmtdesc.pixelformat;
         
         enum_format_size( fmtdesc.pixelformat );
 
+        fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         fmtdesc.index++;
     }
+    log_tab(false);
+    logf((char*)"Device_cam::enum_format()");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -278,6 +282,8 @@ void Device_cam::enum_format()
 void Device_cam::enum_format_size(int pf)
 {
     //-------------------------------------------        
+    logf((char*)"Device_cam::enum_format_size(%d)", pf);
+    log_tab(true);
 
     logf( (char*)"    -- VIDIOC_ENUM_FRAMESIZES --");
     struct v4l2_frmsizeenum frmsizeenum;
@@ -289,11 +295,10 @@ void Device_cam::enum_format_size(int pf)
 
     while (-1 != xioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum))
     {
-        /*
-        logf( (char*)"    Type=%08X   " , frmsizeenum.type );
+        
+        logf( (char*)"Type=%08X   " , frmsizeenum.type );
         logf( (char*)"size=%dx%d   " , frmsizeenum.discrete.width, frmsizeenum.discrete.height     );
-        logf( (char*)"\n" );
-        */
+        
 
         //if (pixelformat != -1 ) {
             //logf( (char*)"Format=%08X   \n" , pixelformat );
@@ -308,9 +313,10 @@ void Device_cam::enum_format_size(int pf)
 
             if ( pf == 0x47504A4D )   
             {
-                tSize.push_back(s);
-                nSize++;
+                sizeChoix = tSize.size();
             }
+            tSize.push_back(s);
+            nSize++;
         //}
         frmsizeenum.index++;
     }
@@ -322,6 +328,9 @@ void Device_cam::enum_format_size(int pf)
         }
     //}
     logf( (char*)"Resolution courante %dx%d",  width, height );
+
+    log_tab(false);
+    logf((char*)"Device_cam::enum_format_size(int pf");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -860,167 +869,178 @@ void Device_cam::init_device(void)
 {
     if (fd == -1)       return;
 
+    logf( (char*)"Device_cam::init_device()" );
+    log_tab(true);
 
-        struct v4l2_capability cap;
-        struct v4l2_cropcap cropcap;
-        struct v4l2_crop crop;
-        struct v4l2_format fmt;
-        
-        unsigned int min;
 
-        if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
-                if (EINVAL == errno) {
-                        fprintf(stderr, "%s is no V4L2 device\n", dev_name.c_str() );
-                    //exit(EXIT_FAILURE);
-                    close_device();
-                    return;
-                } else {
-                        errno_exit("VIDIOC_QUERYCAP");
-                }
-        }
-        //name = ( (char*) cap.card );
-        if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-                fprintf(stderr, "%s is no video capture device\n", dev_name.c_str() );
+    struct v4l2_capability cap;
+    struct v4l2_cropcap cropcap;
+    struct v4l2_crop crop;
+    struct v4l2_format fmt;
+    
+    unsigned int min;
+
+    if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
+            if (EINVAL == errno) {
+                    fprintf(stderr, "%s is no V4L2 device\n", dev_name.c_str() );
                 //exit(EXIT_FAILURE);
                 close_device();
+                goto end;
                 return;
-        }
+            } else {
+                    errno_exit("VIDIOC_QUERYCAP");
+            }
+    }
+    //name = ( (char*) cap.card );
+    if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
+            fprintf(stderr, "%s is no video capture device\n", dev_name.c_str() );
+            //exit(EXIT_FAILURE);
+            close_device();
+            goto end;
+            return;
+    }
 
-        switch (io) {
-        case IO_METHOD_READ:
-                if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
-                        fprintf(stderr, "%s does not support read i/o\n", dev_name.c_str() );
-                    //exit(EXIT_FAILURE);
-                    close_device();
-                    return;
-                }
-                break;
-
-        case IO_METHOD_MMAP:
-        case IO_METHOD_USERPTR:
-                if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-                        fprintf(stderr, "%s does not support streaming i/o\n", dev_name.c_str() );
-                    //exit(EXIT_FAILURE);
-                    close_device();
-                    return;
-                }
-                break;
-        }
-
-
-        /* Select video input, video standard and tune here. */
-
-
-        CLEAR(cropcap);
-
-        cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-        if (0 == xioctl(fd, VIDIOC_CROPCAP, &cropcap)) {
-                crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                crop.c = cropcap.defrect; /* reset to default */
-
-                if (-1 == xioctl(fd, VIDIOC_S_CROP, &crop)) {
-                        switch (errno) {
-                        case EINVAL:
-                                /* Cropping not supported. */
-                                break;
-                        default:
-                                /* Errors ignored. */
-                                break;
-                        }
-                }
-        } else {
-                /* Errors ignored. */
-        }
-
-
-
-        enum_format();
-
-                /* Note VIDIOC_S_FMT may change width and height. */
-        CLEAR(fmt);
-        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-
-        switch(force_format)
-        {
-        case YUYV :
-            fprintf(stderr, "Set YUYV\n");
-            fmt.fmt.pix.width       = tSize[0].width;
-            fmt.fmt.pix.height      = tSize[0].height;
-            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-            fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
-
-            if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))           errno_exit("VIDIOC_S_FMT");
-            
+    switch (io) {
+    case IO_METHOD_READ:
+            if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
+                    fprintf(stderr, "%s does not support read i/o\n", dev_name.c_str() );
+                //exit(EXIT_FAILURE);
+                close_device();
+                goto end;
+                return;
+            }
             break;
-        case H264 :
+
+    case IO_METHOD_MMAP:
+    case IO_METHOD_USERPTR:
+            if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
+                    fprintf(stderr, "%s does not support streaming i/o\n", dev_name.c_str() );
+                //exit(EXIT_FAILURE);
+                close_device();
+                goto end;
+                return;
+            }
+            break;
+    }
+
+
+    /* Select video input, video standard and tune here. */
+
+
+    CLEAR(cropcap);
+
+    cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+    if (0 == xioctl(fd, VIDIOC_CROPCAP, &cropcap)) {
+            crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            crop.c = cropcap.defrect; /* reset to default */
+
+            if (-1 == xioctl(fd, VIDIOC_S_CROP, &crop)) {
+                    switch (errno) {
+                    case EINVAL:
+                            /* Cropping not supported. */
+                            break;
+                    default:
+                            /* Errors ignored. */
+                            break;
+                    }
+            }
+    } else {
+            /* Errors ignored. */
+    }
+
+
+
+    enum_format();
+
             /* Note VIDIOC_S_FMT may change width and height. */
-            fprintf(stderr, "Set H264\r\n");
-            fmt.fmt.pix.width       = tSize[0].width; //replace
-            fmt.fmt.pix.height      = tSize[0].height; //replace
-            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_H264; //replace
-            fmt.fmt.pix.field       = V4L2_FIELD_ANY;
+    CLEAR(fmt);
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-            if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))           errno_exit("VIDIOC_S_FMT");
+
+    switch(force_format)
+    {
+    case YUYV :
+        fprintf(stderr, "Set YUYV\n");
+        fmt.fmt.pix.width       = tSize[0].width;
+        fmt.fmt.pix.height      = tSize[0].height;
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+        fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
+
+        if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))           errno_exit("VIDIOC_S_FMT");
+        
+        break;
+    case H264 :
+        /* Note VIDIOC_S_FMT may change width and height. */
+        fprintf(stderr, "Set H264\r\n");
+        fmt.fmt.pix.width       = tSize[0].width; //replace
+        fmt.fmt.pix.height      = tSize[0].height; //replace
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_H264; //replace
+        fmt.fmt.pix.field       = V4L2_FIELD_ANY;
+
+        if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))           errno_exit("VIDIOC_S_FMT");
+        break;
+
+    case MJPG :
+        fprintf(stderr, "Set MJPG\r\n");
+        fmt.fmt.pix.width       = tSize[sizeChoix].width;//width; //replace
+        fmt.fmt.pix.height      = tSize[sizeChoix].height;//height; //replace
+        
+        logf( (char*)"fmt.fmt.pix.width  = %d", fmt.fmt.pix.width );
+        logf( (char*)"fmt.fmt.pix.height = %d", fmt.fmt.pix.height );
+        //fmt.fmt.pix.width       = width; //replace
+        //fmt.fmt.pix.height      = height; //replace
+
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_BGR24; //replace
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_H264; //replace
+        fmt.fmt.pix.pixelformat = pixelformat; //replace
+
+        fmt.fmt.pix.field       = V4L2_FIELD_ANY;
+
+        if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))           errno_exit("VIDIOC_S_FMT");
+        break;
+
+    default:
+        /* Preserve original settings as set by v4l2-ctl for example */
+        fprintf(stderr, "Set default\n");
+        if (-1 == xioctl(fd, VIDIOC_G_FMT, &fmt))           errno_exit("VIDIOC_G_FMT");
+        break;
+    }
+
+
+    width  = fmt.fmt.pix.width;
+    height = fmt.fmt.pix.height;
+
+
+    /* Buggy driver paranoia. */
+    //min = fmt.fmt.pix.width * 2;
+    //printf( "size   = %d\n", fmt.fmt.pix.sizeimage );
+    min = fmt.fmt.pix.width;
+    if (fmt.fmt.pix.bytesperline < min) fmt.fmt.pix.bytesperline = min;
+
+    min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
+    if (fmt.fmt.pix.sizeimage < min)    fmt.fmt.pix.sizeimage = min;
+
+    switch (io) {
+    case IO_METHOD_READ:
+            init_read(fmt.fmt.pix.sizeimage);
             break;
 
-        case MJPG :
-            fprintf(stderr, "Set MJPG\r\n");
-            fmt.fmt.pix.width       = tSize[sizeChoix].width;//width; //replace
-            fmt.fmt.pix.height      = tSize[sizeChoix].height;//height; //replace
-            
-            logf( (char*)"fmt.fmt.pix.width  = %d", fmt.fmt.pix.width );
-            logf( (char*)"fmt.fmt.pix.height = %d", fmt.fmt.pix.height );
-            //fmt.fmt.pix.width       = width; //replace
-            //fmt.fmt.pix.height      = height; //replace
-
-            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_BGR24; //replace
-            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_H264; //replace
-            fmt.fmt.pix.pixelformat = pixelformat; //replace
-
-            fmt.fmt.pix.field       = V4L2_FIELD_ANY;
-
-            if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))           errno_exit("VIDIOC_S_FMT");
+    case IO_METHOD_MMAP:
+            init_mmap();
             break;
 
-        default:
-            /* Preserve original settings as set by v4l2-ctl for example */
-            fprintf(stderr, "Set default\n");
-            if (-1 == xioctl(fd, VIDIOC_G_FMT, &fmt))           errno_exit("VIDIOC_G_FMT");
+    case IO_METHOD_USERPTR:
+            init_userp(fmt.fmt.pix.sizeimage);
+            //printf( "width  = %d\n", fmt.fmt.pix.width );
+            //printf( "height = %d\n", fmt.fmt.pix.height );
+            //printf( "size   = %d\n", fmt.fmt.pix.sizeimage );
             break;
-        }
+    }
 
-
-        width  = fmt.fmt.pix.width;
-        height = fmt.fmt.pix.height;
-
-
-        /* Buggy driver paranoia. */
-        //min = fmt.fmt.pix.width * 2;
-        //printf( "size   = %d\n", fmt.fmt.pix.sizeimage );
-        min = fmt.fmt.pix.width;
-        if (fmt.fmt.pix.bytesperline < min) fmt.fmt.pix.bytesperline = min;
-
-        min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
-        if (fmt.fmt.pix.sizeimage < min)    fmt.fmt.pix.sizeimage = min;
-
-        switch (io) {
-        case IO_METHOD_READ:
-                init_read(fmt.fmt.pix.sizeimage);
-                break;
-
-        case IO_METHOD_MMAP:
-                init_mmap();
-                break;
-
-        case IO_METHOD_USERPTR:
-                init_userp(fmt.fmt.pix.sizeimage);
-                //printf( "width  = %d\n", fmt.fmt.pix.width );
-                //printf( "height = %d\n", fmt.fmt.pix.height );
-                //printf( "size   = %d\n", fmt.fmt.pix.sizeimage );
-                break;
-        }
+end:
+    log_tab(false);
+    logf( (char*)"Device_cam::init_device" );
         
 }
 //--------------------------------------------------------------------------------------------------------------------

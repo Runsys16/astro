@@ -62,6 +62,7 @@ PanelSimple *       panelStatus;
 PanelText*          pCamFilename;
 PanelText*          pRef;
 PanelText*          pSuivi;
+PanelText*          pEcart;
 PanelText*          pJoyXY;
 PanelText*          pArduino;
 PanelText*          pStellarium;
@@ -690,6 +691,7 @@ int getOffset( int x, int y, int width )
 void updatePanelResultat()
 {
     Camera_mgr& mgr = Camera_mgr::getInstance();
+	WindowsManager& wm= WindowsManager::getInstance();
 
     char sStr[255];
 
@@ -706,14 +708,20 @@ void updatePanelResultat()
 
         sprintf( sStr, "Reference\t(%0.2f, %0.2f)", xSuivi, ySuivi );
         pRef->changeText(sStr);
+        
         sprintf( sStr, "Suivi\t(%0.2f, %0.2f)", pv->x, pv->y );
         pSuivi->changeText(sStr);
+        
+        sprintf( sStr, "Ecart\t\t%0.2f", l );
+        pEcart->changeText(sStr);
 
         float xx = pv->x;
         float yy = pv->y + 35;
         
         mgr.tex2screen(xx,yy);
 
+        if ( (xx + panelResultat->getDX()) > (wm.getWidth()+10) )       xx -= panelResultat->getDX();
+        if ( (yy + panelResultat->getDY()) > (wm.getHeight()+10) )      yy -= panelResultat->getDY();
         panelResultat->setPos( xx, yy );
     }
 }
@@ -2699,14 +2707,16 @@ static void CreateResultat()	{
 	int dx0 = 50;
 	int l = 0;
 
-	pRef   = new PanelText( (char*)"Reference ",  PanelText::NORMAL_FONT, x0, y0  );
-	pSuivi = new PanelText( (char*)"Suivi ",      PanelText::NORMAL_FONT, x0, y0+16  );
+	pRef   = new PanelText( (char*)"Reference ",  PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	pSuivi = new PanelText( (char*)"Suivi ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	pEcart = new PanelText( (char*)"Ecart ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
 	pRef->setTabSize(80);
 	pSuivi->setTabSize(80);
 	panelResultat->add( pRef ); 
 	panelResultat->add( pSuivi ); 
+	panelResultat->add( pEcart ); 
 
-    panelResultat->setSize( x0 +200, dy+16);
+    panelResultat->setSize( x0 +200, 16*l+8);
     panelResultat->setBackground((char*)"images/background.tga");
     panelResultat->setVisible(bPanelResultat);
 }

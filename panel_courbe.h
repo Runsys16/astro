@@ -68,6 +68,7 @@ private:
 
 public :
     PanelCourbe();
+    ~PanelCourbe();
     
     void                init_var();
     //void                screen2tex( int& x, int& y );

@@ -74,6 +74,24 @@ PanelCourbe::PanelCourbe()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+PanelCourbe::~PanelCourbe()
+{
+    // Effacement des unites
+    int nb = unites.size();
+    if (nb != 0)
+    {
+        for( int i=0; i<nb; i++ )
+        {
+            sup(unites[i]);
+            delete unites[i];
+            unites[i] = 0;
+        }
+        unites.clear();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::init_var()
 {
     VarManager&         var = VarManager::getInstance();
@@ -351,20 +369,8 @@ void PanelCourbe::glCourbe()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::build_unites_text()
 {
-    logf( (char*)"PanelCourbe::build_unites_text()" );
-    log_tab(true);
-    // Effacement des unites
-    int nb = unites.size();
-    if (nb != 0)
-    {
-        for( int i=0; i<nb; i++ )
-        {
-            sup(unites[i]);
-            delete unites[i];
-            unites[i] = 0;
-        }
-        unites.clear();
-    }
+    //logf( (char*)"PanelCourbe::build_unites_text()" );
+    //log_tab(true);
 
     float dy= (float)getDY() / 2.0;
 
@@ -373,31 +379,50 @@ void PanelCourbe::build_unites_text()
     float   fPas;
     string  s;
 
-    logf( (char*)"delta_courbe1 = %0.2f", delta_courbe1 ) ;
+    //logf( (char*)"delta_courbe1 = %0.2f", delta_courbe1 ) ;
 
     pas  = delta_courbe1;
     fPas = delta_courbe1;
     while( fPas < taille_mini )            
         fPas += courbe1;
 
+    int idx = 0;
+
+
+
+
     for( float i=0; i<dy; i+=fPas )
     {
         y = (-i)/delta_courbe1;
         s = "" + to_string(y) + " px";
         y2Screen(y);
-        unites.push_back(  new PanelText( (char*)s.c_str(),		PanelText::NORMAL_FONT, 25, dy+i-8 ) );
-        add( unites[unites.size()-1] );
+
+        if ( idx == unites.size() )         { unites.push_back( new PanelText((char*)" ",PanelText::NORMAL_FONT) ); add( unites[idx] ); }
+        unites[idx]->changeText( (char*)s.c_str() );
+        unites[idx]->setPos(25,dy+i-8);
+        unites[idx]->setVisible(true);
+        idx++;
 
         if ( i == 0 )   continue;
 
         y = (+i)/delta_courbe1;
         s = "" + to_string(y) + " px";
         y2Screen(y);
-        unites.push_back(  new PanelText( (char*)s.c_str(),		PanelText::NORMAL_FONT, 25, dy-i-8 ) );
-        add( unites[unites.size()-1] );
+
+        if ( idx == unites.size() )         { unites.push_back( new PanelText((char*)" ",PanelText::NORMAL_FONT) ); add( unites[idx] ); }
+        unites[idx]->changeText( (char*)s.c_str() );
+        unites[idx]->setPos(25,dy-i-8);
+        unites[idx]->setVisible(true);
+        idx++;
     }
-    log_tab(false);
-    logf( (char*)"PanelCourbe::build_unites_text()" );
+    
+    for( int i=idx; i<unites.size(); i++ )
+        unites[i]->setVisible(false);
+
+
+            //unites.push_back(  new PanelText( (char*)s.c_str(),		PanelText::NORMAL_FONT, 25, dy+i-8 ) );
+    //log_tab(false);
+    //logf( (char*)"PanelCourbe::build_unites_text()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
