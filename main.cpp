@@ -330,6 +330,7 @@ void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
     workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
     var.set( "DirSauveCourbe", workDirSauveCourbe );
     FileBrowser::getInstance().setFiltre( "" );
+    FileBrowser::getInstance().setFocus();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -899,7 +900,7 @@ void charge_guidage(string filename)
     //string filename = "/home/rene/.astropilot/svg.txt";
     //string filename = "/home/rene/.astropilot/m57.txt";
     //string filename = "/home/rene/.astropilot/sauvegarde.txt";
-    logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
+    logf( (char*)"charge_guidage('%s')", (char*)filename.c_str() );
     
     std::ifstream fichier;
     fichier.open(filename, std::ios_base::app);
@@ -1230,6 +1231,7 @@ static void idleGL(void)
     if ( panelCourbe->getHaveMove() )
     {
         panelCourbe->resetHaveMove();
+        panelCourbe->build_unites_text();
 
         var.set("xPanelCourbe",  panelCourbe->getX() );
         var.set("yPanelCourbe",  panelCourbe->getY() );
@@ -2650,6 +2652,7 @@ void resizeCourbe(int width, int height)	{
 
 
     panelCourbe->setPosAndSize( x,  y, dx, dy );
+    panelCourbe->build_unites_text();
     //printf("resizeControl(%d, %d\n", width, height);
     //printf("  x=%d y=%d dx=%d dy=%d\n", x, y, dx, dy);
 }

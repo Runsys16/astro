@@ -49,13 +49,16 @@ private:
     int                 xm_svg;
     int                 ym_svg;
     
-    float               xStartAxe = 50.0;
+    float               xStartAxe = 70.0;
     float               err = 2.0;
 
     PanelText*          pXMax;
     PanelText*          pXMin;
     PanelText*          pYMax;
     PanelText*          pYMin;
+
+
+    vector<PanelText*>  unites;
 
     bool                bPanelCourbe;
     
@@ -72,7 +75,8 @@ public :
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
     void                glCourbe();
-//    void                displayGLTrace(void);
+
+    void                build_unites_text(void);
     int                 sc2winX(int);
     int                 sc2winY(int);
     

@@ -107,6 +107,7 @@ public :
     void                        setCallBack(ButtonCallBack* p);
     void                        setExtra( int );
     void                        setColor( long );
+    void                        setFocus();
     
 inline bool                     getVisible()                        { return pW->getVisible(); }
 
