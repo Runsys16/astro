@@ -31,6 +31,7 @@ private:
     float               delta_courbe2 = 1.0;
     float               courbe1 = 1.0;
     float               courbe2 = 1.0;
+    float               taille_mini = 20.0; //(pixel)
     int                 decal_resultat = 0;
 
 
@@ -68,6 +69,7 @@ private:
 public :
     PanelCourbe();
     
+    void                init_var();
     //void                screen2tex( int& x, int& y );
     //void                tex2screen( int& x, int& y );
     void                setColor(long l)            { PanelWindow::setColor(l); }

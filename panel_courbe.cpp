@@ -2,7 +2,6 @@
 #define PANELCOURBE_CPP
 
 #include "panel_courbe.h"
-
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -14,6 +13,7 @@ PanelCourbe::PanelCourbe()
 	WindowsManager&     wm  = WindowsManager::getInstance();
     VarManager&         var = VarManager::getInstance();
 
+    init_var();
     //setDisplayGL(displayGLnuit_cb);
     //resizeCourbe( width, height );
 
@@ -47,29 +47,55 @@ PanelCourbe::PanelCourbe()
     vOrigine.y      = var.getf("vOrigine.y");
     vOrigine.z      = 0.0;
 
+    taille_mini       = var.getf("taille_mini_unite");
+
     update_err();
 
-    if ( var.existe("FileResultat") )
+    string* pFile = var.gets( "FileResultat" );
+    logf( (char*)"Chargement de %s", pFile->c_str() );
+    if ( pFile!=NULL )
     {
-        string* pFile = var.gets( "FileResultat" );
-        logf( (char*)"Chargement de %s", pFile->c_str() );
-        if ( pFile!=NULL )
+        if ( pFile->find( "---" ) == std::string::npos )
         {
-            if ( pFile->find( "---" ) == std::string::npos )
-            {
-                charge_guidage( *pFile );
-                logf( (char*)"Fichier : %s", pFile->c_str() );
-            }
+            charge_guidage( *pFile );
+            logf( (char*)"Fichier : %s", pFile->c_str() );
         }
     }
     
-    if ( var.existe("decal_resultat") )         decal_resultat = var.geti( "decal_resultat" );
+    decal_resultat = var.geti( "decal_resultat" );
     
     setVisible( var.getb( "bPanelCourbe" ) );
 
     build_unites_text();
+    
     log_tab(false);
     logf( (char*)"PanelCourbe::PanelCourbe() Constructeur" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::init_var()
+{
+    VarManager&         var = VarManager::getInstance();
+
+    if (!var.existe("err"))                         var.set("err", (float)1.0);
+    if (!var.existe("courbe1"))                     var.set("courbe1", (float)1.0);
+    if (!var.existe("delta_courbe1"))               var.set("delta_courbe1", (float)1.0);
+    if (!var.existe("courbe2"))                     var.set("courbe2", (float)1.0);
+    if (!var.existe("delta_courbe2"))               var.set("delta_courbe2", (float)1.0);
+
+    if (!var.existe("vOrigine.x"))                  var.set("vOrigine.x", (float)0.0);
+    if (!var.existe("vOrigine.y"))                  var.set("vOrigine.y", (float)0.0);
+
+    if (!var.existe("bPanelCourbe"))                var.set("bPanelCourbe", true);
+    if (!var.existe("FileResultat"))                var.set("FileResultat", "---");
+    if (!var.existe("decal_resultat"))              var.set("decal_resultat", 0 );
+    if (!var.existe("taille_mini_unite"))           var.set("taille_mini_unite", (float)20.0);
+    
+    if (!var.existe("xPanelCourbe") )               var.set( "xPanelCourbe", 10);
+    if (!var.existe("yPanelCourbe") )               var.set( "yPanelCourbe", 10);
+    if (!var.existe("dxPanelCourbe") )              var.set("dxPanelCourbe", 400);
+    if (!var.existe("dyPanelCourbe") )              var.set("dyPanelCourbe", 400);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -135,7 +161,7 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         glColor4fv( (GLfloat*)&color );
         int pas = delta_courbe1;
         float fPas = delta_courbe1;
-        while( fPas < 10.0 )     fPas += courbe1;
+        while( fPas < taille_mini )     fPas += courbe1;
 
         for( float i=0; i<SIZE/2; i+=fPas )
         {
@@ -351,7 +377,7 @@ void PanelCourbe::build_unites_text()
 
     pas  = delta_courbe1;
     fPas = delta_courbe1;
-    while( fPas < 10.0 )            
+    while( fPas < taille_mini )            
         fPas += courbe1;
 
     for( float i=0; i<dy; i+=fPas )
