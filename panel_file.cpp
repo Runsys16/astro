@@ -30,7 +30,10 @@ void PanelFile::wheelDown( int xm, int ym)
 void PanelFile::releaseLeft( int x, int y )
 {
     logf( (char*)"PanelFile::releaseLeft(%d,%d)", x, y );
+    log_tab(true);
     pFB->isInsideFile(x, y);
+    log_tab(false);
+    logf( (char*)"PanelFile::releaseLeft(%d,%d)", x, y );
 }
 
 

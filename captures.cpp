@@ -393,6 +393,7 @@ void Captures::ajoute(string filename)
 void Captures::supprime()
 {
     logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
+    log_tab(true);
     int n = captures.size();
     if ( current_capture != -1 )
     {
@@ -412,6 +413,9 @@ void Captures::supprime()
     }
     else 
         logf( (char*)" supprime()  current_capture = -1" );
+
+    log_tab(false);
+    logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

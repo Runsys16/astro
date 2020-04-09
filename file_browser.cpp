@@ -155,8 +155,6 @@ void FileBrowser::explore_dir()
         {
             tDirNames.push_back( s );
         }
-        
-        
     }
 
     closedir(rep);
@@ -277,17 +275,22 @@ bool FileBrowser::isInsideDir( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::isInsideFile( int x, int y )
 {
+    logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
+    log_tab(true);
+
     int Y = panelFile->Screen2y(y) / DY;
     int X = panelFile->Screen2x(x) / DXFile; 
     
     int m = panelFile->getPosDY() / DY;
     int n = m*X + Y;
 
-    //logf( (char*)"--- X=%d Y=%d m=%d n=%d", X, Y, m, n );
+    logf( (char*)"--- X=%d Y=%d m=%d n=%d/%d", X, Y, m, n, tFileNames.size() );
     
     if ( n >= tFileNames.size() )
     {
-        logf( (char*)"NOK X=%s Y=%d m=%d n=%d", X, Y, m, n );
+        logf( (char*)"NOK X=%d Y=%d m=%d n=%d", X, Y, m, n );
+        log_tab(false);
+        logf( (char*)"FileBrowser::isInsideFile()" );
         return false;
     }
     //logf( (char*)"OK %s ", (char*)tFileNames[n].c_str() );
@@ -305,6 +308,10 @@ bool FileBrowser::isInsideFile( int x, int y )
 
     //charge_image( workingDir, tFileNames[n] );
     WindowsManager::getInstance().onTop(pW);
+    
+    log_tab(false);
+    logf( (char*)"FileBrowser::isInsideFile()" );
+    return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -635,6 +642,8 @@ void ButtonOK::releaseLeft( int xm, int ym )
     if ( pCallBack == NULL )                logf( (char*)"  callback null " );
     else                                    logf( (char*)"  callback NON null " );
 
+    
+    logf( (char*)"  Extra %d", getExtra() );
     switch(getExtra())
     {
     case 0:
@@ -646,19 +655,16 @@ void ButtonOK::releaseLeft( int xm, int ym )
     case 10:
     {
         pCallBack->callback( true, 10, (char*)s.c_str() );
-        logf( (char*)"  Extra %d", getExtra() ); 
     }    
     break;
     case 11:
     {
         pCallBack->callback( true, 11, (char*)s.c_str() );
-        logf( (char*)"  Extra %d", getExtra() ); 
     }    
     break;
     case 12:
     {
         pCallBack->callback( true, 12, (char*)s.c_str() );
-        logf( (char*)"  Extra %d", getExtra() );
     }    
     break;
     }

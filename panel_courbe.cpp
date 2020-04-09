@@ -394,7 +394,7 @@ void PanelCourbe::build_unites_text()
     for( float i=0; i<dy; i+=fPas )
     {
         y = (-i)/delta_courbe1;
-        s = "" + to_string(y) + " px";
+        s = "" + to_string((int)round(y)) + " px";
         y2Screen(y);
 
         if ( idx == unites.size() )         { unites.push_back( new PanelText((char*)" ",PanelText::NORMAL_FONT) ); add( unites[idx] ); }

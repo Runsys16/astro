@@ -205,12 +205,14 @@ void Capture::updatePos()
     Panel::updatePos();
 
     int dx = getDX();
+    int DX = panelPreview->getPosX();
+    int DY = panelPreview->getPosY();
 
     pFermer->updatePos();
 
-    pFermer->setPos(    dx - 20*3, 2);
-    pMaximiser->setPos( dx - 20*2, 2);
-    pIconiser->setPos(  dx - 20*1, 2);
+    pFermer->setPos(    dx - 20*3 -DX, 2 -DY);
+    pMaximiser->setPos( dx - 20*2 -DX, 2 -DY);
+    pIconiser->setPos(  dx - 20*1 -DX, 2 -DY);
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -225,17 +227,20 @@ void Capture::clickLeft(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::releaseLeft(int xm, int ym)
 {
-    logf( (char*)"Capture::releaseLeft ..." );
+
+    logf( (char*)"Capture::releaseLeft(...)" );
+    log_tab(true);
 
     if ( pFermer == pFermer->isMouseOver(xm, ym) )
     {
+        logf( (char*)"Capture::releaseLeft() Fermeture" );
         Captures::getInstance().setCurrent(this);
         Captures::getInstance().supprime();
-        logf( (char*)"Capture::releaseLeft() Fermeture" );
     }
     else
     if ( pMaximiser == pMaximiser->isMouseOver(xm, ym ) )
     {
+        logf( (char*)"Capture::releaseLeft() Maximiser" );
         if ( bIcone )
         {
             Captures::getInstance().setCurrent(this);
@@ -246,14 +251,16 @@ void Capture::releaseLeft(int xm, int ym)
             Captures::getInstance().setCurrent(this);
             Captures::getInstance().fullscreen();
         }
-        logf( (char*)"Capture::releaseLeft() Maximiser" );
     }
     else
     if ( pIconiser == pIconiser->isMouseOver(xm, ym ) )
     {
-       Captures::getInstance().rotate_capture_plus(true);
        logf( (char*)"Capture::releaseLeft() Iconiser" );
+       Captures::getInstance().rotate_capture_plus(true);
     }
+
+    log_tab(false);
+    logf( (char*)"Capture::releaseLeft(...)" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -497,7 +504,10 @@ void Capture::setColor(long c)
 {
     pTitre->setColor( c);
     PanelWindow::setColor( c);
-    panelPreview->setColor( c);
+    //panelPreview->setColor( c);
+    pFermer->setColor( c);
+    pIconiser->setColor( c);
+    pMaximiser->setColor( c);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

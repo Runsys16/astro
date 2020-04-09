@@ -390,6 +390,7 @@ void CallbackFileBrowser::callback( bool bb, int ii, char* str)
     workDirFileBrowser = fb.getWorkingDir();
     VarManager& var = VarManager::getInstance();
     var.set( "DirFileBrowser", workDirFileBrowser );
+    fb.setFocus();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
