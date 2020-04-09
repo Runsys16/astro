@@ -109,6 +109,7 @@ typedef struct readBackground       rb_t;
     extern vec3                     vecAD[2];
     extern vec3                     vecDC[2];
 
+    extern double                   pas_sideral;
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------

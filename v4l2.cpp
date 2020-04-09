@@ -292,12 +292,12 @@ void Device_cam::enum_format_size(int pf)
     frmsizeenum.index = 0;
     frmsizeenum.pixel_format = pf;
     nSize = 0;
+    width = -1;
 
     while (-1 != xioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum))
     {
         
-        logf( (char*)"Type=%08X   " , frmsizeenum.type );
-        logf( (char*)"size=%dx%d   " , frmsizeenum.discrete.width, frmsizeenum.discrete.height     );
+        logf( (char*)"Type=%08X size=%dx%d" , frmsizeenum.type, frmsizeenum.discrete.width, frmsizeenum.discrete.height );
         
 
         //if (pixelformat != -1 ) {
@@ -313,7 +313,7 @@ void Device_cam::enum_format_size(int pf)
 
             if ( pf == 0x47504A4D )   
             {
-                sizeChoix = tSize.size();
+                sizeChoix = 0;//tSize.size();
             }
             tSize.push_back(s);
             nSize++;

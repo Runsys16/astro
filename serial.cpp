@@ -290,6 +290,15 @@ void Serial::read_thread()
                     }
                 }
                 else
+                if ( test.find("Pas sideral") != string::npos )
+                {
+                    int n = test.find("Pas sideral");
+                    string sPas = test.substr(n+11+3);
+                    
+                    pas_sideral = strtod(sPas.c_str(),NULL);
+                    //logf( (char*)"Pas sideral : %0.8f", pas_sideral );
+                }
+                else
                 if ( test.find("GOTO OK") != string::npos )
                 {
                     if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );

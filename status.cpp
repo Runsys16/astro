@@ -16,6 +16,7 @@ PanelButton *       pFlecheBas;
 
 PanelCheckBox *     pButtonAsserv;
 
+double oldPas = -1.0;
 void inverse_texture(PanelButton *, bool, string);
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -360,6 +361,14 @@ void idleStatus()
     {
        bStellarium = false;
        pStellarium->changeText( (char*)"----" );
+    }
+    
+    if ( pas_sideral != oldPas )
+    {
+        char str[255];
+        sprintf( str, "pas:%0.4f", pas_sideral );
+        pPas->changeText( (char*)str );
+        oldPas = pas_sideral;
     }
     //-----------------------------------------------------------------------
     // Gestion de apause

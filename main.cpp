@@ -66,6 +66,7 @@ PanelText*          pEcart;
 PanelText*          pJoyXY;
 PanelText*          pArduino;
 PanelText*          pStellarium;
+PanelText*          pPas;
 PanelText*          pDeplacement;
 PanelText*          pAD;
 PanelText*          pDC;
@@ -202,6 +203,7 @@ bool                bCorrection = false;
 float               fTimeCorrection = 3.0;
 float               fTimeCpt = 0.0;
 float               fLimitCorrection = 80.0;
+double              pas_sideral;
 //float               err = 2.0;
 //#define err         err
 //--------------------------------------------------------------------------------------------------------------------
@@ -2037,7 +2039,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         bMouseDeplace = !bMouseDeplace;
         logf( (char*)"  bMouseDeplace = %s", BOOL2STR(bMouseDeplace) );
 
-	    if (bMouseDeplace)              pDeplacement->changeText((char*)"Deplacement");
+	    if (bMouseDeplace)              pDeplacement->changeText((char*)"Depl");
         else                            pDeplacement->changeText((char*)"----");
         }
         break;
@@ -2874,7 +2876,7 @@ static void CreateStatus()	{
 	panelStatus->add( pHertz );
 
     logf((char*)"** CreateStatus()  panelSatuts  %d", width);
-    pArduino = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-300, 2 );
+    pArduino = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-280, 2 );
 	panelStatus->add( pArduino );
 
     pJoyXY = new PanelText( (char*)"Joy(---, ---)",		PanelText::NORMAL_FONT, width-620, 2 );
@@ -2882,6 +2884,9 @@ static void CreateStatus()	{
 
     pStellarium = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-230, 2 );
 	panelStatus->add( pStellarium );
+
+    pPas = new PanelText( (char*)"pas:",		PanelText::NORMAL_FONT, width-380, 2 );
+	panelStatus->add( pPas );
 
     pAD = new PanelText( (char*)"AsDr :",		PanelText::NORMAL_FONT, 60, 2 );
 	panelStatus->add( pAD );
@@ -2898,7 +2903,7 @@ static void CreateStatus()	{
 	panelStatus->add( pDeplacement );
 
 
-	if (bMouseDeplace)              pDeplacement->changeText((char*)"Deplacement");
+	if (bMouseDeplace)              pDeplacement->changeText((char*)"Depl");
     else                            pDeplacement->changeText((char*)"----");
 
 	if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");

@@ -34,6 +34,7 @@ string tHelp[] =
 "    z1, z2, z3, z4",
 "      \t: Coefficient vitesse joystick",
 "        1x 1/5x 1/10x 1/20x",
+"    Vn\t: Change la viteese siderale",
 "",
 "Commande à envoyer avec 'retour chariot'",
 "----------------------------------------",
