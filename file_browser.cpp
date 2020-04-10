@@ -59,12 +59,14 @@ FileBrowser::FileBrowser()
     currentDir = string(workingDir);
 
     pW              = new PanelWindow();
-	panelDirName    = new PanelText( (char*)workingDir.c_str(),		PanelText::NORMAL_FONT, 20, 10 );
+	//panelDirName    = new PanelText( (char*)workingDir.c_str(),		PanelText::NORMAL_FONT, 20, 10 );
     panelDir        = new PanelDir(this);
     panelFile       = new PanelFile(this);
     panelOK         = new ButtonOK(this);
     panelQuit       = new ButtonQUIT(this);
     panelFilename   = new PanelEditText();
+	panelDirName    = new PanelEditText();
+	panelDirName->changeText( (char*)workingDir.c_str() );//		PanelText::NORMAL_FONT, 20, 10 );
     
     panelFilename->changeText( "" );
     pW->setDisplayGL(displayGLnuit_cb);
@@ -253,12 +255,17 @@ void FileBrowser::change_dir( string dirname )
 //--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::isInsideDir( int x, int y )
 {
+    logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
+    log_tab(true);
+
     int Y = panelDir->Screen2y(y);
     int n = Y / DY;
     
     if ( n >= tDirNames.size() )
     {
         logf( (char*)"NOK" );
+        log_tab(false);
+        logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
         return false;
     }
 
@@ -269,6 +276,9 @@ bool FileBrowser::isInsideDir( int x, int y )
     change_dir( n );        
     
     dirScroll = 0;
+
+    log_tab(false);
+    logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

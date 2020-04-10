@@ -116,7 +116,7 @@ bool                bSuivi  = false;
 bool                bModeManuel = false;
 bool                bNuit   = false;
 bool                bDebug  = false;
-bool                bQuit;
+bool                bArretUrgence;
 bool                bAffIconeCapture = true;;
 
 
@@ -139,6 +139,7 @@ bool                bAffCentre     = false;
 bool                bAffSuivi      = true;
 bool                bSound         = true;
 bool                bInverseCouleur= false;
+bool                bCentrageSuivi = false;
 
 int                 wImg;
 int                 hImg;
@@ -154,6 +155,8 @@ int                 _b[256];
 
 float               xSuivi;
 float               ySuivi;
+float               xSuiviSvg;
+float               ySuiviSvg;
 //vector<Star*>       v_tStars;
 float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
@@ -282,6 +285,27 @@ static void usage(FILE *fp, int argc, char **argv)
                  "-e | --exc           Exclude device\n"
                  "",
                  argv[0] );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void arret_urgence()
+{
+    logf((char*)"**[ARRET D'URGENCE]**" );
+    // arrete le suivi
+    bSuivi = false;
+    var.set( "bSuivi", bSuivi );
+    change_joy( xSuivi, ySuivi );
+
+    // envoi la commande arduino  arret urgence
+    char cmd[]="n";
+
+    Serial::getInstance().reset();
+    Serial::getInstance().write_string(cmd);
+    Serial::getInstance().reset();
+
+    // Arrete l'asservissment
+    bCorrection = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -715,7 +739,7 @@ void updatePanelResultat()
         sprintf( sStr, "Suivi\t(%0.2f, %0.2f)", pv->x, pv->y );
         pSuivi->changeText(sStr);
         
-        sprintf( sStr, "Ecart\t\t%0.2f", l );
+        sprintf( sStr, "Ecart\t\t%0.2fpx", l );
         pEcart->changeText(sStr);
 
         float xx = pv->x;
@@ -1336,32 +1360,30 @@ static void idleGL(void)
 	    fTimeCpt += elapsedTime;
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCpt );
 	    //if ( bCorrection && fTimeCpt > 0.0 && !bModeManuel)
-	    if ( bCorrection && fTimeCpt > 0.0 )
-	    {
-            fTimeCpt -= fTimeCorrection;
-            if ( fTimeCpt > 0.0 )    fTimeCpt = 0.0;//-= fTimeCorrection;
+        vec2* pv = Camera_mgr::getInstance().getSuivi();
+        if ( pv != NULL && bCorrection )
+        {
+            vec3 res, v, w;  float l;
 
-            vec2* pv = Camera_mgr::getInstance().getSuivi();
-            if ( pv != NULL )
-            {
-	            //float dx = xSuivi - panelCourbe->get_vOrigine().x;
-	            //float dy = ySuivi - panelCourbe->get_vOrigine().y;
-	            float dx = xSuivi - pv->x;
-	            float dy = ySuivi - pv->y;
-                //logf( (char*)" Asservissement delta(%0.2f, %0.2f)", dx, dy );
+            w = vec3( xSuivi, ySuivi, 0.0);
+            v = w - vec3( pv->x, pv->y, 0.0);
+            l = v.length();
+
+            if ( l > fLimitCorrection ) {
+                logf( (char*)"[WARNING]Suivi l=%0.2f", l ); 
+                arret_urgence();
+            }
+
+	        if ( fTimeCpt > 0.0 )
+	        {
+                fTimeCpt -= fTimeCorrection;
+                if ( fTimeCpt > 0.0 )    fTimeCpt = 0.0;//-= fTimeCorrection;
 	            
-	            if ( fabs(dx) > panelCourbe->get_err() || fabs(dy) > panelCourbe->get_err() )
+	            if ( fabs(v.x) > panelCourbe->get_err() || fabs(v.y) > panelCourbe->get_err() )
 	            {
-	                vec3 w = vec3( xSuivi, ySuivi, 0.0);
-	                vec3 v = w - vec3( pv->x, pv->y, 0.0);
-	                float l = v.length();
-
-	                if ( l > fLimitCorrection )
-	                    logf( (char*)"[WARNING]Suivi l=%0.2f", l ); 
-
-                    if ( !bMouseDeplace && Serial::getInstance().getFree() ) {
-
-                        vec3 res = mChange * v;
+                    if ( !bMouseDeplace && Serial::getInstance().getFree() )
+                    {
+                        res = mChange * v;
                         int ad = (int) (res.x * -1000.0);
                         int dc = (int) (res.y * 1000.0);
                         char cmd[255];
@@ -1478,24 +1500,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     
     if (tAlert.size() != 0 )
     {
-        if ( bQuit )   
+        if ( bArretUrgence )   
         {
             if (key == 27 )     { 
-                //quit();
-                logf((char*)"**[ARRET D'URGENCE]**" );
-                bSuivi = false;
-                var.set( "bSuivi", bSuivi );
-                change_joy( xSuivi, ySuivi );
-
-                char cmd[]="n";
-
-                Serial::getInstance().write_string(cmd);
-                Serial::getInstance().reset();
-
-                bCorrection = false;
+                arret_urgence();
             }
         }
-        bQuit = false;
+        bArretUrgence = false;
         alertBoxQuit();
         return;
     }
@@ -1539,7 +1550,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    {
 	    logf( (char*)"Key (ESC) : ByeBye !!" );
 	    alertBox( "Confirmez l'arret de la monture 'ESC'" );
-	    bQuit = true;
+	    bArretUrgence = true;
 	    }
         break;
 	// CTRL D
@@ -2066,23 +2077,23 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'o':
         {
-        logf( (char*)"Key (o) : Affiche/cache la simu pleiade");
-        if ( !bPleiade )
-        {
-            if ( pPleiade == NULL )             pPleiade = new Pleiade();
-            Camera_mgr::getInstance().add( pPleiade );
-            bPleiade = true;
-            //bOneFrame = true;
-        }
-        else
-        {
-            //*
-            Camera_mgr::getInstance().sup( pPleiade );
-            bPleiade = false;
-            pPleiade = NULL;
-            //delete pPleiade;
-            //*/
-        }
+            logf( (char*)"Key (o) : Affiche/cache la simu pleiade");
+            if ( !bPleiade )
+            {
+                if ( pPleiade == NULL )             pPleiade = new Pleiade();
+                Camera_mgr::getInstance().add( pPleiade );
+                bPleiade = true;
+                //bOneFrame = true;
+            }
+            else
+            {
+                //*
+                Camera_mgr::getInstance().sup( pPleiade );
+                bPleiade = false;
+                pPleiade = NULL;
+                //delete pPleiade;
+                //*/
+            }
         }
     	break;
 
@@ -2226,53 +2237,85 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'V':
         {
-        if (bModeManuel)
-        {
-            int x = xClick;
-            int y = yClick;
-            //tex2screen(x,y);
-
-            xSuivi = x;
-            ySuivi = y;
-
-            var.set("xSuivi", xSuivi );
-            var.set("ySuivi", ySuivi );
-
-            panelCourbe->get_vOrigine().x = x;
-            panelCourbe->get_vOrigine().y = y;
-            panelCourbe->get_vOrigine().z = 0.0;
-            
-            change_joy( x, y );
-
-            logf( (char*)"initialise vOrigine(click) : (%d,%d)", x, y);
-        }
-        else
-        {
-            vec2* pv = Camera_mgr::getInstance().getSuivi();
-            //panelCourbe->get_vOrigine().x = xSuivi;
-            //panelCourbe->get_vOrigine().y = ySuivi;
-            if ( pv != NULL )
+            if (bModeManuel)
             {
-                xSuivi = pv->x;
-                ySuivi = pv->y;
+                int x = xClick;
+                int y = yClick;
+                //tex2screen(x,y);
 
-                change_joy( xSuivi, ySuivi );
+                xSuivi = x;
+                ySuivi = y;
 
                 var.set("xSuivi", xSuivi );
                 var.set("ySuivi", ySuivi );
+
+                panelCourbe->get_vOrigine().x = x;
+                panelCourbe->get_vOrigine().y = y;
+                panelCourbe->get_vOrigine().z = 0.0;
+                
+                change_joy( x, y );
+
+                logf( (char*)"initialise vOrigine(click) : (%d,%d)", x, y);
             }
-            panelCourbe->get_vOrigine().x = xSuivi;
-            panelCourbe->get_vOrigine().y = ySuivi;
-            panelCourbe->get_vOrigine().z = 0.0;
-            
-            
-            logf( (char*)"initialise vOrigine(suivi) : (%0.2f,%0.2f)", xSuivi, ySuivi);
-        }
+            else
+            {
+                vec2* pv = Camera_mgr::getInstance().getSuivi();
+                //panelCourbe->get_vOrigine().x = xSuivi;
+                //panelCourbe->get_vOrigine().y = ySuivi;
+                if ( pv != NULL )
+                {
+                    xSuivi = pv->x;
+                    ySuivi = pv->y;
+
+                    change_joy( xSuivi, ySuivi );
+
+                    var.set("xSuivi", xSuivi );
+                    var.set("ySuivi", ySuivi );
+                }
+                panelCourbe->get_vOrigine().x = xSuivi;
+                panelCourbe->get_vOrigine().y = ySuivi;
+                panelCourbe->get_vOrigine().z = 0.0;
+                
+                
+                logf( (char*)"initialise vOrigine(suivi) : (%0.2f,%0.2f)", xSuivi, ySuivi);
+            }
+            bCentrageSuivi = false;
         }
         break;
     case 'w' :
         {
-        //BluetoothManager::getInstance().centre_joystick();
+            //BluetoothManager::getInstance().centre_joystick();
+            bCentrageSuivi = !bCentrageSuivi;
+            WindowsManager& wm = WindowsManager::getInstance();
+            if ( bCentrageSuivi )
+            {
+                // Sauvegarde dans xClick et yClick
+                xSuiviSvg = xSuivi;
+                ySuiviSvg = ySuivi;
+
+                xSuivi = (float)wm.getWidth()/2;
+                ySuivi = (float)wm.getHeight()/2;
+
+                Camera_mgr::getInstance().screen2tex(xSuivi, ySuivi);
+            }
+            else
+            {
+                // Restauration de xSuivi et ySuivi
+                xSuivi = xSuiviSvg;
+                ySuivi = ySuiviSvg;
+            }
+
+            //panelCourbe->get_vOrigine().x = x;
+            //panelCourbe->get_vOrigine().y = y;
+            //panelCourbe->get_vOrigine().z = 0.0;
+
+            change_joy( xSuivi, ySuivi );
+            bModeManuel = true;
+
+            var.set("xSuivi", (float)xSuivi );
+            var.set("ySuivi", (float)ySuivi );
+
+            logf( (char*)"initialise vOrigine(recentrage) : (%0.2f,%0.2f)", xSuivi, ySuivi);
         }
         break;
 
@@ -2736,6 +2779,14 @@ static void addString( string s )
 	panelHelp->add( p );
 	y_help += 15;
 }	
+static void addString2( string s )
+{
+    if ( s.size() == 0 )       { y_help += 15; return; }
+    PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help+400, y_help );
+    p->setTabSize(40);
+	panelHelp->add( p );
+	y_help += 15;
+}	
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -2759,53 +2810,51 @@ static void CreateHelp()
 
 	
 	addString( "---- CAMERA ----");
-	addString( "H: Change le nom d une image de la camera");
-	addString( "h: Enregistre une image de la camera courante");
+	addString( "   H\t: Change le nom d une image de la camera");
+	addString( "   h\t: Enregistre une image de la camera courante");
+	addString( "   A\t: enregistre les parametres de la camera");
+	addString( "   a\t: rappelle les parametres de la camera");
 
-	addString( "    Brightness\t\tB/b" );
-	addString( "    Contrast\t\t\tC/c" );
-	addString( "    Saturation\t\tS/s" );
-	addString( "    Hue\t\t\tH/h" );
-	addString( "    Gamma\t\t\tG/g" );
-	addString( "    Sharpness\t\tZ/z" );
-	addString( "    Exposure\t\t\tE/e" );
-	addString( "    White balance\t\tW/w" );
-	addString( "    A: enregistre les parametres de la camera");
-	addString( "    a: rappelle les parametres de la camera");
-	
+	addString( "\tBrightness\t\tB/b" );
+	addString( "\tContrast\t\tC/c" );
+	addString( "\tSaturation\t\tS/s" );
+	addString( "\tHue\t\t\tH/h" );
+	addString( "\tGamma\t\tG/g" );
+	addString( "\tSharpness\t\tZ/z" );
+	addString( "\tExposure\t\tE/e" );
+	addString( "\tWhite balance\tW/w" );
+	addString( "");
 	addString( "---- MODE NORMAL ----");
-	addString( "ctrl+TAB: camera suivante" );
+	addString( "ctrl+TAB\t: camera suivante" );
+	addString( "TAB\t: Change l'affichage des fichiers" );
+	addString( "   f\t: Ouvrir un fichier image");
+	addString( "   F\t: Active/Desactive la simu");
+	addString( "   i\t: Prend une photo sur le PENTAX");
+	addString( "   I\t: Inverse les couleur pour la recherhce d'une etoile");
+	addString( " j/J\t: Change la taille du cercle d'asservissement");
+	addString( "   K\t: Active/desactive le son");
+	addString( "   l\t: List les ports /dev + les controles ");
+	addString( "   L\t: List les variables");
+	addString( "   n\t: Affiche/cache les images (F7)");
+	addString( "   N\t: Mode nuit on/off");
 	addString( "   o\t: Ouvre/Ferme la fenetre pleiades");
 	addString( "   p\t: Pause de l'affichage de pleiades");
 	addString( "   P\t: Image suivante");
-	addString( "   f\t: Ouvrir un fichier image");
-	addString( "   F\t: Active/Desactive la simu");
-	addString( "TAB\t: Change l'affichage des fichiers" );
-	addString( "  -\t: Toutes les images sont affichees en icones");
-	addString( "F11\t: Charge la prochaine image");
-	addString( "F12\t: Efface la derniere image");
-	addString( "   r\t: Rappel des mesures de decalage en x,y du fichier beltegeuse.txt");
-	addString( "   R\t: Test alert BOX");
-	addString( "   l\t: List les ports /dev + les controles ");
-	addString( "   L\t: List les variables");
-	addString( "   w\t: Centre le joystick");
-	addString( "   W\t: Surveille un repertoire");
-	addString( "   i\t: Prend une photo sur le pentax");
-	addString( "   K\t: Active/desactive le son");
-	addString( "   n\t: Affiche/cache les images (F7)");
-	addString( "   N\t: Mode nuit on/off");
 	addString( "   q\t: Lance un script python");
 	addString( "   Q\t: Ouvre une image fits");
-	addString( " j/J\t: Change la taille du cercle d'asservissement");
-
+	addString( "   r\t: Rappel les mesures de suivi");
+	addString( "   R\t: Test alert BOX");
+	addString( "   W\t: Surveille un repertoire");
+	addString( "  -\t: Toutes les images sont affichees en icones");
+	addString( "");
 	addString( "---- TRANSFORM MATRIX ----");
 	addString( " a/A\t: Vecteur en ascension droite");
 	addString( " d/D\t: Vecteur en declinaison");
-	addString( "   M\t: Calcul la matrice de transformation");
-	addString( "   y\t: Affiche les vecteurs");
 	addString( "   m\t: Deplacement à la souris");
+	addString( "   M\t: Calcul la matrice de transformation");
 	addString( "   O\t: Mode souris / mode suivi");
-
+	addString( "   y\t: Affiche les vecteurs");
+	addString( "");
 	addString( "---- TRACES ----");
 	addString( "   C\t: Lance/arrete l\'enregistrement de trace");
 	addString( "   c\t: Nouvelle trace");
@@ -2814,18 +2863,29 @@ static void CreateHelp()
 	addString( "   z\t: Charge les traces");
 	addString( "   Z\t: Sauve les traces");
 
-	addString( "---- SUIVI ----");
-	addString( "   S\t: Lance/Stop le suivi");
-	addString( " t/T\t: change le temps de correction");
-	addString( "   Y\t: Lance l' asservissement");
-	addString( "   V\t: Initialise les coordonnees de suivi");
-	addString( "   v\t: Sauvegarde des coordonnees de suivi dans un fichier .guid");
-    addString( "   U\t: Affichage du centre de la camera on/off");
-    addString( "   u\t: Affichage du suivi on/off");
-	
-
-	addString( "");
-	addString( "ESC\t: --- SORTIE DU LOGICIEL ---" );
+    y_help = 0;
+	addString2( "---- TOUCHE DE FONCTION ----");
+	addString2( "   F1\t: Panneau de controle de la camera");
+	addString2( "   F2\t: Help");
+	addString2( "   F3\t: Panneau de suivi");
+	addString2( "   F4\t: Courbe de suivi");
+	addString2( "   F5\t: Console de log");
+	addString2( "   F6\t: Console arduino");
+	addString2( "   F7\t: Affiche/Cache les images");
+	addString2( "  F11\t: Charge la prochaine image");
+	addString2( "  F12\t: Efface la derniere image"); 
+	addString2( "");
+	addString2( "---- SUIVI ----");
+	addString2( "   S\t: Lance/Stop le suivi");
+	addString2( " t/T\t: change le temps de correction");
+    addString2( "   U\t: Affichage du centre de la camera on/off");
+    addString2( "   u\t: Affichage du suivi on/off");
+	addString2( "   V\t: Initialise les coordonnees de suivi");
+	addString2( "   v\t: Sauvegarde des coordonnees de suivi (fichier .guid)");
+	addString2( "   w\t: Centre l'asservissement");
+	addString2( "   Y\t: Lance l'asservissement");
+	addString2( "");
+	addString2( "ctrl+q\t: --- SORTIE DU LOGICIEL ---" );
 
 	WindowsManager::getInstance().add(panelHelp);
 	
@@ -3315,7 +3375,7 @@ void init_var()
     var.set("xSuivi", xSuivi);
     var.set("ySuivi", ySuivi);
 
-    var.set( "fLimitCorrection", (float)80.0);
+    if ( !var.existe("fLimitCorrection") )      var.set( "fLimitCorrection", (float)80.0);
     
     /*
     var.set("xPanelStdOut",  panelStdOut->getX() );

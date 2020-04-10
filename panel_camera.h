@@ -45,6 +45,7 @@ public:
     virtual void        wheelUp( int, int)                              {;};
     virtual void        wheelDown( int, int)                            {;};
 
+    void                tex2screen(vec2&);
     void                tex2screen(int&,int&);
     void                tex2screen(float&,float&);
 

@@ -32,7 +32,6 @@ class FileBrowser
 {
 protected:
     PanelWindow*                pW;
-    PanelText*                  panelDirName;
     PanelDir*                   panelDir;
     PanelFile*                  panelFile;
     
@@ -40,6 +39,8 @@ protected:
     ButtonQUIT*                 panelQuit;
 
     PanelEditText*              panelFilename;
+    //PanelText*                  panelDirName;
+    PanelEditText*              panelDirName;
     
     vector<PanelText*>          lDirs;
     vector<PanelText*>          lFile;

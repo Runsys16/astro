@@ -172,6 +172,34 @@ void PanelCamera::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::tex2screen(vec2& v)
+{
+    if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+
+	WindowsManager& wm = WindowsManager::getInstance();
+    
+    //      Dimension ecran
+    float wSc = (float)wm.getWidth();
+    float hSc = (float)wm.getHeight();
+
+    //      Dimension texture
+    float wTex = (float)pReadBgr->w;
+    float hTex = (float)pReadBgr->h;
+
+    //      Facteur d'echelle
+    float ew = wSc / wTex;
+    float eh = hSc / hTex;
+    //ew = 1600.0/1920.0;
+    //eh = 900.0/1080.0;
+    float e = ew<eh ? ew : eh;
+
+    v.x = e * v.x + (float)getX();    
+    v.y = e * v.y + (float)getY();    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::tex2screen(float& xx, float& yy)
 {
     if  ( panelCourbe==NULL )   return;
@@ -437,14 +465,7 @@ void PanelCamera::displaySuivi()
         u = vec2(x, y);
         v = vec2(pv->x, pv->y);
         tex2screen( v.x, v.y );
-        /*
-        if ( bTime1 )
-        {
-            logf( (char*)"Etoile(%0.2f,%0.2f)  suivi(%0.2f,%0.2f)  %ld", v.x, v.y, x, y,(long)panelCourbe );
-            logf( (char*)"      (%0.2f,%0.2f)  suivi(%0.2f,%0.2f)  %ld", pv->x, pv->y, x, y,(long)pReadBgr );
-            bTime1 = false;
-        }
-        */
+
         w = v - u;
     }
     else
@@ -452,18 +473,9 @@ void PanelCamera::displaySuivi()
         u = vec2(x, y);
         v = vec2(0.0,0.0);
         w = vec2(0.0,0.0);
-        /*
-        if ( bTime1 )
-        {
-            logf( (char*)"Pas d'etoile de reference");
-            bTime1 = false;
-        }
-        */
     }     
        
     float f = fTime/fTimeClign;
-    //if ( bTime1 )
-    //    { bTime1=false; logf( (char*)"f = %0.2f", f); }
     
     if ( f>1.0)     f = 1.0;
     else
@@ -472,8 +484,9 @@ void PanelCamera::displaySuivi()
     f = f * 0.33 + 0.66;
 
     if ( bNuit )                                    glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
-    else{
-        if ( w.length()>fLimitCorrection )          glColor4f( 1.0,   0.0,  0.0, f );
+    else
+    {
+        if ( bCorrection )                          glColor4f( 1.0,   0.0,  0.0, f );
         else                                        glColor4f( 0.0,   1.0,  0.0, f );
     }
     
@@ -490,10 +503,21 @@ void PanelCamera::displaySuivi()
             glVertex2i((int)u.x, (int)u.y);                  
             glVertex2i((int)v.x, (int)v.y );
         glEnd();
-        //glLineStipple(1, 0xAAAA);//  # [1]
+
         glDisable(GL_LINE_STIPPLE);    
     }
     
+    if ( bNuit )                                    glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
+    else
+    {
+                                                    glColor4f( 1.0,   1.0,  0.0, f );
+    }
+    if ( bCentrageSuivi )
+    {
+        u = vec2(xSuiviSvg, ySuiviSvg);
+        tex2screen( u );
+        glCroix( u.x, u.y, 10, 10 );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -655,7 +679,7 @@ void PanelCamera::releaseMiddle(int xm, int ym)
     log_tab(false);
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
 }
-
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

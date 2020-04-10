@@ -81,6 +81,8 @@ typedef struct readBackground       rb_t;
     extern bool                     bAfficheVec;
     extern bool                     bPanelStdOut;
     extern bool                     bSound;
+    extern bool                     bCorrection;
+    extern bool                     bCentrageSuivi;
 
     extern int                      width;
     extern int                      height;
@@ -89,6 +91,8 @@ typedef struct readBackground       rb_t;
 
     extern float                    xSuivi;
     extern float                    ySuivi;
+    extern float                    xSuiviSvg;
+    extern float                    ySuiviSvg;
         
     extern int                      xClick;
     extern int                      yClick;

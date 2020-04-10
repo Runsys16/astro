@@ -32,9 +32,12 @@ void PanelDir::wheelDown( int xm, int ym)
 void PanelDir::releaseLeft( int x, int y )
 {
     logf( (char*)"PanelDir::releaseLeft(%d,%d)", x, y );
-    //int n = y/DY;
+    log_tab(true);
 
     pFB->isInsideDir(x, y);
+
+    log_tab(false);
+    logf( (char*)"PanelDir::releaseLeft(%d,%d)", x, y );
 }
 
 
