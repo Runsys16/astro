@@ -2391,19 +2391,19 @@ static void glutSpecialFunc(int key, int x, int y)	{
     
     switch( key)
     {
-	case GLUT_KEY_F1:
-        {
-        Camera_mgr::getInstance().togglePanel();
-        log( (char*)"Toggle panelCamera !!!" );
-        }
-        break;
-    case GLUT_KEY_F2:
+    case GLUT_KEY_F1:
         {
         bPanelHelp = !bPanelHelp;
         var.set("bPanelHelp", bPanelHelp);
         panelHelp->setVisible(bPanelHelp);
         if ( bPanelHelp )       WindowsManager::getInstance().onTop(panelHelp);
         log( (char*)"Toggle panelHelp !!!" );
+        }
+        break;
+	case GLUT_KEY_F2:
+        {
+        Camera_mgr::getInstance().togglePanel();
+        log( (char*)"Toggle panelCamera !!!" );
         }
         break;
     case GLUT_KEY_F3:
@@ -2836,7 +2836,7 @@ static void CreateHelp()
 	addString( "   r\t: Rappel les mesures de suivi");
 	addString( "   R\t: Test alert BOX");
 	addString( "   W\t: Surveille un repertoire");
-	addString( "  -\t: Toutes les images sont affichees en icones");
+	addString( "   -\t: Toutes les images sont affichees en icones");
 	addString( "");
 	addString( "---- TRANSFORM MATRIX ----");
 	addString( " a/A\t: Vecteur en ascension droite");

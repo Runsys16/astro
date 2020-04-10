@@ -613,6 +613,72 @@ void PanelCourbe::fft(double* data, unsigned long nn)
         mmax=istep;
     }
 }
+/*
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+
+constexpr double PI = 3.141592653589793;
+ 
+std::complex<double> w(int nk, int N) {
+    return cos(2*PI*nk/N) - (std::complex<double>(0,1))*sin(2*PI*nk/N);
+}
+ 
+unsigned int reverseNum(unsigned int num, unsigned int pos) {
+    unsigned int result = 0;
+ 
+    for (unsigned int i(0); i < pos; i++) {
+        if((num & (1 << i)))
+           result |= 1 << ((pos - 1) - i);
+    }
+    return result;
+}
+ 
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void fft(std::vector<std::complex<double>>& signal, unsigned int end_, unsigned int start = 0) {
+    if(end_ - start > 1) {
+        unsigned int len = end_ - start;
+ 
+        for(unsigned int i(0); i < len / 2; i++) {
+            std::complex<double> temp(signal[start+i]);
+            signal[start+i] += signal[start+i+(len/2)];
+            signal[start+i+(len/2)] = (temp - signal[start+i+(len/2)])*w(i,len);
+        }
+ 
+        fft(signal,start+len/2,start);
+        fft(signal,end_,start+len/2);
+    }
+    else if(end_ == signal.size()) {
+        std::vector<std::complex<double>> temp(signal);
+        unsigned int power(ceil(log(end_)/log(2)));
+ 
+        for(unsigned int i(0); i < end_;i++) {
+            signal[(i+end_/2)%end_] = temp[reverseNum(i,power)];
+        }
+    }
+}
+ 
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int main() {
+    std::vector<std::complex<double>> signal(128);
+ 
+    for(unsigned int i(0); i < signal.size(); i++)
+        signal[i] = sin(2*PI*2*i/(double)(signal.size())); // Calcule une sinusoide de 2 Hz
+ 
+    std::vector<std::complex<double>> spectrum(signal);
+ 
+    fft(spectrum,spectrum.size()); // Calcul de la FFT
+ 
+    for(unsigned int i(0); i < spectrum.size(); i++)
+        std::cout << std::fixed << std::setprecision(2) << abs(spectrum[i]) << std::endl;
+ 
+    return 0;
+}
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
