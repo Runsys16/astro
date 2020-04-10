@@ -2260,8 +2260,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             else
             {
                 vec2* pv = Camera_mgr::getInstance().getSuivi();
-                //panelCourbe->get_vOrigine().x = xSuivi;
-                //panelCourbe->get_vOrigine().y = ySuivi;
                 if ( pv != NULL )
                 {
                     xSuivi = pv->x;
@@ -2305,15 +2303,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 ySuivi = ySuiviSvg;
             }
 
-            //panelCourbe->get_vOrigine().x = x;
-            //panelCourbe->get_vOrigine().y = y;
-            //panelCourbe->get_vOrigine().z = 0.0;
-
             change_joy( xSuivi, ySuivi );
-            bModeManuel = true;
-
-            var.set("xSuivi", (float)xSuivi );
-            var.set("ySuivi", (float)ySuivi );
+            //bModeManuel = true;
 
             logf( (char*)"initialise vOrigine(recentrage) : (%0.2f,%0.2f)", xSuivi, ySuivi);
         }

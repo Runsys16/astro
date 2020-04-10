@@ -92,6 +92,9 @@ virtual void            clickLeft( int, int);
 virtual void            motionLeft( int, int);
 virtual void            releaseLeft( int, int);
     
+    void                fft(double*,  unsigned long);
+    
+    
 inline     float        get_offset_x()              { return offset_x; }   
 inline     float        get_offset_y()              { return offset_y; }   
 inline     float        get_courbe1()               { return courbe1; }   
