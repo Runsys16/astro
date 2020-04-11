@@ -172,7 +172,7 @@ void PanelCamera::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::tex2screen(vec2& v)
+void PanelCamera::compute_echelle()
 {
     if  ( panelCourbe==NULL )   return;
     if  ( pReadBgr==NULL )      return;
@@ -192,10 +192,20 @@ void PanelCamera::tex2screen(vec2& v)
     float eh = hSc / hTex;
     //ew = 1600.0/1920.0;
     //eh = 900.0/1080.0;
-    float e = ew<eh ? ew : eh;
+    echelle = ew<eh ? ew : eh;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::tex2screen(vec2& v)
+{
+    if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+    
+    compute_echelle();
 
-    v.x = e * v.x + (float)getX();    
-    v.y = e * v.y + (float)getY();    
+    v.x = echelle * v.x + (float)getX();    
+    v.y = echelle * v.y + (float)getY();    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -205,25 +215,10 @@ void PanelCamera::tex2screen(float& xx, float& yy)
     if  ( panelCourbe==NULL )   return;
     if  ( pReadBgr==NULL )      return;
 
-	WindowsManager& wm = WindowsManager::getInstance();
-    
-    //      Dimension ecran
-    float wSc = (float)wm.getWidth();
-    float hSc = (float)wm.getHeight();
+    compute_echelle();
 
-    //      Dimension texture
-    float wTex = (float)pReadBgr->w;
-    float hTex = (float)pReadBgr->h;
-
-    //      Facteur d'echelle
-    float ew = wSc / wTex;
-    float eh = hSc / hTex;
-    //ew = 1600.0/1920.0;
-    //eh = 900.0/1080.0;
-    float e = ew<eh ? ew : eh;
-
-    xx = e * xx + (float)getX();    
-    yy = e * yy + (float)getY();    
+    xx = echelle * xx + (float)getX();    
+    yy = echelle * yy + (float)getY();    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -249,25 +244,10 @@ void PanelCamera::screen2tex(float& xx, float& yy)
     if  ( panelCourbe==NULL )   return;
     if  ( pReadBgr==NULL )      return;
 
-	WindowsManager& wm = WindowsManager::getInstance();
-    
-    //      Dimension ecran
-    float wSc = (float)wm.getWidth();
-    float hSc = (float)wm.getHeight();
+    compute_echelle();
 
-    //      Dimension texture
-    float wTex = (float)pReadBgr->w;
-    float hTex = (float)pReadBgr->h;
-
-    //      Facteur d'echelle
-    float ew = wSc / wTex;
-    float eh = hSc / hTex;
-    //ew = 1600.0/1920.0;
-    //eh = 900.0/1080.0;
-    float e = ew<eh ? ew : eh;
-
-    xx = (xx - (float)getX()) /e;    
-    yy = (yy - (float)getY()) / e;    
+    xx = (xx - (float)getX()) / echelle;    
+    yy = (yy - (float)getY()) / echelle;    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -433,11 +413,11 @@ void PanelCamera::displaySuivi()
 
 	WindowsManager& wm = WindowsManager::getInstance();
 
-    float x = xSuivi;
-    float y = ySuivi;
+    vec2 vSuiviTex = vec2(xSuivi, ySuivi);
+    vec2 vSuiviScr = vec2(xSuivi, ySuivi);
+    tex2screen(vSuiviScr);
     
     //      Convertion des coordonnées
-    tex2screen( x, y );
     float gris = 0.8;
 
     //      DEBUG
@@ -449,30 +429,26 @@ void PanelCamera::displaySuivi()
     if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );
     else                glColor4f( 0.5,   0.4,  0.5, gris );    
     //----- Affichage de la croix   ----------------------------------------------
-	glBegin(GL_LINES);   
-        
-        glVertex2i(x-50,y);             glVertex2i(x+50, y );
-        glVertex2i(x,y-50);             glVertex2i(x, y+50 );
+    glCroix( vSuiviScr, 50 );
 
-    glEnd();
-    
     //----- Cercle de correction --------------------------------------------------
-    vec2 u, v, w;
-    vec2* pv = getSuivi();
+    vec2 vStarTex, vStarScr, vDiffScr;
     
-    if ( pv != NULL )
+    vec2* pvStar = getSuivi();
+    
+    if ( pvStar != NULL )
     {
-        u = vec2(x, y);
-        v = vec2(pv->x, pv->y);
-        tex2screen( v.x, v.y );
+        vStarTex = vec2(pvStar->x, pvStar->y);
+        vStarScr = vec2(pvStar->x, pvStar->y);
+        tex2screen(vStarScr);
 
-        w = v - u;
+        vDiffScr = vStarScr - vStarScr;
     }
     else
     {
-        u = vec2(x, y);
-        v = vec2(0.0,0.0);
-        w = vec2(0.0,0.0);
+
+        vStarScr = vec2(0.0,0.0);
+        vDiffScr = vec2(0.0,0.0);
     }     
        
     float f = fTime/fTimeClign;
@@ -490,18 +466,23 @@ void PanelCamera::displaySuivi()
         else                                        glColor4f( 0.0,   1.0,  0.0, f );
     }
     
+    //----- Cercle de correction --------------------------------------------------
     glLineStipple(1, 0xFFC0);//  # [1]
     glEnable(GL_LINE_STIPPLE);    
-    glCercle( x, y, echelle*(fLimitCorrection) );
+    glCercle( vSuiviScr, echelle*(fLimitCorrection) );
+    //logf( (char*)"%0.2f", echelle );
+    //glCercle( vSuiviScr, echelle*(vDiffScr.lenght()) );
     glDisable(GL_LINE_STIPPLE);    
+
+
     //----- Droite de correction --------------------------------------------------
-    if ( pv != NULL )
+    if ( pvStar!=NULL && vStarTex!=vec2(0.0,0.0) && vSuiviTex!=vec2(0.0,0.0)  )
     {
-        glLineStipple(1, 0xFFF0);//  # [1]
+        glLineStipple(1, 0xFFF0);
         glEnable(GL_LINE_STIPPLE);    
 	    glBegin(GL_LINES);
-            glVertex2i((int)u.x, (int)u.y);                  
-            glVertex2i((int)v.x, (int)v.y );
+            glVertex2i( (int)vStarScr.x,  (int)vStarScr.y);                  
+            glVertex2i((int)vSuiviScr.x, (int)vSuiviScr.y );
         glEnd();
 
         glDisable(GL_LINE_STIPPLE);    
@@ -514,7 +495,7 @@ void PanelCamera::displaySuivi()
     }
     if ( bCentrageSuivi )
     {
-        u = vec2(xSuiviSvg, ySuiviSvg);
+        vec2 u = vec2(xSuiviSvg, ySuiviSvg);
         tex2screen( u );
         glCroix( u.x, u.y, 10, 10 );
     }

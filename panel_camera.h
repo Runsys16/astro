@@ -45,6 +45,7 @@ public:
     virtual void        wheelUp( int, int)                              {;};
     virtual void        wheelDown( int, int)                            {;};
 
+    void                compute_echelle();
     void                tex2screen(vec2&);
     void                tex2screen(int&,int&);
     void                tex2screen(float&,float&);
@@ -53,8 +54,14 @@ public:
     void                screen2tex(float&,float&);
 
     void                glCercle(int x, int y, int rayon);
+    inline void         glCercle(vec2 v, int r)
+                        { glCercle( (int)v.x, (int)v.y, r ); }
     void                glCarre( int x,  int y,  int dx,  int dy );
     void                glCroix( int x,  int y,  int dx,  int dy );
+    inline void         glCroix( int x,  int y,  int dxy )
+                        { glCroix( x, y, dxy, dxy ); }
+    inline void         glCroix(vec2 v, int dxy)
+                        { glCroix( v.x, v.y, dxy, dxy ); }
 
     void                displayGLTrace(void);
 

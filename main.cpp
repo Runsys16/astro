@@ -61,7 +61,7 @@ PanelSimple *       panelStatus;
 
 PanelText*          pCamFilename;
 PanelText*          pRef;
-PanelText*          pSuivi;
+PanelText*          pEtoile;
 PanelText*          pEcart;
 PanelText*          pJoyXY;
 PanelText*          pArduino;
@@ -736,8 +736,8 @@ void updatePanelResultat()
         sprintf( sStr, "Reference\t(%0.2f, %0.2f)", xSuivi, ySuivi );
         pRef->changeText(sStr);
         
-        sprintf( sStr, "Suivi\t(%0.2f, %0.2f)", pv->x, pv->y );
-        pSuivi->changeText(sStr);
+        sprintf( sStr, "Etoile\t(%0.2f, %0.2f)", pv->x, pv->y );
+        pEtoile->changeText(sStr);
         
         sprintf( sStr, "Ecart\t\t%0.2fpx", l );
         pEcart->changeText(sStr);
@@ -1370,7 +1370,7 @@ static void idleGL(void)
             l = v.length();
 
             if ( l > fLimitCorrection ) {
-                logf( (char*)"[WARNING]Suivi l=%0.2f", l ); 
+                logf( (char*)"[WARNING]Suivi l=%0.2f/%0.2f", l, fLimitCorrection ); 
                 arret_urgence();
             }
 
@@ -2745,12 +2745,12 @@ static void CreateResultat()	{
 	int l = 0;
 
 	pRef   = new PanelText( (char*)"Reference ",  PanelText::NORMAL_FONT, x0, y0+16*l++  );
-	pSuivi = new PanelText( (char*)"Suivi ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	pEtoile = new PanelText( (char*)"Etoile ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
 	pEcart = new PanelText( (char*)"Ecart ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
 	pRef->setTabSize(80);
-	pSuivi->setTabSize(80);
+	pEtoile->setTabSize(80);
 	panelResultat->add( pRef ); 
-	panelResultat->add( pSuivi ); 
+	panelResultat->add( pEtoile ); 
 	panelResultat->add( pEcart ); 
 
     panelResultat->setSize( x0 +200, 16*l+8);
