@@ -432,7 +432,7 @@ void PanelCamera::displaySuivi()
     glCroix( vSuiviScr, 50 );
 
     //----- Cercle de correction --------------------------------------------------
-    vec2 vStarTex, vStarScr, vDiffScr;
+    vec2 vStarTex, vStarScr, vDiffText;
     
     vec2* pvStar = getSuivi();
     
@@ -442,16 +442,19 @@ void PanelCamera::displaySuivi()
         vStarScr = vec2(pvStar->x, pvStar->y);
         tex2screen(vStarScr);
 
-        vDiffScr = vStarScr - vStarScr;
+        vDiffText = vSuiviTex - vStarTex;
     }
     else
     {
 
         vStarScr = vec2(0.0,0.0);
-        vDiffScr = vec2(0.0,0.0);
+        vDiffText = vec2(0.0,0.0);
     }     
-       
+
+    float l = vDiffText.length();
     float f = fTime/fTimeClign;
+    bool bHorsLimite =  l>=fLimitCorrection;
+    
     
     if ( f>1.0)     f = 1.0;
     else
@@ -462,31 +465,32 @@ void PanelCamera::displaySuivi()
     if ( bNuit )                                    glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
     else
     {
-        if ( bCorrection )                          glColor4f( 1.0,   0.0,  0.0, f );
-        else                                        glColor4f( 0.0,   1.0,  0.0, f );
+        if (!bHorsLimite )                          glColor4f( 0.0,   1.0,  0.0, f );
+        else                                        glColor4f( 1.0,   0.0,  0.0, f );
     }
     
     //----- Cercle de correction --------------------------------------------------
-    glLineStipple(1, 0xFFC0);//  # [1]
-    glEnable(GL_LINE_STIPPLE);    
-    glCercle( vSuiviScr, echelle*(fLimitCorrection) );
-    //logf( (char*)"%0.2f", echelle );
-    //glCercle( vSuiviScr, echelle*(vDiffScr.lenght()) );
-    glDisable(GL_LINE_STIPPLE);    
+    if ( !bCorrection )
+    {
+        glLineStipple(1, 0xFFF0);
+        glEnable(GL_LINE_STIPPLE);    
+    }
 
+    glCercle( vSuiviScr, echelle*(fLimitCorrection) );
 
     //----- Droite de correction --------------------------------------------------
     if ( pvStar!=NULL && vStarTex!=vec2(0.0,0.0) && vSuiviTex!=vec2(0.0,0.0)  )
     {
-        glLineStipple(1, 0xFFF0);
-        glEnable(GL_LINE_STIPPLE);    
 	    glBegin(GL_LINES);
             glVertex2i( (int)vStarScr.x,  (int)vStarScr.y);                  
             glVertex2i((int)vSuiviScr.x, (int)vSuiviScr.y );
         glEnd();
 
-        glDisable(GL_LINE_STIPPLE);    
     }
+
+    if ( !bCorrection )
+        glDisable(GL_LINE_STIPPLE);    
+
     
     if ( bNuit )                                    glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
     else

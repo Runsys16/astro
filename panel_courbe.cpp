@@ -276,7 +276,42 @@ void PanelCourbe::glEchelle()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::glCourbe()
+void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdecal, int y_zero, float offset )
+{
+    if ( size != 0  )
+    {
+        glBegin(GL_LINE_STRIP);
+        int deb = xdecal;
+        int fin = deb + 2000.0/courbe1;
+        int n = size;
+        
+               
+        if ( fin >= size )                  fin = size;
+        if ( deb <= 0 )                     deb = 0;
+
+        for( int i=deb; i<fin; i++ )
+        {
+            float y = tab[(n-i-1)*pas] - offset;
+            y = (float)(delta_courbe1*(y) + y_zero);
+            
+            int x = (i-deb)*courbe1 + xStart;
+            if ( x > getPosDX() )                           break;
+
+            int Y = y;
+
+            x2Screen(x);
+            y2Screen(Y);
+
+            glVertex2i( x, Y );
+        }
+        glEnd();                
+    }     
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::glCourbes()
 {
 	WindowsManager&     wm  = WindowsManager::getInstance();
     VarManager& var = VarManager::getInstance();
@@ -284,18 +319,7 @@ void PanelCourbe::glCourbe()
     int DY = getY();
     int n = t_vResultat.size();
     
-    //int  AXE_X = (float)getDY()/4.0;
-    //int  AXE_Y   (3.0*(float)getDY()/4.0);
 
-    int  AXE_X = (float)getDY()/2.0;
-    int  AXE_Y = (float)getDY()/2.0;
-
-    offset_x = vOrigine.x;
-    offset_y = vOrigine.y;
-    
-    if ( decal_resultat >= t_vResultat.size() )     return;
-    
-    
     float height = (float)wm.getHeight();
 	int   scx  = getX();
 	int   scy  = height - getDY() - getY();
@@ -305,64 +329,26 @@ void PanelCourbe::glCourbe()
     glScissor( scx, scy, scdx, scdy );
     glEnable( GL_SCISSOR_TEST );
 
+    offset_x = vOrigine.x;
+    offset_y = vOrigine.y;
     
-    if ( n != 0  )
-    {
-        glBegin(GL_LINE_STRIP);
-        int deb = decal_resultat;
-        int fin = deb + 2000.0/courbe1;
-        
-        if ( fin >= t_vResultat.size() )         fin = t_vResultat.size();
-        if ( deb <= 0 )                          deb = 0;
-
-        //
-        // Courbe des X
-        //
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-        else                            glColor4f( 0.0, 0.0, 1.0, 1.0 );
-        for( int i=deb; i<fin; i++ )
-        {
-            float y = t_vResultat[n-i-1].x - offset_x;
-            y = (float)(delta_courbe1*(y) + AXE_X);
-            
-            int x = (i-deb)*courbe1 + xStartAxe;
-            if ( x > getPosDX() )                           break;
-
-            int Y = y;
-
-            x2Screen(x);
-            y2Screen(Y);
-
-            glVertex2i( x, Y );
-            //logf( "%d %0.2f %0.2f y=%0.2f", n-i-1, t_vResultat[i].x, offset_x, y );
-        }
-        glEnd();        
-
-        
-        //
-        // Courbe des Y
-        //
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-        else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
-        glBegin(GL_LINE_STRIP);
-        //for( int i=decal_resultat; i<(t_vResultat.size()-decal_resultat); i++ )
-        for( int i=deb; i<fin; i++ )
-        {
-            float y = t_vResultat[n-i-1].y - offset_y;
-            y = (float)(delta_courbe2*(y) + AXE_Y);
-            int x = (i-deb)*courbe2 + xStartAxe;
-            if ( x > getPosDX() )                           break;
-
-            int Y = y;
-            x2Screen(x);
-            y2Screen(Y);
-
-            glVertex2i( x, Y );
-        }
-        glEnd();   
-        
-    }     
+    float* tabx = (float*)&t_vResultat[0];
+    float* taby = tabx+1;
     
+    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+    else                            glColor4f( 0.0, 0.0, 1.0, 1.0 );
+    
+    glCourbe( tabx, t_vResultat.size(), 2, xStartAxe, decal_resultat, getDY()/2, offset_x );
+
+    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+    else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
+    
+    glCourbe( taby, t_vResultat.size(), 2, xStartAxe, decal_resultat, getDY()/2, offset_y );
+    
+    
+    
+    
+    glDisable( GL_SCISSOR_TEST );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -456,7 +442,7 @@ void PanelCourbe::displayGL(void)
     //displayGLTrace();
 
     glEchelle();
-    glCourbe();
+    glCourbes();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -548,7 +534,8 @@ void PanelCourbe::motionLeft( int xm, int ym )
     //logf( (char*)"PanelCourbe::motionLeft( %d, %0.2f )", decal_resultat, courbe1 );
 
 
-    if ( decal_resultat <0 )        decal_resultat = 0;
+    if ( decal_resultat <0 )                        decal_resultat = 0;
+    if ( decal_resultat >=t_vResultat.size() )      decal_resultat = t_vResultat.size()-1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

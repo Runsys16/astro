@@ -77,7 +77,8 @@ public :
     void                update_err();
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
-    void                glCourbe();
+    void                glCourbe( float*, int, int, int, int, int, float );
+    void                glCourbes();
 
     void                build_unites_text(void);
     int                 sc2winX(int);

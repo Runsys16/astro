@@ -310,6 +310,15 @@ void arret_urgence()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void sound_alert()
+{
+    string cmd = "aplay /usr/share/sounds/purple/alert.wav;";
+    cmd = cmd + cmd + cmd;
+    system( (char*)cmd.c_str() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void commande_polaris()
 {
     VarManager&         var = VarManager::getInstance();
@@ -732,16 +741,24 @@ void updatePanelResultat()
         vec3 v = w - vec3( pv->x, pv->y, 0.0);
         float l = v.length();
 
-
-        sprintf( sStr, "Reference\t(%0.2f, %0.2f)", xSuivi, ySuivi );
+        if ( bCentrageSuivi )
+            sprintf( sStr, "Centre\t(%0.2f, %0.2f)", xSuivi, ySuivi );
+        else
+            sprintf( sStr, "Reference\t(%0.2f, %0.2f)", xSuivi, ySuivi );
         pRef->changeText(sStr);
         
         sprintf( sStr, "Etoile\t(%0.2f, %0.2f)", pv->x, pv->y );
         pEtoile->changeText(sStr);
-        
-        sprintf( sStr, "Ecart\t\t%0.2fpx", l );
-        pEcart->changeText(sStr);
 
+        if ( bCorrection )
+        {
+            sprintf( sStr, "Asserv\t\t%0.2f/%0.2fpx", l, fLimitCorrection );
+        }
+        else{
+            sprintf( sStr, "Ecart\t\t%0.2f/%0.2fpx", l, fLimitCorrection );
+        }
+        pEcart->changeText(sStr);
+        
         float xx = pv->x;
         float yy = pv->y + 35;
         
@@ -1372,6 +1389,8 @@ static void idleGL(void)
             if ( l > fLimitCorrection ) {
                 logf( (char*)"[WARNING]Suivi l=%0.2f/%0.2f", l, fLimitCorrection ); 
                 arret_urgence();
+                //system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
+                thread( &sound_alert).detach();
             }
 
 	        if ( fTimeCpt > 0.0 )
