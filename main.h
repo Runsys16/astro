@@ -115,6 +115,9 @@ typedef struct readBackground       rb_t;
     extern vec3                     vecDC[2];
 
     extern double                   pas_sideral;
+    extern bool                     bSauve;
+    extern string                   filenameSauve;
+
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------

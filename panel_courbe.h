@@ -64,6 +64,8 @@ private:
 
     bool                bPanelCourbe;
 
+    vector<vec2>        t_vResultat;
+    vector<vec2>        t_vSauve;
     vector<vec2>        t_vCourbe;
     //vector<vec2>        courbeY;
     
@@ -79,8 +81,11 @@ public :
     
     void                init_var();
     void                charge_guidage(string);
-    //void                screen2tex( int& x, int& y );
-    //void                tex2screen( int& x, int& y );
+    void                sauve_guidage();
+    void                idle_guidage(vec2);
+    void                reset_guidage();
+    void                ajoute(vec2 v);
+
     void                setColor(long l)            { PanelWindow::setColor(l); }
     void                update_err();
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
@@ -107,7 +112,6 @@ virtual void            releaseLeft( int, int);
     void                build_fft2();
     void                glFft();
 
-inline     void         ajoute(vec2 v)              {t_vCourbe.push_back(vec2(v));}
     
 inline     float        get_offset_x()              { return offset_x; }   
 inline     float        get_offset_y()              { return offset_y; }   

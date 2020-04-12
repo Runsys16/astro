@@ -178,8 +178,8 @@ ivec2               mouse;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-vector<vec2>        t_vResultat;
-vector<vec2>        t_vSauve;
+//vector<vec2>        t_vResultat;
+//vector<vec2>        t_vSauve;
 vector<vector<vec2> * >        t_vTrace;
 bool                bAffTrace = false;
 bool                bRecTrace = false;
@@ -924,33 +924,6 @@ void compute_matrix()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void sauve()
-{
-    //string filename = "/home/rene/.astropilot/sauvegarde.txt";
-    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filenameSauve.c_str() );
-    
-    std::ofstream fichier;
- 
-    fichier.open(filenameSauve, std::ios_base::app);
-
-    if ( !fichier ) 
-    {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filenameSauve.c_str() );
-    }
-
-    for(int i=0; i<t_vSauve.size(); i++)
-    {
-        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " ) / ";
-        fichier << "( " << panelCourbe->get_vOrigine().x << " , " <<  panelCourbe->get_vOrigine().y << " )\n";
-    }
-
-    fichier.close();
-    
-    t_vSauve.clear();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void sauve_traces(void)
 {
     string filename = "/home/rene/.astropilot/traces.txt";
@@ -1122,38 +1095,7 @@ void suivi(void)
     
     if ( bSuivi && pV != NULL )
     {
-        //logf( (char*)"Suivi (%0.2f, %0.2f)", pV->x, pV->y ); 
-
-        float xx = pV->x;
-        float yy = pV->y;
-
-        //xSuivi = xx;
-        //ySuivi = yy;
-        
-
-        if ( t_vResultat.size()>20000)      t_vResultat.clear();
-
-        vec2 v = vec2(xx, yy);
-
-        if ( t_vResultat.size() > 2000 )
-        {
-            t_vResultat.erase ( t_vResultat.begin()+0);
-        }
-        t_vResultat.push_back(v);
-        vec2 o = vec2(xSuivi, ySuivi);
-        panelCourbe->ajoute( v-o );
-
-        if ( bSauve )
-        {
-            if ( t_vSauve.size() > 200 )       sauve();
-        }
-        else 
-        {
-            if ( t_vSauve.size() > 200 )       t_vSauve.clear();
-        }
-
-        t_vSauve.push_back(v);
-        
+        panelCourbe->idle_guidage( *pV );        
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -2125,8 +2067,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'R' :
         {
         logf( (char*)"Key (R) : Reset les datas de suivi" );
-        t_vResultat.clear();
-        t_vSauve.clear();
+        panelCourbe->reset_guidage();
         var.set( "FileResultat", string("---"));
         }
         break;
