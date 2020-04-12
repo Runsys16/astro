@@ -10,6 +10,7 @@
 #include <GL/glut.h>
 
 #include <stdio.h>
+#include <complex>
 
 #include <WindowsManager.h>
 #include "main.h"
@@ -62,15 +63,22 @@ private:
     vector<PanelText*>  unites;
 
     bool                bPanelCourbe;
+
+    vector<vec2>        t_vCourbe;
+    //vector<vec2>        courbeY;
     
     vec3                vOrigine;
-
+    float*              pIn;
+    float*              pOut;
+    vector<float>       t_fOut;
+    int                 nb;
 
 public :
     PanelCourbe();
     ~PanelCourbe();
     
     void                init_var();
+    void                charge_guidage(string);
     //void                screen2tex( int& x, int& y );
     //void                tex2screen( int& x, int& y );
     void                setColor(long l)            { PanelWindow::setColor(l); }
@@ -93,8 +101,13 @@ virtual void            clickLeft( int, int);
 virtual void            motionLeft( int, int);
 virtual void            releaseLeft( int, int);
     
-    void                fft(double*,  unsigned long);
-    
+    void                fft1(float*,  unsigned long);
+    void                build_fft1();
+    void                fft2(vector<complex<float>>& , unsigned int , unsigned int );
+    void                build_fft2();
+    void                glFft();
+
+inline     void         ajoute(vec2 v)              {t_vCourbe.push_back(vec2(v));}
     
 inline     float        get_offset_x()              { return offset_x; }   
 inline     float        get_offset_y()              { return offset_y; }   

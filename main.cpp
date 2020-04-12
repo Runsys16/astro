@@ -313,7 +313,9 @@ void arret_urgence()
 void sound_alert()
 {
     string cmd = "aplay /usr/share/sounds/purple/alert.wav;";
-    cmd = cmd + cmd + cmd;
+    cmd = cmd;
+    system( (char*)cmd.c_str() );
+    system( (char*)cmd.c_str() );
     system( (char*)cmd.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -355,12 +357,14 @@ void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 
         var.set( "FileResultat", string(str) );
 
-        charge_guidage( string(str) );
+        panelCourbe->charge_guidage( string(str) );
+        /*
         if ( panelCourbe != NULL )  
         {
             panelCourbe->get_vOrigine().x = vOri.x;
             panelCourbe->get_vOrigine().y = vOri.y;
         }
+        */
     }
     
     workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
@@ -947,56 +951,6 @@ void sauve()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void charge_guidage(string filename)
-{
-    //string filename = "/home/rene/.astropilot/svg.txt";
-    //string filename = "/home/rene/.astropilot/m57.txt";
-    //string filename = "/home/rene/.astropilot/sauvegarde.txt";
-    logf( (char*)"charge_guidage('%s')", (char*)filename.c_str() );
-    
-    std::ifstream fichier;
-    fichier.open(filename, std::ios_base::app);
-
-    if ( !fichier ) 
-    {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
-    }
-
-    
-    //panelCourbe->get_vOrigine().x = 0.0;
-    //panelCourbe->get_vOrigine().y = 0.0;
-    
-    t_vResultat.clear();
-    
-
-    string line;
-    int nbLigne = 0;
-    
-    
-    while ( getline (fichier, line) )
-    {
-        //cout << line << '\n';
-        float rx, ry, ox, oy;
-
-        //logf( (char*) line.c_str() );
-        sscanf( line.c_str(), "( %f , %f ) / ( %f , %f )", &rx, &ry, &ox, &oy );
-
-        vOri.x = ox;
-        vOri.y = oy;
-
-        t_vResultat.push_back( vec2(rx,ry) );
-        nbLigne++;
-    }    
-    int n = t_vResultat.size();
-    logf( (char*)"Lecture de %d donnees dans %d lignes", n, nbLigne );
-    
-    fichier.close();
-    
-    t_vSauve.clear();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void sauve_traces(void)
 {
     string filename = "/home/rene/.astropilot/traces.txt";
@@ -1186,6 +1140,8 @@ void suivi(void)
             t_vResultat.erase ( t_vResultat.begin()+0);
         }
         t_vResultat.push_back(v);
+        vec2 o = vec2(xSuivi, ySuivi);
+        panelCourbe->ajoute( v-o );
 
         if ( bSauve )
         {
