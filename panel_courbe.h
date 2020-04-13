@@ -52,7 +52,7 @@ private:
     int                 xm_svg;
     int                 ym_svg;
     
-    float               xStartAxe = 70.0;
+    int                 xStartAxe = 70.0;
     float               err = 2.0;
 
     PanelText*          pXMax;
@@ -97,9 +97,12 @@ public :
     void                update_err();
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
+    void                glCourbeCube( float*, int, int, int, int, int, float, float, float );
     void                glCourbeCube( float*, int, int, int, int, int, float );
+    void                glCourbe( float*, int, int, int, int, int, float, float, float );
     void                glCourbe( float*, int, int, int, int, int, float );
     void                glCourbes();
+    void                glFft();
 
     void                build_unites_text(void);
     int                 sc2winX(int);
@@ -114,8 +117,6 @@ virtual void            clickLeft( int, int);
 virtual void            motionLeft( int, int);
 virtual void            releaseLeft( int, int);
     
-    void                glFft();
-
     void                fft1(float*,  unsigned long);
     void                build_fft1();
     void                fft2(vector<complex<float>>& , unsigned int , unsigned int );

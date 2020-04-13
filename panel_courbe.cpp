@@ -506,14 +506,15 @@ void PanelCourbe::glEchelle()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int xdecal, int y_zero, float offset )
+void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int xdecal, int y_zero, 
+                                float offset, float a, float b )
 {
     if ( size != 0  )
     {
         glBegin(GL_QUADS);
         glBegin(GL_LINE_STRIP);
         int deb = xdecal;
-        int fin = deb + 2000.0/courbe1;
+        int fin = deb + 2000.0/a;
         int n = size;
         int Y_zero = y_zero;
         y2Screen(Y_zero);        
@@ -524,9 +525,9 @@ void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int x
         for( int i=deb; i<fin; i++ )
         {
             float y = tab[(n-i-1)*pas] - offset;
-            y = (float)(delta_courbe1*(y) + y_zero);
+            y = (float)(b*(y) + y_zero);
             
-            int x = (i-deb)*courbe1 + xStart;
+            int x = (i-deb)*a + xStart;
             if ( x > getPosDX() )                           break;
 
             int Y = y;
@@ -534,8 +535,8 @@ void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int x
             xy2Screen(x, Y);
 
             glVertex2i( x, Y );
-            glVertex2i( x+courbe1-1, Y );
-            glVertex2i( x+courbe1-1, Y_zero );
+            glVertex2i( x+a-1, Y );
+            glVertex2i( x+a-1, Y_zero );
             glVertex2i( x, Y_zero );
         }
         glEnd();                
@@ -545,13 +546,21 @@ void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int x
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdecal, int y_zero, float offset )
+void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int xdecal, int y_zero, float offset )
+{
+    glCourbeCube( tab, size, pas, xStart, xdecal, y_zero, offset, courbe1, delta_courbe1 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdecal, 
+                            int y_zero, float offset, float a, float b )
 {
     if ( size != 0  )
     {
         glBegin(GL_LINE_STRIP);
         int deb = xdecal;
-        int fin = deb + 2000.0/courbe1;
+        int fin = deb + 2000.0/a;
         int n = size;
         
                
@@ -561,9 +570,9 @@ void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdeca
         for( int i=deb; i<fin; i++ )
         {
             float y = tab[(n-i-1)*pas] - offset;
-            y = (float)(delta_courbe1*(y) + y_zero);
+            y = (float)(b*(y) + y_zero);
             
-            int x = (i-deb)*courbe1 + xStart;
+            int x = (i-deb)*a + xStart;
             if ( x > getPosDX() )                           break;
 
             int Y = y;
@@ -576,6 +585,13 @@ void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdeca
         glEnd();                
     }     
     
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdecal, int y_zero, float offset )
+{
+    glCourbe( tab, size, pas, xStart, xdecal, y_zero, offset, courbe1, delta_courbe1 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -600,6 +616,18 @@ void PanelCourbe::glCourbes()
     
     glCourbe( taby, t_vCourbe.size(), 2, xStartAxe, decal_resultat, getDY()/2, 0.0 );
     
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::glFft()
+{
+    VarManager& var = VarManager::getInstance();
+
+    if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.25 );
+    else                                glColor4f( 0.0, 1.0, 0.0, 0.25 );
+
+    glCourbeCube( pOut, nb/2, 1, (int)xStartAxe, 0, (int)getDY()-20 , (float)0.0, (float)(getDX()/128.0), (float)delta_courbe1 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -819,18 +847,6 @@ void PanelCourbe::releaseLeft( int xm, int ym )
 
     var.set( "decal_resultat", decal_resultat );
     build_fft2();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::glFft()
-{
-    VarManager& var = VarManager::getInstance();
-
-    if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.25 );
-    else                                glColor4f( 0.0, 1.0, 0.0, 0.25 );
-
-    glCourbeCube( pOut, nb/2, 1, xStartAxe, 0, getDY()-20 , 0.0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
