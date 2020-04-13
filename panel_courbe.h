@@ -40,6 +40,7 @@ private:
     float               delta_courbe2_svg = 1.0;
     float               courbe1_svg = 1.0;
     float               courbe2_svg = 1.0;
+    int                 decal_svg = 0.0;
     
 
 
@@ -80,16 +81,23 @@ public :
     ~PanelCourbe();
     
     void                init_var();
-    void                charge_guidage(string);
+    void                sauve_guidage_1_1();
+    void                sauve_guidage_1_0();
     void                sauve_guidage();
+    
+    void                charge_guidage_1_1(ifstream&);
+    void                charge_guidage_1_0(ifstream&, string);
+    void                charge_guidage_version(ifstream&);
+    void                charge_guidage(string);
+
     void                idle_guidage(vec2);
     void                reset_guidage();
     void                ajoute(vec2 v);
 
-    void                setColor(long l)            { PanelWindow::setColor(l); }
     void                update_err();
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
+    void                glCourbeCube( float*, int, int, int, int, int, float );
     void                glCourbe( float*, int, int, int, int, int, float );
     void                glCourbes();
 
@@ -106,13 +114,15 @@ virtual void            clickLeft( int, int);
 virtual void            motionLeft( int, int);
 virtual void            releaseLeft( int, int);
     
+    void                glFft();
+
     void                fft1(float*,  unsigned long);
     void                build_fft1();
     void                fft2(vector<complex<float>>& , unsigned int , unsigned int );
     void                build_fft2();
-    void                glFft();
 
     
+inline     void         setColor(long l)            { PanelWindow::setColor(l); }
 inline     float        get_offset_x()              { return offset_x; }   
 inline     float        get_offset_y()              { return offset_y; }   
 inline     float        get_courbe1()               { return courbe1; }   

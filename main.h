@@ -117,6 +117,7 @@ typedef struct readBackground       rb_t;
     extern double                   pas_sideral;
     extern bool                     bSauve;
     extern string                   filenameSauve;
+    extern bool                     bDisplayfft;
 
 #endif
 

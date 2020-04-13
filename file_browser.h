@@ -58,6 +58,7 @@ protected:
     int                         fileScroll;
     
     bool                        bNewline;
+    unsigned long               color;
    
 
 private :
@@ -107,10 +108,10 @@ public :
     void                        setCallBackQUIT(ButtonCallBack* p);
     void                        setCallBack(ButtonCallBack* p);
     void                        setExtra( int );
-    void                        setColor( long );
+    void                        setColor( unsigned long );
     void                        setFocus();
     
-inline bool                     getVisible()                        { return pW->getVisible(); }
+inline bool                     getVisible()                        { setColor(color); return pW->getVisible(); }
 
 inline string                   getFilename()                       { return panelFilename->getText(); }
 inline string                   getCurrentDir()                     { return currentDir; }

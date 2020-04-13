@@ -352,6 +352,8 @@ void FileBrowser::affiche()
         wm.call_back_keyboard( panelFilename );
         wm.startKeyboard();
     }
+
+    setColor(color);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -612,11 +614,13 @@ void FileBrowser::setExtra( int ii)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void FileBrowser::setColor( long color)
+void FileBrowser::setColor( unsigned long c)
 {
+    color = c;
     pW->setColor( color );
     panelDir->setColor( color );
     panelFile->setColor( color );
+    panelDirName->setColor(color);
 }
 //
 //--------------------------------------------------------------------------------------------------------------------

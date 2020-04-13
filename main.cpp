@@ -140,13 +140,14 @@ bool                bAffSuivi      = true;
 bool                bSound         = true;
 bool                bInverseCouleur= false;
 bool                bCentrageSuivi = false;
+bool                bDisplayfft    = true;
 
 int                 wImg;
 int                 hImg;
 int                 nPlanesImg;
 
-ivec2               vCameraSize;
-GLubyte*            ptr;
+//ivec2               vCameraSize;
+//GLubyte*            ptr;
 vector<string>      exclude;
 
 int                 _r[256];
@@ -162,8 +163,8 @@ float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
 //--------------------------------------------------------------------------------------------------------------------
-double              rw;
-double              rh;
+//double              rw;
+//double              rh;
 
 int                 xCam;
 int                 yCam;
@@ -630,6 +631,7 @@ int getScreenDY()
     //int dy = glutGet(GLUT_SCREEN_HEIGHT);
     return heightScreen;
 }
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -637,6 +639,7 @@ std::vector<string>& getExclude()
 {
     return exclude;
 }
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1103,6 +1106,7 @@ void suivi(void)
 //--------------------------------------------------------------------------------------------------------------------
 void getSuiviParameter(void)
 {
+/*
     Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
     //cam_mgr.active();
 
@@ -1117,7 +1121,7 @@ void getSuiviParameter(void)
 
     rw = (float)vCameraSize.x/(float)panelCourbe->get_dxCam();
     rh = (float)vCameraSize.y/(float)panelCourbe->get_dyCam();
-
+*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2248,6 +2252,19 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
+    case 'x':
+        {
+        bDisplayfft = !bDisplayfft;
+        var.set("bDisplayfft", bDisplayfft);
+        logf( (char*)"Key (x) : Affiche/Cache la FFT (%s)", BOOL2STR(bDisplayfft) );
+        }
+        break;
+
+    case 'X':
+        {
+        }
+        break;
+
     case 'y':
         {
         bAfficheVec = !bAfficheVec;
@@ -2422,6 +2439,9 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
+    logf( (char*)"main::glutMouseFunc()");
+    log_tab(true);
+    
     mouse.x = x;
     mouse.y = y;
 
@@ -2433,9 +2453,10 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     if ( panelStatus->isMouseOver(x, y) )
     {
         //logf( (char*)"Souris sur la barre de status" );
+        goto endglutMouseFunc;
         return;
     }
-
+    
     PanelWindow*    pPreviewCam = NULL;
     Panel *         pCapture = NULL;
     Panel*          pMouseOver = NULL;
@@ -2443,7 +2464,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     if ( mgr.getCurrent() != NULL  &&  mgr.getCurrent()->getPanelPreview() != NULL )
     {
         pPreviewCam = mgr.getCurrent()->getPanelPreview();
-        pCapture      = wm.getCapture();
+        pCapture    = wm.getCapture();
         pMouseOver  = wm.findPanelMouseOver(x, y);
     }
     
@@ -2503,7 +2524,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	}
 
 	//if ( bPause && button == 0 && state == 0 )	{
-    if ( bModeManuel && button == 0 && state == 0 )	{
+    if ( bModeManuel && button == GLUT_LEFT_BUTTON && state == 0 )	{
         getSuiviParameter();
 
         mgr.onBottom();
@@ -2516,19 +2537,24 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    xClick = X;
 	    yClick = Y;
 
-	    logf( (char*)"Click x=%d y=%d  X=%d Y=%d vCameraSize.x=%d" , x, y, X, Y, vCameraSize.x );
+	    logf( (char*)"Click Down Click(%d, %d)  vCamera (%dx%d)" , xClick, yClick, mgr.getRB()->w, mgr.getRB()->h );
 	    
 	} 
     else
 	if ( !bModeManuel && button == 0 && state == 0 && pMouseOver == pPreviewCam )	{
 
-	    logf( (char*)"xSuivi=%0.2f ySuivi=%0.2f   " , xSuivi, ySuivi );
+	    logf( (char*)"Suivi=(%0.2f,%0.2f)" , xSuivi, ySuivi );
 	    //logf( (char*)"    l=%d rgb=%d,%d,%d" , r,g,b,  l );
 
 	} 
 
     Camera_mgr::getInstance().onBottom();
     onTop();
+
+endglutMouseFunc:
+    log_tab(false);
+    logf( (char*)"main::glutMouseFunc()");
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2555,7 +2581,7 @@ static void glutPassiveMotionFunc(int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 void setColor()	
 {
-    long color;
+    unsigned long color;
     if (bNuit)                  color = 0xFFFF0000;
     else                        color = 0xFFFFFFFF;
 
@@ -2751,6 +2777,7 @@ static void CreateHelp()
 	addString( "   Q\t: Ouvre une image fits");
 	addString( "   r\t: Rappel les mesures de suivi");
 	addString( "   R\t: Test alert BOX");
+	addString( "   x\t: Affiche/Cache la fft");
 	addString( "   W\t: Surveille un repertoire");
 	addString( "   -\t: Toutes les images sont affichees en icones");
 	addString( "");
@@ -3401,11 +3428,11 @@ int main(int argc, char **argv)
     atexit(exit_handler);
     //parse_option_size(argc, argv);
     
-    vCameraSize.x = 1280;
-    vCameraSize.y = 720;
+    //vCameraSize.x = 1280;
+    //vCameraSize.y = 720;
 
-    vCameraSize.x = 1920;
-    vCameraSize.y = 1080;
+    //vCameraSize.x = 1920;
+    //vCameraSize.y = 1080;
     
     xCam = 0;
     yCam = 0;
