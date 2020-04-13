@@ -2255,6 +2255,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'x':
         {
         bDisplayfft = !bDisplayfft;
+        if ( bDisplayfft )      panelCourbe->build_fft3();
         var.set("bDisplayfft", bDisplayfft);
         logf( (char*)"Key (x) : Affiche/Cache la FFT (%s)", BOOL2STR(bDisplayfft) );
         }

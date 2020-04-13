@@ -11,7 +11,8 @@
 
 #include <stdio.h>
 #include <complex>
-
+#include <valarray>
+ 
 #include <WindowsManager.h>
 #include "main.h"
 #include "Mathlib.h"
@@ -20,6 +21,9 @@
 
 using namespace std;
 
+typedef complex<float> CComplex;
+typedef valarray<CComplex> CArray;
+//const double PI = 3.141592653589793238460;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -34,6 +38,15 @@ private:
     float               courbe2 = 1.0;
     float               taille_mini = 20.0; //(pixel)
     int                 decal_resultat = 0;
+    
+    float               alpha[256];
+    float               inverseX[256];
+    float               inverseY[256];
+
+    CArray              signalX;
+    CArray              signalY;
+    CArray              signal_inverseX;// = signalX;
+    CArray              signal_inverseY;// = signalY;
 
 
     float               delta_courbe1_svg = 1.0;
@@ -117,10 +130,10 @@ virtual void            clickLeft( int, int);
 virtual void            motionLeft( int, int);
 virtual void            releaseLeft( int, int);
     
-    void                fft1(float*,  unsigned long);
-    void                build_fft1();
-    void                fft2(vector<complex<float>>& , unsigned int , unsigned int );
-    void                build_fft2();
+    void                fft3( CArray& );
+    void                ifft3( CArray& );
+    void                build_fft3();
+    void                sinusoide_fft3(CArray&, float*);
 
     
 inline     void         setColor(long l)            { PanelWindow::setColor(l); }

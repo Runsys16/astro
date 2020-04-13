@@ -53,6 +53,11 @@ PanelCourbe::PanelCourbe()
 
     update_err();
 
+    signalX.resize(256);
+    signalY.resize(256);
+    signal_inverseX.resize(256);
+    signal_inverseY.resize(256);
+
     string* pFile = var.gets( "FileResultat" );
     logf( (char*)"Chargement de %s", pFile->c_str() );
     if ( pFile!=NULL )
@@ -239,7 +244,7 @@ void PanelCourbe::charge_guidage(string filename)
     
     t_vSauve.clear();
     
-    build_fft2();
+    build_fft3();
 
     log_tab(false);
     logf( (char*)"PanelCourbe::charge_guidage('%s')", (char*)filename.c_str() );
@@ -343,7 +348,7 @@ void PanelCourbe::reset_guidage()
 void PanelCourbe::ajoute(vec2 v)
 {
     t_vCourbe.push_back(vec2(v));
-    if ( bDisplayfft)           build_fft2();
+    if ( bDisplayfft)           build_fft3();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -616,6 +621,18 @@ void PanelCourbe::glCourbes()
     
     glCourbe( taby, t_vCourbe.size(), 2, xStartAxe, decal_resultat, getDY()/2, 0.0 );
     
+    if ( bDisplayfft )
+    {
+        glLineWidth(3.0);
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+        else                            glColor4f( 0.5, 0.5, 1.0, 1.0 );
+        glCourbe( inverseX, nb, 1, xStartAxe, 0, getDY()/2, 0.0 );
+
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+        else                            glColor4f( 1.0, 1.0, 0.5, 1.0 );
+        glCourbe( inverseY, nb, 1, xStartAxe, 0, getDY()/2, 0.0 );
+        glLineWidth(1.0);
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -627,7 +644,8 @@ void PanelCourbe::glFft()
     if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.35 );
     else                                glColor4f( 0.0, 1.0, 0.0, 0.35 );
 
-    glCourbeCube( pOut, nb/2, 1, (int)xStartAxe, 0, (int)getDY()-20 , (float)0.0, (float)(getDX()/128.0), (float)delta_courbe1 );
+    glCourbeCube(   pOut, nb/2, 1, (int)xStartAxe, 0, (int)getDY()-20 , (float)0.0, 
+                    (float)(getDX()-xStartAxe)/((float)nb/2.0), (float)delta_courbe1 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -735,7 +753,10 @@ void PanelCourbe::displayGL(void)
         glEchelle();
         glCourbes();
 
-        if ( pOut != NULL && bDisplayfft )  glFft();
+        if ( bDisplayfft )  {
+            build_fft3();
+            if (pOut != NULL)       glFft();
+        }
     
     glDisable( GL_SCISSOR_TEST );
 }
@@ -834,7 +855,7 @@ void PanelCourbe::motionLeft( int xm, int ym )
     if ( decal_resultat <0 )                        decal_resultat = 0;
     if ( decal_resultat >=t_vResultat.size() )      decal_resultat = t_vResultat.size()-1;
 
-    build_fft2();
+    //build_fft3();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -845,193 +866,157 @@ void PanelCourbe::releaseLeft( int xm, int ym )
     logf( (char*)"PanelCourbe::releaseLeft( %d, %d )", xm, ym );
 
     var.set( "decal_resultat", decal_resultat );
-    build_fft2();
+    //build_fft3();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Cooley-Tukey FFT (in-place, breadth-first, decimation-in-frequency)
+// Better optimized but less intuitive
+// !!! Warning : in some cases this code make result different from not optimased version above (need to fix bug)
+// The bug is now fixed @2017/05/30 
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::fft3(CArray &x)
+{
+	// DFT
+	unsigned int N = x.size(), k = N, n;
+	float thetaT = 3.14159265358979323846264338328L / N;
+	CComplex phiT = CComplex(cos(thetaT), -sin(thetaT)), T;
+	while (k > 1)
+	{
+		n = k;
+		k >>= 1;
+		phiT = phiT * phiT;
+		T = 1.0L;
+		for (unsigned int l = 0; l < k; l++)
+		{
+			for (unsigned int a = l; a < N; a += n)
+			{
+				unsigned int b = a + k;
+				CComplex t = x[a] - x[b];
+				x[a] += x[b];
+				x[b] = t * T;
+			}
+			T *= phiT;
+		}
+	}
+	// Decimate
+	unsigned int m = (unsigned int)log2(N);
+	for (unsigned int a = 0; a < N; a++)
+	{
+		unsigned int b = a;
+		// Reverse bits
+		b = (((b & 0xaaaaaaaa) >> 1) | ((b & 0x55555555) << 1));
+		b = (((b & 0xcccccccc) >> 2) | ((b & 0x33333333) << 2));
+		b = (((b & 0xf0f0f0f0) >> 4) | ((b & 0x0f0f0f0f) << 4));
+		b = (((b & 0xff00ff00) >> 8) | ((b & 0x00ff00ff) << 8));
+		b = ((b >> 16) | (b << 16)) >> (32 - m);
+		if (b > a)
+		{
+			CComplex t = x[a];
+			x[a] = x[b];
+			x[b] = t;
+		}
+	}
+	//// Normalize (This section make it not working correctly)
+	//Complex f = 1.0 / sqrt(N);
+	//for (unsigned int i = 0; i < N; i++)
+	//	x[i] *= f;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// inverse fft (in-place)
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::ifft3(CArray& x)
+{
+    // conjugate the complex numbers
+    x = x.apply(std::conj);
+ 
+    // forward fft
+    fft3( x );
+ 
+    // conjugate the complex numbers again
+    x = x.apply(std::conj);
+ 
+    // scale the numbers
+    x /= x.size();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::fft1(float* data, unsigned long nn)
+void PanelCourbe::build_fft3()
 {
-    unsigned long n, mmax, m, j, istep, i;
-    float wtemp, wr, wpr, wpi, wi, theta;
-    float tempr, tempi;
- 
-    // reverse-binary reindexing
-    n = nn<<1;
-    j=1;
-    for (i=1; i<n; i+=2) {
-        if (j>i) {
-            swap(data[j-1], data[i-1]);
-            swap(data[j], data[i]);
-        }
-        m = nn;
-        while (m>=2 && j>m) {
-            j -= m;
-            m >>= 1;
-        }
-        j += m;
-    };
- 
-    // here begins the Danielson-Lanczos section
-    mmax=2;
-    while (n>mmax) {
-        istep = mmax<<1;
-        theta = -(2*M_PI/mmax);
-        wtemp = sin(0.5*theta);
-        wpr = -2.0*wtemp*wtemp;
-        wpi = sin(theta);
-        wr = 1.0;
-        wi = 0.0;
-        for (m=1; m < mmax; m += 2) {
-            for (i=m; i <= n; i += istep) {
-                j=i+mmax;
-                tempr = wr*data[j-1] - wi*data[j];
-                tempi = wr * data[j] + wi*data[j-1];
- 
-                data[j-1] = data[i-1] - tempr;
-                data[j] = data[i] - tempi;
-                data[i-1] += tempr;
-                data[i] += tempi;
-            }
-            wtemp=wr;
-            wr += wr*wpr - wi*wpi;
-            wi += wi*wpr + wtemp*wpi;
-        }
-        mmax=istep;
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::build_fft1()
-{
-    logf( (char*)"PanelCourbe::build_fft()");
+    //logf( (char*)"PanelCourbe::build_fft3()");
+    //if (  <256 )        return;
+    if ( !bDisplayfft )             return;    
+    if ( t_vCourbe.size() < 32 )    return;
     
     t_fOut.clear();
-    
-    nb = 1;
-    while (  nb *2 < t_vCourbe.size() ) nb *= 2;
-    nb *= 2;
-
-    logf( (char*)"   fft puissance de 2 : %d", nb );
-    
-    t_fOut.resize(nb*2);
-    //in  = (float*)malloc( nb * sizeof(int) );
-    for (int i=0, j=0; i<nb; i++ )
-    {
-        t_fOut[j++] =  (float)t_vCourbe[i].x ;
-        t_fOut[j++] =  0.0;
-    }
-    pOut = (float*)&t_fOut[0];
-    
-    fft1( pOut, nb );
-    
-    for (int i=0; i<nb; i++ )
-    {
-        t_fOut[i] /= (float)nb;
-        //t_fOut[i] += (float)nb;
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-
-constexpr float PI = 3.141592653589793;
- 
-std::complex<float> w(int nk, int N) {
-    return cos(2*PI*nk/N) - (std::complex<float>(0,1))*sin(2*PI*nk/N);
-}
- 
-unsigned int reverseNum(unsigned int num, unsigned int pos) {
-    unsigned int result = 0;
- 
-    for (unsigned int i(0); i < pos; i++) {
-        if((num & (1 << i)))
-           result |= 1 << ((pos - 1) - i);
-    }
-    return result;
-}
- 
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::fft2( vector<std::complex<float>>& signal, unsigned int end_, unsigned int start = 0 )
-{
-    if(end_ - start > 1) {
-        unsigned int len = end_ - start;
- 
-        for(unsigned int i(0); i < len / 2; i++) {
-            std::complex<float> temp(signal[start+i]);
-            signal[start+i] += signal[start+i+(len/2)];
-            signal[start+i+(len/2)] = (temp - signal[start+i+(len/2)])*w(i,len);
-        }
- 
-        fft2(signal,start+len/2,start);
-        fft2(signal,end_,start+len/2);
-    }
-    else if(end_ == signal.size()) {
-        std::vector<std::complex<float>> temp(signal);
-        unsigned int power(ceil(log(end_)/log(2)));
- 
-        for(unsigned int i(0); i < end_;i++) {
-            signal[(i+end_/2)%end_] = temp[reverseNum(i,power)];
-        }
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::build_fft2()
-{
-    //logf( (char*)"PanelCourbe::build_fft2()");
-    
-    t_fOut.clear();
-    vector<complex<float>> signal;
     
     nb = 1;
     while (  nb *2 < t_vCourbe.size() ) nb *= 2;
     if ( nb >256 )      nb = 256;
 
-    //logf( (char*)"   fft puissance de 2 : %d", nb );
-    
+
     t_fOut.resize(nb);
-    signal.resize(nb);
+    
     int nn = t_vCourbe.size();
+    int idx, max;
+    max = t_vCourbe.size();
 
     for (int i=0; i<nb; i++ )
     {
-        signal[i] = complex<float>((float)t_vCourbe[nn-i-1-decal_resultat].x, 0.0);
+        idx = nn-i-1-decal_resultat;
+        
+        if ( idx < max && idx >= 0)   {
+            signalX[i] = complex<float>((float)t_vCourbe[idx].x, 0.0);
+            signalY[i] = complex<float>((float)t_vCourbe[idx].y, 0.0);
+        }
+        else    {
+            signalX[i] = complex<float>(0.0, 0.0);
+            signalY[i] = complex<float>(0.0, 0.0);
+        }
     }
-    fft2( signal, nb, 0 );
+    fft3( signalX );
+    fft3( signalY );
     
-    for (int i=0; i<nb; i++ )
-    {
-        t_fOut[i] = 5000.0 * -sqrt(norm(signal[i])) / (float)nb / (float)nb;
-        //cout << i <<"-"<< real(signal[i]) << endl;
+    int f = nb/2;
+    float normalize = 1.0/sqrt(nb);
+    
+    for (int i=0, j=0; i<nb; i++ )    {
+        if ( i>nb/2)        j--;
+        else                j++;
+        
+        t_fOut[nb/2-j] = -sqrt(norm(signalX[i])) * normalize  ;
     }
+
     pOut = (float*)&t_fOut[0];
-    signal.clear();
+
+    signal_inverseX = signalX;
+    signal_inverseY = signalY;
+
+    sinusoide_fft3(signal_inverseX, (float*)inverseX);
+    sinusoide_fft3(signal_inverseY, (float*)inverseY);
 }
-/* 
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int main() {
-    std::vector<std::complex<float>> signal(128);
- 
-    for(unsigned int i(0); i < signal.size(); i++)
-        signal[i] = sin(2*PI*2*i/(float)(signal.size())); // Calcule une sinusoide de 2 Hz
- 
-    std::vector<std::complex<float>> spectrum(signal);
- 
-    fft(spectrum,spectrum.size()); // Calcul de la FFT
- 
-    for(unsigned int i(0); i < spectrum.size(); i++)
-        std::cout << std::fixed << std::setprecision(2) << abs(spectrum[i]) << std::endl;
- 
-    return 0;
+void PanelCourbe::sinusoide_fft3(CArray& x, float* t)
+{
+    int n = nb/10;
+    for( int i=0+n; i<nb-n; i++ )
+    {
+        x[i]     = CComplex(0.0,0.0);
+    }
+    
+    ifft3( x );
+    
+    for( int i=0; i<nb; i++ )
+    {
+        t[nb-1-i] = real(x[i]);
+    }
 }
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
