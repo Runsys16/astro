@@ -624,8 +624,8 @@ void PanelCourbe::glFft()
 {
     VarManager& var = VarManager::getInstance();
 
-    if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.25 );
-    else                                glColor4f( 0.0, 1.0, 0.0, 0.25 );
+    if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.35 );
+    else                                glColor4f( 0.0, 1.0, 0.0, 0.35 );
 
     glCourbeCube( pOut, nb/2, 1, (int)xStartAxe, 0, (int)getDY()-20 , (float)0.0, (float)(getDX()/128.0), (float)delta_courbe1 );
 }
@@ -731,7 +731,6 @@ void PanelCourbe::displayGL(void)
     
     glScissor( scx, scy, scdx, scdy );
     glEnable( GL_SCISSOR_TEST );
-
 
         glEchelle();
         glCourbes();
