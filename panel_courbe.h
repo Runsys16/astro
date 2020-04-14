@@ -38,7 +38,9 @@ private:
     float               courbe2 = 1.0;
     float               taille_mini = 20.0; //(pixel)
     int                 decal_resultat = 0;
-    
+    float               ech_h;
+    float               ech_w;
+
     float               alpha[256];
     float               inverseX[256];
     float               inverseY[256];
@@ -96,7 +98,7 @@ private:
     PanelText*          pCourbeY;
     
     int                 aff_courbe_old;
-    bool                bDisplayfft_old;
+    int                 iDisplayfft_old;
     int                 filtre_old;
 
 public :

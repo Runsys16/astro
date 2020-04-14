@@ -140,7 +140,7 @@ bool                bAffSuivi      = true;
 bool                bSound         = true;
 bool                bInverseCouleur= false;
 bool                bCentrageSuivi = false;
-bool                bDisplayfft    = true;
+int                 iDisplayfft    = 0;
 
 int                 wImg;
 int                 hImg;
@@ -2267,10 +2267,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'x':
         {
-        bDisplayfft = !bDisplayfft;
-        if ( bDisplayfft )      panelCourbe->build_fft3();
-        var.set("bDisplayfft", bDisplayfft);
-        logf( (char*)"Key (x) : Affiche/Cache la FFT (%s)", BOOL2STR(bDisplayfft) );
+        ++iDisplayfft %= 3;
+        //if ( bDisplayfft )      panelCourbe->build_fft3();
+        //var.set("bDisplayfft", bDisplayfft);
+        logf( (char*)"Key (x) : Affiche/Cache la FFT (%d)", iDisplayfft );
         }
         break;
 
