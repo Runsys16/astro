@@ -89,8 +89,19 @@ private:
     vector<float>       t_fOut;
     int                 nb;
 
+    PanelText*          pAffCourbe;
+    PanelText*          pValAffCourbe;
+    PanelText*          pAffFFT;
+    PanelText*          pCourbeX;
+    PanelText*          pCourbeY;
+    
+    int                 aff_courbe_old;
+    bool                bDisplayfft_old;
+    int                 filtre_old;
+
 public :
     PanelCourbe();
+    void                init_panel();
     ~PanelCourbe();
     
     void                init_var();
@@ -122,6 +133,7 @@ public :
     int                 sc2winY(int);
     
 virtual void            displayGL( void );
+virtual void            updatePos( void );
 
 virtual void            clickMiddle( int, int);
 virtual void            motionMiddle( int, int);

@@ -158,6 +158,8 @@ float               xSuivi;
 float               ySuivi;
 float               xSuiviSvg;
 float               ySuiviSvg;
+float               filtre = 10.0;
+int                 aff_courbe = 0;
 //vector<Star*>       v_tStars;
 float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
@@ -1805,7 +1807,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 
     case 'g':
+        {
+            filtre *= 0.9;
+            if ( filtre<2.0)    filtre = 2.0;
+            logf( (char*)"Key (g) : filtre -10%% %0.2f", filtre );
+        }
+        break;
     case 'G':
+        {
+            filtre /= 0.9;
+            if ( filtre>250.0)    filtre = 250.0;
+            logf( (char*)"Key (g) : filtre +10%% %0.2f", filtre );
+        }
         break;
         
     case 'H':
@@ -2263,6 +2276,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'X':
         {
+            ++aff_courbe %= 4;
         }
         break;
 
@@ -2765,7 +2779,6 @@ static void CreateHelp()
 	addString( "   F\t: Active/Desactive la simu");
 	addString( "   i\t: Prend une photo sur le PENTAX");
 	addString( "   I\t: Inverse les couleur pour la recherhce d'une etoile");
-	addString( " j/J\t: Change la taille du cercle d'asservissement");
 	addString( "   K\t: Active/desactive le son");
 	addString( "   l\t: List les ports /dev + les controles ");
 	addString( "   L\t: List les variables");
@@ -2775,10 +2788,9 @@ static void CreateHelp()
 	addString( "   p\t: Pause de l'affichage de pleiades");
 	addString( "   P\t: Image suivante");
 	addString( "   q\t: Lance un script python");
-	addString( "   Q\t: Ouvre une image fits");
+	addString( "   Q\t: Mise en station via polaris");
 	addString( "   r\t: Rappel les mesures de suivi");
 	addString( "   R\t: Test alert BOX");
-	addString( "   x\t: Affiche/Cache la fft");
 	addString( "   W\t: Surveille un repertoire");
 	addString( "   -\t: Toutes les images sont affichees en icones");
 	addString( "");
@@ -2811,6 +2823,7 @@ static void CreateHelp()
 	addString2( "  F12\t: Efface la derniere image"); 
 	addString2( "");
 	addString2( "---- SUIVI ----");
+	addString2( " j/J\t: Change la taille du cercle d'asservissement");
 	addString2( "   S\t: Lance/Stop le suivi");
 	addString2( " t/T\t: change le temps de correction");
     addString2( "   U\t: Affichage du centre de la camera on/off");
@@ -2819,6 +2832,11 @@ static void CreateHelp()
 	addString2( "   v\t: Sauvegarde des coordonnees de suivi (fichier .guid)");
 	addString2( "   w\t: Centre l'asservissement");
 	addString2( "   Y\t: Lance l'asservissement");
+	addString2( "");
+	addString2( "---- FFT ----");
+	addString2( " g/G\t: Change la valeur du filtre" );
+	addString2( "   x\t: Affiche/Cache la fft");
+	addString2( "   X\t: Choix de l'abcisse ou de l'ordonnée");
 	addString2( "");
 	addString2( "ctrl+q\t: --- SORTIE DU LOGICIEL ---" );
 

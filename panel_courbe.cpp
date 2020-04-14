@@ -5,6 +5,14 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+vec4 color_X     = vec4(1.0,1.0,0.0,1.0);
+vec4 color_Y     = vec4(0.0,0.0,1.0,1.0);
+vec4 color_FFT   = vec4(0.0,1.0,0.0,0.7);
+vec4 color_FFT_X = vec4(1.0,1.0,0.5,1.0);
+vec4 color_FFT_Y = vec4(0.5,0.5,1.0,1.0);
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 PanelCourbe::PanelCourbe()
 {
     logf( (char*)"PanelCourbe::PanelCourbe() Constructeur" );
@@ -73,10 +81,32 @@ PanelCourbe::PanelCourbe()
     
     setVisible( var.getb( "bPanelCourbe" ) );
 
+    init_panel();
     build_unites_text();
 
     log_tab(false);
     logf( (char*)"PanelCourbe::PanelCourbe() Constructeur" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::init_panel()
+{
+    int x = 800;
+    int y = 0;
+    int dy = 15;
+    
+    pAffCourbe      = new PanelText( (char*)"--",   PanelText::NORMAL_FONT, x, y++*dy );
+    pValAffCourbe   = new PanelText( (char*)"4",    PanelText::NORMAL_FONT, x, y++*dy );
+    pAffFFT         = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
+    pCourbeX        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
+    pCourbeY        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
+    
+    add( pAffCourbe );
+    add( pValAffCourbe );
+    add( pAffFFT );
+    add( pCourbeX );
+    add( pCourbeY );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -237,6 +267,7 @@ void PanelCourbe::charge_guidage(string filename)
     
     t_vResultat.clear();
     t_vCourbe.clear();
+    decal_resultat = 0;
 
     charge_guidage_version( fichier );
 
@@ -394,13 +425,13 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
     
     if ( var.getb("bNuit") )
     {
-        color       = vec4( 0.15, 0.0, 0.0, 1.0 );    
+        color       = vec4( gris, 0.0, 0.0, 1.0 );    
         colorLimit  = vec4( 0.8, 0.0, 0.0, 1.0 );    
         colorAxe    = vec4( 1.0, 0.0, 0.0, 1.0 );
     }
     else                            
     {
-        gris = 0.15;
+        //gris = 0.4;
         color       = vec4( gris, gris, gris, 1.0 );
         colorLimit  = vec4( 1.0, 0.0, 1.0, 1.0 );
         colorAxe    = vec4( 1.0, 1.0, 1.0, 1.0 );
@@ -612,25 +643,33 @@ void PanelCourbe::glCourbes()
     float* taby = tabx+1;
     
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-    else                            glColor4f( 0.0, 0.0, 1.0, 1.0 );
+    else                            glColor4fv( color_X );
     
-    glCourbe( tabx, t_vCourbe.size(), 2, xStartAxe, decal_resultat, getDY()/2, 0.0 );
+    if ( (aff_courbe ==0x0) || (aff_courbe==0x02) ) {
+       glCourbe( tabx, t_vCourbe.size(), 2, xStartAxe, decal_resultat, getDY()/2, 0.0 );
+    }
 
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-    else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
+    else                            glColor4fv( color_Y );
     
-    glCourbe( taby, t_vCourbe.size(), 2, xStartAxe, decal_resultat, getDY()/2, 0.0 );
+    if ( (aff_courbe==0x0) || (aff_courbe==0x03) ) {
+        glCourbe( taby, t_vCourbe.size(), 2, xStartAxe, decal_resultat, getDY()/2, 0.0 );
+    }
     
     if ( bDisplayfft )
     {
         glLineWidth(3.0);
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-        else                            glColor4f( 0.5, 0.5, 1.0, 1.0 );
-        glCourbe( inverseX, nb, 1, xStartAxe, 0, getDY()/2, 0.0 );
+        if ( (aff_courbe ==0x0) || (aff_courbe==0x02) ) {
+            if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+            else                            glColor4fv( color_FFT_X );
+            glCourbe( inverseX, nb, 1, xStartAxe, 0, getDY()/2, 0.0 );
+        }
 
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-        else                            glColor4f( 1.0, 1.0, 0.5, 1.0 );
-        glCourbe( inverseY, nb, 1, xStartAxe, 0, getDY()/2, 0.0 );
+        if ( (aff_courbe==0x0) || (aff_courbe==0x03) ) {
+            if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
+            else                            glColor4fv( color_FFT_Y );
+            glCourbe( inverseY, nb, 1, xStartAxe, 0, getDY()/2, 0.0 );
+        }
         glLineWidth(1.0);
     }
 }
@@ -642,7 +681,7 @@ void PanelCourbe::glFft()
     VarManager& var = VarManager::getInstance();
 
     if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.35 );
-    else                                glColor4f( 0.0, 1.0, 0.0, 0.35 );
+    else                                glColor4fv( color_FFT );
 
     glCourbeCube(   pOut, nb/2, 1, (int)xStartAxe, 0, (int)getDY()-20 , (float)0.0, 
                     (float)(getDX()-xStartAxe)/((float)nb/2.0), (float)delta_courbe1 );
@@ -733,12 +772,38 @@ void PanelCourbe::displayGL(void)
     VarManager&     var = VarManager::getInstance();
 
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-    else                            glColor4f( 1.0, 1.0, 0.0, 1.0 );
+    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
+
+
+
+    glEchelle();
+    
+    /*
+    if ( (aff_courbe ==0x0) || (aff_courbe==0x02) )    {
+     
+        pCourbeX->setColor( (unsigned long)0x80ffffff );
+    
+    } else {
+     
+        pCourbeX->setColor( (unsigned long)0xffffffff );
+    
+    }
+    */
+    
+    
+    
+    /*
+    if ( (aff_courbe ==0x0) || (aff_courbe==0x03) )    {
+        pCourbeY->setColor( (unsigned long)0xffffffff ) );
+    } else {
+        pCourbeY->setColor( (unsigned long)0x80ffffff ) );
+    }
+    */
 
     PanelWindow::displayGL();
 
     int DY = getY();
-    int n = t_vResultat.size();
+    //int n = t_vResultat.size();
     
 
     float height = (float)wm.getHeight();
@@ -750,15 +815,90 @@ void PanelCourbe::displayGL(void)
     glScissor( scx, scy, scdx, scdy );
     glEnable( GL_SCISSOR_TEST );
 
-        glEchelle();
-        glCourbes();
+    glCourbes();
 
-        if ( bDisplayfft )  {
-            build_fft3();
-            if (pOut != NULL)       glFft();
-        }
+    if ( bDisplayfft )  {
+        build_fft3();
+        if (pOut != NULL)       glFft();
+    }
     
     glDisable( GL_SCISSOR_TEST );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::updatePos()
+{
+    PanelSimple::updatePos();
+
+    
+    pCourbeX->setPos(       getDX()-100, pCourbeX->getPosY() );
+    pCourbeY->setPos(       getDX()-100, pCourbeY->getPosY() );
+    pAffCourbe->setPos(     getDX()-100, pAffCourbe->getPosY() );
+    pValAffCourbe->setPos(  getDX()-100, pValAffCourbe->getPosY() );
+    pAffFFT->setPos(        getDX()-100, pAffFFT->getPosY() );
+    //logf( (char*)"updatePos()" );
+
+    char s[255];
+    //--------------------------------------------------------------    
+    if ( aff_courbe_old != aff_courbe ) {
+        //--------------------------------------------------------------    
+        if ( (aff_courbe ==0x0) || (aff_courbe==0x02) )    {
+            sprintf( s, (char*)"Abcisse X On" );
+        } else {
+            sprintf( s, (char*)"Abcisse X Off" );
+        }
+        pCourbeX->changeText( s, true );
+        //--------------------------------------------------------------    
+        if ( (aff_courbe ==0x0) || (aff_courbe==0x03) )    {
+            sprintf( s, (char*)"Ordonnee Y On" );
+        } else {
+            sprintf( s, (char*)"Ordonnee Y Off" );
+        }
+        pCourbeY->changeText( s, true );
+
+        if ( (aff_courbe ==0x0) || (aff_courbe==0x02) )     pCourbeX->setColor( (unsigned long)0xff0808ff );
+        else                                                pCourbeX->setColor( (unsigned long)0x800000ff );
+
+        if ( (aff_courbe ==0x0) || (aff_courbe==0x03) )     pCourbeY->setColor( (unsigned long)0xffffff00 );
+        else                                                pCourbeY->setColor( (unsigned long)0x80ffff00 );
+        //--------------------------------------------------------------    
+        sprintf( s, (char*)"Val = %d", aff_courbe );
+        pValAffCourbe->changeText( s );
+    }
+    //--------------------------------------------------------------    
+    if ( bDisplayfft != bDisplayfft_old )  {
+        if ( bDisplayfft )  {
+            sprintf( s, (char*)"FFT On" );
+        } else {
+            sprintf( s, (char*)"FFT Off" );
+        }
+        pAffFFT->changeText( s, true );
+
+        if ( (bDisplayfft) )            pAffFFT->setColor( (unsigned long)0xff00ff00 );
+        else                            pAffFFT->setColor( (unsigned long)0x8000ff00 );
+    }
+    //--------------------------------------------------------------    
+    if ( filtre_old != filtre )
+    {
+        sprintf( s, (char*)"Filtre = %0.0f", 256.0/filtre );
+        pAffCourbe->changeText( s, true );
+    }
+    //--------------------------------------------------------------    
+    aff_courbe_old = aff_courbe;
+    bDisplayfft_old = bDisplayfft;
+    filtre_old = filtre;
+    
+
+
+    /*
+    PanelText*          pAffCourbe;
+    PanelText*          pValAffCourbe;
+    PanelText*          pAffFFT;
+    PanelText*          pCourbeX;
+    PanelText*          pCourbeY;
+    */
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1004,7 +1144,7 @@ void PanelCourbe::build_fft3()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::sinusoide_fft3(CArray& x, float* t)
 {
-    int n = nb/10;
+    int n = (float)nb/filtre;
     for( int i=0+n; i<nb-n; i++ )
     {
         x[i]     = CComplex(0.0,0.0);

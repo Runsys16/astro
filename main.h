@@ -118,6 +118,8 @@ typedef struct readBackground       rb_t;
     extern bool                     bSauve;
     extern string                   filenameSauve;
     extern bool                     bDisplayfft;
+    extern float                    filtre;
+    extern int                      aff_courbe;
 
 #endif
 
