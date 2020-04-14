@@ -96,6 +96,7 @@ private:
     PanelText*          pAffFFT;
     PanelText*          pCourbeX;
     PanelText*          pCourbeY;
+    PanelText*          pFilename;
     
     int                 aff_courbe_old;
     int                 iDisplayfft_old;

@@ -71,6 +71,8 @@ PanelCourbe::PanelCourbe()
     signal_inverseX.resize(256);
     signal_inverseY.resize(256);
 
+    init_panel();
+
     string* pFile = var.gets( "FileResultat" );
     logf( (char*)"Chargement de %s", pFile->c_str() );
     if ( pFile!=NULL )
@@ -86,7 +88,6 @@ PanelCourbe::PanelCourbe()
     
     setVisible( var.getb( "bPanelCourbe" ) );
 
-    init_panel();
     build_unites_text();
 
     log_tab(false);
@@ -107,11 +108,14 @@ void PanelCourbe::init_panel()
     pCourbeX        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
     pCourbeY        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
     
+    pFilename       = new PanelText( (char*)"",     PanelText::NORMAL_FONT, 200, 0 );
+    
     add( pAffCourbe );
     add( pValAffCourbe );
     add( pAffFFT );
     add( pCourbeX );
     add( pCourbeY );
+    add( pFilename );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -269,6 +273,8 @@ void PanelCourbe::charge_guidage(string filename)
         logf( (char*)"charge_guidage('%s')", (char*)filename.c_str() );
         return;
     }
+    
+    pFilename->changeText( (char*)filename.c_str() );
     
     t_vResultat.clear();
     t_vCourbe.clear();
