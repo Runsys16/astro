@@ -149,12 +149,12 @@ void VarManager::charge()
         
         fichier >> output;
         string key = string(output);
-        //cout<<" "<<key;// << endl;;
+        cout<<" "<<key;// << endl;;
         
         fichier >> output;
         fichier >> output;
         string val = string(output);
-        //cout<<" = "<< val << endl;;
+        cout<<" = "<< val << endl;;
         
         if ( type.find("float") != string::npos )
         {

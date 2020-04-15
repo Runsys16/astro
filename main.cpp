@@ -478,7 +478,6 @@ void callback_enregistre( bool b, int ii, char* str)
     {
         FileBrowser::getInstance().setNewline(false);
         FileBrowser::getInstance().cache();    
-
     }
     
     Camera* p = Camera_mgr::getInstance().getCurrent();

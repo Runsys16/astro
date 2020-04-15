@@ -37,7 +37,8 @@ private:
     float               courbe1 = 1.0;
     float               courbe2 = 1.0;
     float               taille_mini = 20.0; //(pixel)
-    int                 decal_resultat = 0;
+    int                 decal_x  = 0;
+    int                 decal_y  = 0;
     float               ech_h;
     float               ech_w;
 
@@ -55,7 +56,8 @@ private:
     float               delta_courbe2_svg = 1.0;
     float               courbe1_svg = 1.0;
     float               courbe2_svg = 1.0;
-    int                 decal_svg = 0.0;
+    int                 decal_x_svg = 0.0;
+    int                 decal_y_svg = 0.0;
     
 
 
@@ -125,8 +127,8 @@ public :
     void                glEchelle();
     void                glCourbeCube( float*, int, int, int, int, int, float, float, float );
     void                glCourbeCube( float*, int, int, int, int, int, float );
-    void                glCourbe( float*, int, int, int, int, int, float, float, float );
-    void                glCourbe( float*, int, int, int, int, int, float );
+    void                glCourbe( float*, int, int, int, int, int, int, float, float, float );
+    void                glCourbe( float*, int, int, int, int, int, int, float );
     void                glCourbes();
     void                glFft();
 
@@ -155,7 +157,7 @@ inline     float        get_offset_x()              { return offset_x; }
 inline     float        get_offset_y()              { return offset_y; }   
 inline     float        get_courbe1()               { return courbe1; }   
 inline     float        get_courbe2()               { return courbe2; }   
-inline     int          get_decal_resultat()        { return decal_resultat; }   
+//inline     int          get_decal_resultat()        { return decal_x; }   
 inline     float        get_delta_courbe1()         { return delta_courbe1; }   
 inline     float        get_delta_courbe2()         { return delta_courbe2; }   
 inline     int          get_xCam()                  { return xCam; }   
@@ -173,7 +175,7 @@ inline     void         set_offset_x(float f)           { offset_x = f; }
 inline     void         set_offset_y(float f)           { offset_y = f; }   
 inline     void         set_courbe1(float f)            { courbe1 = f; }   
 inline     void         set_courbe2(float f)            { courbe2 = f; }   
-inline     void         set_decal_resultat(int n)       { decal_resultat = n; }   
+//inline     void         set_decal_resultat(int n)       { decal_resultat = n; }   
 inline     void         set_delta_courbe1(float f)      { delta_courbe1 = f; }   
 inline     void         set_delta_courbe2(float f)      { delta_courbe2 = f; }   
 inline     void         set_xCam(int n)                 { xCam = n; }   
