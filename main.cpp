@@ -349,6 +349,21 @@ void commande_polaris()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+string get_basename( string s)
+{
+    int pos = -1;
+    string r = string(s);
+    while( pos=r.find("/") != string::npos )
+    {
+        r  = r.substr(pos);
+        pos = -1;
+    }
+    if ( pos == -1|| r.length() == 0 )  return s;
+    return r;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 {
     VarManager& var = VarManager::getInstance();
@@ -1810,6 +1825,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             filtre *= 0.9;
             if ( filtre<2.0)    filtre = 2.0;
+            VarManager::getInstance().set( "filtre", filtre );
             logf( (char*)"Key (g) : filtre -10%% %0.2f", filtre );
         }
         break;
@@ -1817,6 +1833,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             filtre /= 0.9;
             if ( filtre>250.0)    filtre = 250.0;
+            VarManager::getInstance().set( "filtre", filtre );
             logf( (char*)"Key (g) : filtre +10%% %0.2f", filtre );
         }
         break;
@@ -2267,16 +2284,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'x':
         {
-        ++iDisplayfft %= 3;
-        //if ( bDisplayfft )      panelCourbe->build_fft3();
-        //var.set("bDisplayfft", bDisplayfft);
-        logf( (char*)"Key (x) : Affiche/Cache la FFT (%d)", iDisplayfft );
+            ++iDisplayfft %= 3;
+            //if ( bDisplayfft )      panelCourbe->build_fft3();
+            var.set("iDisplayfft", iDisplayfft);
+            logf( (char*)"Key (x) : Affiche/Cache la FFT (%d)", iDisplayfft );
         }
         break;
 
     case 'X':
         {
             ++aff_courbe %= 4;
+            var.set("aff_courbe", aff_courbe);
+            logf( (char*)"Key (x) : Affiche/Cache la FFT (%d)", iDisplayfft );
         }
         break;
 

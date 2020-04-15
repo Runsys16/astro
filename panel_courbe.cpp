@@ -58,6 +58,13 @@ PanelCourbe::PanelCourbe()
     //iDisplayfft     = var.geti("iDisplayfft");
 
     taille_mini     = var.getf("taille_mini_unite");
+
+    iDisplayfft     = var.geti("iDisplayfft");
+    aff_courbe      = var.geti("aff_courbe");
+    filtre          = var.getf("filtre");
+
+
+
     ech_w           = 1.0;
     ech_h           = 1.0;
     aff_courbe_old  = -1;
@@ -103,7 +110,6 @@ void PanelCourbe::init_panel()
     int dy = 15;
     
     pAffCourbe      = new PanelText( (char*)"--",   PanelText::NORMAL_FONT, x, y++*dy );
-    pValAffCourbe   = new PanelText( (char*)"4",    PanelText::NORMAL_FONT, x, y++*dy );
     pAffFFT         = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
     pCourbeX        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
     pCourbeY        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
@@ -111,7 +117,6 @@ void PanelCourbe::init_panel()
     pFilename       = new PanelText( (char*)"",     PanelText::NORMAL_FONT, 200, 0 );
     
     add( pAffCourbe );
-    add( pValAffCourbe );
     add( pAffFFT );
     add( pCourbeX );
     add( pCourbeY );
@@ -161,7 +166,9 @@ void PanelCourbe::init_var()
     if (!var.existe("dxPanelCourbe") )              var.set("dxPanelCourbe", 400);
     if (!var.existe("dyPanelCourbe") )              var.set("dyPanelCourbe", 400);
 
-    //if (!var.existe("bDisplayfft") )                var.set("bDisplayfft", true);
+    if (!var.existe("iDisplayfft") )                var.set("iDisplayfft", 0);
+    if (!var.existe("aff_courbe") )                 var.set("aff_courbe", 0);
+    if (!var.existe("filtre") )                     var.set("filtre", (float)10.0);
 
     pIn  = NULL;
     pOut = NULL;
@@ -274,7 +281,7 @@ void PanelCourbe::charge_guidage(string filename)
         return;
     }
     
-    pFilename->changeText( (char*)filename.c_str() );
+    pFilename->changeText( (char*)get_basename(filename).c_str() );
     
     t_vResultat.clear();
     t_vCourbe.clear();
@@ -838,7 +845,6 @@ void PanelCourbe::updatePos()
     pCourbeX->setPos(       getDX()-100, pCourbeX->getPosY() );
     pCourbeY->setPos(       getDX()-100, pCourbeY->getPosY() );
     pAffCourbe->setPos(     getDX()-100, pAffCourbe->getPosY() );
-    pValAffCourbe->setPos(  getDX()-100, pValAffCourbe->getPosY() );
     pAffFFT->setPos(        getDX()-100, pAffFFT->getPosY() );
     //logf( (char*)"updatePos()" );
 
@@ -865,9 +871,6 @@ void PanelCourbe::updatePos()
 
         if ( (aff_courbe ==0x0) || (aff_courbe==0x03) )     pCourbeY->setColor( (unsigned long)0xffffff00 );
         else                                                pCourbeY->setColor( (unsigned long)0x80ffff00 );
-        //--------------------------------------------------------------    
-        sprintf( s, (char*)"Val = %d", aff_courbe );
-        pValAffCourbe->changeText( s );
     }
     //--------------------------------------------------------------    
     if ( iDisplayfft != iDisplayfft_old )  {
@@ -893,6 +896,8 @@ void PanelCourbe::updatePos()
     filtre_old = filtre;
     
 
+    int l = pFilename->getTextLenght();
+    pFilename->setPos( (getDX()-l)/2, 0 );
 
     /*
     PanelText*          pAffCourbe;

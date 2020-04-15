@@ -92,7 +92,6 @@ private:
     int                 nb;
 
     PanelText*          pAffCourbe;
-    PanelText*          pValAffCourbe;
     PanelText*          pAffFFT;
     PanelText*          pCourbeX;
     PanelText*          pCourbeY;
