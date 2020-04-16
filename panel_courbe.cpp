@@ -150,7 +150,7 @@ void PanelCourbe::init_panel()
     pCBCourbeY  = init_check_box( x, y++*dy );
     pCBCourbeY->setListener( &bCBCourbeY );
     
-    pFilename       = new PanelText( (char*)"",     PanelText::NORMAL_FONT, 200, 0 );
+    pFilename       = new PanelText( (char*)"--",     PanelText::NORMAL_FONT, 200, 0 );
 
     add( pFilename );
     
@@ -497,9 +497,32 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         //--------------------------------------------------------
         glColor4fv( (GLfloat*)&color );
         
-        int pas = delta_courbe1*ech_h;
+        //int pas = delta_courbe1*ech_h;
         float fPas = delta_courbe1*ech_h;
-        while( fPas < taille_mini )     fPas += courbe1*ech_w;
+        while( fPas < taille_mini )     fPas += courbe1*ech_h;
+        
+        float deb = round( (-decal_y) / (fPas) );
+        float fin = round( (getDY()-decal_y) / (fPas) );
+
+        
+        logf( (char*)"deb=%0.2f fin=%0.2f", deb, fin );
+        
+        for ( float i=deb; i<=fin; i+=1.0 )
+        {
+            int x0 = xStartAxe;
+            int x1 = getPosDX();
+            int y0, y1;
+
+            y0 = y1 = i * fPas + (AXE-decal_y);
+            logf( (char*)"  y0=%d", y0 );
+
+            xy2Screen(x0, y0);
+            xy2Screen(x1, y1);
+            
+            glVertex2i( x0, y0 );
+            glVertex2i( x1, y1 );
+        } 
+        /*
 
         for( float i=0; i<SIZE/2; i+=fPas )
         {
@@ -521,6 +544,7 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
             x += getPosDX()-xStartAxe;
             glVertex2i( x, y );
         }
+        */
         //--------------------------------------------------------
         // graduation verticale
         //--------------------------------------------------------
