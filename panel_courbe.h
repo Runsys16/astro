@@ -94,9 +94,21 @@ private:
     int                 nb;
 
     PanelText*          pAffCourbe;
+    PanelCheckBox*      pCBAffCourbe;
+    bool                bCBAffCourbe;
+    
     PanelText*          pAffFFT;
+    PanelCheckBox*      pCBAffFFT;
+    bool                bCBAffFFT;
+
     PanelText*          pCourbeX;
+    PanelCheckBox*      pCBCourbeX;
+    bool                bCBCourbeX;
+
     PanelText*          pCourbeY;
+    PanelCheckBox*      pCBCourbeY;
+    bool                bCBCourbeY;
+
     PanelText*          pFilename;
     
     int                 aff_courbe_old;
@@ -105,6 +117,8 @@ private:
 
 public :
     PanelCourbe();
+    PanelText*          init_text( int, int, char* );
+    PanelCheckBox*      init_check_box( int, int );
     void                init_panel();
     ~PanelCourbe();
     

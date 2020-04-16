@@ -29,6 +29,7 @@ PanelCourbe::PanelCourbe()
     
     //setVisible(bPanelCourbe);
  	setBackground((char*)"images/background.tga");
+ 	//setBackground((char*)"images/coche.tga");
     //setDisplayGL( PanelCourbe::displayResultat_cb );
 
     pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
@@ -104,24 +105,55 @@ PanelCourbe::PanelCourbe()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+PanelText* PanelCourbe::init_text( int x, int y, char* ptext )
+{
+    PanelText* pT  = new PanelText( (char*)ptext,   PanelText::NORMAL_FONT, x, y ) ;
+    add( pT );
+    return pT;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+PanelCheckBox* PanelCourbe::init_check_box( int x, int y )
+{
+    PanelCheckBox* pCB = new PanelCheckBox();
+    
+    pCB->setPosAndSize( x-20, y+1, 14, 14);
+    pCB->setTrue(  (char*) "images/coche1.tga" );
+    pCB->setFalse( (char*) "images/coche0.tga" );
+
+    add( pCB );
+    return pCB;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::init_panel()
 {
     int x = 800;
     int y = 0;
-    int dy = 15;
+    int dy = 16;
     
-    pAffCourbe      = new PanelText( (char*)"--",   PanelText::NORMAL_FONT, x, y++*dy );
-    pAffFFT         = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
-    pCourbeX        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
-    pCourbeY        = new PanelText( (char*)"On",   PanelText::NORMAL_FONT, x, y++*dy );
+    pAffCourbe    = init_text( x, y*dy, (char*)"On" );
+    //pCBAffCourbe  = init_check_box( x, y++*dy );
+    y++;
+
+    pAffFFT    = init_text( x, y*dy, (char*)"On" );
+    pCBAffFFT  = init_check_box( x, y++*dy );
+    pCBAffFFT->setListener( &bCBAffFFT );
+
+    pCourbeX    = init_text( x, y*dy, (char*)"On" );
+    pCBCourbeX  = init_check_box( x, y++*dy );
+    pCBCourbeX->setListener( &bCBCourbeX );
+
+    pCourbeY    = init_text( x, y*dy, (char*)"On" );
+    pCBCourbeY  = init_check_box( x, y++*dy );
+    pCBCourbeY->setListener( &bCBCourbeY );
     
     pFilename       = new PanelText( (char*)"",     PanelText::NORMAL_FONT, 200, 0 );
-    
-    add( pAffCourbe );
-    add( pAffFFT );
-    add( pCourbeX );
-    add( pCourbeY );
+
     add( pFilename );
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -530,7 +562,10 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
 
 
         y = (float)(delta_courbe1*(min)*ech_h + AXE) - decal_y;
-        if ( pMax != NULL )     pMax->setPos( 5, y-7 );
+        if ( pMax != NULL ) {
+            pMax->setPos( 5, y-7 );
+            pMax->setColor( get_color(colorLimit) );
+        }
         x = xStartAxe;
         xy2Screen(x, y);
         glVertex2i( x, y );
@@ -542,7 +577,10 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         // Min
         //--------------------------------------------------------
         y = (float)(delta_courbe1*(max)*ech_h + AXE) - decal_y;
-        if ( pMin != NULL )     pMin->setPos( 5, y-7 );
+        if ( pMin != NULL ) {
+            pMin->setPos( 5, y-7 );
+            pMin->setColor( get_color(colorLimit) );
+        }
         x = xStartAxe;
         xy2Screen(x, y);
         glVertex2i( x, y );
@@ -858,9 +896,16 @@ void PanelCourbe::updatePos()
     
     
     pCourbeX->setPos(       getDX()-100, pCourbeX->getPosY() );
+    pCBCourbeX->setPos(     getDX()-120, pCourbeX->getPosY() );
+
     pCourbeY->setPos(       getDX()-100, pCourbeY->getPosY() );
+    pCBCourbeY->setPos(     getDX()-120, pCourbeY->getPosY() );
+
     pAffCourbe->setPos(     getDX()-100, pAffCourbe->getPosY() );
+    //pCBAffCourbe->setPos(   getDX()-120, pAffCourbe->getPosY() );
+
     pAffFFT->setPos(        getDX()-100, pAffFFT->getPosY() );
+    pCBAffFFT->setPos(      getDX()-120, pAffFFT->getPosY() );
     //logf( (char*)"updatePos()" );
 
     char s[255];
@@ -869,17 +914,23 @@ void PanelCourbe::updatePos()
         //--------------------------------------------------------------    
         if ( (aff_courbe ==0x0) || (aff_courbe==0x02) )    {
             sprintf( s, (char*)"Abcisse X On" );
+            bCBCourbeX = true;
         } else {
             sprintf( s, (char*)"Abcisse X Off" );
+            bCBCourbeX = false;
         }
         pCourbeX->changeText( s, true );
+        pCBCourbeX->setVal( bCBCourbeX );
         //--------------------------------------------------------------    
         if ( (aff_courbe ==0x0) || (aff_courbe==0x03) )    {
             sprintf( s, (char*)"Ordonnee Y On" );
+            bCBCourbeY = true;
         } else {
             sprintf( s, (char*)"Ordonnee Y Off" );
+            bCBCourbeY = false;
         }
         pCourbeY->changeText( s, true );
+        pCBCourbeY->setVal( bCBCourbeY );
 
         if ( (aff_courbe ==0x0) || (aff_courbe==0x02) )     pCourbeX->setColor( (unsigned long)0xff0808ff );
         else                                                pCourbeX->setColor( (unsigned long)0x800000ff );
@@ -889,14 +940,17 @@ void PanelCourbe::updatePos()
     }
     //--------------------------------------------------------------    
     if ( iDisplayfft != iDisplayfft_old )  {
-        if ( iDisplayfft>0 )  {
+        if ( iDisplayfft<2 )  {
             sprintf( s, (char*)"FFT On" );
+            bCBAffFFT = true;
         } else {
             sprintf( s, (char*)"FFT Off" );
+            bCBAffFFT = false;
         }
         pAffFFT->changeText( s, true );
+        pCBAffFFT->setVal( bCBAffFFT );
 
-        if ( iDisplayfft>0 )            pAffFFT->setColor( (unsigned long)0xff00ff00 );
+        if ( iDisplayfft<2 )            pAffFFT->setColor( (unsigned long)0xff00ff00 );
         else                            pAffFFT->setColor( (unsigned long)0x8000ff00 );
     }
     //--------------------------------------------------------------    
@@ -913,6 +967,7 @@ void PanelCourbe::updatePos()
 
     int l = pFilename->getTextLenght();
     pFilename->setPos( (getDX()-l)/2, 0 );
+
 
     /*
     PanelText*          pAffCourbe;

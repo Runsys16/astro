@@ -364,6 +364,18 @@ string get_basename( string s)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+unsigned int get_color( vec4 v )
+{
+    unsigned int r = v.x *255.0;
+    unsigned int g = v.y *255.0;
+    unsigned int b = v.z *255.0;
+    unsigned int a = v.w *255.0;
+
+    return a<<24 | r<<16 | g<<8 | b;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 {
     VarManager& var = VarManager::getInstance();
@@ -2741,6 +2753,7 @@ static void addString( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
     PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help );
+    //PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::UBUNTU_B, x_help, y_help );
     p->setTabSize(40);
 	panelHelp->add( p );
 	y_help += 15;

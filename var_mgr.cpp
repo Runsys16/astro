@@ -166,7 +166,7 @@ void VarManager::charge()
         }
         else if ( type.find("bool") != string::npos )
         {
-            if ( val.find("TRUE") != string::npos )         set( key, true );
+            if ( val.find("TRUE") == 0 )         set( key, true );
             else                                            set( key, false );
         }
         else if ( type.find("string") != string::npos )
