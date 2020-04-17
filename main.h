@@ -164,6 +164,7 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 string              get_basename(string);
 unsigned int        get_color(vec4);
+bool                isPleiade();
 
 void                callback_enregistre(bool, int, char*);
 void                callback_enregistre_cam(char*);

@@ -433,6 +433,8 @@ void PanelCourbe::reset_guidage()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::ajoute(vec2 v)
 {
+    if ( isPleiade() )      v.x /=14.0;
+    v /= 4.0;
     t_vCourbe.push_back(vec2(v));
     if ( iDisplayfft >= 1 )           build_fft3();
 }
