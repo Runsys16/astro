@@ -65,14 +65,15 @@ void Serveur_mgr::traite_connexion2()
     while( traite_2 )
     {
         n = read(sock_ref,buffer,255);
+        logf( (char*)"Serveur_mgr::traite_connexion2()" );
 
         if (n <= 0)
         {
-            logf( (char*)"ERROR reading from socket");
+            logf( (char*)" ERROR reading from socket");
             break;
         }
 
-        logf( (char*)"nb octet lu : %d", n);
+        logf( (char*)"  nb octet lu : %d", n);
 
         struct stellarium ss;
         decode( ss, buffer );
@@ -104,11 +105,11 @@ void Serveur_mgr::traite_connexion2()
 
         struct hms HMS;
         rad2hms( HMS, ra );
-        logf( (char*)"  AsDrte : %02d:%02d:%0.2f (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+        logf( (char*)"  AD : %02d:%02d:%0.2f (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( DMS, dc );
-        logf( (char*)"  Declin : %02d:%02d:%0.2f (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+        logf( (char*)"  Dc : %02d:%02d:%0.2f (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );

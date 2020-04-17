@@ -210,6 +210,9 @@ float               fTimeCorrection = 3.0;
 float               fTimeCpt = 0.0;
 float               fLimitCorrection = 80.0;
 double              pas_sideral;
+
+float               fpos_ad = -1.0;
+float               fpos_dc = -1.0;
 //float               err = 2.0;
 //#define err         err
 //--------------------------------------------------------------------------------------------------------------------
@@ -926,6 +929,11 @@ void change_joy(float x, float y)
 //--------------------------------------------------------------------------------------------------------------------
 void change_ad(float ad)
 {
+    VarManager& var = VarManager::getInstance();
+    if ( fpos_ad != ad)
+        var.set("fpos_ad", ad);
+    fpos_ad = ad;
+
     ad = DEG2RAD(ad);
     struct hms HMS;
     rad2hms( HMS, ad);
@@ -941,6 +949,11 @@ void change_ad(float ad)
 //--------------------------------------------------------------------------------------------------------------------
 void change_dc(float dc)
 {
+    VarManager& var = VarManager::getInstance();
+    if ( fpos_dc != dc)
+        var.set("fpos_dc", dc);
+    fpos_dc == dc;
+    
     dc = DEG2RAD(dc);
     struct dms DMS;
     rad2dms( DMS, dc);
@@ -3475,7 +3488,9 @@ void charge_var()
     if ( var.existe("fLimitCorrection")) fLimitCorrection = var.getf("fLimitCorrection");
     if ( var.existe("filtre"))          filtre      = var.geti("filtre");
     if ( var.existe("aff_courbe"))      aff_courbe  = var.geti("aff_courbe");
-    if ( var.existe("iDisplayfft"))     iDisplayfft  = var.geti("iDisplayfft");
+    if ( var.existe("iDisplayfft"))     iDisplayfft = var.geti("iDisplayfft");
+    if ( var.existe("fpos_ad"))         fpos_ad     = var.getf("fpos_ad");
+    if ( var.existe("fpos_dc"))         fpos_ad     = var.getf("fpos_dc");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

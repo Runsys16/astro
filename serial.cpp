@@ -74,11 +74,14 @@ int Serial::write_string( const char* str, bool bAff)
 
 
     
-    if ( bAff )             logf( (char*)"Arduino : %s", str );
-    //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
-    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
-    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
-    
+    if ( bAff )
+    {
+        logf( (char*)"Arduino : %s", str );
+        //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
+        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
+        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
+    }
+        
     fTimeOut = fTimeMili;
     
 
@@ -316,10 +319,10 @@ void Serial::read_thread()
                 }
                 */   
 
-
+                else
                 if ( buffer[0] != '-'  )
                 {
-                    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+                    if (bPrintInfo) PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
                 }
                 else
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
