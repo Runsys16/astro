@@ -29,7 +29,15 @@ typedef valarray<CComplex> CArray;
 //--------------------------------------------------------------------------------------------------------------------
 class PanelCourbe : public PanelWindow
 {
+public:
+    typedef struct {
+        PanelText*          pText;
+        int                 x;
+        int                 y;
+    } unite;
+
 private:
+
     float               offset_x;
     float               offset_y;
     float               delta_courbe1 = 1.0;
@@ -78,7 +86,7 @@ private:
     PanelText*          pYMin;
 
 
-    vector<PanelText*>  unites;
+    vector<unite>       unites;
 
     bool                bPanelCourbe;
 
@@ -116,6 +124,9 @@ private:
     int                 filtre_old;
 
 public :
+static bool             bDebug;
+
+
     PanelCourbe();
     PanelText*          init_text( int, int, char* );
     PanelCheckBox*      init_check_box( int, int );
@@ -153,12 +164,13 @@ public :
 virtual void            displayGL( void );
 virtual void            updatePos( void );
 
-virtual void            clickMiddle( int, int);
-virtual void            motionMiddle( int, int);
-virtual void            releaseMiddle( int, int);
 virtual void            clickLeft( int, int);
 virtual void            motionLeft( int, int);
 virtual void            releaseLeft( int, int);
+
+virtual void            clickMiddle( int, int);
+virtual void            motionMiddle( int, int);
+virtual void            releaseMiddle( int, int);
     
     void                fft3( CArray& );
     void                ifft3( CArray& );

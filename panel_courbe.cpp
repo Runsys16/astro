@@ -5,9 +5,11 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+bool PanelCourbe::bDebug = false;
 vec4 color_Y     = vec4(1.0,1.0,0.0,1.0);
 vec4 color_X     = vec4(0.0,0.0,1.0,1.0);
-vec4 color_FFT   = vec4(0.0,1.0,0.0,0.7);
+vec4 color_FFT1  = vec4(0.0,1.0,0.0,0.7);
+vec4 color_FFT0  = vec4(0.0,1.0,0.0,0.2);
 vec4 color_FFT_Y = vec4(1.0,1.0,0.5,1.0);
 vec4 color_FFT_X = vec4(0.5,0.5,1.0,1.0);
 //--------------------------------------------------------------------------------------------------------------------
@@ -166,9 +168,9 @@ PanelCourbe::~PanelCourbe()
     {
         for( int i=0; i<nb; i++ )
         {
-            sup(unites[i]);
-            delete unites[i];
-            unites[i] = 0;
+            sup(unites[i].pText);
+            delete unites[i].pText;
+            //unites[i] = 0;
         }
         unites.clear();
     }
@@ -497,24 +499,28 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         //--------------------------------------------------------
         glColor4fv( (GLfloat*)&color );
         
-        //int pas = delta_courbe1*ech_h;
         float fPas = delta_courbe1*ech_h;
         while( fPas < taille_mini )     fPas += courbe1*ech_h;
         
-        float deb = round( (-decal_y) / (fPas) );
-        float fin = round( (getDY()-decal_y) / (fPas) );
-
+        int y, y0, y1;
+        int x, x0, x1;
         
-        logf( (char*)"deb=%0.2f fin=%0.2f", deb, fin );
+        float C = AXE - decal_y;
+        float deb = round( -C / fPas );
+        float fin = round( (getDY()-C) / fPas );
         
-        for ( float i=deb; i<=fin; i+=1.0 )
+        if ( deb < ( -C / fPas ) )              deb += 1.0;
+        //if ( fin > ( (getDY()-C) / fPas ) )     fin += 1.0;
+        
+        if ( PanelCourbe::bDebug )      logf( (char*)"deb=%0.2f fin=%0.2f", deb, fin );
+        
+        for ( float i=deb; i<fin; i+=1.0 )
         {
-            int x0 = xStartAxe;
-            int x1 = getPosDX();
-            int y0, y1;
+            x0 = xStartAxe;
+            x1 = getPosDX();
 
-            y0 = y1 = i * fPas + (AXE-decal_y);
-            logf( (char*)"  y0=%d", y0 );
+            y0 = y1 = i*fPas + C;
+            if ( PanelCourbe::bDebug )      logf( (char*)"  i=%0.2f y0=%d", i, y0 );
 
             xy2Screen(x0, y0);
             xy2Screen(x1, y1);
@@ -522,29 +528,6 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
             glVertex2i( x0, y0 );
             glVertex2i( x1, y1 );
         } 
-        /*
-
-        for( float i=0; i<SIZE/2; i+=fPas )
-        {
-            int x, y;
-            
-            x = xStartAxe;
-            y = AXE + i -decal_y;
-            xy2Screen(x, y);
-            glVertex2i( x, y );
-
-            x += getPosDX()-xStartAxe;
-            glVertex2i( x, y );
-
-            x = xStartAxe;
-            y = AXE - i -decal_y;
-            xy2Screen(x, y);
-            glVertex2i( x, y );
-
-            x += getPosDX()-xStartAxe;
-            glVertex2i( x, y );
-        }
-        */
         //--------------------------------------------------------
         // graduation verticale
         //--------------------------------------------------------
@@ -553,8 +536,8 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         float M = getPosDX();
         for( float i=xStartAxe; i<M; i+=fPas )
         {
-            int x = i;
-            int y = AXE;
+            x = i;
+            y = AXE;
             xy2Screen(x,y);
             y -= SIZE/2;
             glVertex2i( x, y );
@@ -565,15 +548,19 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         //--------------------------------------------------------
         // axe horizontale centrale
         //--------------------------------------------------------
-        glColor4fv( (GLfloat*)&colorAxe );
-        int y = AXE -decal_y;
-        int x = xStartAxe;
+        y = C;//AXE -decal_y;
+        
+        if ( (0<y) && (y<getDY()) )
+        {
+            glColor4fv( (GLfloat*)&colorAxe );
+            int x = xStartAxe;
 
-        xy2Screen(x, y);
-        glVertex2i( x, y );
+            xy2Screen(x, y);
+            glVertex2i( x, y );
 
-        x += getPosDX()-xStartAxe;
-        glVertex2i( x, y );
+            x += getPosDX()-xStartAxe;
+            glVertex2i( x, y );
+        }
     glEnd();        
         //--------------------------------------------------------
         // Limite horizontale Err de suivi
@@ -582,36 +569,47 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
         glColor4fv( (GLfloat*)&colorLimit );
         glLineStipple(3, 0xFF99);
         glEnable(GL_LINE_STIPPLE);    
+
     glBegin(GL_LINES);
 
 
         y = (float)(delta_courbe1*(min)*ech_h + AXE) - decal_y;
-        if ( pMax != NULL ) {
-            pMax->setPos( 5, y-7 );
-            pMax->setColor( get_color(colorLimit) );
-        }
-        x = xStartAxe;
-        xy2Screen(x, y);
-        glVertex2i( x, y );
+        if ( 0<y && y<getDY() ) {
+            if ( pMax != NULL ) {
+                pMax->setPos( 5, y-7 );
+                pMax->setColor( get_color(colorLimit) );
+                pMax->setVisible(true);
+            }
+            x = xStartAxe;
+            xy2Screen(x, y);
+            glVertex2i( x, y );
 
-        x += getPosDX()-xStartAxe;
-        glVertex2i( x, y );
+            x += getPosDX()-xStartAxe;
+            glVertex2i( x, y );
+        }
+        else
+            pMax->setVisible(false);
         //--------------------------------------------------------
         // Limite horizontale Err de suivi
         // Min
         //--------------------------------------------------------
         y = (float)(delta_courbe1*(max)*ech_h + AXE) - decal_y;
-        if ( pMin != NULL ) {
-            pMin->setPos( 5, y-7 );
-            pMin->setColor( get_color(colorLimit) );
+
+        if ( 0<y && y<getDY() ) {
+            if ( pMin != NULL ) {
+                pMin->setPos( 5, y-7 );
+                pMin->setColor( get_color(colorLimit) );
+                pMin->setVisible(true);
+            }
+            x = xStartAxe;
+            xy2Screen(x, y);
+            glVertex2i( x, y );
+
+            x += getPosDX()-xStartAxe;
+            glVertex2i( x, y );
         }
-        x = xStartAxe;
-        xy2Screen(x, y);
-        glVertex2i( x, y );
-
-        x += getPosDX()-xStartAxe;
-        glVertex2i( x, y );
-
+        else
+            pMin->setVisible(false);
     glEnd();        
         glDisable(GL_LINE_STIPPLE);    
         glColor4fv( (GLfloat*)&colorAxe );
@@ -679,6 +677,7 @@ void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int x
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int xdecal, int y_zero, float offset )
 {
+    glCourbeCube( tab, size, pas, xStart, xdecal, y_zero, offset, courbe1, delta_courbe1 );
     glCourbeCube( tab, size, pas, xStart, xdecal, y_zero, offset, courbe1, delta_courbe1 );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -783,11 +782,21 @@ void PanelCourbe::glFft()
 {
     VarManager& var = VarManager::getInstance();
 
-    if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.35 );
-    else                                glColor4fv( color_FFT );
+    int n = nb / filtre;
+    int m = nb/2;
+    float coefX = (float)(getDX()-xStartAxe)/((float)nb/2.0);
 
-    glCourbeCube(   pOut, nb/2, 1, (int)xStartAxe, 0, (int)getDY()-20 , (float)0.0, 
+    if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.35 );
+    else                                glColor4fv( color_FFT1 );
+
+    glCourbeCube(   pOut + m-n, n , 1, (int)xStartAxe, 0, (int)getDY()-20 , (float)0.0, 
                     (float)(getDX()-xStartAxe)/((float)nb/2.0), (float)delta_courbe1*ech_h );
+
+    if ( var.getb("bNuit") )            glColor4f( 1.0, 0.0, 0.0, 0.35 );
+    else                                glColor4fv( color_FFT0 );
+
+    glCourbeCube(   pOut, m-n , 1, (int)xStartAxe+ n*coefX, 0, (int)getDY()-20 , (float)0.0, 
+                    coefX, (float)delta_courbe1*ech_h );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -797,55 +806,51 @@ void PanelCourbe::build_unites_text()
     //logf( (char*)"PanelCourbe::build_unites_text()" );
     //log_tab(true);
 
-    float dy= (float)getDY() / 2.0;
 
-    // Construction du tableau d'unités
-    int     pas, y;
-    float   fPas;
-    string  s;
-
-    //logf( (char*)"delta_courbe1 = %0.2f", delta_courbe1 ) ;
-
-    pas  = delta_courbe1*ech_h;
-    fPas = delta_courbe1*ech_h;
-    while( fPas < taille_mini )            
-        fPas += courbe1*ech_w;
-
-    int idx = 0;
-
-
-    for( float i=0; i<dy; i+=fPas )
-    {
-        y = (-i)/delta_courbe1/ech_h;
-        s = "" + to_string((int)round(y)) + " px";
-        y2Screen(y);
-
-        if ( idx == unites.size() )         { unites.push_back( new PanelText((char*)" ",PanelText::NORMAL_FONT) ); add( unites[idx] ); }
-        unites[idx]->changeText( (char*)s.c_str() );
-        unites[idx]->setPos(25,dy+i-8 - decal_y);
-        unites[idx]->setVisible(true);
-        idx++;
-
-        if ( i == 0 )   continue;
-
-        y = (+i)/delta_courbe1/ech_h;
-        s = "" + to_string(y) + " px";
-        y2Screen(y);
-
-        if ( idx == unites.size() )         { unites.push_back( new PanelText((char*)" ",PanelText::NORMAL_FONT) ); add( unites[idx] ); }
-        unites[idx]->changeText( (char*)s.c_str() );
-        unites[idx]->setPos(25,dy-i-8 - decal_y);
-        unites[idx]->setVisible(true);
-        idx++;
-    }
+    float AXE = getDY()/2.0;
+    float fPas = delta_courbe1*ech_h;
+    while( fPas < taille_mini )     fPas += courbe1*ech_h;
     
+    float C = AXE - decal_y;
+    float deb = round( -C / fPas );
+    float fin = round( (getDY()-C) / fPas );
+      
+    if ( deb < ( -C / fPas ) )              deb += 1.0;
+    //if ( fin > ( (getDY()-C) / fPas ) )     fin += 1.0;
+                
+    int idx = 0;
+    string s;
+    
+    for ( float i=deb; i<fin; i+=1.0 )
+    {
+        int y = i*fPas + C;
+
+        s = "" + to_string((int)round(-i)) + " px";
+        //y2Screen(y);
+
+        //logf( (char*)"%d %d", (int)i, (int)y );
+        unite u;
+
+        if ( idx == unites.size() )         { 
+            u.pText = new PanelText((char*)s.c_str(),PanelText::NORMAL_FONT); 
+            u.x = x;
+            u.y = y;
+            unites.push_back( u ); 
+            add( unites[idx].pText );
+        }
+        else {
+            unites[idx].pText->changeText( (char*)s.c_str(), true );
+            unites[idx].pText->setTabSize(40);
+        }
+        unites[idx].pText->setPos(25, y-8);
+        unites[idx].pText->setVisible(true);
+        idx++;
+
+    } 
+
     for( int i=idx; i<unites.size(); i++ )
-        unites[i]->setVisible(false);
+        unites[i].pText->setVisible(false);
 
-
-            //unites.push_back(  new PanelText( (char*)s.c_str(),		PanelText::NORMAL_FONT, 25, dy+i-8 ) );
-    //log_tab(false);
-    //logf( (char*)"PanelCourbe::build_unites_text()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -908,7 +913,7 @@ void PanelCourbe::displayGL(void)
 void PanelCourbe::updatePos()
 {
     PanelSimple::updatePos();
-
+    build_unites_text();
 
 	WindowsManager& wm = WindowsManager::getInstance();
     
@@ -918,6 +923,16 @@ void PanelCourbe::updatePos()
     ech_w = (float)getDX() / wSc;
     ech_h = (float)getDY() / hSc;
     
+    
+    if ( bCBAffFFT  != pCBAffFFT->getVal() )
+    {
+        logf( (char*)"PanelCourbe::updatePos()  val different" );
+        bCBAffFFT = pCBAffFFT->getVal();
+        if ( bCBAffFFT )    iDisplayfft = 0;
+        else                iDisplayfft = 2;
+        
+        //if ( newDisplayfft 
+    }
     
     pCourbeX->setPos(       getDX()-100, pCourbeX->getPosY() );
     pCBCourbeX->setPos(     getDX()-120, pCourbeX->getPosY() );
@@ -1005,69 +1020,6 @@ void PanelCourbe::updatePos()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::clickMiddle( int xm, int ym )
-{
-    logf( (char*)"PanelCourbe::clickMiddle( %d, %d )", xm, ym );
-
-    xm_svg = sc2winX(xm);
-    ym_svg = sc2winY(ym);
-
-    courbe1_svg = courbe1;
-    courbe2_svg = courbe2;
-    delta_courbe1_svg = delta_courbe1;
-    delta_courbe2_svg = delta_courbe2;
-    
-    build_unites_text();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::motionMiddle( int xm, int ym )
-{
-    //logf( (char*)"PanelCourbe::motionMiddle( %d, %d )", sc2winX(xm), sc2winY(ym) );
-
-    float deltaX = sc2winX(xm) - xm_svg;
-    float deltaY = sc2winY(ym) - ym_svg;
-    
-    deltaX = 1.0 + 2.0 * deltaX / ((float)getDX()/2.0);
-    deltaY = 1.0 - 2.0 * deltaY / ((float)getDY()/2.0);
-
-    if ( deltaX < 0.1 )         return;
-    if ( deltaY < 0.1 )         return;
-    
-    courbe1 = deltaX * courbe1_svg;
-    courbe2 = deltaX * courbe2_svg;
-
-    delta_courbe1 = deltaY * delta_courbe1_svg;
-    delta_courbe2 = deltaY * delta_courbe2_svg;
-
-    build_unites_text();
-    //logf( (char*)"  %0.2f, %0.2f )", courbe1, courbe2 );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::releaseMiddle( int xm, int ym )
-{
-    VarManager& var = VarManager::getInstance();
-    logf( (char*)"PanelCourbe::releaseMiddle( %d, %d )", xm, ym );
-
-    motionMiddle( xm, ym );
-
-    logf( (char*)"  courbe        %0.2f, %0.2f )", courbe1, courbe2 );
-    logf( (char*)"  delta_courbe  %0.2f, %0.2f )", delta_courbe1, delta_courbe2 );
-
-    var.set("courbe1", courbe1);
-    var.set("delta_courbe1", delta_courbe1);
-    var.set("courbe2", courbe2);
-    var.set("delta_courbe2", delta_courbe2);
-    
-    //courbe1 = delta_courbe1_svg;
-    build_unites_text();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::clickLeft( int xm, int ym )
 {
     logf( (char*)"PanelCourbe::clickLeft( %d, %d )", xm, ym );
@@ -1107,9 +1059,78 @@ void PanelCourbe::releaseLeft( int xm, int ym )
     VarManager& var = VarManager::getInstance();
     logf( (char*)"PanelCourbe::releaseLeft( %d, %d )", xm, ym );
 
+    motionLeft(xm, ym);
+    
     var.set( "decal_x", decal_x );
     var.set( "decal_y", decal_y );
-    //build_fft3();
+
+    logf( (char*)"  decal   %d, %d )", decal_x, decal_y);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::clickMiddle( int xm, int ym )
+{
+    logf( (char*)"PanelCourbe::clickMiddle( %d, %d )", xm, ym );
+
+    xm_svg = sc2winX(xm);
+    ym_svg = sc2winY(ym);
+
+    courbe1_svg = courbe1;
+    courbe2_svg = courbe2;
+    delta_courbe1_svg = delta_courbe1;
+    delta_courbe2_svg = delta_courbe2;
+
+    decal_y_svg = decal_y;
+    
+    build_unites_text();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::motionMiddle( int xm, int ym )
+{
+    //logf( (char*)"PanelCourbe::motionMiddle( %d, %d )", sc2winX(xm), sc2winY(ym) );
+
+    float deltaX = sc2winX(xm) - xm_svg;
+    float deltaY = sc2winY(ym) - ym_svg;
+    
+    deltaX = 1.0 + 2.0 * deltaX / ((float)getDX()/2.0);
+    deltaY = 1.0 - 2.0 * deltaY / ((float)getDY()/2.0);
+
+    if ( deltaX < 0.1 )         return;
+    if ( deltaY < 0.1 )         return;
+    
+    courbe1 = deltaX * courbe1_svg;
+    courbe2 = deltaX * courbe2_svg;
+
+    delta_courbe1 = deltaY * delta_courbe1_svg;
+    delta_courbe2 = deltaY * delta_courbe2_svg;
+    
+    decal_y = deltaY * decal_y_svg;
+
+    build_unites_text();
+    //logf( (char*)"  %0.2f, %0.2f )", courbe1, courbe2 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::releaseMiddle( int xm, int ym )
+{
+    VarManager& var = VarManager::getInstance();
+    logf( (char*)"PanelCourbe::releaseMiddle( %d, %d )", xm, ym );
+
+    motionMiddle( xm, ym );
+
+    logf( (char*)"  courbe        %0.2f, %0.2f )", courbe1, courbe2 );
+    logf( (char*)"  delta_courbe  %0.2f, %0.2f )", delta_courbe1, delta_courbe2 );
+
+    var.set("courbe1", courbe1);
+    var.set("delta_courbe1", delta_courbe1);
+    var.set("courbe2", courbe2);
+    var.set("delta_courbe2", delta_courbe2);
+    
+    //courbe1 = delta_courbe1_svg;
     build_unites_text();
 }
 //--------------------------------------------------------------------------------------------------------------------

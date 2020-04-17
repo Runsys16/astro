@@ -1682,14 +1682,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'b':
         {
-        logf( (char*)"Key (b) : Bluetooth start" );
+            PanelCourbe::bDebug = !PanelCourbe::bDebug;
+        //logf( (char*)"Key (b) : Bluetooth start" );
         //BluetoothManager::getInstance().start();
         }
         break;
     
     case 'B':
         {
-        logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
         //BluetoothManager::getInstance().disconnect();
         }
         break;
@@ -2495,6 +2496,10 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 
 	wm.mouseFunc(button, state, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
+    PanelWindow*    pPreviewCam = NULL;
+    Panel *         pCapture = NULL;
+    Panel*          pMouseOver = NULL;
+
     if ( panelStatus->isMouseOver(x, y) )
     {
         //logf( (char*)"Souris sur la barre de status" );
@@ -2502,10 +2507,6 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
         return;
     }
     
-    PanelWindow*    pPreviewCam = NULL;
-    Panel *         pCapture = NULL;
-    Panel*          pMouseOver = NULL;
-
     if ( mgr.getCurrent() != NULL  &&  mgr.getCurrent()->getPanelPreview() != NULL )
     {
         pPreviewCam = mgr.getCurrent()->getPanelPreview();
