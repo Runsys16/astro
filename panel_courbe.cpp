@@ -838,7 +838,9 @@ void PanelCourbe::build_unites_text()
             u.x = x;
             u.y = y;
             unites.push_back( u ); 
+
             add( unites[idx].pText );
+            unites[idx].pText->setTabSize(40);
         }
         else {
             unites[idx].pText->changeText( (char*)s.c_str(), true );
@@ -1061,7 +1063,7 @@ void PanelCourbe::releaseLeft( int xm, int ym )
     VarManager& var = VarManager::getInstance();
     logf( (char*)"PanelCourbe::releaseLeft( %d, %d )", xm, ym );
 
-    motionLeft(xm, ym);
+    //motionLeft(xm, ym);
     
     var.set( "decal_x", decal_x );
     var.set( "decal_y", decal_y );

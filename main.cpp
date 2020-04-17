@@ -140,7 +140,6 @@ bool                bAffSuivi      = true;
 bool                bSound         = true;
 bool                bInverseCouleur= false;
 bool                bCentrageSuivi = false;
-int                 iDisplayfft    = 0;
 
 int                 wImg;
 int                 hImg;
@@ -158,9 +157,10 @@ float               xSuivi;
 float               ySuivi;
 float               xSuiviSvg;
 float               ySuiviSvg;
-float               filtre = 10.0;
-int                 aff_courbe = 0;
-//vector<Star*>       v_tStars;
+float               filtre      = 10.0;
+int                 aff_courbe  = 0;
+int                 iDisplayfft = 0;
+
 float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
@@ -846,6 +846,7 @@ static void displayGL(void)
 static void reshapeGL(int newWidth, int newHeight)
 {
     logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
+    log_tab(true);
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( newWidth, newHeight );
@@ -874,6 +875,8 @@ static void reshapeGL(int newWidth, int newHeight)
     }
     Camera_mgr::getInstance().resize( newWidth, newHeight );
     //cout << "reshapeGL("<< newWidth <<" "<< newHeight <<")"<< endl;
+    log_tab(false);
+    logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3470,6 +3473,9 @@ void charge_var()
     if ( var.existe("bSound") )         bSound      = var.getb("bSound");
     if ( var.existe("bInverseCouleur")) bInverseCouleur = var.getb("bInverseCouleur");
     if ( var.existe("fLimitCorrection")) fLimitCorrection = var.getf("fLimitCorrection");
+    if ( var.existe("filtre"))          filtre      = var.geti("filtre");
+    if ( var.existe("aff_courbe"))      aff_courbe  = var.geti("aff_courbe");
+    if ( var.existe("iDisplayfft"))     iDisplayfft  = var.geti("iDisplayfft");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

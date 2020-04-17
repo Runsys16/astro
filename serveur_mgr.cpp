@@ -130,6 +130,8 @@ void Serveur_mgr::traite_connexion2()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_2()
 {
+    logf( (char*)"Serveur_mgr::thread_listen_2()");
+
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
 
@@ -177,9 +179,9 @@ void Serveur_mgr::thread_listen_2()
     }
 
 
-    logf( (char*)"---------------------------------------------------------------");
-	logf( (char*)"Mon adresse : IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
-    logf( (char*)"---------------------------------------------------------------");
+    //logf( (char*)"---------------------------------------------------------------");
+	logf( (char*)"  Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
+    //logf( (char*)"---------------------------------------------------------------");
 
 	listen(sock_2, 5);
 	while (listen_2) {
@@ -281,6 +283,8 @@ void Serveur_mgr::traite_connexion1()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_1()
 {
+    logf( (char*)"Serveur_mgr::thread_listen_1()");
+    
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
 
@@ -326,9 +330,9 @@ void Serveur_mgr::thread_listen_1()
     }
 
 
-    logf( (char*)"---------------------------------------------------------------");
-	logf( (char*)"Mon adresse : IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
-    logf( (char*)"---------------------------------------------------------------");
+    //logf( (char*)"---------------------------------------------------------------");
+	logf( (char*)" Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
+    //logf( (char*)"---------------------------------------------------------------");
 
 	listen(sock_1, 5);
 	while ( listen_1 ) {
