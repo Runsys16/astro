@@ -16,6 +16,7 @@ PanelConsoleSerial::PanelConsoleSerial()
     
 	pw->setPosAndSize( 10, 10, 500, 700);
     pw->setDisplayGL(displayGLnuit_cb);
+    pw->loadSkin(PanelWindow::STD);
 
     VarManager& var= VarManager::getInstance();
     int x = var.geti("xPanelSerial");
@@ -29,7 +30,7 @@ PanelConsoleSerial::PanelConsoleSerial()
 	pw->setPosAndSize( x, y, dx, dy );
 	
 	pc->setPosAndSize( 0, 0, dx, dy);
-	pc->setPrompt( "arduino> " );
+	pc->setPrompt( "No connect> " );
 
     pc->setCallBackCmd( cb );
     pc->setTabSize( 60 );
@@ -87,11 +88,14 @@ bool PanelConsoleSerial::keyboard(char key, int x, int y)
     WindowsManager::getInstance().keyboardFunc( key, x, y);
     //logf( (char*)"Traitement PanelConsoleSerial::keyboard()" );
     
+    
 	switch(key){ 
 	
+	// CTRL q
+	case 17:
 	case 27:
 	    {
-        logf( (char*)"Echappe" );
+        logf( (char*)"Echappe ou  Ctrl+D" );
         wm.sup_call_back_keyboard( pc );
         return false;
 	    }
@@ -199,8 +203,11 @@ void PanelConsoleSerial::writeln(char* str)
         buff[18] = conv[2];
         buff[19] = conv[3];
 
-        Serveur_mgr::getInstance().write_stellarium( (char*)buff );
-
+        if ( ad_change!=0.0 && dc_change!=0.0 )
+        {
+            Serveur_mgr::getInstance().write_stellarium( (char*)buff );
+            //logf( (char*)"Em Stellarium Ad=%0.2f Dc%0.2f", ad_change, dc_change );
+        }
         return;
     }
     else
@@ -224,20 +231,50 @@ void PanelConsoleSerial::idleGL()
     }
     
     
-    if ( ad != ad_change )
+    if ( ad_change!=0.0 && dc_change!=0.0 )
     {
-        ad = ad_change;
-        change_ad( ad );
-    }
+        if ( ad != ad_change )
+        {
+            ad = ad_change;
+            change_ad( ad );
+        }
 
-    if ( dc != dc_change )
-    {
-        dc = dc_change;
-        change_dc( dc );
+        if ( dc != dc_change )
+        {
+            dc = dc_change;
+            change_dc( dc );
+        }
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelConsoleSerial::setVisible(bool b)
+{
+    WindowsManager& wm = WindowsManager::getInstance();
+
+    bVisible=b;
+    pw->setVisible(b);
+
+    logf( (char*)"Donne le Focus a la console" );
+
+    
+    if ( b)
+    {
+        wm.onTop(pw);
+        wm.changeFocus( pc );
+        wm.changeCapture( pc );
+    }
+    else {
+        wm.changeFocus(NULL);
+        wm.changeCapture( NULL );
+        wm.onBottom(pw);
+    }
+        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+
 
 

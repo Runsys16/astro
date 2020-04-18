@@ -370,7 +370,10 @@ void Serveur_mgr::start_1()
 void Serveur_mgr::write_stellarium(char* s)
 {
     if ( sock_stellarium != -1 )
+    {
         write( sock_stellarium, s, 24 );
+        //logf( (char*)"Envoid a stellarium  %s", s );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

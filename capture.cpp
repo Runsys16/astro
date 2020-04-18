@@ -523,4 +523,37 @@ void Capture::afficheFits()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-
+/*
+uint8_t* laplacien (uint8_t* image, int width, int height, int nb_iter) {
+ 
+	int num;
+	int i, j;
+	uint8_t *temp;
+	uint8_t *image_filtree;
+ 
+	temp = (uint8_t*)malloc(width*height*sizeof(uint8_t));
+	image_filtree = (uint8_t*)malloc(width*height*sizeof(uint8_t));
+ 
+	for (i=0;i<width*height;i++) {
+		temp[i] = image[i];
+	}
+ 
+	for (j=0;j<nb_iter;j++) {
+		for (i=0;i<width*height;i++) {
+			if ((i%width!=0)&&(i%width!=width-1)&&(i>width-1)&&(i<width*(height-1))) {
+				num = 4*temp[i] - temp[i-1] - temp[i+1] - temp[i-width] - temp[i+width];
+				image_filtree[i] = ((4*abs(num) > 255) ? 255 :  4*abs(num));
+			}
+		}
+		if (j!=nb_iter-1) {
+			for (i=0;i<width*height;i++) {
+				temp[i] = image_filtree[i];
+			}
+		}
+		j++;
+	}
+ 
+	free(temp);
+	return image_filtree;
+}
+*/

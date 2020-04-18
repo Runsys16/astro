@@ -47,13 +47,12 @@ public :
     bool                            keyboard(char key, int x, int y);
     void                            writeln( char * );
     void                            idleGL();
-    
-    
-inline PanelConsole*                getConsole()                { return pc; }
+    void                            setVisible(bool);
 
 inline bool                         getVisible()                { return pw->getVisible(); }
-inline void                         setVisible(bool b)          { bVisible=b;  pw->setVisible(b); }
 inline PanelWindow*                 getWindow()                 { return pw; }
+inline PanelConsole*                getConsole()                { return pc; }
+inline void                         setPrompt(string s)         { pc->setPrompt(s); }
 
     void                            setColor(long l )           { pw->setColor(l); }
 

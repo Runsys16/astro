@@ -302,8 +302,8 @@ void PanelCapture::releaseRight(int xm, int ym)
     printObjet();
     if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
     
-    //float e = (float)getDX() / (float)pReadBgr->w; 
-    float e = (float)getDX() / (float)1920.0; 
+    float e = (float)getDX() / (float)pReadBgr->w; 
+    //float e = (float)getDX() / (float)1920.0; 
     
     int xx = ((float)xm-(float)getX()) / e;
     int yy = ((float)ym-(float)getY()) / e;
