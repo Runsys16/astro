@@ -275,7 +275,7 @@ void PanelCapture::releaseLeft(int xm, int ym)
         
     if ( !bIcone     )
     {
-        stars.setView( this->getParent() );
+        stars.setView( (PanelSimple*)this->getParent() );
         stars.setRB( pReadBgr );
         if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
             stars.selectLeft(xx, yy);
@@ -308,7 +308,7 @@ void PanelCapture::releaseRight(int xm, int ym)
     int xx = ((float)xm-(float)getX()) / e;
     int yy = ((float)ym-(float)getY()) / e;
     
-    stars.setView( this->getParent() );
+    stars.setView( (PanelSimple*)this->getParent() );
     stars.setRB( pReadBgr );
     if ( pCapture != NULL )
     {

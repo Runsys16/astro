@@ -125,7 +125,7 @@ void Star::setRB(rb_t* p)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::setView(Panel* p)
+void Star::setView(PanelSimple* p)
 {
     pView = p;
 }
@@ -713,7 +713,10 @@ void Star::updatePos(int X, int Y, float e)
 
     if (panelZoom!=NULL)
     {
-        panelZoom->setRB( RB );
+        //panelZoom->setRB( RB );
+        panelZoom->setBackground( pView->getBackground() );
+        panelZoom->setTextWidth(RB->w );
+        panelZoom->setTextHeight(RB->h );
         float xx = 1.0 * x;
         float yy = 1.0 * y;
         panelZoom->setPosStar(pos.x, pos.y);
@@ -735,7 +738,10 @@ void Star::suivi()
 {
     if ( panelZoom == NULL )                return;
     
-    panelZoom->setRB( RB );
+    //panelZoom->setRB( RB );
+    panelZoom->setBackground( pView->getBackground() );
+    panelZoom->setTextWidth(RB->w );
+    panelZoom->setTextHeight(RB->h );
     panelZoom->setPosStar(pos.x, pos.y);
     panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 300, 300 );
     panelZoom->updatePos();
@@ -771,7 +777,10 @@ void Star::setZoom(bool b)
             if ( RB != NULL )
             {
                 logf( (char*)"Star::displayGL() setRB()" );
-                panelZoom->setRB( RB );
+                //panelZoom->setRB( RB );
+                panelZoom->setBackground( pView->getBackground() );
+                panelZoom->setTextWidth(RB->w );
+                panelZoom->setTextHeight(RB->h );
                 //panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
             }
             panelZoom->updatePos();

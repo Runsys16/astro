@@ -261,7 +261,7 @@ PanelCheckBox* create_window_check_box( int i, string tex)
 
     pCheckBox->setCallBackMouse( cb_rotationCheck );
 
-    pCheckBox->setBackground( NULL );
+    pCheckBox->setBackground( (char*)NULL );
     pCheckBox->setPosAndSize( 450+ i*18, 2, 16, 16 );
 
     panelStatus->add(pCheckBox);

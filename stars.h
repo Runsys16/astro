@@ -27,7 +27,7 @@ public:
     void                    findAllStars();
     void                    deleteAllStars();
     
-    void                    setView( Panel* );
+    void                    setView( PanelSimple* );
     void                    setPanelNbStars( PanelText * );
 
     void                    setRB(rb_t*);

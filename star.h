@@ -24,7 +24,7 @@ public:
     void                setWidth(int);
     void                setHeight(int);
     void                setRB(rb_t*);
-    void                setView(Panel*);
+    void                setView(PanelSimple*);
 
     int                 getOffset(int,int);
     void                computeMag();
@@ -148,7 +148,7 @@ private:
     bool                bZoom;
     
     PanelZoom*          panelZoom;
-    Panel*              pView;
+    PanelSimple*        pView;
 };
 
 
