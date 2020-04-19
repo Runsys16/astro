@@ -29,6 +29,8 @@ protected:
         float           yWin;
         float           dxWin;
         float           dyWin;
+
+        vec2            vCamView;
         
         PanelSimple*    pFond;
         float           xFond;
@@ -42,6 +44,9 @@ protected:
         Panel*          pView;
         
         rb_t*           pReadBgr;
+        
+        bool            bFreePos = false;
+        vec2            vClickRight;
     
 public:
         ~PanelZoom();
@@ -51,7 +56,12 @@ public:
 virtual void            update();
         void            glCroix(float,float,float);
 virtual void	        displayGL();
+
 virtual void            releaseLeft( int, int);
+
+virtual void            clickRight( int, int);
+virtual void            motionRight( int, int);
+virtual void            releaseRight( int, int);
 
         void            setView(Panel*);
         void            setCentX(float f);
@@ -59,20 +69,21 @@ virtual void            releaseLeft( int, int);
         void            setEchelle(float f);
         void            setRatio(float f);
 
-        void            ajuste();
         void            setPosAndSize(int, int, int, int);
         void            setPos(int, int);
         void            setPosStar(float, float);
-        void            active(int, int, Panel*);
 
         void            setRB(rb_t* p);
         void            setBackground(_Texture2D*);
     
-inline  float           getEchelle()            { return echelle; }
-inline  float           getCentX()              { return dx; }
-inline  float           getCentY()              { return dy; }
         void            setTextWidth(int w );
         void            setTextHeight(int h );
+
+inline  float           getEchelle()                    { return echelle; }
+inline  float           getCentX()                      { return dx; }
+inline  float           getCentY()                      { return dy; }
+inline  void            setCamView(float x, float y)    { vCamView.x = x; vCamView.y = y; }
+
 };
 
 

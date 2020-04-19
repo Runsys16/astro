@@ -9,7 +9,7 @@ Star::~Star()
     logf( (char*)"Destructeur Star()" );
     if (panelZoom != NULL)
     {
-        pView->sup( panelZoom );
+        //pView->sup( panelZoom );
 
         delete panelZoom;
         panelZoom = NULL;
@@ -720,6 +720,7 @@ void Star::updatePos(int X, int Y, float e)
         float xx = 1.0 * x;
         float yy = 1.0 * y;
         panelZoom->setPosStar(pos.x, pos.y);
+        panelZoom->setCamView(pView->getPosX(), pView->getPosY());
         panelZoom->setPosAndSize( (x+40)*ech + dx_screen, (y+40)*ech + dy_screen, 200, 200 );
         panelZoom->updatePos();
     }
@@ -743,6 +744,7 @@ void Star::suivi()
     panelZoom->setTextWidth(RB->w );
     panelZoom->setTextHeight(RB->h );
     panelZoom->setPosStar(pos.x, pos.y);
+    panelZoom->setCamView(pView->getPosX(), pView->getPosY());
     panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 300, 300 );
     panelZoom->updatePos();
 }
@@ -758,7 +760,7 @@ void Star::setZoom(bool b)
             bZoom = bSelect = false;
             if (panelZoom!=NULL)
             {
-                pView->sup( panelZoom );
+                //pView->sup( panelZoom );
                 delete panelZoom;
                 panelZoom = NULL;
             }
@@ -769,7 +771,7 @@ void Star::setZoom(bool b)
             bZoom = bSelect = true;
             panelZoom = new PanelZoom();
             panelZoom->setExtraString( "Star pInfo" );
-            pView->add( panelZoom );
+            //pView->add( panelZoom );
             //panelZoom->setPosStar(xFound, yFound);
             panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
             
@@ -793,7 +795,7 @@ void Star::setZoom(bool b)
         bZoom = false;
         if (panelZoom!=NULL)
         {
-            pView->sup( panelZoom );
+            //pView->sup( panelZoom );
             delete panelZoom;
             panelZoom = NULL;
         }

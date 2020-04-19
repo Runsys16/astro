@@ -484,7 +484,7 @@ void Camera_mgr::suivi()
     {
         //logf( (char*)"Camera_mgr::suivi()" );
         Panel * pView= pCurrent->getPanelPreview();
-        pCurrent->getPanelPreview()->getStars()->setView( pView );
+        pCurrent->getPanelPreview()->getStars()->setView( (PanelSimple*)pView );
         pCurrent->getPanelPreview()->getStars()->suivi( getRB() );
     }
 }

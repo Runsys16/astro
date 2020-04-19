@@ -5,6 +5,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 PanelZoom::~PanelZoom()
 {
+    WindowsManager& wm = WindowsManager::getInstance();
+
     logf( (char*)"Destructeur PanelZoom()");
     if ( pFond!= NULL )
     {
@@ -14,12 +16,16 @@ PanelZoom::~PanelZoom()
         delete pFond;
         pFond = NULL;
     }
+    wm.sup(this);
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 PanelZoom::PanelZoom()
 {
+    WindowsManager& wm = WindowsManager::getInstance();
+
     logf( (char*)"Constructeur PanelZoom()");
     echelle = 1.0;
     ratio   = 1.0;
@@ -31,8 +37,12 @@ PanelZoom::PanelZoom()
     add(pFond);
     pFond->setPos(0,0);
     pFond->setFantome(true);
+    setBackground( (_Texture2D*)NULL );
     
     this->setScissor(true);
+    wm.add(this);
+    setPosAndSize( 10, 10, 200, 200 );
+    bFreePos = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -86,44 +96,28 @@ void PanelZoom::setRatio(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelZoom::ajuste()
-{
-    Panel* parent;
-    
-    parent = this;
-    while( parent->getParent()!=NULL)
-    {
-        parent = getParent();
-    }
-    int xp  = parent->getX();
-    int yp  = parent->getY();
-    int dxp = parent->getDX();
-    int dyp = parent->getDY();
-
-    if ( (xWin+dxWin) > dxp )
-    {
-        xWin = xWin - 80 -dxWin; 
-        PanelWindow::setPos( xWin, yWin );
-    }
-
-    if ( (yWin+dyWin) > dyp )
-    {
-        yWin = yWin - 80 -dyWin; 
-        PanelWindow::setPos( xWin, yWin );
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void PanelZoom::setPosAndSize(int xx, int yy, int ddx, int ddy)
 {
+
     xWin = xx;
     yWin = yy;
     dxWin = ddx;
     dyWin = ddy;
     
     //logf( (char*)"PanelZoom::setPosAndSize(%d, %d, %d, %d)", xx, y, ddx, ddy);
-    PanelWindow::setPosAndSize(xWin, yWin, dxWin, dyWin);
+    if ( !bFreePos )
+    {
+        PanelWindow::setPosAndSize(xWin, yWin, dxWin, dyWin);
+        
+    }
+    else
+    {
+        //PanelWindow::setPosAndSize(xWin, yWin, dxWin, dyWin);
+        if ( abs(xx-xPanel) > 5 || abs(yy-yPanel) > 5 )
+        {
+            
+        }
+    }
     /*
     if ( pReadBgr != NULL)
     {
@@ -150,10 +144,10 @@ void PanelZoom::setPosAndSize(int xx, int yy, int ddx, int ddy)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelZoom::setPos(int xx, int yy)
 {
-    xWin = xx;
-    yWin = yy;
+    xPanel = xWin = xx;
+    xPanel = yWin = yy;
     
-    PanelWindow::setPos(xx, yy);
+    //PanelWindow::setPos(xx, yy);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -168,27 +162,11 @@ void PanelZoom::setPosStar(float xx, float yy)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelZoom::active(int xx, int yy, Panel* p)
-{
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void PanelZoom::setRB(rb_t* p)
 {
     pReadBgr = p;
     ratio = (float)pReadBgr->w / (float)pReadBgr->h;
 }
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-/*
-void PanelZoom::setBackground( GLubyte* ptr, int w, int h, int d )
-{
-    //pFond->setBackground( ptr, w, w/ratio, d);
-    logf( (char*)"Appel invalide" );
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -231,8 +209,8 @@ void PanelZoom::glCroix( float xx, float yy, float l )
     glColor4f( 0.0, 1.0, 1.0, 1.0);
 
     Panel* p = getParent();
-    int xp = p->getX();
-    int yp = p->getY();
+    int xp = 0;//p->getX();
+    int yp = 0;//p->getY();
 
 	glBegin(GL_LINES);
 
@@ -277,6 +255,50 @@ void PanelZoom::displayGL()
 void PanelZoom::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelZoom::releaseLeft(xm=%d, ym=%d)", xm, ym );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelZoom::clickRight(int xm, int ym)
+{
+    logf( (char*)"PanelZoom::clickRight(xm=%d, ym=%d)", xm, ym );
+    vClickRight.x = xm;
+    vClickRight.y = ym;
+    
+    bFreePos = true;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelZoom::motionRight(int xm, int ym)
+{
+    logf( (char*)"PanelZoom::motionRight(xm=%d, ym=%d)", xm, ym );
+    if ( abs(xm-vClickRight.x) < 20 )
+    {
+        if ( !bFreePos )        bFreePos = true;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelZoom::releaseRight(int xm, int ym)
+{
+    logf( (char*)"PanelZoom::releaseRight(xm=%d, ym=%d)", xm, ym );
+    logf( (char*)"  vStar(%0.2f, %0.2f)   mouse(%d, %d)", vStar.x, vStar.y, xm, ym );
+    logf( (char*)"  paneZoom(%d, %d)", getX(), getY() );
+    
+    vec2 v = vCamView + vStar - vec2( getX(), getY() );
+    
+    if ( v.length() < 50 )
+    {
+        bFreePos = false;
+        logf( (char*)"  Attache" );
+    }
+    else
+    {
+        bFreePos = true;
+        logf( (char*)"  Free" );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
