@@ -31,6 +31,7 @@ protected:
         float           dyWin;
 
         vec2            vCamView;
+        float           ech;
         
         PanelSimple*    pFond;
         float           xFond;
@@ -54,7 +55,7 @@ public:
         
         
 virtual void            update();
-        void            glCroix(float,float,float);
+        void            glCroix(float,float,float,vec4);
 virtual void	        displayGL();
 
 virtual void            releaseLeft( int, int);
@@ -82,7 +83,8 @@ virtual void            releaseRight( int, int);
 inline  float           getEchelle()                    { return echelle; }
 inline  float           getCentX()                      { return dx; }
 inline  float           getCentY()                      { return dy; }
-inline  void            setCamView(float x, float y)    { vCamView.x = x; vCamView.y = y; }
+inline  void            setCamView(float x, float y, float e)    
+                        { vCamView.x = x; vCamView.y = y; ech = e; }
 
 };
 

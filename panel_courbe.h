@@ -36,6 +36,9 @@ public:
         int                 y;
     } unite;
 
+
+
+
 private:
 
     float               offset_x;
@@ -90,7 +93,7 @@ private:
 
     bool                bPanelCourbe;
 
-    vector<vec2>        t_vResultat;
+    //vector<vec2>        t_vResultat;
     vector<vec2>        t_vSauve;
     vector<vec2>        t_vCourbe;
     //vector<vec2>        courbeY;
@@ -134,6 +137,7 @@ static bool             bDebug;
     ~PanelCourbe();
     
     void                init_var();
+    void                create_guidage(char*);
     void                sauve_guidage_1_1();
     void                sauve_guidage_1_0();
     void                sauve_guidage();

@@ -83,11 +83,12 @@ typedef struct readBackground       rb_t;
     extern bool                     bSound;
     extern bool                     bCorrection;
     extern bool                     bCentrageSuivi;
+    extern bool                     bPanelResultat;
 
     extern int                      width;
     extern int                      height;
-    extern vector<vec2>             t_vResultat;
-    extern vector<vec2>             t_vSauve;
+    //extern vector<vec2>             t_vResultat;
+    //extern vector<vec2>             t_vSauve;
     extern bool                     bModeManuel;
 
     extern float                    xSuivi;
@@ -109,6 +110,7 @@ typedef struct readBackground       rb_t;
     
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;
+    extern PanelWindow*             panelResultat;
     #endif
     
     extern vec3                     vecAD[2];
@@ -164,6 +166,7 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 string              get_basename(string);
 unsigned int        get_color(vec4);
+bool                fexists(const char *filename);
 bool                isPleiade();
 
 void                callback_enregistre(bool, int, char*);

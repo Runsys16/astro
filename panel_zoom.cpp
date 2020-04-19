@@ -107,6 +107,7 @@ void PanelZoom::setPosAndSize(int xx, int yy, int ddx, int ddy)
     //logf( (char*)"PanelZoom::setPosAndSize(%d, %d, %d, %d)", xx, y, ddx, ddy);
     if ( !bFreePos )
     {
+        if ( bPanelResultat )    yWin += panelResultat->getDY()+10;
         PanelWindow::setPosAndSize(xWin, yWin, dxWin, dyWin);
         
     }
@@ -186,36 +187,22 @@ void PanelZoom::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelZoom::glCroix( float xx, float yy, float l )
+void PanelZoom::glCroix( float xx, float yy, float l, vec4 c )
 {
-    float x = getX();
-    float y = getY();
-
-    float X = -dx;
-    float Y = -dy;
-
-    float dx = xx;
-    float dy = yy;
+    float x = getPosX() + xx + (float)getDX()/2;
+    float y = getPosY() + yy + (float)getDY()/2;
 
 
     float gris = 1.0;
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
-    else                glColor4f( gris, gris, gris, 1.0 );    
+    else                glColor4fv( c );    
     
-
-    if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
-    else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
-
-    glColor4f( 0.0, 1.0, 1.0, 1.0);
-
-    Panel* p = getParent();
-    int xp = 0;//p->getX();
-    int yp = 0;//p->getY();
-
 	glBegin(GL_LINES);
 
-	    glVertex2i(xWin+0+xp, yWin+dyWin/2+yp);         glVertex2i(xWin+dxWin+xp, yWin+dyWin/2+yp);
-	    glVertex2i(xWin+dxWin/2+xp, yWin+0+yp);         glVertex2i(xWin+dxWin/2+xp, yWin+dyWin+yp);
+	    //glVertex2i(xWin+0+xp, yWin+dyWin/2+yp);         glVertex2i(xWin+dxWin+xp, yWin+dyWin/2+yp);
+	    //glVertex2i(xWin+dxWin/2+xp, yWin+0+yp);         glVertex2i(xWin+dxWin/2+xp, yWin+dyWin+yp);
+	    glVertex2i( x-l/2, y);                glVertex2i( x+l/2, y);
+	    glVertex2i( x, y-l/2);                glVertex2i( x, y+l/2);
 
     glEnd();        
 }
@@ -226,27 +213,50 @@ void PanelZoom::displayGL()
 {
 	if ( !visible )			return;
 	
+    VarManager&     var = VarManager::getInstance();
+    WindowsManager& wm  = WindowsManager::getInstance();
+
     float gris = 1.0;
-    if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
-    else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
+    if ( bNuit )        setColor( 0xffff0000 );//glColor4f( gris,  0.0,  0.0, 1.0 );
+    else                setColor( 0xffffffff );//glColor4f( gris,  0.0,  0.0, 1.0 );
+
 
     PanelSimple::displayGL();
+
 	displayGLBordure();
 
-    VarManager& var = VarManager::getInstance();
+
+	int scx, scy, scdx, scdy;
+	scx  = getX();
+	scy  = wm.getHeight() - getDY() - getY();
+	scdx = getDX();
+	scdy = getDY();
+    if ( parent == NULL || bScissor )
+    {
+	    glScissor( scx, scy, scdx, scdy );
+	    glEnable( GL_SCISSOR_TEST );
+	}
+
+
+
+
     //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
     //else                            glColor4f( gris, gris, gris, 0.2 );
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
-    glCroix( (float)getDX()/2, (float)getDY()/2, 100 );
-    glCroix( (float)xSuivi-(float)getDX()/2, (float)ySuivi - (float)getDY()/2, 100 );
+    glCroix( 0, 0, 100, vec4( 1.0, 0.2, 0.2, 1.0 ) );
+
+    float x  = echelle * (xSuivi-vStar.x); 
+    float y  = echelle * (ySuivi-vStar.y);
+    glCroix( x, y, 100, vec4( 0.2, 0.2, 0.8, 1.0 ) );
     
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
+    glDisable( GL_SCISSOR_TEST );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -285,9 +295,10 @@ void PanelZoom::releaseRight(int xm, int ym)
 {
     logf( (char*)"PanelZoom::releaseRight(xm=%d, ym=%d)", xm, ym );
     logf( (char*)"  vStar(%0.2f, %0.2f)   mouse(%d, %d)", vStar.x, vStar.y, xm, ym );
-    logf( (char*)"  paneZoom(%d, %d)", getX(), getY() );
+    logf( (char*)"  vCamView(%0.2f, %0.2f) ech=%0.2f", vCamView.x, vCamView.y, ech );
+    logf( (char*)"  paneZoom(%d, %d)", getPosX(), getPosY() );
     
-    vec2 v = vCamView + vStar - vec2( getX(), getY() );
+    vec2 v = vCamView + vStar - vec2( getPosX(), getPosY() )/ech;
     
     if ( v.length() < 50 )
     {
@@ -325,8 +336,8 @@ void PanelZoom::setTextHeight(int hh )
     //logf( (char*)"PanelZoom::setTextHeight(%d)", h );
 
     echelle = 10.0;
-    xFond  = -echelle * vStar.x + dxWin/2; 
-    yFond  = -echelle * vStar.y + dyWin/2;
+    xFond  = -echelle * vStar.x + getDX()/2; 
+    yFond  = -echelle * vStar.y + getDY()/2;
     dxFond = echelle * w;
     dyFond = echelle * h;
 

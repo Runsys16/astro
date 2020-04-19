@@ -225,18 +225,16 @@ void PanelCourbe::charge_guidage_1_1(ifstream& fichier)
     while ( getline (fichier, line) )
     {
         float rx, ry, ox, oy;
-        sscanf( line.c_str(), "( %f , %f ) / ( %f , %f )", &rx, &ry, &ox, &oy );
+        sscanf( line.c_str(), "delta(%f, %f) origine(%f, %f)", &rx, &ry, &ox, &oy );
 
         vOrigine.x = ox;
         vOrigine.y = oy;
 
-        t_vResultat.push_back( vec2(rx,ry) );
-        
-        t_vCourbe.push_back( vec2(vec2(rx,ry) - vec2(ox, oy)) );
+        t_vCourbe.push_back( vec2(rx,ry) );
 
         nbLigne++;
     }    
-    int n = t_vResultat.size();
+    int n = t_vCourbe.size();
     logf( (char*)"Lecture de %d donnees dans %d lignes", n, nbLigne );
     
     log_tab(false);
@@ -263,8 +261,6 @@ void PanelCourbe::charge_guidage_1_0(ifstream& fichier, string line)
         vOrigine.x = ox;
         vOrigine.y = oy;
 
-        t_vResultat.push_back( vec2(rx,ry) );
-        
         t_vCourbe.push_back( vec2(vec2(rx,ry) - vec2(ox, oy)) );
 
         nbLigne++;
@@ -272,7 +268,7 @@ void PanelCourbe::charge_guidage_1_0(ifstream& fichier, string line)
     }    
     
     
-    int n = t_vResultat.size();
+    int n = t_vCourbe.size();
     logf( (char*)"Lecture de %d donnees dans %d lignes", n, nbLigne );
     
 
@@ -319,15 +315,13 @@ void PanelCourbe::charge_guidage(string filename)
     
     pFilename->changeText( (char*)get_basename(filename).c_str() );
     
-    t_vResultat.clear();
     t_vCourbe.clear();
     decal_x = 0;
     decal_y = 0;
 
     charge_guidage_version( fichier );
 
-    fichier.close();
-    
+    fichier.close();    
     t_vSauve.clear();
     
     build_fft3();
@@ -339,13 +333,33 @@ void PanelCourbe::charge_guidage(string filename)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::sauve_guidage_1_1()
+void PanelCourbe::create_guidage( char* version )
 {
-    //string filename = "/home/rene/.astropilot/sauvegarde.txt";
-    logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filenameSauve.c_str() );
+    logf( (char*)"Creation de l'entete '%s'", version );
     
     std::ofstream fichier;
  
+    fichier.open(filenameSauve, std::ios_base::app);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossble de creer : '%s'", (char*)filenameSauve.c_str() );
+    }
+
+    fichier << version << "\n";
+    fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::sauve_guidage_1_1()
+{
+    //string filename = "/home/rene/.astropilot/sauvegarde.txt";
+    logf( (char*)"PanelCourbe::sauve_guidage_1_1()" );
+
+    if ( !fexists( filenameSauve.c_str()) )       create_guidage( (char*)"#!version-1.1" );
+       
+    std::ofstream fichier;
     fichier.open(filenameSauve, std::ios_base::app);
 
     if ( !fichier ) 
@@ -355,8 +369,8 @@ void PanelCourbe::sauve_guidage_1_1()
 
     for(int i=0; i<t_vSauve.size(); i++)
     {
-        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " ) / ";
-        fichier << "( " << vOrigine.x << " , " <<  vOrigine.y << " )\n";
+        fichier << "delta(" << t_vSauve[i].x << ", " <<  t_vSauve[i].y << ") origine";
+        fichier << "(" << vOrigine.x << ", " <<  vOrigine.y << ")\n";
     }
 
     fichier.close();
@@ -393,30 +407,23 @@ void PanelCourbe::sauve_guidage_1_0()
 void PanelCourbe::sauve_guidage()
 {
     logf( (char*)"Sauvegarde des valeurs dans '%s'", (char*)filenameSauve.c_str() );
-    sauve_guidage_1_0();
+    sauve_guidage_1_1();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::idle_guidage(vec2  v)
 {
-    if ( t_vResultat.size()>200000)      t_vResultat.clear();
-
-    if ( t_vResultat.size() > 20000 )
-    {
-        t_vResultat.erase ( t_vResultat.begin()+0);
-    }
+    if ( t_vCourbe.size()>200000)      t_vCourbe.clear();
 
     vec2 o = vec2(xSuivi, ySuivi);
     ajoute( v-o );
 
-    if ( t_vSauve.size() >= 200 ) {
+    if ( t_vSauve.size() >= 20 ) {
         if ( bSauve )           sauve_guidage();
-        logf( (char*)"Remise a zero t_vSauve");
+        logf( (char*)"Remise a zero t_vSauve %dpt", t_vCourbe.size());
         t_vSauve.clear();
     }
-
-    t_vSauve.push_back(v);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -425,7 +432,6 @@ void PanelCourbe::reset_guidage()
 {
     logf( (char*)"reset_guidage()" );
     
-    t_vResultat.clear();
     t_vCourbe.clear();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -435,7 +441,9 @@ void PanelCourbe::ajoute(vec2 v)
 {
     if ( isPleiade() )      v.x /=14.0;
     v /= 4.0;
-    t_vCourbe.push_back(vec2(v));
+    t_vCourbe.push_back( vec2(v) );    
+    t_vSauve.push_back( vec2(v));
+
     if ( iDisplayfft >= 1 )           build_fft3();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -890,7 +898,6 @@ void PanelCourbe::displayGL(void)
     PanelWindow::displayGL();
 
     int DY = getY();
-    //int n = t_vResultat.size();
     
 
     float height = (float)wm.getHeight();
@@ -1050,7 +1057,7 @@ void PanelCourbe::motionLeft( int xm, int ym )
     //logf( (char*)"PanelCourbe::motionLeft( %d, %0.2f )", decal_x, courbe1 );
 
     if ( decal_x <0 )                        decal_x = 0;
-    if ( decal_x >=t_vResultat.size() )      decal_x = t_vResultat.size()-1;
+    if ( decal_x >=t_vCourbe.size() )        decal_x = t_vCourbe.size()-1;
 
     //build_fft3();
     build_unites_text();
@@ -1218,8 +1225,8 @@ void PanelCourbe::build_fft3()
 {
     //logf( (char*)"PanelCourbe::build_fft3()");
     //if (  <256 )        return;
-    if ( iDisplayfft==0 )           return;    
-    if ( t_vCourbe.size() < 32 )    return;
+    if ( iDisplayfft==0 )               return;    
+    if ( t_vCourbe.size() <= 256 )      return;
     
     t_fOut.clear();
     

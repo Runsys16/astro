@@ -379,6 +379,14 @@ unsigned int get_color( vec4 v )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+bool fexists(const char *filename)
+{
+  ifstream ifile(filename);
+  return (bool)ifile;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 bool isPleiade()
 {
     if ( pPleiade == NULL )         return false;
@@ -430,6 +438,7 @@ void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
             string s = string(str);
             if ( s.find( ".guid" ) == string::npos )     s = s + ".guid";
             filenameSauve = string(s);
+            var.set( "FileResultat", string(filenameSauve) );
             logf( (char*)"  Sauve guidage %s", (char*)s.c_str() );
             //charge_guidage( string(str) );
             workDirSauveCourbe = FileBrowser::getInstance().getWorkingDir();
@@ -807,7 +816,7 @@ void updatePanelResultat()
         }
         pEcart->changeText(sStr);
         
-        float xx = pv->x;
+        float xx = pv->x + 40;
         float yy = pv->y + 35;
         
         mgr.tex2screen(xx,yy);

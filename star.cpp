@@ -720,7 +720,7 @@ void Star::updatePos(int X, int Y, float e)
         float xx = 1.0 * x;
         float yy = 1.0 * y;
         panelZoom->setPosStar(pos.x, pos.y);
-        panelZoom->setCamView(pView->getPosX(), pView->getPosY());
+        panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech);
         panelZoom->setPosAndSize( (x+40)*ech + dx_screen, (y+40)*ech + dy_screen, 200, 200 );
         panelZoom->updatePos();
     }
@@ -744,7 +744,7 @@ void Star::suivi()
     panelZoom->setTextWidth(RB->w );
     panelZoom->setTextHeight(RB->h );
     panelZoom->setPosStar(pos.x, pos.y);
-    panelZoom->setCamView(pView->getPosX(), pView->getPosY());
+    panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech);
     panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 300, 300 );
     panelZoom->updatePos();
 }
