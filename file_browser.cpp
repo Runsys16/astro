@@ -497,7 +497,12 @@ bool FileBrowser::keyboard(char key, int x, int y)
                 //if ( panelOK->getCallback() != NULL &&  panelOK->getCallback()->getExtra() == 10)       
                 //    panelOK->getCallback()->callback( true, 1, (char*)s.c_str() );
             }
+            else
+            {
+                logf( (char*)"Retour chariot non pris en compte bNewline=%s", BOOL2STR(bNewline) ); 
+            }
             //cb_ok_release_left(0,0);
+            
 	    }
 	    break;
     /*

@@ -224,13 +224,16 @@ void PanelCourbe::charge_guidage_1_1(ifstream& fichier)
     
     while ( getline (fichier, line) )
     {
-        float rx, ry, ox, oy;
-        sscanf( line.c_str(), "delta(%f, %f) origine(%f, %f)", &rx, &ry, &ox, &oy );
+        float rx, ry, ox, oy, t;
+        sscanf( line.c_str(), "delta(%f, %f) origine(%f, %f) time(%f)", &rx, &ry, &ox, &oy, &t );
 
         vOrigine.x = ox;
         vOrigine.y = oy;
-
-        t_vCourbe.push_back( vec2(rx,ry) );
+        
+        data d;
+        d.v = vec2(rx,ry);
+        d.t = t;
+        t_vCourbe.push_back( d );
 
         nbLigne++;
     }    
@@ -261,7 +264,10 @@ void PanelCourbe::charge_guidage_1_0(ifstream& fichier, string line)
         vOrigine.x = ox;
         vOrigine.y = oy;
 
-        t_vCourbe.push_back( vec2(vec2(rx,ry) - vec2(ox, oy)) );
+        data d;
+        d.v = vec2(vec2(rx,ry) - vec2(ox, oy));
+        d.t = 0.0;
+        t_vCourbe.push_back( d );
 
         nbLigne++;
         if ( !getline (fichier, line) )     break;
@@ -369,8 +375,10 @@ void PanelCourbe::sauve_guidage_1_1()
 
     for(int i=0; i<t_vSauve.size(); i++)
     {
-        fichier << "delta(" << t_vSauve[i].x << ", " <<  t_vSauve[i].y << ") origine";
-        fichier << "(" << vOrigine.x << ", " <<  vOrigine.y << ")\n";
+        fichier << "delta(" << t_vSauve[i].v.x << ", " <<  t_vSauve[i].v.y << ")";
+        fichier << " origine" << "(" << vOrigine.x << ", " <<  vOrigine.y << ")";
+        fichier << " time" << "(" << t_vSauve[i].t << ")";
+        fichier << "\n";
     }
 
     fichier.close();
@@ -393,7 +401,7 @@ void PanelCourbe::sauve_guidage_1_0()
 
     for(int i=0; i<t_vSauve.size(); i++)
     {
-        fichier << "( " << t_vSauve[i].x << " , " <<  t_vSauve[i].y << " ) / ";
+        fichier << "( " << t_vSauve[i].v.x << " , " <<  t_vSauve[i].v.y << " ) / ";
         fichier << "( " << vOrigine.x << " , " <<  vOrigine.y << " )\n";
     }
 
@@ -441,8 +449,12 @@ void PanelCourbe::ajoute(vec2 v)
 {
     if ( isPleiade() )      v.x /=14.0;
     v /= 4.0;
-    t_vCourbe.push_back( vec2(v) );    
-    t_vSauve.push_back( vec2(v));
+    
+    data d;
+    d.v = vec2(v);
+    d.t = Timer::getInstance().getCurrentTime();
+    t_vCourbe.push_back( d );
+    t_vSauve.push_back( d );
 
     if ( iDisplayfft >= 1 )           build_fft3();
 }
@@ -752,7 +764,7 @@ void PanelCourbe::glCourbes()
         else                            glColor4fv( color_X );
         
         if ( (aff_courbe ==0x0) || (aff_courbe==0x02) ) {
-           glCourbe(    tabx, t_vCourbe.size(), 2, xStartAxe, decal_x, decal_y, getDY()/2, 0.0,
+           glCourbe(    tabx, t_vCourbe.size(), 3, xStartAxe, decal_x, decal_y, getDY()/2, 0.0,
                         courbe1*ech_w, delta_courbe1*ech_h );
         }
 
@@ -760,7 +772,7 @@ void PanelCourbe::glCourbes()
         else                            glColor4fv( color_Y );
         
         if ( (aff_courbe==0x0) || (aff_courbe==0x03) ) {
-            glCourbe(   taby, t_vCourbe.size(), 2, xStartAxe, decal_x, decal_y, getDY()/2, 0.0,
+            glCourbe(   taby, t_vCourbe.size(), 3, xStartAxe, decal_x, decal_y, getDY()/2, 0.0,
                         courbe1*ech_w, delta_courbe1*ech_h );
         }
     }
@@ -1246,8 +1258,8 @@ void PanelCourbe::build_fft3()
         idx = nn-i-1-decal_x;
         
         if ( idx < max && idx >= 0)   {
-            signalX[i] = complex<float>((float)t_vCourbe[idx].x, 0.0);
-            signalY[i] = complex<float>((float)t_vCourbe[idx].y, 0.0);
+            signalX[i] = complex<float>((float)t_vCourbe[idx].v.x, 0.0);
+            signalY[i] = complex<float>((float)t_vCourbe[idx].v.y, 0.0);
         }
         else    {
             signalX[i] = complex<float>(0.0, 0.0);

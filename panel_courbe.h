@@ -18,6 +18,7 @@
 #include "Mathlib.h"
 #include "console.h"
 #include "var_mgr.h"
+#include "timer.h"
 
 using namespace std;
 
@@ -35,6 +36,11 @@ public:
         int                 x;
         int                 y;
     } unite;
+
+    typedef struct {
+        vec2                v;
+        float               t;
+    } data;
 
 
 
@@ -94,8 +100,8 @@ private:
     bool                bPanelCourbe;
 
     //vector<vec2>        t_vResultat;
-    vector<vec2>        t_vSauve;
-    vector<vec2>        t_vCourbe;
+    vector<data>        t_vSauve;
+    vector<data>        t_vCourbe;
     //vector<vec2>        courbeY;
     
     vec3                vOrigine;

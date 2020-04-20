@@ -446,6 +446,7 @@ void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
             FileBrowser::getInstance().setFiltre( "" );
             
             bSauve = true;
+            FileBrowser::getInstance().cache();    
         }
         else
         {
@@ -1089,7 +1090,7 @@ void charge_traces(void)
     }
     
     fichier.close();
-    logf( (char*)"Lecture de %d lignes %d", nbl );
+    logf( (char*)"Lecture de %d lignes de %d traces", nbl, t_vTrace.size() );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -2138,13 +2139,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'r' :
         {
-        logf( (char*)"Key (Q) : Ouvre un fichier de suivi (.guid)");
-
-            FileBrowser::getInstance().setCallBack(&cb_cguidage);
-            FileBrowser::getInstance().setFiltre( ".guid" );
+            logf( (char*)"Key (Q) : Ouvre un fichier de suivi (.guid)");
+            FileBrowser& fb = FileBrowser::getInstance();
+            
+            fb.setCallBack(&cb_cguidage);
+            fb.setFiltre( ".guid" );
             if ( var.existe("DirSauveCourbe") )     workDirSauveCourbe = *var.gets( "DirSauveCourbe" );
-            FileBrowser::getInstance().change_dir( workDirSauveCourbe );
-            FileBrowser::getInstance().affiche();
+            fb.change_dir( workDirSauveCourbe );
+            fb.setNewline( true );
+            fb.affiche();
         }
         break;
 
@@ -2222,6 +2225,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             fb.setFiltre( ".guid" );
             fb.change_dir( workDirSauveCourbe );
             fb.setCallBack( &cb_sguidage );
+            fb.setNewline( true );
             
             fb.affiche();
             
