@@ -2525,7 +2525,7 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
-    logf( (char*)"main::glutMouseFunc()");
+    //logf( (char*)"main::glutMouseFunc()");
     log_tab(true);
     
     mouse.x = x;
@@ -2639,8 +2639,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 
 endglutMouseFunc:
     log_tab(false);
-    logf( (char*)"main::glutMouseFunc()");
-
+    //logf( (char*)"main::glutMouseFunc()");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

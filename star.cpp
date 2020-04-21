@@ -600,26 +600,18 @@ void Star::glCercle(int rayon)
     int delta_y = 0;
     
     if (pView!=NULL) {
-        delta_x = pView->getX();
-        delta_y = pView->getY();
+        delta_x = -pView->getPosX();
+        delta_y = -pView->getPosY();
         //logf( (char*)"Star::glCercle() : delta(%d, %d)", delta_x, delta_y );
     }
-    delta_x = 0;
-    delta_y = 0;
+    //else
+        //logf( (char*)"Star::glCercle() : pView NULL" );
 
     int xx = x_screen - delta_x;// + dx_screen;
     int yy = y_screen - delta_y;// + dy_screen;
     
-    //int xx = pView->tex2screen(x);
-    //int yy = pView->tex2screen(y);
-
     xSuivi = pos.x;
     ySuivi = pos.y;
-    /*
-    xx = x;
-    yy = y;
-    screen2tex(x, y);
-    */
     
     //logf( (char*)"Star::glCercle() : (%d, %d)  (%d, %d) pos(%0.2f,%0.2f)", xx, yy, x, y, pos.x, pos.y );
 
@@ -627,8 +619,8 @@ void Star::glCercle(int rayon)
 
         for( float i=0; i<=360.0; i+=1.0 )
         {
-            float fx = (float)xx+ (float)rayon*cos(DEG2RAD(i));
-            float fy = (float)yy+ (float)rayon*sin(DEG2RAD(i));
+            float fx = (float)xx + (float)rayon*cos(DEG2RAD(i));
+            float fy = (float)yy + (float)rayon*sin(DEG2RAD(i));
             glVertex2i(fx,fy);
         }
         
@@ -639,8 +631,19 @@ void Star::glCercle(int rayon)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCarre( int dx,  int dy )
 {
-    int x = x_screen;// + dx_screen;
-    int y = y_screen;// + dy_screen;
+    int delta_x = 0;
+    int delta_y = 0;
+    
+    if (pView!=NULL) {
+        delta_x = -pView->getPosX();
+        delta_y = -pView->getPosY();
+        //logf( (char*)"Star::glCercle() : delta(%d, %d)", delta_x, delta_y );
+    }
+    //else
+        //logf( (char*)"Star::glCercle() : pView NULL" );
+
+    int x = x_screen - delta_x;// + dx_screen;
+    int y = y_screen - delta_y;// + dy_screen;
     
 	glBegin(GL_LINES);
         x = x-dx;
@@ -680,8 +683,19 @@ void Star::glCroix( int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glMark( int dx,  int dy )
 {
-    int x = x_screen;// + dx_screen;
-    int y = y_screen;// + dy_screen;
+    int delta_x = 0;
+    int delta_y = 0;
+    
+    if (pView!=NULL) {
+        delta_x = -pView->getPosX();
+        delta_y = -pView->getPosY();
+        //logf( (char*)"Star::glCercle() : delta(%d, %d)", delta_x, delta_y );
+    }
+    //else
+        //logf( (char*)"Star::glCercle() : pView NULL" );
+
+    int x = x_screen - delta_x;// + dx_screen;
+    int y = y_screen - delta_y;// + dy_screen;
     
 	glBegin(GL_LINES);
 
@@ -722,6 +736,7 @@ void Star::updatePos(int X, int Y, float e)
         panelZoom->setPosStar(pos.x, pos.y);
         panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech);
         panelZoom->setPosAndSize( (x+40)*ech + dx_screen, (y+40)*ech + dy_screen, 200, 200 );
+        //panelZoom->setPosAndSize( x_screen+40 + dx_screen, y_screen+40 + dy_screen, 200, 200 );
         panelZoom->updatePos();
     }
 }

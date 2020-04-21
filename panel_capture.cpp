@@ -209,6 +209,8 @@ void PanelCapture::displayGL()
     
     PanelSimple::displayGL();
 
+    stars.setView( this );
+    //stars.setRB( pReadBgr );
     stars.displayGL();
 
 	glMatrixMode(GL_MODELVIEW);
@@ -276,7 +278,8 @@ void PanelCapture::releaseLeft(int xm, int ym)
         
     if ( !bIcone     )
     {
-        stars.setView( (PanelSimple*)this->getParent() );
+        //stars.setView( (PanelSimple*)this->getParent() );
+        stars.setView( this );
         stars.setRB( pReadBgr );
         if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
             stars.selectLeft(xx, yy);
