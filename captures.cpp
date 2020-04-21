@@ -288,7 +288,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 	    {
         if ( n == -1 )          return;
         Capture&  c = *captures[n];
-
+        
         float m = c.getCentY() - 10.0;
         c.setCentY( m );
 
@@ -321,8 +321,11 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 	    log_tab(true);
         Capture&  c = *captures[n];
 
+        c.getPreview()->wheelUp(x,y);
+        /*
         float e = c.getEchelle() / 0.9;
         c.setEchelle(e);
+		*/
         
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 	    log_tab(false);
@@ -337,9 +340,12 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 	    log_tab(true);
         Capture&  c = *captures[n];
 
+        c.getPreview()->wheelDown(x,y);
+        
+        /*
         float e = c.getEchelle() * 0.9;
         c.setEchelle(e);
-
+        */
         logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 	    log_tab(false);
 

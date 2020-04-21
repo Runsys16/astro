@@ -59,6 +59,7 @@ public:
     void                deleteAllStars();
     //bool                starExist(int, int);    
     void                addStar(int,int);
+    void                clip(int&, int&);
 
     void                setCent();
     void                setEchelle(float f);

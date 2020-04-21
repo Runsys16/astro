@@ -52,8 +52,8 @@ void PanelCapture::findAllStars()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::setCent()
 {
-    float fDX = (float)pReadBgr->w / ech_geo;
-    float fDY = (float)pReadBgr->h / ech_geo;
+    float fDX = (float)pReadBgr->w * ech_geo;
+    float fDY = (float)pReadBgr->h * ech_geo;
     
     float fw = (float)pReadBgr->w;
     float fh = (float)pReadBgr->h;
@@ -61,8 +61,8 @@ void PanelCapture::setCent()
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
     
-    int deltax = ((fw/2.0 ) - ech_user * (fw/2.0 - dx )) / ech_geo;
-    int deltay = ((fh/2.0 ) - ech_user * (fh/2.0 - dy )) / ech_geo;
+    int deltax = ((fw/2.0 ) - ech_user * (fw/2.0 - dx )) * ech_geo;
+    int deltay = ((fh/2.0 ) - ech_user * (fh/2.0 - dy )) * ech_geo;
     
     if ( deltax > 0 )           deltax = 0;
     if ( deltay > 0 )           deltay = 0;
@@ -73,7 +73,7 @@ void PanelCapture::setCent()
     if ( deltax < maxX )        deltax = maxX;
     if ( deltay < maxY )        deltay = maxY;
 
-    setPos( deltax, deltay );
+    //setPos( deltax, deltay );
     stars.set_delta( deltax, deltay );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@ void PanelCapture::setEchelle(float f)
     }
     if ( pReadBgr == NULL )         return;
     
-    float fDX = (float)pReadBgr->w / ech_geo;
-    float fDY = (float)pReadBgr->h / ech_geo;
+    float fDX = (float)pReadBgr->w * ech_geo;
+    float fDY = (float)pReadBgr->h * ech_geo;
     
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
@@ -152,8 +152,8 @@ void PanelCapture::updatePos()
     float coef0 = (float)pReadBgr->w / getParent()->getDX();// * ech_user;
     float coef1 = (float)pReadBgr->h / getParent()->getDY();// * ech_user;
     float coef;
-    if ( coef0 > coef1 )        coef = coef1;
-    else                        coef = coef0;
+    if ( coef0 > coef1 )        coef = 1.0/coef1;
+    else                        coef = 1.0/coef0;
     
     if ( coef != ech_geo )
     {
@@ -164,8 +164,8 @@ void PanelCapture::updatePos()
     }
     
     //setEchelle(coef);
-    float fDX = (float)pReadBgr->w / ech_geo;
-    float fDY = (float)pReadBgr->h / ech_geo;
+    float fDX = (float)pReadBgr->w * ech_geo;
+    float fDY = (float)pReadBgr->h * ech_geo;
 
     setSize( fDX*ech_user, fDY*ech_user );
     setCent();
@@ -219,35 +219,31 @@ void PanelCapture::addStar(int xm, int ym)
     stars.setRB( pReadBgr );
     //stars.addStar( xm, ym );
 }
-/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-Panel* PanelCapture::isMouseOver(int xm, int ym)	{
-    return Panel::isMouseOver(xm, ym );
-	#ifdef DEBUG
-	cout << "Panel::isMouseOver()" << x_raw <<", "<< y_raw <<", "<< dx_raw <<", "<< dy_raw << endl;
-	#endif
+void PanelCapture::clip(int& xm, int& ym)	{
+    Panel* p = getParent();
 
-	if ( !visible )			return NULL;
-	if ( bFantome )			return NULL;
+    float ech = ech_user * ech_geo;
 
-    int xx  = getParent()->getX();
-    int yy  = getParent()->getY();
-    int dxx = getParent()->getDX();
-    int dyy = getParent()->getDY();
-
+    float max_x = ech*pReadBgr->w - p->getDX();
+    float max_y = ech*pReadBgr->h - p->getDY();
     
-    int nb = childs.size();
-	for( int i=0; i<nb; i++ )	{
-		Panel * p = childs[i]->isMouseOver(xm, ym);
-		if ( p )		return p;
-	}
+    float X1 = xm;
+    float Y1 = ym;
     
-	if ( xx <= xm && xm <= (xx+dxx) && yy <= ym && ym <= (yy+dyy) )		                    return this;
-	else																					return NULL;
+    if ( X1<0 )             X1 = 0.0;
+    else
+    if ( X1>max_x )         X1 = max_x;
+    
+    if ( Y1<0 )             Y1 = 0.0;
+    else
+    if ( Y1>max_y )         Y1 = max_y;
+    
+    xm = X1;
+    ym = Y1;
 }
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -314,26 +310,83 @@ void PanelCapture::releaseRight(int xm, int ym)
     {
         if ( pCapture->isFits() )       pCapture->afficheFits();
     }
-    /*
-    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
-        stars.selectRight(xx, yy);
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::wheelUp(int xm, int ym)
 {
-    logf( (char*)"PanelCapture::wheelUp(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
-    Captures::getInstance().glutSpecialFunc(104, xm, ym);
+    //logf( (char*)"PanelCapture::wheelUp(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
+    //Captures::getInstance().glutSpecialFunc(104, xm, ym);
+    float k = 1.1;
+    ech_user *= k;
+    
+    Panel* p = getParent();
+
+    float XM =  ( xm- p->getX() );
+    float X0 = -( getPosX() ); 
+    float X1 = k*X0 + (k-1)*XM;
+    
+    float YM =  ( ym-p->getY() );
+    float Y0 = -( getPosY() ); 
+    float Y1 = k*Y0 + (k-1)*YM;
+    
+    float ech = ech_user * ech_geo;
+    float max_x = (ech*(float)pReadBgr->w) - p->getDX();
+    float max_y = (ech*(float)pReadBgr->h) - p->getDY();
+
+    setPos( -X1, -Y1 );
+    
+    //logf( (char*)"  XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
+    //logf( (char*)"  Mouse (%0.2f, %0.2f)  (%0.2f, %0.2f)", (float)xm, (float)ym, XM, YM );
+    //logf( (char*)"  MAX   (%0.2f, %0.2f)", max_x, max_y );
+    //logf( (char*)"  ech   (%0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, pReadBgr->w, pReadBgr->h );
+    //logf( (char*)"  win   (%0.2f, %0.2f)", (float)p->getDX(), (float)p->getDY() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::wheelDown(int xm, int ym)
 {
-    logf( (char*)"PanelCapture::wheelDown(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
-    Captures::getInstance().glutSpecialFunc(105, xm, ym);
+    //logf( (char*)"PanelCapture::wheelDown(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
+    //Captures::getInstance().glutSpecialFunc(105, xm, ym);
+    float k = 0.9;
+    ech_user *= k;
+    if (ech_user<=1.0)           ech_user = 1.0;
+    
+    Panel* p = getParent();
+
+    float XM =  ( xm- p->getX() );
+    float X0 = -( getPosX() ); 
+    float X1 = k*X0 + (k-1)*XM;
+    
+    float YM =  ( ym-p->getY() );
+    float Y0 = -( getPosY() ); 
+    float Y1 = k*Y0 + (k-1)*YM;
+    /*    
+    float ech = ech_user * ech_geo;
+    float max_x = ech*pReadBgr->w - p->getDX();
+    float max_y = ech*pReadBgr->h - p->getDY();
+    
+    if ( X1<0 )             X1 = 0.0;
+    else
+    if ( X1>max_x )         X1 = max_x;
+    
+    if ( Y1<0 )             Y1 = 0.0;
+    else
+    if ( Y1>max_y )         Y1 = max_y;
+    */
+    int x1 = X1;
+    int y1 = Y1;
+    
+    clip( x1, y1 );
+    setPos( -x1, -y1 );
+    
+    //logf( (char*)"  XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
+    //logf( (char*)"  Mouse (%0.2f, %0.2f)  (%0.2f, %0.2f)", (float)xm, (float)ym, XM, YM );
+    //logf( (char*)"  MAX   (%0.2f, %0.2f)", max_x, max_y );
+    //logf( (char*)"  ech   (%0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, pReadBgr->w, pReadBgr->h );
+    //logf( (char*)"  win   (%0.2f, %0.2f)", (float)p->getDX(), (float)p->getDY() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -355,13 +408,32 @@ void PanelCapture::motionMiddle(int xm, int ym)
     //logf( (char*)"PanelCapture::motionMiddle(%d,%d) ...", xm, ym );
     //logf( (char*)"    delta (%d,%d) ...", xm-xm_old, ym-ym_old );
     float deltaX, deltaY;
+    float ech = ech_geo * ech_user;
+    Panel* p = getParent();
     
-    deltaX = (float) (xm-xm_old) * ech_geo / ech_user;
-    deltaY = (float) (ym-ym_old) * ech_geo / ech_user;
+    deltaX = (float) (xm-xm_old) / ech;
+    deltaY = (float) (ym-ym_old) / ech;
 
-    setCentX( dx + deltaX );
-    setCentY( dy + deltaY );
+    float X0 = ( getPosX() ); 
+    float X1 = X0 + (xm-xm_old);
     
+    float Y0 = ( getPosY() ); 
+    float Y1 = Y0 + (ym-ym_old);
+    
+    float max_x = ech*pReadBgr->w - p->getDX();
+    float max_y = ech*pReadBgr->h - p->getDY();
+
+    int x1 = -X1;
+    int y1 = -Y1;
+
+    clip(x1, y1);
+    setPos( -x1, -y1 );
+    
+    //logf( (char*)"  XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
+    //logf( (char*)"  Mouse (%0.2f, %0.2f) ", (float)xm, (float)ym );
+    //logf( (char*)"  MAX   (%0.2f, %0.2f)", max_x, max_y );
+    //logf( (char*)"  ech   (%0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, pReadBgr->w, pReadBgr->h );
+    //logf( (char*)"  win   (%0.2f, %0.2f)", (float)p->getDX(), (float)p->getDY() );
     //stars.set_delta( deltaX, deltaY );
     
     xm_old = xm;
@@ -410,14 +482,14 @@ void PanelCapture::releaseMiddle(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::screen2texX( int x )
 {
-    return (float)x * ech_geo / ech_user + dx;
+    return (float)x / ( ech_geo*ech_user) + dx;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::screen2texY( int y )
 {
-    return (float)y * ech_geo / ech_user + dy;
+    return (float)y / (ech_geo*ech_user) + dy;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -432,14 +504,14 @@ void PanelCapture::screen2tex(int& x, int& y)
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::tex2screenX( int x )
 {
-    return (float)( x-dx) * ech_user / ech_geo;
+    return (float)( x-dx) * ech_user * ech_geo;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::tex2screenY( int y )
 {
-    return (float)( y-dy) * ech_user / ech_geo;
+    return (float)( y-dy) * ech_user * ech_geo;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

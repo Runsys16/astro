@@ -310,6 +310,8 @@ void Capture::create_preview()	{
 	//panelPreview = new PanelWindow();
     setDisplayGL(displayGLnuit_cb);
 
+	panelPreview = new PanelCapture(NULL, this);
+
     bFits = false;
     if ( filename.find( ".fits" ) != std::string::npos )
     {
@@ -321,9 +323,9 @@ void Capture::create_preview()	{
     else
     {
         readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+        //usleep(1000000);
     }
 
-	panelPreview = new PanelCapture(NULL, this);
 	if ( readBgr.ptr == NULL )
 	{
 	    logf( (char*)"[Erreur]Pointeur sur background readBgr.ptr == NULL");
