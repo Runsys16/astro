@@ -74,7 +74,12 @@ void PanelCapture::setCent()
     if ( deltay < maxY )        deltay = maxY;
 
     //setPos( deltax, deltay );
-    stars.set_delta( deltax, deltay );
+    Panel* p = getParent();
+    if ( p!= NULL )
+    {
+        //logf( (char*)"delta : %d", p->getPosY() );
+        stars.set_delta( deltax + p->getPosX(), deltay + p->getPosY() );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

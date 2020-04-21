@@ -607,8 +607,8 @@ void Star::glCercle(int rayon)
     delta_x = 0;
     delta_y = 0;
 
-    int xx = x_screen - delta_x + dx_screen;
-    int yy = y_screen - delta_y + dy_screen;
+    int xx = x_screen - delta_x;// + dx_screen;
+    int yy = y_screen - delta_y;// + dy_screen;
     
     //int xx = pView->tex2screen(x);
     //int yy = pView->tex2screen(y);
@@ -639,8 +639,8 @@ void Star::glCercle(int rayon)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCarre( int dx,  int dy )
 {
-    int x = x_screen + dx_screen;
-    int y = y_screen + dy_screen;
+    int x = x_screen;// + dx_screen;
+    int y = y_screen;// + dy_screen;
     
 	glBegin(GL_LINES);
         x = x-dx;
@@ -665,8 +665,8 @@ void Star::glCarre( int d )
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCroix( int dx,  int dy )
 {
-    int x = x_screen + dx_screen;
-    int y = y_screen + dy_screen;
+    int x = x_screen;// + dx_screen;
+    int y = y_screen;// + dy_screen;
     
 	glBegin(GL_LINES);
 
@@ -680,8 +680,8 @@ void Star::glCroix( int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glMark( int dx,  int dy )
 {
-    int x = x_screen + dx_screen;
-    int y = y_screen + dy_screen;
+    int x = x_screen;// + dx_screen;
+    int y = y_screen;// + dy_screen;
     
 	glBegin(GL_LINES);
 
@@ -708,7 +708,7 @@ void Star::updatePos(int X, int Y, float e)
     x_screen = e*(pos.x+0.5) + (float)X;
     y_screen = e*(pos.y+0.5) + (float)Y;
     
-    pInfo->setPos( (x+8)*ech + dx_screen, (y+8)*ech + dy_screen );
+    pInfo->setPos( (x+8)*ech, (y+8)*ech );
     pInfo->updatePos();
 
     if (panelZoom!=NULL)
@@ -745,7 +745,7 @@ void Star::suivi()
     panelZoom->setTextHeight(RB->h );
     panelZoom->setPosStar(pos.x, pos.y);
     panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech);
-    panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 300, 300 );
+    panelZoom->setPosAndSize( (x+40)*ech + dx_screen, (y+40)*ech + dy_screen, 300, 300 );
     panelZoom->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -773,7 +773,7 @@ void Star::setZoom(bool b)
             panelZoom->setExtraString( "Star pInfo" );
             //pView->add( panelZoom );
             //panelZoom->setPosStar(xFound, yFound);
-            panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
+            panelZoom->setPosAndSize( (x+40)*ech + dx_screen, (y+40)*ech + dy_screen, 200, 200 );
             
             logf( (char*)"Star::displayGL() setBackGround()" );
             if ( RB != NULL )

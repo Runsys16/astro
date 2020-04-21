@@ -33,6 +33,9 @@ PanelCamera::PanelCamera()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::idle(float f)
 {
+    stars.set_delta( getPosX(), getPosY() );
+    
+    
     fTime += fSens * f;
     fTime1 += f;
     
