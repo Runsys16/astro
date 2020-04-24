@@ -133,10 +133,11 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     }
     
     logf( (char*)"Appelle star::updatePos()" );
-    pp->updatePos( dx_screen, dy_screen, e ); 
+    pp->updatePos( dx_screen, dy_screen, e, e ); 
     pp->computeMag();
     pp->getMagnitude();
     pView->add( pp->getInfo() );
+    pp->setView( pView );
 
     v_tStars.push_back( pp );
 
@@ -237,10 +238,11 @@ void Stars::findAllStars()
 
                     pp->setXY( x_find, y_find );
                     pp->find();
-                    pp->updatePos(dx_view, dy_view, ech);
+                    pp->updatePos(dx_view, dy_view, ech, ech);
                     pp->computeMag();
                     //pp->getMagnitude();
                     pView->add( pp->getInfo() );
+                    pp->setView( pView );
                     
                     v_tStars.push_back( pp );
 
@@ -348,7 +350,11 @@ void Stars::suivi(rb_t* p)
     
     for (int i=0; i<nb; i++ )
     {
-        float e = (float)pView->getDX() / (float)RB->w; 
+        float e;
+        float ew = (float)pView->getDX() / (float)RB->w; 
+        float eh = (float)pView->getDY() / (float)RB->h;
+        if ( ew>eh )    e = ew; 
+        else            e = eh;
         //logf((char*)"Stars::suivi() w=%d h=%d  delta window (%d, %d)", p->w, p->h, pView->getDX(), pView->getDY() );
 
         if ( !v_tStars[i]->find()   )
@@ -358,7 +364,7 @@ void Stars::suivi(rb_t* p)
         }
         else v_tStars[i]->resetNotFound();
         
-        v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
+        v_tStars[i]->updatePos( pView->getX(), pView->getY(), ew, eh );
         v_tStars[i]->suivi();
     }
  
@@ -444,7 +450,7 @@ void Stars::selectStar( int xp, int yp)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
+void Stars::update( int DX, int DY, PanelSimple* pview, rb_t* rb)
 {
     //logf( (char*)"Stars::update()  --- DEB ---" );
     
@@ -457,7 +463,11 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
     dx = DX;
     dy = DY;
     
-    ech = (float)pView->getDX() / (float)RB->w; 
+    float ew = (float)pView->getDX() / (float)RB->w; 
+    float eh = (float)pView->getDY() / (float)RB->h;
+    if ( ew<eh )    ech = ew; 
+    else            ech = eh;
+    //ech = (float)pView->getDX() / (float)RB->w; 
     
     //logf( (char*)"Stars::update() dx=%d, dy=%d, ech=%0.2f", dx, dy, ech );
     //logf( (char*)"     w=%d, h=%d", RB->w, RB->h );
@@ -473,7 +483,7 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
         if ( !pStar->find() && pStar->getNotFound() > 10   )
         {
             t.push_back(i);
-            logf( (char*)" Stars::update() push_back = %d", i );
+            logf( (char*)" Stars::update() push_back  !Star->find() = %d", i );
         }
         //*
         else
@@ -490,7 +500,7 @@ void Stars::update( int DX, int DY, Panel* pview, rb_t* rb)
         }
         //*/       
         //v_tStars[i]->computeMag();
-        pStar->updatePos( dx, dy, ech );
+        pStar->updatePos( dx, dy, ew, eh );
     }
     //* 
     nb = t.size();

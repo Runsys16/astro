@@ -34,7 +34,7 @@ public:
     void                    updateRB(rb_t*);
     vec2*                   getSuivi();
 
-    void                    update(int, int, Panel*, rb_t*);
+    void                    update(int, int, PanelSimple*, rb_t*);
     void                    displayGL();
     
     void                    selectLeft(int, int);
@@ -51,7 +51,7 @@ inline int                  size(void)                  { return v_tStars.size()
 private:
     vector<Star*>           v_tStars;
     rb_t*                   RB;
-    Panel*                  pView;
+    PanelSimple*            pView;
     PanelText*              pNbStars;
     
     int                     dx;

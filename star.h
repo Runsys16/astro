@@ -59,7 +59,7 @@ public:
     void                set_delta(float, float);
     //void                screen2tex(int&, int&, int, int, int, int);
     
-    void                updatePos(int, int, float);
+    void                updatePos(int, int, float, float);
     void                updatePos(int, int);
     void                suivi();
 
@@ -133,7 +133,8 @@ private:
     float               magnitude;
     float               maxLum;
     float               limitLum;
-    float               ech;
+    float               ech_x;
+    float               ech_y;
     double              ra_rad;
     double              dc_rad;
     

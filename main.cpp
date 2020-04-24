@@ -3,14 +3,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <unistd.h>
-
 
 #include "Python.h"
-
-
 
 #include "main.h"
 #include "v4l2.h"
@@ -33,11 +27,9 @@
 #include "panel_stdout.h"
 #include <GL/freeglut_ext.h>
 
-//#define DEBUG 1
 #define SIZEPT  20
-//#define AXE_X   (300.0/4.0)
-//#define AXE_Y   (3.0*300.0/4.0)
-//float   xStartAxe = 50.0;
+//#define DEBUG 1
+//#define IDLEGL
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1195,15 +1187,25 @@ void getSuiviParameter(void)
 //--------------------------------------------------------------------------------------------------------------------
 static void idleGL(void)
 {
-    //logf( (char*)"*** IDLE GL ***" );
     Timer&          timer = Timer::getInstance();
-	fTimeMili = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
 
+    #ifdef IDLEGL
+    log_tab(false);
+    logf( (char*)"[%0.4f] IDLE GL ***", timer.getCurrentTime() );
+    #endif
+
+	fTimeMili = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
     char sFPS[] = "fps 0000";
     sprintf( sFPS,"fps %d", *Timer::getInstance().getvFPSCounter() );
     pFPS->changeText((char*)sFPS);
-    
-	timer.Idle();
+    	timer.Idle();
+
+
+    #ifdef IDLEGL
+    logf( (char*)"[%0.4f] IDLE GL ***", timer.getCurrentTime() );
+    log_tab(true);
+    #endif
+
 
     idleStatus();
 
