@@ -536,6 +536,8 @@ void PanelCamera::displayCentre()
 void PanelCamera::displayGL()
 {
     //logf( (char*)"*** PanelCamera::displayGL() ***" );
+    if ( pReadBgr != NULL )
+        logf( (char*)"*** PanelCamera::displayGL()  %X", (long)pReadBgr->ptr );
     //mat4 m = scale( 2.0, 2.0, 1.0 );
     float gris = 0.3;
     VarManager& var = VarManager::getInstance();
