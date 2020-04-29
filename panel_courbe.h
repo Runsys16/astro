@@ -37,8 +37,11 @@ public:
         int                 y;
     } unite;
 
+    enum TYPE { RELATIF, ABSOLU };
+    
     typedef struct {
         vec2                v;
+        TYPE                type;
         float               t;
     } data;
 
@@ -158,11 +161,12 @@ static bool             bDebug;
     void                ajoute(vec2 v);
 
     void                update_err();
+    void                glCarre( int, int, int, int );
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
     void                glCourbeCube( float*, int, int, int, int, int, float, float, float );
     void                glCourbeCube( float*, int, int, int, int, int, float );
-    void                glCourbe( float*, int, int, int, int, int, int, float, float, float );
+    void                glCourbe( float*, int, int, int, int, int, int, float, float, float, bool );
     void                glCourbe( float*, int, int, int, int, int, int, float );
     void                glCourbes();
     void                glFft();
