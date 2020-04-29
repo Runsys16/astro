@@ -22,6 +22,7 @@ Capture::Capture()
     
     logf((char*)"old_dir : %s", (char*)old_dir.c_str() );
 
+    /*
     if ( getCurrentDirectory() == "" )
     {
         logf( (char*)"[Erreur] Impossible de charger le repertoire : " );
@@ -36,6 +37,7 @@ Capture::Capture()
         old_dir = getCurrentDirectory();
         num = 0;
     }
+    */
     
     pooling();
 
@@ -84,6 +86,7 @@ Capture::Capture(string dirname, string name)
     
     filename = dirname + name;
     dirname = dirname;
+    old_dir = string( dirname );
     basename = name;
     bIcone = false;
     bFullScreen = false;
@@ -114,6 +117,8 @@ Capture::Capture(string f )
     {
         dirname += "/" + res[i];
     }
+    
+    old_dir = string( dirname + "/" );
 
     basename = res[nb-1];
 
@@ -155,7 +160,8 @@ void Capture::pooling()
 {
     struct dirent *lecture;
     DIR *rep;
-    string dirname = getCurrentDirectory();
+    //string dirname = getCurrentDirectory();
+    string dirname = old_dir;
     rep = opendir( dirname.c_str() );
     if ( rep == NULL )
     {

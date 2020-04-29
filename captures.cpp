@@ -21,6 +21,7 @@ Captures::Captures()
     bFullPreview = false;
     bShowPreview = false;
     bIcones  = true;
+    sCurrentDir = "";
     resize_all();
     
 //    rotate_capture_plus(true);
@@ -48,7 +49,9 @@ void Captures::charge_image( string dirname, string filename )
     logf( (char*)"    %s",(char*)dirname.c_str() );
     logf( (char*)"    %s",(char*)filename.c_str() );
 
-    if ( current_capture != -1 )    captures[current_capture]->setIcone(true);    
+    if ( current_capture != -1 )    captures[current_capture]->setIcone(true);   
+    
+    sCurrentDir = string( dirname ); 
 
     captures.push_back( new Capture(dirname, filename) );
     sauve();

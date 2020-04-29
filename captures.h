@@ -56,6 +56,7 @@ private:
     bool                        bShowIcones;
     bool                        bFullPreview;
     bool                        bShowPreview;
+    string                      sCurrentDir;
 
 SINGLETON_END()
 

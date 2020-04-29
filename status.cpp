@@ -16,7 +16,14 @@ PanelButton *       pFlecheBas;
 
 PanelCheckBox *     pButtonAsserv;
 
-double oldPas = -1.0;
+//--------------------------------------------------------------------------------------------------------------------
+double  oldPas = -1.0;
+double  old;
+float   err_old = -1.0;
+bool    bFirst = true;
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void inverse_texture(PanelButton *, bool, string);
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -56,7 +63,7 @@ void set_mode(void)
    
     pButtonMode->setVal(bModeManuel);
     
-    logf( (char*)"bModeManuel = %s", bModeManuel?(char*)"true":(char*)"false" );
+    logf( (char*)"status::set_mode() bModeManuel = %s", bModeManuel?(char*)"true":(char*)"false" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -301,7 +308,7 @@ void create_fleches()
     pFlecheHaut = new PanelButton();
     panelStatus->add(pFlecheHaut);
     
-    pFlecheHaut->setPosAndSize( 800, 2, 16, 8 );
+    pFlecheHaut->setPosAndSize( 800, 2, 10, 8 );
 
     pFlecheHaut->setUp(   (char*)"images/fleche_haut.tga" );
     pFlecheHaut->setDown( (char*)"images/fleche_haut.tga" );
@@ -313,7 +320,7 @@ void create_fleches()
     pFlecheBas = new PanelButton();
     panelStatus->add(pFlecheBas);
 
-    pFlecheBas->setPosAndSize( 800, 2+8, 16, 8 );
+    pFlecheBas->setPosAndSize( 800, 2+8, 10, 8 );
 
     pFlecheBas->setUp(   (char*)"images/fleche_bas.tga" );
     pFlecheBas->setDown( (char*)"images/fleche_bas.tga" );
@@ -389,9 +396,26 @@ void idleStatus()
         bOneFrame = false;
     }
     */
+
+    if (err_old != panelCourbe->get_err() )
+    {
+        err_old = panelCourbe->get_err();
+        char str[255];
+        sprintf( str, "%0.2f", err_old );
+        pErr->changeText( (char*)str );
+    }
+
     
     if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
     if ( bModeManuel != pButtonMode->getVal() )     set_mode();
+
+    if ( bFirst )
+    {
+        logf( (char*)"[WARNING]Change mode " );
+        bFirst = false,
+        set_mode();
+    }
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

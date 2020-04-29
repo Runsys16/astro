@@ -30,7 +30,98 @@
 #define SIZEPT  20
 //#define DEBUG 1
 //#define IDLEGL
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+string t_sHelp1[] =
+{
+	"---- CAMERA ----",
+	"     H\t: Change le nom d une image de la camera",
+	"     h\t: Enregistre une image de la camera courante",
+	"     A\t: enregistre les parametres de la camera",
+	"     a\t: rappelle les parametres de la camera",
+    "" ,    
+	"\t  Brightness\t\tB/b" ,
+	"\t  Contrast\t\tC/c" ,
+	"\t  Saturation\t\tS/s" ,
+	"\t  Hue\t\t\tH/h" ,
+	"\t  Gamma\t\tG/g" ,
+	"\t  Sharpness\t\tZ/z" ,
+	"\t  Exposure\t\tE/e" ,
+	"\t  White balance\tW/w" ,
+	"",
+	"---- MODE NORMAL ----",
+	"ctrl+TAB\t: camera suivante" ,
+	"TAB\t: Change l'affichage des fichiers" ,
+	"     f\t: Ouvrir un fichier image",
+	"     F\t: Active/Desactive la simu",
+	"     i\t: Prend une photo sur le PENTAX",
+	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
+	"     K\t: Active/desactive le son",
+	"     l\t: List les ports /dev + les controles ",
+	"     L\t: List les variables",
+	"     n\t: Affiche/cache les images (F7)",
+	"     N\t: Mode nuit on/off",
+	"     o\t: Ouvre/Ferme la fenetre pleiades",
+	"     p\t: Pause de l'affichage de pleiades",
+	"     P\t: Image suivante",
+	"     q\t: Lance un script python",
+	"     Q\t: Mise en station via polaris",
+	"     r\t: Rappel les mesures de suivi",
+	"     R\t: Test alert BOX",
+	"     W\t: Surveille un repertoire",
+	"     -\t: Toutes les images sont affichees en icones",
+	"",
+	"---- TRANSFORM MATRIX ----",
+	"   a/A\t: Vecteur en ascension droite",
+	"   d/D\t: Vecteur en declinaison",
+	"     m\t: Deplacement à la souris",
+	"     M\t: Calcul la matrice de transformation",
+	"     O\t: Mode souris / mode suivi",
+	"     y\t: Affiche les vecteurs",
+	"",
+	"---- TRACES ----",
+	"     C\t: Lance/arrete l\'enregistrement de trace",
+	"     c\t: Nouvelle trace",
+	"     e\t: Affiche les traces (ctrl+tab)",
+	"     E\t: Supprime la derniere trace",
+	"     z\t: Charge les traces",
+	"     Z\t: Sauve les traces"
+};
+string t_sHelp2[] = 
+{
+	"---- TOUCHE DE FONCTION ----",
+	"    F1\t: Panneau de controle de la camera",
+	"    F2\t: Help",
+	"    F3\t: Panneau de suivi",
+	"    F4\t: Courbe de suivi",
+	"    F5\t: Console de log",
+	"    F6\t: Console arduino",
+	"    F7\t: Affiche/Cache les images",
+	"   F10\t: Mode DEBUG WindowManager",
+	"   F11\t: Charge la prochaine image",
+	"   F12\t: Efface la derniere image", 
+	"",
+	"---- SUIVI ----",
+	"   j/J\t: Change la taille du cercle d'asservissement",
+	"     s\t: Recherche toutes les etoiles",
+	"ctrl+D\t: Efface toutes les etoiles",
+	"     S\t: Lance/Stop le suivi",
+	"   t/T\t: change le temps de correction",
+    "     U\t: Affichage du centre de la camera on/off",
+    "     u\t: Affichage du suivi on/off",
+	"     V\t: Initialise les coordonnees de suivi",
+	"     v\t: Sauvegarde des coordonnees de suivi (fichier .guid)",
+	"     w\t: Centre l'asservissement",
+	"     Y\t: Lance l'asservissement",
+	"",
+	"---- FFT ----",
+	"   g/G\t: Change la valeur du filtre"   ,
+	"     x\t: Affiche/Cache la fft",
+	"     X\t: Choix de l'abcisse ou de l'ordonnée",
+	"",
+	"ctrl+q\t: --- SORTIE DU LOGICIEL ---" 
+};
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -59,6 +150,7 @@ PanelText*          pJoyXY;
 PanelText*          pArduino;
 PanelText*          pStellarium;
 PanelText*          pPas;
+PanelText*          pErr;
 PanelText*          pDeplacement;
 PanelText*          pAD;
 PanelText*          pDC;
@@ -2668,6 +2760,8 @@ static void glutPassiveMotionFunc(int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 void setColor()	
 {
+    logf( (char*)"main::setColor()" );
+
     unsigned long color;
     if (bNuit)                  color = 0xFFFF0000;
     else                        color = 0xFFFFFFFF;
@@ -2959,47 +3053,52 @@ static void CreateStatus()	{
     if ( bPause )   pStatus->changeText((char*)"Pause" );
     else            pStatus->changeText((char*)"-----" );
 
-    pFPS = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-100, 2 );
+    logf((char*)"** CreateStatus()  panelSatuts  %d", width);
+    pFPS = new PanelText( (char*)"0",		            PanelText::NORMAL_FONT, width-100, 2 );
 	panelStatus->add( pFPS );
 
-    pHertz = new PanelText( (char*)"0",		PanelText::NORMAL_FONT, width-150, 2 );
+    pHertz = new PanelText( (char*)"0",		            PanelText::NORMAL_FONT, width-150, 2 );
 	panelStatus->add( pHertz );
 
-    logf((char*)"** CreateStatus()  panelSatuts  %d", width);
-    pArduino = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-280, 2 );
+    pArduino = new PanelText( (char*)"----",		    PanelText::NORMAL_FONT, width-280, 2 );
 	panelStatus->add( pArduino );
 
     pJoyXY = new PanelText( (char*)"Joy(---, ---)",		PanelText::NORMAL_FONT, width-620, 2 );
 	panelStatus->add( pJoyXY );
 
-    pStellarium = new PanelText( (char*)"----",		PanelText::NORMAL_FONT, width-230, 2 );
+    pStellarium = new PanelText( (char*)"----",		    PanelText::NORMAL_FONT, width-230, 2 );
 	panelStatus->add( pStellarium );
 
-    pPas = new PanelText( (char*)"pas:",		PanelText::NORMAL_FONT, width-380, 2 );
+    pPas = new PanelText( (char*)"pas:",		        PanelText::NORMAL_FONT, width-380, 2 );
 	panelStatus->add( pPas );
 
-    pAD = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 60, 2 );
+    pDeplacement = new PanelText( (char*)" ",		    PanelText::NORMAL_FONT, width-410, 2 );
+	panelStatus->add( pDeplacement );
+
+
+
+    pAD = new PanelText( (char*)" ",		    PanelText::NORMAL_FONT, 60, 2 );
     change_ad( fpos_ad );
 	panelStatus->add( pAD );
     pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 200, 2 );
     change_dc( fpos_dc );
 	panelStatus->add( pDC );
 
-    pMode = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 350, 2 );
+    pMode = new PanelText( (char*)"Mode ---",   PanelText::NORMAL_FONT, 350, 2 );
 	panelStatus->add( pMode );
  
+    pErr = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 820, 2 );
+	panelStatus->add( pErr );
+
     pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 850, 2 );
 	panelStatus->add( pAsservi );
-
-    pDeplacement = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, width-410, 2 );
-	panelStatus->add( pDeplacement );
 
 
 	if (bMouseDeplace)              pDeplacement->changeText((char*)"Depl");
     else                            pDeplacement->changeText((char*)"----");
 
-	if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
-    else                            pMode->changeText((char*)"Mode souris");
+	//if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
+    //else                            pMode->changeText((char*)"Mode souris");
 
     if (bCorrection)                pAsservi->changeText((char*)"Asservissemnent");
     else                            pAsservi->changeText((char*)" ");
@@ -3593,7 +3692,7 @@ int main(int argc, char **argv)
     
     CreateAllWindows();
     set_asservissement();
-    set_mode();
+    //set_mode();
     inverse_texture( pButtonSerial,  bPanelSerial,       "arduino" );
     inverse_texture( pButtonStdOut,  bPanelStdOut,       "" );
     inverse_texture( pButtonHelp,    bPanelHelp,         "help" );

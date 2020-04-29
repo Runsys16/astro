@@ -118,7 +118,7 @@ void Pleiade::change_background_camera(void)
         
         panelPreview->setBackground( ptr, w, h, d);
         //panelPreview->setRB( &readBgr );
-        logf((char*)"change_background_pleiade() ptr = %lX", (long)readBgr.ptr);
+        //logf((char*)"change_background_pleiade() ptr = %lX", (long)readBgr.ptr);
         bNewBackground = true;
 
         //panelPreView->setBackground( (char*)sPleiade);
