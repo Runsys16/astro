@@ -14,12 +14,16 @@ PanelCheckBox *     pButtonMode;
 PanelButton *       pFlecheHaut;
 PanelButton *       pFlecheBas;
 
+PanelButton *       pUrgentUp;
+PanelButton *       pUrgentDown;
+
 PanelCheckBox *     pButtonAsserv;
 
 //--------------------------------------------------------------------------------------------------------------------
 double  oldPas = -1.0;
 double  old;
 float   err_old = -1.0;
+float   urg_old = -1.0;
 bool    bFirst = true;
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -99,7 +103,7 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void cb_up_fleche_haut(PanelButton* pPanel)
+void cb_fleche(PanelButton* pPanel)
 {
     char s[20];
     float err = panelCourbe->get_err();
@@ -107,24 +111,45 @@ void cb_up_fleche_haut(PanelButton* pPanel)
     if ( pPanel == pFlecheHaut )
     {
         err /= 0.9;
+        panelCourbe->set_err( err );
+        var.set( "err", err );
+
+        sprintf( s, "+%0.2f", err );
+        panelCourbe->get_pXMax()->changeText( (char*)s );
+        panelCourbe->get_pYMax()->changeText( (char*)s );
+
+        sprintf( s, "-%0.2f", err );
+        panelCourbe->get_pXMin()->changeText( (char*)s );
+        panelCourbe->get_pYMin()->changeText( (char*)s );
     }
     else
+    if ( pPanel == pFlecheBas )
     {
         err *= 0.9;
+        panelCourbe->set_err( err );
+        var.set( "err", err );
+
+        sprintf( s, "+%0.2f", err );
+        panelCourbe->get_pXMax()->changeText( (char*)s );
+        panelCourbe->get_pYMax()->changeText( (char*)s );
+
+        sprintf( s, "-%0.2f", err );
+        panelCourbe->get_pXMin()->changeText( (char*)s );
+        panelCourbe->get_pYMin()->changeText( (char*)s );
+    }
+    else
+    if ( pPanel == pUrgentUp )
+    {
+		fLimitCorrection *= 1.1f;
+        var.set("fLimitCorrection", (float)fLimitCorrection);
+    }
+    else
+    if ( pPanel == pUrgentDown )
+    {
+		fLimitCorrection *= 0.9f;
+        var.set("fLimitCorrection", (float)fLimitCorrection);
     }
 
-    panelCourbe->set_err( err );
-    var.set( "err", err );
-
-    sprintf( s, "+%0.2f", err );
-    panelCourbe->get_pXMax()->changeText( (char*)s );
-    panelCourbe->get_pYMax()->changeText( (char*)s );
-
-    sprintf( s, "-%0.2f", err );
-    panelCourbe->get_pXMin()->changeText( (char*)s );
-    panelCourbe->get_pYMin()->changeText( (char*)s );
-
-	logf( (char*)"Button fleche up() : err=%0.2f", err );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -303,30 +328,30 @@ PanelButton* create_window_button( int i, string tex)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void create_fleches()
+void create_fleches( int x, char* up, char* down, PanelButton* &pUp, PanelButton* &pDown )
 {
-    pFlecheHaut = new PanelButton();
-    panelStatus->add(pFlecheHaut);
+    pUp = new PanelButton();
+    panelStatus->add(pUp);
     
-    pFlecheHaut->setPosAndSize( 800, 2, 10, 8 );
+    pUp->setPosAndSize( x, 2, 10, 8 );
 
-    pFlecheHaut->setUp(   (char*)"images/fleche_haut.tga" );
-    pFlecheHaut->setDown( (char*)"images/fleche_haut.tga" );
-    pFlecheHaut->setOver( (char*)"images/fleche_haut.tga" );
+    pUp->setUp(   up );
+    pUp->setDown( up );
+    pUp->setOver( up );
 
-	pFlecheHaut->setCallBackUp(   cb_up_fleche_haut );
+	pUp->setCallBackUp(   cb_fleche );
 
 
-    pFlecheBas = new PanelButton();
-    panelStatus->add(pFlecheBas);
+    pDown = new PanelButton();
+    panelStatus->add(pDown);
 
-    pFlecheBas->setPosAndSize( 800, 2+8, 10, 8 );
+    pDown->setPosAndSize( x, 2+8, 10, 8 );
 
-    pFlecheBas->setUp(   (char*)"images/fleche_bas.tga" );
-    pFlecheBas->setDown( (char*)"images/fleche_bas.tga" );
-    pFlecheBas->setOver( (char*)"images/fleche_bas.tga" );
+    pDown->setUp(   down );
+    pDown->setDown( down );
+    pDown->setOver( down );
 
-	pFlecheBas->setCallBackUp(   cb_up_fleche_haut );
+	pDown->setCallBackUp(   cb_fleche );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -348,7 +373,8 @@ void create_windows_button()
     pButtonSui      = create_window_check_box( 13, "terre" );
     pButtonRet      = create_window_check_box( 14, "retour" );
     
-    create_fleches();
+    create_fleches( 730, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
+    create_fleches( 780, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -403,6 +429,14 @@ void idleStatus()
         char str[255];
         sprintf( str, "%0.2f", err_old );
         pErr->changeText( (char*)str );
+    }
+
+    if (urg_old != fLimitCorrection )
+    {
+        urg_old = fLimitCorrection;
+        char str[255];
+        sprintf( str, "%0.2f", urg_old );
+        pUrg->changeText( (char*)str );
     }
 
     

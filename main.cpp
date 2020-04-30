@@ -151,6 +151,7 @@ PanelText*          pArduino;
 PanelText*          pStellarium;
 PanelText*          pPas;
 PanelText*          pErr;
+PanelText*          pUrg;
 PanelText*          pDeplacement;
 PanelText*          pAD;
 PanelText*          pDC;
@@ -2881,7 +2882,6 @@ static void CreateResultat()	{
     panelResultat->setVisible(bPanelResultat);
 }
 //--------------------------------------------------------------------------------------------------------------------
-//
 //--------------------------------------------------------------------------------------------------------------------
 int x_help = 0;
 int y_help = 0;
@@ -2894,6 +2894,9 @@ static void addString( string s )
 	panelHelp->add( p );
 	y_help += 15;
 }	
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void addString2( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
@@ -3087,8 +3090,11 @@ static void CreateStatus()	{
     pMode = new PanelText( (char*)"Mode ---",   PanelText::NORMAL_FONT, 350, 2 );
 	panelStatus->add( pMode );
  
-    pErr = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 820, 2 );
+    pErr = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 742, 2 );
 	panelStatus->add( pErr );
+
+    pUrg = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 792, 2 );
+	panelStatus->add( pUrg );
 
     pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 850, 2 );
 	panelStatus->add( pAsservi );
