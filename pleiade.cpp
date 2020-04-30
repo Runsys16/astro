@@ -23,15 +23,15 @@ Pleiade::Pleiade()
     //Camera();
     setName( (char*) "Pleiades" );
     setDevName( (char*) "Pleiades" );
-    vCameraSize.x = 1920;
-    vCameraSize.y = 1080;
-    bFreePtr = false;
-    bFirst = true;
-    bCharged=false;
-    bCharging = false;
-    count_png = 0;
-    plus = 1;
-    bNewBackground = false; 
+    vCameraSize.x   = 1920;
+    vCameraSize.y   = 1080;
+    bFreePtr        = false;
+    bFirst          = true;
+    bCharged        =false;
+    bCharging       = false;
+    count_png       = 0;
+    plus            = 1;
+    bNewBackground  = false; 
 
     charge_background();
     change_background_camera();
@@ -56,6 +56,8 @@ Pleiade::~Pleiade()
 //--------------------------------------------------------------------------------------------------------------------
 void Pleiade::charge_background()
 {
+    //while( bPause && bOneFrame);
+    
     bCharging = true;
 
     readBgr.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, readBgr.w, readBgr.h, readBgr.d );
@@ -117,6 +119,8 @@ void Pleiade::change_background_camera(void)
         d   = readBgr.d;
         
         panelPreview->setBackground( ptr, w, h, d);
+        panelPreview->setRB( &readBgr);
+        panelPreview->update();
         //panelPreview->setRB( &readBgr );
         //logf((char*)"change_background_pleiade() ptr = %lX", (long)readBgr.ptr);
         bNewBackground = true;

@@ -441,11 +441,6 @@ void Camera_mgr::deleteAllStars()
     logf( (char*)"Camera_mgr::findAllStars()" );
     
     pCurrent->getPanelPreview()->getStars()->deleteAllStars();
-    /*
-    pCurrent->getStars()->setView( pCurrent->getPanelPreview() );
-    pCurrent->getStars()->setRB(pCurrent->getRB());
-    pCurrent->getStars()->findAllStars();
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -465,11 +460,6 @@ void Camera_mgr::findAllStars()
     PanelText* p = pCurrent->getPanelNbStars();
     sprintf( t, "%d", pCurrent->getPanelPreview()->getStars()->size() );
     p->changeText( t );
-    /*
-    pCurrent->getStars()->setView( pCurrent->getPanelPreview() );
-    pCurrent->getStars()->setRB(pCurrent->getRB());
-    pCurrent->getStars()->findAllStars();
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

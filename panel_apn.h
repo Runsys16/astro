@@ -9,6 +9,7 @@
 #include "var_mgr.h"
 #include <WindowsManager.h>
 #include "surveillance.h"
+#include "panel_spin_edit_text.h"
 
 
 using namespace std;
@@ -17,13 +18,14 @@ class PanelApn : public PanelWindow
 {
 
 protected:
-    PanelEditText*                  pTime;
-    PanelEditText*                  pIso;
-    PanelEditText*                  pFrames;
-    PanelEditText*                  pTimeOut;
-    PanelEditText*                  pNum;
+    PanelSpinEditText*              pTime;
+    PanelSpinEditText*              pIso;
+    PanelSpinEditText*              pFrames;
+    PanelSpinEditText*              pTimeOut;
+    PanelSpinEditText*              pNum;
 
     string                          sTime;
+    float                           fTime;
     int                             iIso;
     int                             iFrames;
     int                             iTimeOut;
