@@ -1,6 +1,7 @@
 #ifndef PANEL_SPIN_EDIT_TEXT_H
 #define PANEL_SPIN_EDIT_TEXT_H
 
+
 #include "main.h"
 
 
@@ -32,7 +33,7 @@ inline      void        set_max(float f)            { max = f; }
 inline      void        set_step(float f)           { step = f; }                        
 inline      void        set_nb(float f)             { nb = f; }                        
 inline      void        set(float m, float M, float s, float n)
-                        { min = m; max = M; step = s; nb = n; }     
+                        { min = m; max = M+s; step = s; nb = n; }     
                         
             void        compute_pos(int, int);                   
                         

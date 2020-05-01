@@ -42,6 +42,8 @@ public:
     void                            saveValues();
     void                            commande_photo();
     void                            photo();
+    
+virtual void                        displayGL();
 };
 
 

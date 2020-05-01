@@ -26,6 +26,13 @@ PanelSpinEditText::PanelSpinEditText()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::compute_pos( int xm, int ym )
 {
+    VarManager&         var = VarManager::getInstance();
+    if ( var.getb("bNuit") )    pCadran->setColor( 0xffff0000 );
+    else                        pCadran->setColor( 0xffffffff );
+    if ( var.getb("bNuit") )    pBoule->setColor( 0xffff0000 );
+    else                        pBoule->setColor( 0xffffffff );
+
+
     vec2 vm = vec2( xm, ym );
     vec2 v = vm - vCentre;
     v.y *= -1.0;
@@ -34,7 +41,7 @@ void PanelSpinEditText::compute_pos( int xm, int ym )
     angle = RAD2DEG( acos( v.y / norme ) );
     if ( v.x <0.0 )         angle = 360.0 - angle;
     
-    vec2 vBoule = v / norme * 50.0 + vec2( 100.0-10.0, -100.0+10.0 );
+    vec2 vBoule = v / norme * 45.0 + vec2( 100.0-10.0, -100.0+10.0 );
     vBoule.y *= -1;
     pBoule->setPos( vBoule.x, vBoule.y );
 }

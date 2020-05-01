@@ -156,6 +156,18 @@ void PanelCourbe::init_panel()
 
     add( pFilename );
     
+    pFiltreVal = new PanelSpinEditText();
+    pFiltreVal->setPos( x + 20, 0 );
+    char s[50];
+    sprintf( s,"%0.0f", filtre );
+    pFiltreVal->changeText( s );
+    pFiltreVal->setPos( 20, 0 );
+    pFiltreVal->set( 1, 255, 1, 1 );
+    pFiltreVal->set_delta( 20, 8 );
+
+    add( pFiltreVal );
+    
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1011,6 +1023,7 @@ void PanelCourbe::updatePos()
     pCBCourbeY->setPos(     getDX()-120, pCourbeY->getPosY() );
 
     pAffCourbe->setPos(     getDX()-100, pAffCourbe->getPosY() );
+    pFiltreVal->setPos(     getDX()-80,  pFiltreVal->getPosY() );
     //pCBAffCourbe->setPos(   getDX()-120, pAffCourbe->getPosY() );
 
     pAffFFT->setPos(        getDX()-100, pAffFFT->getPosY() );
@@ -1093,7 +1106,10 @@ void PanelCourbe::updatePos()
 void PanelCourbe::clickLeft( int xm, int ym )
 {
     logf( (char*)"PanelCourbe::clickLeft( %d, %d )", xm, ym );
-
+    if ( pFiltreVal->isMouseOver(xm, ym ) )
+    {
+        logf( (char*)"pFiltreVal" );
+    }
     xm_svg = sc2winX(xm);
     ym_svg = sc2winX(ym);
     

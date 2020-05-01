@@ -19,8 +19,13 @@
 #include "console.h"
 #include "var_mgr.h"
 #include "timer.h"
+#include "panel_spin_edit_text.h"
+
+
 
 using namespace std;
+class PanelSpinEditText;
+
 
 typedef complex<float> CComplex;
 typedef valarray<CComplex> CArray;
@@ -114,6 +119,7 @@ private:
     int                 nb;
 
     PanelText*          pAffCourbe;
+    PanelSpinEditText*  pFiltreVal;
     PanelCheckBox*      pCBAffCourbe;
     bool                bCBAffCourbe;
     

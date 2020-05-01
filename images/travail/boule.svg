@@ -10,13 +10,13 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="257.81137"
-   height="255.35762"
-   viewBox="0 0 241.69816 239.39777"
+   width="79.697327mm"
+   height="78.988976mm"
+   viewBox="0 0 282.3921 279.8822"
    id="svg2"
    version="1.1"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="cadran.svg">
+   sodipodi:docname="boule.svg">
   <defs
      id="defs4">
     <linearGradient
@@ -35,7 +35,7 @@
        inkscape:collect="always"
        xlink:href="#pattern1697"
        id="pattern1708"
-       patternTransform="matrix(0.93749992,0,0,0.93749992,208.13497,341.88119)" />
+       patternTransform="matrix(0.93749992,0,0,0.93749992,187.81156,322.34225)" />
     <pattern
        patternUnits="userSpaceOnUse"
        width="25.192467"
@@ -130,9 +130,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.6145186"
-     inkscape:cx="158.33297"
-     inkscape:cy="141.69694"
+     inkscape:zoom="1.141637"
+     inkscape:cx="192.49335"
+     inkscape:cy="214.62405"
      inkscape:document-units="px"
      inkscape:current-layer="layer7"
      showgrid="false"
@@ -147,22 +147,21 @@
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:snap-to-guides="true"
-     inkscape:snap-global="true"
+     inkscape:snap-global="false"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:snap-bbox="false"
-     units="px">
+     inkscape:snap-bbox="false">
     <sodipodi:guide
-       position="120.92168,119.69892"
+       position="141.17249,140.64439"
        orientation="0,1"
-       id="guide1681"
+       id="guide4178"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="120.92168,119.69892"
+       position="141.17249,140.64439"
        orientation="1,0"
-       id="guide1683"
+       id="guide4180"
        inkscape:locked="false" />
   </sodipodi:namedview>
   <metadata
@@ -182,7 +181,7 @@
      id="layer5"
      inkscape:label="Grille"
      style="display:none"
-     transform="translate(-209.15092,-342.66333)">
+     transform="translate(-188.82751,-323.12439)">
     <rect
        style="fill:url(#pattern1708);stroke:none;stroke-width:0.99999994"
        width="746.96094"
@@ -196,7 +195,7 @@
      id="layer3"
      inkscape:label="fond"
      style="display:inline"
-     transform="translate(-209.15092,-342.66333)">
+     transform="translate(-188.82751,-323.12439)">
     <path
        style="opacity:1;fill:url(#linearGradient1765);fill-opacity:1;stroke:none;stroke-width:4.6875;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        clip-path="none"
@@ -216,7 +215,7 @@
      id="layer4"
      inkscape:label="rebord"
      style="display:inline"
-     transform="translate(-209.15092,-342.66333)">
+     transform="translate(-188.82751,-323.12439)">
     <g
        inkscape:groupmode="layer"
        id="layer8"
@@ -242,8 +241,8 @@
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="boule"
-     style="display:none"
-     transform="translate(-209.15092,-342.66333)">
+     style="display:inline"
+     transform="translate(-188.82751,-323.12439)">
     <circle
        style="opacity:1;fill:url(#linearGradient1789);fill-opacity:1;stroke:none;stroke-width:4.6875;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path1781"
@@ -256,12 +255,12 @@
      id="layer7"
      inkscape:label="noir"
      style="display:inline"
-     transform="translate(-209.15092,-342.66333)">
+     transform="translate(-188.82751,-323.12439)">
     <ellipse
        style="display:inline;opacity:0.46700003;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4.6875;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path872-3"
-       cx="330"
-       cy="462.36221"
+       cx="301.25839"
+       cy="513.27594"
        rx="117.09076"
        ry="115.79462" />
   </g>
@@ -270,7 +269,7 @@
      id="layer2"
      inkscape:label="Calque 2"
      style="display:inline"
-     transform="translate(-209.15092,-342.66333)">
+     transform="translate(-188.82751,-323.12439)">
     <g
        inkscape:label="Calque 1"
        inkscape:groupmode="layer"

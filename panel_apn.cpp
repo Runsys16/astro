@@ -70,7 +70,7 @@ PanelApn::PanelApn()
     p++;
 	add( new PanelText( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pNum = new PanelSpinEditText();
-    pNum->set( 1, 1000, 1 , 1 );
+    pNum->set( 1, 200, 1 , 1 );
     pNum->set_delta( 20, 8 );
     pNum->changeText( "0" );
     pNum->setPos( x+dx, p*dy );
@@ -185,7 +185,7 @@ bool PanelApn::keyboard(char key, int x, int y)
 
     //logf( (char*)"PanelApn::keyboard(%d) %c", key, key );
 
-    if (   0 <= key &&  key <  32  )                wm.keyboardFunc( key, x, y);
+    //if (   0 <= key &&  key <  32  )                wm.keyboardFunc( key, x, y);
     if (        key ==  '.'        )                wm.keyboardFunc( key, x, y);
     if ( '0' <= key &&  key <= '9' )                wm.keyboardFunc( key, x, y);
     if ( ' ' <= key &&  key <= 126 )                return true;
@@ -195,20 +195,20 @@ bool PanelApn::keyboard(char key, int x, int y)
     case 27:
         {
         logf( (char*)"Echappe" );
+        wm.stopKeyboard();
         setVisible( false );
         wm.changeFocus(NULL);
         supCallBacks();
-        wm.stopKeyboard();
         }
         return false;
     case '\r':
         {
         logf( (char*)"Touche Entree" );
+        wm.stopKeyboard();
         setVisible( false );
         wm.changeFocus(NULL);
         saveValues();
         supCallBacks();
-        wm.stopKeyboard();
         photo();
         }
         return true;
@@ -290,6 +290,26 @@ void PanelApn::photo()
 
     thread( &PanelApn::commande_photo, this ).detach();
     Surveillance::getInstance().start(dir);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelApn::displayGL()
+{
+    VarManager&         var = VarManager::getInstance();
+    unsigned int color; 
+    if ( var.getb("bNuit") )        color = 0xffff0000;
+    else                            color = 0xffffffff;
+    
+    setColor( color );
+    pTime->setColor( color );
+    pIso->setColor( color );
+    pFrames->setColor( color );
+    pTimeOut->setColor( color );
+    pNum->setColor( color );
+    
+    
+    PanelWindow::displayGL();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
