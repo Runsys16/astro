@@ -62,11 +62,14 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
     compute_pos( xm, ym );
     //logf( (char*)"  (%0.2f, %0.2f)", v.x, v.y );
     //logf( (char*)"  angle = %0.2f", angle );
-    val = (max - min) / 360.0 * angle + min;
+    float new_val = (max - min) / 360.0 * angle + min;
+
+    val = new_val - fmod( new_val, step );
+    
     //logf( (char*)"  val = %0.2f", val );
     
     char s[50];
-    sprintf( s, "%0.2f", val );
+    sprintf( s, "%0.0f", val );
     changeText( (char*)s );
 
  	WindowsManager&     wm  = WindowsManager::getInstance();

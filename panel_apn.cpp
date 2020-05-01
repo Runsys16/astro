@@ -43,7 +43,7 @@ PanelApn::PanelApn()
     p++;
 	add( new PanelText( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pIso = new PanelSpinEditText();
-    pIso->set( 100, 3200, 1, 1 );
+    pIso->set( 100, 3200, 100, 1 );
     pIso->set_delta( 20, 8 );
     pIso->changeText( "800" );
     pIso->setPos( x+dx, p*dy );
@@ -200,7 +200,7 @@ bool PanelApn::keyboard(char key, int x, int y)
         supCallBacks();
         wm.stopKeyboard();
         }
-        return true;
+        return false;
     case '\r':
         {
         logf( (char*)"Touche Entree" );
