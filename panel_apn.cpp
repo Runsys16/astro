@@ -35,6 +35,7 @@ PanelApn::PanelApn()
 	add( new PanelText( (char*)"Temps (s)\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
     pTime = new PanelSpinEditText();
     pTime->set( 0, 60*15, 1, 1 );
+    pTime->set_delta( 20, 8 );
     pTime->changeText( "200" );
     pTime->setPos( x+dx, p*dy );
     pTime->setSize( 200, dy );
@@ -43,6 +44,7 @@ PanelApn::PanelApn()
 	add( new PanelText( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pIso = new PanelSpinEditText();
     pIso->set( 100, 3200, 1, 1 );
+    pIso->set_delta( 20, 8 );
     pIso->changeText( "800" );
     pIso->setPos( x+dx, p*dy );
     pIso->setSize( 200, dy );
@@ -51,6 +53,7 @@ PanelApn::PanelApn()
 	add( new PanelText( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pFrames = new PanelSpinEditText();
     pFrames->set( 0, 200, 1, 1 );
+    pFrames->set_delta( 20, 8 );
     pFrames->changeText( "1" );
     pFrames->setPos( x+dx, p*dy );
     pFrames->setSize( 200, dy );
@@ -59,6 +62,7 @@ PanelApn::PanelApn()
 	add( new PanelText( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pTimeOut = new PanelSpinEditText();
     pTimeOut->set( 1, 10, 1, 1);
+    pTimeOut->set_delta( 20, 8 );
     pTimeOut->changeText( "3" );
     pTimeOut->setPos( x+dx, p*dy );
     pTimeOut->setSize( 200, dy );
@@ -67,6 +71,7 @@ PanelApn::PanelApn()
 	add( new PanelText( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pNum = new PanelSpinEditText();
     pNum->set( 1, 1000, 1 , 1 );
+    pNum->set_delta( 20, 8 );
     pNum->changeText( "0" );
     pNum->setPos( x+dx, p*dy );
     pNum->setSize( 200, dy );
