@@ -132,6 +132,8 @@ PanelCheckBox* PanelCourbe::init_check_box( int x, int y )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::init_panel()
 {
+	WindowsManager&     wm  = WindowsManager::getInstance();
+
     int x = 800;
     int y = 0;
     int dy = 16;
@@ -157,11 +159,11 @@ void PanelCourbe::init_panel()
     add( pFilename );
     
     pFiltreVal = new PanelSpinEditText();
-    pFiltreVal->setPos( x + 20, 0 );
+    pFiltreVal->setPosAndSize( x -120, 0, 80, 20 );
     char s[50];
     sprintf( s,"%0.0f", filtre );
     pFiltreVal->changeText( s );
-    pFiltreVal->setPos( 20, 0 );
+    //pFiltreVal->setPos( 20, 0 );
     pFiltreVal->set( 1, 255, 1, 1 );
     pFiltreVal->set_delta( 20, 8 );
 
@@ -962,6 +964,11 @@ void PanelCourbe::displayGL(void)
     if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
     else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
 
+    unsigned int color; 
+    if ( var.getb("bNuit") )        color = 0xffff0000;
+    else                            color = 0xffffffff;
+    
+    pFiltreVal->setColor( color );
 
 
     glEchelle();
@@ -1023,7 +1030,8 @@ void PanelCourbe::updatePos()
     pCBCourbeY->setPos(     getDX()-120, pCourbeY->getPosY() );
 
     pAffCourbe->setPos(     getDX()-100, pAffCourbe->getPosY() );
-    pFiltreVal->setPos(     getDX()-80,  pFiltreVal->getPosY() );
+    //logf( (char*)"setPos %d, %d ", getDX()-180,  pAffCourbe->getPosY() );
+    pFiltreVal->setPos(     getDX()-55,  pAffCourbe->getPosY() );
     //pCBAffCourbe->setPos(   getDX()-120, pAffCourbe->getPosY() );
 
     pAffFFT->setPos(        getDX()-100, pAffFFT->getPosY() );
@@ -1078,7 +1086,8 @@ void PanelCourbe::updatePos()
     //--------------------------------------------------------------    
     if ( filtre_old != filtre )
     {
-        sprintf( s, (char*)"Filtre = %d", (int)round((float)nb/filtre) );
+        //sprintf( s, (char*)"Filtre :", (int)round((float)nb/filtre) );
+        sprintf( s, (char*)"Filtre :" );
         pAffCourbe->changeText( s, true );
     }
     //--------------------------------------------------------------    
@@ -1106,7 +1115,7 @@ void PanelCourbe::updatePos()
 void PanelCourbe::clickLeft( int xm, int ym )
 {
     logf( (char*)"PanelCourbe::clickLeft( %d, %d )", xm, ym );
-    if ( pFiltreVal->isMouseOver(xm, ym ) )
+    if ( pFiltreVal->isMouseOver(xm, ym ) != NULL )
     {
         logf( (char*)"pFiltreVal" );
     }
@@ -1117,6 +1126,7 @@ void PanelCourbe::clickLeft( int xm, int ym )
     decal_y_svg = decal_y;
 
     build_unites_text();
+    PanelWindow::clickLeft( xm, ym );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

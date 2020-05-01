@@ -24,7 +24,7 @@
 
 
 using namespace std;
-class PanelSpinEditText;
+//class PanelSpinEditText;
 
 
 typedef complex<float> CComplex;

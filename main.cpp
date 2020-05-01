@@ -2604,7 +2604,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 
 
 
-	WindowsManager::getInstance().keyboardSpecialFunc( key, x, y);
+	//WindowsManager::getInstance().keyboardSpecialFunc( key, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
     onTop();
 }
