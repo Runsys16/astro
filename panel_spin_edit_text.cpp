@@ -20,6 +20,15 @@ PanelSpinEditText::PanelSpinEditText()
     pBoule->setPosAndSize( 55, 55, 20, 20 );
 
     delta_x = delta_y = 0;
+    pVal = NULL;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::set_enum( vector<float> t )
+{
+    t_val = t;
+    nb = t.size();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -44,6 +53,23 @@ void PanelSpinEditText::compute_pos( int xm, int ym )
     vec2 vBoule = v / norme * 45.0 + vec2( 100.0-10.0, -100.0+10.0 );
     vBoule.y *= -1;
     pBoule->setPos( vBoule.x, vBoule.y );
+
+    //--------------------------------------
+    if ( t_val.size() == 0 )
+    {
+        float new_val = (max - min) / 360.0 * angle + min;
+        val = new_val - fmod( new_val, step );
+    }
+    //--------------------------------------
+    else
+    {
+        float new_val = nb / 360.0 * angle;
+        int i = new_val;
+        val = t_val[i];
+    }    
+    //--------------------------------------
+    //logf( (char*)"PanelSpinEditText::compute_pos()  val = %0.2f", val ); 
+    if ( pVal!= NULL )          *pVal = val;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -69,9 +95,6 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
     compute_pos( xm, ym );
     //logf( (char*)"  (%0.2f, %0.2f)", v.x, v.y );
     //logf( (char*)"  angle = %0.2f", angle );
-    float new_val = (max - min) / 360.0 * angle + min;
-
-    val = new_val - fmod( new_val, step );
     
     //logf( (char*)"  val = %0.2f", val );
     
@@ -90,6 +113,8 @@ void PanelSpinEditText::releaseLeft( int xm, int ym )
 {
     logf( (char*)"PanelSpinEditText::releaseLeft(%d, %d)", xm, ym );
     pCadran->setVisible( false );
+
+    if ( pVal!= NULL )          *pVal = val;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -98,10 +123,17 @@ void PanelSpinEditText::updatePos()
 {
     //logf( (char*)"PanelSpinEditText::updatePos()" );
     PanelEditText::updatePos();
+    /*
     vCentre.x = (float)x_raw - (float)dx / 2.0 + (float)delta_x;
     vCentre.y = (float)y_raw - (float)dy / 2.0 + (float)delta_y;
+
+    //pCadran->setPos( x_raw - 100 + delta_x, y_raw - 100 + delta_y );
+    
     vCentre.x = (float)x_raw;// - (float)dx / 2.0;
     vCentre.y = (float)y_raw;// - (float)dy / 2.0;
+    */
+    vCentre.x = (float)x_raw  + delta_x;
+    vCentre.y = (float)y_raw  + delta_y;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

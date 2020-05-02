@@ -24,7 +24,7 @@
 
 
 using namespace std;
-//class PanelSpinEditText;
+class PanelSpinEditText;
 
 
 typedef complex<float> CComplex;
@@ -120,6 +120,7 @@ private:
 
     PanelText*          pAffCourbe;
     PanelSpinEditText*  pFiltreVal;
+    float               fVal;
     PanelCheckBox*      pCBAffCourbe;
     bool                bCBAffCourbe;
     

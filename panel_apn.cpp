@@ -20,6 +20,7 @@ PanelApn::PanelApn()
 
     wm.add(this);
     setExtraString( "panelApn" );
+    setSize( 160, 200 );
     
     setPos( 1000, 200 );
     
@@ -38,16 +39,20 @@ PanelApn::PanelApn()
     pTime->set_delta( 20, 8 );
     pTime->changeText( "200" );
     pTime->setPos( x+dx, p*dy );
-    pTime->setSize( 200, dy );
+    pTime->setSize( 160-dx, dy );
     pTime->setExtraString( "pTime" );
     p++;
 	add( new PanelText( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pIso = new PanelSpinEditText();
     pIso->set( 100, 3200, 100, 1 );
     pIso->set_delta( 20, 8 );
+    
+    vector<float> t_iso{ 100, 200, 400, 800, 1600 };
+    pIso->set_enum( t_iso );
+
     pIso->changeText( "800" );
     pIso->setPos( x+dx, p*dy );
-    pIso->setSize( 200, dy );
+    pIso->setSize( 160-dx, dy );
     pIso->setExtraString( "pIso" );
     p++;
 	add( new PanelText( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
@@ -56,7 +61,7 @@ PanelApn::PanelApn()
     pFrames->set_delta( 20, 8 );
     pFrames->changeText( "1" );
     pFrames->setPos( x+dx, p*dy );
-    pFrames->setSize( 200, dy );
+    pFrames->setSize( 160-dx, dy );
     pFrames->setExtraString( "pFrames" );
     p++;
 	add( new PanelText( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
@@ -65,7 +70,7 @@ PanelApn::PanelApn()
     pTimeOut->set_delta( 20, 8 );
     pTimeOut->changeText( "3" );
     pTimeOut->setPos( x+dx, p*dy );
-    pTimeOut->setSize( 200, dy );
+    pTimeOut->setSize( 160-dx, dy );
     pTimeOut->setExtraString( "pTimeOut" );
     p++;
 	add( new PanelText( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
@@ -74,7 +79,7 @@ PanelApn::PanelApn()
     pNum->set_delta( 20, 8 );
     pNum->changeText( "0" );
     pNum->setPos( x+dx, p*dy );
-    pNum->setSize( 200, dy );
+    pNum->setSize( 160-dx, dy );
     pNum->setExtraString( "pNum" );
     p++;
     
@@ -199,6 +204,7 @@ bool PanelApn::keyboard(char key, int x, int y)
         setVisible( false );
         wm.changeFocus(NULL);
         supCallBacks();
+        saveValues();
         }
         return false;
     case '\r':

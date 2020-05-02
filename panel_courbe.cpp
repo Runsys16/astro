@@ -73,6 +73,7 @@ PanelCourbe::PanelCourbe()
     aff_courbe_old  = -1;
     iDisplayfft_old = -1;//Displayfft_old;
     filtre_old      = -1;
+    fVal            = 256.0 / filtre;
 
     update_err();
 
@@ -160,12 +161,15 @@ void PanelCourbe::init_panel()
     
     pFiltreVal = new PanelSpinEditText();
     pFiltreVal->setPosAndSize( x -120, 0, 80, 20 );
+
     char s[50];
-    sprintf( s,"%0.0f", filtre );
+    sprintf( s,"%0.0f", 256.0/filtre );
     pFiltreVal->changeText( s );
-    //pFiltreVal->setPos( 20, 0 );
-    pFiltreVal->set( 1, 255, 1, 1 );
+
+    //  Valeur de l'edition dimension de la
+    pFiltreVal->set( 1, 128, 1, 1 );
     pFiltreVal->set_delta( 20, 8 );
+    pFiltreVal->set_pVal( &fVal );
 
     add( pFiltreVal );
     
@@ -1084,13 +1088,19 @@ void PanelCourbe::updatePos()
         else                            pAffFFT->setColor( (unsigned long)0x8000ff00 );
     }
     //--------------------------------------------------------------    
+    filtre = (float)nb / fVal;
+    
     if ( filtre_old != filtre )
     {
-        //sprintf( s, (char*)"Filtre :", (int)round((float)nb/filtre) );
         sprintf( s, (char*)"Filtre :" );
         pAffCourbe->changeText( s, true );
+
+        VarManager::getInstance().set( "filtre", filtre );
+        //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
     }
     //--------------------------------------------------------------    
+    //logf( (char*)"filtre %0.2f nb %d  fVal %0.2f)", filtre, nb, fVal );
+
     aff_courbe_old = aff_courbe;
     iDisplayfft_old = iDisplayfft;
     filtre_old = filtre;
@@ -1098,7 +1108,6 @@ void PanelCourbe::updatePos()
 
     int l = pFilename->getTextLenght();
     pFilename->setPos( (getDX()-l)/2, 0 );
-
 
     /*
     PanelText*          pAffCourbe;
@@ -1365,6 +1374,7 @@ void PanelCourbe::build_fft3()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::sinusoide_fft3(CArray& x, float* t)
 {
+    
     int n = round((float)nb/filtre);
     for( int i=0+n; i<nb-n; i++ )
     {
