@@ -153,6 +153,14 @@ void PanelCamera::setRB(rb_t* p)
 {
     pReadBgr = p;
     stars.setRB(p);
+    update_stars();
+
+    /*
+    panelZoom->setBackground( pView->getBackground() );
+    panelZoom->setTextWidth(RB->w );
+    panelZoom->setTextHeight(RB->h );
+    */
+
     //logf((char*)"PanelCamera::setRB() w=%d", pReadBgr->w);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -165,12 +173,13 @@ vec2* PanelCamera::getSuivi()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::update()
+void PanelCamera::update_stars()
 {
-    if  ( pReadBgr==NULL )      logf( (char*)"PanelCamera::update()   pointeur RB NULL" );
+    if  ( pReadBgr==NULL )      logf( (char*)"PanelCamera::update_stars()   pointeur RB NULL" );
     //else            logf((char*)"PanelCamera::update() w=%d", pReadBgr->w);
     
-    stars.update( getX(), getY(), this, pReadBgr );
+    stars.update_stars( getX(), getY(), this, pReadBgr );
+    //logf((char*)"PanelCamera::update_stars() dx=%d dy=%d", getX(), getY() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -616,9 +625,9 @@ void PanelCamera::releaseLeft(int xm, int ym)
     if ( pReadBgr == NULL )     { logf( (char*)" return Pointeur NULL" ); return; }
     
     log_tab(true);
-    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w );
+    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w.load() );
     
-    float e = (float)getDX() / (float)pReadBgr->w; 
+    float e = (float)getDX() / (float)pReadBgr->w.load(); 
     //float e = (float)getDX() / (float)1920.0; 
     
     int xx = ((float)xm-(float)getX()) / e;
@@ -648,7 +657,7 @@ void PanelCamera::releaseMiddle(int xm, int ym)
     if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
     log_tab(true);
         
-    logf( (char*)"panelCamera->getDX()=%d pReadBgr->w=%0.2f", getDX(), pReadBgr->w );
+    logf( (char*)"panelCamera->getDX()=%d pReadBgr->w=%0.2f", getDX(), pReadBgr->w.load() );
     
     //float e = (float)getDX() / (float)pReadBgr->w; 
     float e = (float)getDX() / (float)1920.0; 

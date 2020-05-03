@@ -56,7 +56,7 @@ virtual    ~Camera();
     void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
     void                        CreateControl();
 
-    void                        update();
+//    void                        update();
 
     virtual void                start_thread();
     virtual void                CreatePreview();

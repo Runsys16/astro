@@ -15,6 +15,7 @@
 #include <getopt.h>
 #include <thread>
 #include <time.h>
+#include <atomic>
 
 #include <WindowsManager.h>
 #include "button_callback.h"
@@ -61,18 +62,18 @@ struct sky_point
 
 struct readBackground
 {
-    unsigned int            w;
-    unsigned int            h;
-    unsigned int            d;
-    GLubyte*                ptr;
+    atomic<unsigned int>    w;
+    atomic<unsigned int>    h;
+    atomic<unsigned int>    d;
+    atomic<GLubyte*>        ptr;
 };
 typedef struct readBackground       rb_t;
 
 #ifndef MAIN_CPP
     extern bool                     bNuit;
     extern bool                     bFindStar;
-    extern bool                     bOneFrame;
-    extern bool                     bPause;
+    extern atomic<bool>             bOneFrame;
+    extern atomic<bool>             bPause;
     extern bool                     bPanelCourbe;
     extern bool                     bSimu;
     extern bool                     bMouseDeplace;

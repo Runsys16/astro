@@ -328,7 +328,12 @@ void Capture::create_preview()	{
     }
     else
     {
-        readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+        //readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
+        unsigned int w, h, d;
+        readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, w, h, d );
+        readBgr.w = w;
+        readBgr.h = h,
+        readBgr.d = d;
         //usleep(1000000);
     }
 
@@ -339,8 +344,8 @@ void Capture::create_preview()	{
     }
     else
     {
-	    logf( (char*)"setBackground( ..., %d, %d, %d)", readBgr.w, readBgr.h, readBgr.d);
-        panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+	    logf( (char*)"setBackground( ..., %d, %d, %d)", readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
+        panelPreview->setBackground( readBgr.ptr, readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
         panelPreview->setRB( &readBgr );
     }
     //panelPreview->findAllStar();

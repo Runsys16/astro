@@ -114,6 +114,10 @@ void Star::setRB(rb_t* p)
         ptr =           p->ptr;
         width =         p->w;
         height =        p->h;
+
+        panelZoom->setBackground( pView->getBackground() );
+        panelZoom->setTextWidth(RB->w );
+        panelZoom->setTextHeight(RB->h );
     }
     else
     {

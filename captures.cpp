@@ -66,12 +66,6 @@ void Captures::update()
 {
     //logf( (char*)"Captures::update() ..." );
     return;
-    
-    int nb = captures.size();
-
-    for( int n=0; n<nb; n++ )
-        captures[n]->update();
-
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

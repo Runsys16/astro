@@ -34,7 +34,7 @@ public:
     void                    updateRB(rb_t*);
     vec2*                   getSuivi();
 
-    void                    update(int, int, PanelSimple*, rb_t*);
+    void                    update_stars(int, int, PanelSimple*, rb_t*);
     void                    displayGL();
     
     void                    selectLeft(int, int);

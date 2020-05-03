@@ -134,12 +134,12 @@ void PanelCapture::setEchelle(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::update()
+void PanelCapture::update_stars()
 {
     if  ( pReadBgr==NULL )      logf( (char*)"PanelCapture::update()   pointeur RB NULL" );
 
     //Panel* pParent = getParent();
-    stars.update( getX(), getY(), this, pReadBgr );
+    stars.update_stars( getX(), getY(), this, pReadBgr );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ void PanelCapture::updatePos()
     setSize( fDX*ech_user, fDY*ech_user );
     setCent();
 
-    stars.update(getParent()->getX(), getParent()->getY(), this, NULL );
+    //stars.update_stars(getParent()->getX(), getParent()->getY(), this, NULL );
 
     PanelSimple::updatePos();
 }
@@ -541,9 +541,9 @@ void PanelCapture::printObjet()
     if ( pReadBgr == NULL )    {
         logf( (char*)"   pReadBgr = NULL" );
     } else {
-        logf( (char*)"  this->pReadBgr->w %d", pReadBgr->w );
-        logf( (char*)"  this->pReadBgr->h %d", pReadBgr->h );
-        logf( (char*)"  this->pReadBgr->d %d", pReadBgr->d );
+        logf( (char*)"  this->pReadBgr->w %d", pReadBgr->w.load() );
+        logf( (char*)"  this->pReadBgr->h %d", pReadBgr->h.load() );
+        logf( (char*)"  this->pReadBgr->d %d", pReadBgr->d.load() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -218,18 +218,6 @@ void Camera::start_thread()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::update()
-{
-    if ( readBgr.ptr != NULL )
-    {
-        //logf((char*)"Camera::update() w=%d h=%d d=%d ", readBgr.w, readBgr.h, readBgr.d);
-        panelPreview->setRB( &readBgr );
-        panelPreview->update();
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void Camera::CreatePreview()	{
     logf((char*)"CreatePreview ------------- %s", getName() );
     log_tab(true);
@@ -455,7 +443,7 @@ void Camera::threadExtractImg()
 void Camera::change_background(void)
 {
 
-    //log((char*)"START Camera::change_background_camera()");
+    //log((char*)"START Camera::change_background()");
     if ( vCameraSize.x == -1 )
     {
         vCameraSize.x = getWidth();
@@ -467,7 +455,7 @@ void Camera::change_background(void)
     //bFreePtr = false;
     if ( bCharging )
     {
-        //log((char*)"START Camera::change_background_camera()");
+        //log((char*)"START Camera::change_background()");
         panelPreview->deleteBackground();
         try
         {
@@ -477,7 +465,7 @@ void Camera::change_background(void)
         }
         catch(std::exception const& e)
         {
-            log((char*)"ERROR --- Camera::change_background_camera()");
+            log((char*)"ERROR --- Camera::change_background()");
             cerr << "ERREUR : " << e.what() << endl;
         }
 
@@ -495,14 +483,14 @@ void Camera::change_background(void)
                 previousTime = t;
                 nb_images = 0;
             }
-            //logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName() );
+            //logf((char*)"Camera::change_background()   Hz=%.0f %s", hz, getName() );
         }
         else
             previousTime = t;
         
         bCharging = false;
      }
-    //log((char*)"END   Camera::change_background_camera()");
+    //log((char*)"END   Camera::change_background()");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

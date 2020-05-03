@@ -25,6 +25,7 @@
 #include <syslog.h>
 #include <setjmp.h>
 #include <jpeglib.h>
+#include <atomic>
 
 using namespace std;
 

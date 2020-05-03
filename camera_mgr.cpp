@@ -235,13 +235,6 @@ void Camera_mgr::update()
     if ( pCurrent )            
         WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
     
-
-    int nb = pCameras.size();
-
-    for( int i=0; i<nb; i++ )
-    {
-        pCameras[i]->update();
-    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

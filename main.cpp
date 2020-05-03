@@ -2718,7 +2718,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    xClick = X;
 	    yClick = Y;
 
-	    logf( (char*)"Click Down Click(%d, %d)  vCamera (%dx%d)" , xClick, yClick, mgr.getRB()->w, mgr.getRB()->h );
+	    logf( (char*)"Click Down Click(%d, %d)  vCamera (%dx%d)" , xClick, yClick, mgr.getRB()->w.load(), mgr.getRB()->h.load() );
 	    
 	} 
     else

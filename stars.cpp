@@ -453,7 +453,7 @@ void Stars::selectStar( int xp, int yp)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Stars::update( int DX, int DY, PanelSimple* pview, rb_t* rb)
+void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb)
 {
     //logf( (char*)"Stars::update()  --- DEB ---" );
     
@@ -465,7 +465,7 @@ void Stars::update( int DX, int DY, PanelSimple* pview, rb_t* rb)
 
     //PanelCamera * panelCamera = dynamic_cast<PanelCamera*>(pview);
     //if ( panelCamera->getRB() != rb )
-        pView->setBackground( rb->ptr, rb->w, rb->h, rb->d );
+    //    pView->setBackground( rb->ptr, rb->w, rb->h, rb->d );
 
     
     dx = DX;
@@ -580,6 +580,8 @@ void Stars::displayGL()
     //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
     //else                            glColor4f( gris, gris, gris, 0.2 );
 
+    if ( RB == NULL )        return;
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
@@ -590,7 +592,7 @@ void Stars::displayGL()
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
 
-    float e = (float)pView->getX() / (float)RB->w; 
+    float e = (float)pView->getX() / (float)RB->w.load(); 
     
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )

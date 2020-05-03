@@ -35,7 +35,7 @@ public:
     PanelCamera();
     
     virtual void		idle(float);
-    virtual void		update();
+    virtual void		update_stars();
             void		displaySuivi();
             void		displayCentre();
     virtual void		displayGL();

@@ -32,15 +32,14 @@ Pleiade::Pleiade()
     plus            = 1;
     bNewBackground  = false; 
 
+    setDevName( (char*)"/dev/pleiades" );
     //charge_background();
     //change_background_camera();
     
     if( bPause )                bOneFrame = true;
 
     //bFreePtr = true;
-
-    thread_chargement = std::thread(&Pleiade::charge_background, this);
-    thread_chargement.detach();
+    start_thread();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -78,10 +77,15 @@ void Pleiade::charge_background()
         if ( ( !bPause || bOneFrame ) && bCharging == false ) 
         {    
             //logf((char*)"[thread Pleiade::charge_background()] lit une frame");
-            readBgr.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, readBgr.w, readBgr.h, readBgr.d );
-
+            unsigned int w, h, d;
+            readBgr.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, w, h, d );
+            readBgr.w = w;
+            readBgr.h = h,
+            readBgr.d = d;
+            
             bCharging = true;
             bFreePtr = true;
+            bOneFrame = false;
             //logf((char*)"[thread Pleiade::charge_background()] ptr = %lX", readBgr.ptr);
         }
         
@@ -89,20 +93,6 @@ void Pleiade::charge_background()
 
     logf( (char*)"[WARNING] [thread Pleiade::charge_background()] Fin du thread Pleiade::charge_background" );
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Pleiade::update(void)
-{
-//    logf((char*)"Camera::update() -------------");
-    if ( readBgr.ptr != NULL )
-    {
-        panelPreview->setRB( &readBgr );
-        panelPreview->update();
-    }
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -110,9 +100,9 @@ void Pleiade::change_background(void)
 {
     //logf((char*)"Pleiade::change_background()");
     
-    //if ( bCharging && !bFirst ) 
     if ( bCharging ) 
     {
+        logf((char*)"Pleiade::change_background()");
         //logf((char*)"|  lecture d'une frame" );
         
         panelPreview->deleteBackground();
@@ -134,31 +124,33 @@ void Pleiade::change_background(void)
         unsigned int w, h, d;
 
 
-        ptr = readBgr.ptr;
-        w   = readBgr.w;
-        h   = readBgr.h;
-        d   = readBgr.d;
+        ptr = readBgr.ptr.load();
+        w   = readBgr.w.load();
+        h   = readBgr.h.load();
+        d   = readBgr.d.load();
         
         //logf((char*)"|  change le background de panelPreview" );
         panelPreview->setBackground( ptr, w, h, d);
         panelPreview->setRB( &readBgr);
-        panelPreview->update();
 
         bNewBackground = true;
 
-        char num[] = "000";
+        char num[55];
         
         sprintf( num, "%03d", count_png );
         string titre = "suivi-20190103-" + string(num) + ".png";
+        panelPreview->setExtraString( string(titre) );
         
-        pCamFilename->changeText( titre.c_str() );
+        pCamFilename->changeText( (char*)titre.c_str() );
+
         sPleiade = sPleiades + string(num) + ".png";
 
         count_png += plus;
         if ( count_png>=119 )           plus = -1;
         if ( count_png<= 30 )            plus = 1;
 
-        //logf((char*)"|  Nom du fichier  %s", (char*)titre.c_str() );
+        logf((char*)"|  (%d, %d) Nom du fichier  %s", pCamFilename->getPosX(), pCamFilename->getPosY(), (char*)titre.c_str() );
+        logf((char*)"|  (%d, %d)", pCamFilename->getX(), pCamFilename->getY() );
 
         //-------------------------------------------------------
         // Calcul du temps pour l'affiche de la frequence d'image

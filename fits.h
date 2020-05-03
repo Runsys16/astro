@@ -74,10 +74,10 @@ public :
         void                        afficheDatas();
 
 
-inline  GLubyte*                    getPTR()                { return (bValid ?  readBgr.ptr : NULL); };
-inline  int                         getW()                  { return (bValid ?  readBgr.w : 0); };
-inline  int                         getH()                  { return (bValid ?  readBgr.h : 0); };
-inline  int                         getD()                  { return (bValid ?  readBgr.d : 0); };
+inline  GLubyte*                    getPTR()                { return (bValid ?  readBgr.ptr.load() : NULL); };
+inline  int                         getW()                  { return (bValid ?  readBgr.w.load() : 0); };
+inline  int                         getH()                  { return (bValid ?  readBgr.h.load() : 0); };
+inline  int                         getD()                  { return (bValid ?  readBgr.d.load() : 0); };
 
         void                        getRB( struct readBackground* );
 

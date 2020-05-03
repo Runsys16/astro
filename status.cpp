@@ -409,7 +409,6 @@ void idleStatus()
     //if (!bPause || bOneFrame )    {
         Camera_mgr::getInstance().change_background_camera();
         if (bOneFrame)      { updatePanelPause(true); }
-        bOneFrame = false;
     //}
     /*
     //change_joy( xSuivi, ySuivi );

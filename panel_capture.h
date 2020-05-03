@@ -36,7 +36,7 @@ public:
     PanelCapture( rb_t *, Capture* );
     ~PanelCapture();    
     
-    virtual void		update();
+    virtual void		update_stars();
     virtual void		updatePos();
     virtual void		displayGL();
 

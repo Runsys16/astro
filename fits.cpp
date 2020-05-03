@@ -225,10 +225,10 @@ void Fits::readCD( string key, string value )
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::getRB( struct readBackground* p )
 {
-    p->ptr = readBgr.ptr;
-    p->w   = readBgr.w;
-    p->h   = readBgr.h;
-    p->d   = readBgr.d;
+    p->ptr = readBgr.ptr.load();
+    p->w   = readBgr.w.load();
+    p->h   = readBgr.h.load();
+    p->d   = readBgr.d.load();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
