@@ -75,6 +75,8 @@ public:
 
     void                        screen2tex(int&,int&);
     void                        screen2tex(float&,float&);
+    
+    void                        start_threads();
    
 private:
     vector<Camera*>             pCameras;

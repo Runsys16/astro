@@ -96,7 +96,7 @@ void Camera_mgr::addImages( Camera* p )
 
     p->CreatePreview();
     p->CreateControl();
-    p->change_background_camera();
+    p->change_background();
 
     if ( p->getFd() == -1 ) 
     {
@@ -161,7 +161,7 @@ void Camera_mgr::change_background_camera( void )
     
     for( int i=0; i<pCameras.size(); i++ )
     {
-        pCameras[i]->change_background_camera();
+        pCameras[i]->change_background();
     }
     if ( pCurrent )         change_hertz( pCurrent->getHertz() );
 }
@@ -534,6 +534,17 @@ void  Camera_mgr::screen2tex(float& x,float& y)
 {
     if (pCurrent == NULL)                   return;
     pCurrent->getPanelPreview()->screen2tex(x, y);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::start_threads()
+{   
+    int nb = pCameras.size();
+    for (int i=0; i<nb; i++)
+    {
+        pCameras[i]->start_thread();
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

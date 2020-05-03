@@ -83,6 +83,7 @@ inline float            getEchelle()                                    { return
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
+inline rb_t*            getRB()                                         { return pReadBgr; }
 
 };
 

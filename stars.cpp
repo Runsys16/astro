@@ -1,5 +1,6 @@
 #include "stars.h"
 #include <malloc.h>
+#include "panel_camera.h"
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -343,6 +344,8 @@ void Stars::updateRB(rb_t* p)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::suivi(rb_t* p)
 {
+    //logf((char*)"Stars::suivi() w=%d h=%d  delta window (%d, %d)", p->w, p->h, pView->getDX(), pView->getDY() );
+    
     int nb = v_tStars.size();
     setRB(p);
     int j = 0;
@@ -459,6 +462,11 @@ void Stars::update( int DX, int DY, PanelSimple* pview, rb_t* rb)
 
     if ( rb != NULL )       RB = rb;
     if ( pview != NULL )    pView = pview;
+
+    //PanelCamera * panelCamera = dynamic_cast<PanelCamera*>(pview);
+    //if ( panelCamera->getRB() != rb )
+        pView->setBackground( rb->ptr, rb->w, rb->h, rb->d );
+
     
     dx = DX;
     dy = DY;

@@ -8,6 +8,7 @@
 
 #include <WindowsManager.h>
 #include <thread>
+#include <atomic>
 #include "button_callback.h"
 
 
@@ -27,9 +28,9 @@ protected:
 
     int                         xCam, yCam, dxCam, dyCam;
     
-    bool                        bChargingCamera;
-    thread                      thread_chargement_camera;
-    bool                        startThread;
+    std::atomic<bool>           bCharging;
+    thread                      thread_chargement;
+    bool                        bStartThread;
     
     float                       hz;
     float                       previousTime;
@@ -56,6 +57,8 @@ virtual    ~Camera();
     void                        CreateControl();
 
     void                        update();
+
+    virtual void                start_thread();
     virtual void                CreatePreview();
     virtual void                resizePreview(int, int);
     virtual void                fullSizePreview(int, int);
@@ -64,7 +67,7 @@ virtual    ~Camera();
     void                        resizeControlFirst(int, int, int, int);
 
     void                        threadExtractImg();
-    virtual void                change_background_camera();
+    virtual void                change_background();
     
     bool                        keyboard( char );
     
