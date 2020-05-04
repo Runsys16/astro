@@ -155,7 +155,7 @@ void Serial::emet_commande()
 
         if( n!=len ){
             logf((char*)"[ERREUR]Il manque des caracteres !!" );
-            log_tab(false);
+            //log_tab(false);
             return;
         }
 
@@ -163,7 +163,7 @@ void Serial::emet_commande()
 
         if( n!=0 ){
             logf((char*)"[ERREUR]Sur le retour chariot!!" );
-            log_tab(false);
+            //log_tab(false);
             return;
         }
         tCommandes.erase( tCommandes.begin()+0 );

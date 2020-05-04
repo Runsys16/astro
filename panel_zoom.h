@@ -76,6 +76,7 @@ virtual void            releaseRight( int, int);
 
         void            setRB(rb_t* p);
         void            setBackground(_Texture2D*);
+		void		    setBackground( GLubyte*, unsigned, unsigned, unsigned );
     
         void            setTextWidth(int w );
         void            setTextHeight(int h );

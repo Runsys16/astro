@@ -98,19 +98,18 @@ void Pleiade::charge_background()
 //--------------------------------------------------------------------------------------------------------------------
 void Pleiade::change_background(void)
 {
-    //logf((char*)"Pleiade::change_background()");
+    #ifdef CHANGE_BACKGROUND
+    logf((char*)"Pleiade::change_background()");
+    #endif
     
     if ( bCharging ) 
     {
+        #ifdef CHANGE_BACKGROUND
         logf((char*)"Pleiade::change_background()");
-        //logf((char*)"|  lecture d'une frame" );
+        #endif
         
         panelPreview->deleteBackground();
         
-        /*
-        if ( bFirst )       logf( (char*)"bFirst=true" );
-        else                logf( (char*)"bFirst=false" );
-        */
 
         if ( bFirst && bFreePtr )
         {
@@ -149,8 +148,10 @@ void Pleiade::change_background(void)
         if ( count_png>=119 )           plus = -1;
         if ( count_png<= 30 )            plus = 1;
 
+        #ifdef CHANGE_BACKGROUND
         logf((char*)"|  (%d, %d) Nom du fichier  %s", pCamFilename->getPosX(), pCamFilename->getPosY(), (char*)titre.c_str() );
         logf((char*)"|  (%d, %d)", pCamFilename->getX(), pCamFilename->getY() );
+        #endif
 
         //-------------------------------------------------------
         // Calcul du temps pour l'affiche de la frequence d'image
@@ -164,7 +165,9 @@ void Pleiade::change_background(void)
                 previousTime = t;
                 nb_images = 0;
             }
-            //logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName() );
+            #ifdef CHANGE_BACKGROUND
+            logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName() );
+            #endif
         }
         else
             previousTime = t;
@@ -172,10 +175,9 @@ void Pleiade::change_background(void)
         
 
         bCharging = false;
-        //logf((char*)"|  bCharging %s", BOOL2STR(bCharging) );
 
     }
-    //log((char*)"change_background_pleiade()");
+
     if ( bFirst )       bFirst = false;
 }
 //--------------------------------------------------------------------------------------------------------------------

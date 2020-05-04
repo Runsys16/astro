@@ -37,12 +37,14 @@ PanelZoom::PanelZoom()
     add(pFond);
     pFond->setPos(0,0);
     pFond->setFantome(true);
-    setBackground( (_Texture2D*)NULL );
+    //setBackground( (_Texture2D*)NULL );
     
     this->setScissor(true);
     wm.add(this);
     setPosAndSize( 10, 10, 200, 200 );
     bFreePos = false;
+    
+    wm.add(this);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -173,8 +175,20 @@ void PanelZoom::setRB(rb_t* p)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelZoom::setBackground(_Texture2D* p)
 {
-    //logf( (char*)"PanelZoom::setBackground()" );
+    #ifdef DEBUG
+    logf( (char*)"PanelZoom::setBackground(%lX)", (long)p );
+    #endif
     pFond->setBackground(p);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelZoom::setBackground( GLubyte* ptr, unsigned int w, unsigned int h, unsigned int d )
+{
+    #ifdef DEBUG
+    logf( (char*)"PanelZoom::setBackground(%lX, %d, %d, %d)", (long)ptr, w, h, d );
+    #endif
+    pFond->setBackground( ptr, w, h, d);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

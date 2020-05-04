@@ -155,12 +155,6 @@ void PanelCamera::setRB(rb_t* p)
     stars.setRB(p);
     update_stars();
 
-    /*
-    panelZoom->setBackground( pView->getBackground() );
-    panelZoom->setTextWidth(RB->w );
-    panelZoom->setTextHeight(RB->h );
-    */
-
     //logf((char*)"PanelCamera::setRB() w=%d", pReadBgr->w);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -621,7 +615,7 @@ void PanelCamera::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::releaseLeft(int xm, int ym)
 {
-    logf( (char*)"PanelCamera::releaseLeft(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCamera::releaseLeft(%d,%d) :%d", xm, ym, __LINE__ );
     if ( pReadBgr == NULL )     { logf( (char*)" return Pointeur NULL" ); return; }
     
     log_tab(true);

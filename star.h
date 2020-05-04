@@ -23,6 +23,7 @@ public:
     void                setPtr(GLubyte*);
     void                setWidth(int);
     void                setHeight(int);
+    void                setRBzoom();
     void                setRB(rb_t*);
     void                setView(PanelSimple*);
 
@@ -108,8 +109,11 @@ public:
 private:
     vec2                pos;
     
+    GLubyte*            ptr;
+    rb_t*               RB;
     int                 width;
     int                 height;
+    int                 bitplane;
     
     int                 xFound;
     int                 yFound;
@@ -138,8 +142,6 @@ private:
     double              ra_rad;
     double              dc_rad;
     
-    GLubyte*            ptr;
-    rb_t*               RB;
 
     PanelText *         pInfo;
     char                p_sInfo[225];

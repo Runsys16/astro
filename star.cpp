@@ -105,27 +105,76 @@ void Star::setHeight(int h)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Star::setRBzoom()
+{
+    #ifdef DEBUG_SETRBZOOM
+    logf( (char*)"Star::setRBzoom() : %d", __LINE__ );
+    log_tab(true);
+    #endif
+    
+    if ( panelZoom != NULL )
+    {
+        #ifdef DEBUG_SETRBZOOM
+        logf( (char*)"panelZoom not NULL", __LINE__ );
+        #endif
+        
+        panelZoom->setBackground( pView->getBackground() );
+        
+        //panelZoom->setBackground( (GLubyte*)ptr, (unsigned int)width, (unsigned int)height, (unsigned int)bitplane );
+        panelZoom->setTextWidth( width );
+        panelZoom->setTextHeight( height );
+        
+        #ifdef DEBUG_SETRBZOOM
+        logf( (char*)"_Texture2D : %lX", (long)pView->getBackground() );
+        logf( (char*)"ptr        : %lX", (long)ptr );
+        logf( (char*)"width      : %d", RB->w.load() );
+        logf( (char*)"height     : %d", RB->h.load() );
+        #endif
+    }
+    #ifdef DEBUG_SETRBZOOM
+    else
+    {
+        logf( (char*)"panelZoom NULL", __LINE__ );
+    }
+    log_tab(false);
+    #endif
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Star::setRB(rb_t* p)
 {
+    #ifdef DEBUG_SETRB
+    logf( (char*)"Star::setRB(rb_t*) : %d", __LINE__ );
+    log_tab(true);
+    #endif
     RB =            p;
 
     if ( p!= NULL )
     {
-        ptr =           p->ptr;
-        width =         p->w;
-        height =        p->h;
-
-        panelZoom->setBackground( pView->getBackground() );
-        panelZoom->setTextWidth(RB->w );
-        panelZoom->setTextHeight(RB->h );
-    }
+        ptr =           p->ptr.load();
+        width =         p->w.load();
+        height =        p->h.load();
+        bitplane =      p->d.load();
+        
+        #ifdef DEBUG_SETRB
+        logf( (char*)"ptr    : %lX", (long)ptr );
+        logf( (char*)"width  : %d", width );
+        logf( (char*)"height : %d", height );
+        logf( (char*)"plane  : %d", bitplane );
+        #endif
+        setRBzoom();
+     }
     else
     {
         ptr =           NULL;
         width =         0;
         height =        0;
     }
-    //logf((char*)"w x h (%d, %d)", width, height );
+    #ifdef DEBUG_SETRB
+    log_tab(false);
+    logf( (char*)"Star::setRB(rb_t*) : %d", __LINE__ );
+    #endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -749,13 +798,17 @@ void Star::updatePos(int X, int Y, float ew, float eh)
     if (panelZoom!=NULL)
     {
         //panelZoom->setRB( RB );
-        panelZoom->setBackground( pView->getBackground() );
+        //panelZoom->setBackground( pView->getBackground() );
         panelZoom->setTextWidth(RB->w );
         panelZoom->setTextHeight(RB->h );
         float xx = 1.0 * x;
         float yy = 1.0 * y;
         panelZoom->setPosStar(pos.x, pos.y);
         panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
+
+        panelZoom->setTextWidth(RB->w );
+        panelZoom->setTextHeight(RB->h );
+
         panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
         //panelZoom->setPosAndSize( x_screen+40 + dx_screen, y_screen+40 + dy_screen, 200, 200 );
         panelZoom->updatePos();
@@ -776,11 +829,13 @@ void Star::suivi()
     if ( panelZoom == NULL )                return;
     
     //panelZoom->setRB( RB );
-    panelZoom->setBackground( pView->getBackground() );
-    panelZoom->setTextWidth(RB->w );
-    panelZoom->setTextHeight(RB->h );
+    //panelZoom->setBackground( pView->getBackground() );
     panelZoom->setPosStar(pos.x, pos.y);
     panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
+
+    panelZoom->setTextWidth(RB->w );
+    panelZoom->setTextHeight(RB->h );
+
     panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 300, 300 );
     panelZoom->updatePos();
 }
@@ -789,6 +844,7 @@ void Star::suivi()
 //--------------------------------------------------------------------------------------------------------------------
 void Star::setZoom(bool b)
 {
+    logf( (char*)"Star::setZoom(%s) : %d", BOOL2STR(b), __LINE__ );
     if ( b )
     {
         if ( bZoom )
@@ -807,20 +863,18 @@ void Star::setZoom(bool b)
             bZoom = bSelect = true;
             panelZoom = new PanelZoom();
             panelZoom->setExtraString( "Star pInfo" );
-            //pView->add( panelZoom );
-            //panelZoom->setPosStar(xFound, yFound);
+
+            panelZoom->setPosStar(pos.x, pos.y);
+            panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
+
+            panelZoom->setTextWidth(RB->w );
+            panelZoom->setTextHeight(RB->h );
+
             panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
             
-            logf( (char*)"Star::displayGL() setBackGround()" );
-            if ( RB != NULL )
-            {
-                logf( (char*)"Star::displayGL() setRB()" );
-                //panelZoom->setRB( RB );
-                panelZoom->setBackground( pView->getBackground() );
-                panelZoom->setTextWidth(RB->w );
-                panelZoom->setTextHeight(RB->h );
-                //panelZoom->setPosAndSize( (x+40)*ech, (y+40)*ech, 200, 200 );
-            }
+            logf( (char*)"Star::setZoom() setBackGround() : %d", __LINE__ );
+            setRBzoom();
+
             panelZoom->updatePos();
             return;
         }

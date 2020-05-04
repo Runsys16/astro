@@ -92,8 +92,8 @@ void Stars::sup(Star * p)
 //--------------------------------------------------------------------------------------------------------------------
 Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 {
-    logf( (char*)"Stars::addStar() souris(%d, %d)   dx_screen=%d, dy_screen%d, echelle =%0.2f)",
-                  xm, ym, dx_screen, dy_screen, e);
+    logf( (char*)"Stars::addStar() souris(%d, %d)   dx_screen=%d, dy_screen%d, echelle =%0.2f) : %d",
+                  xm, ym, dx_screen, dy_screen, e, __LINE__);
     log_tab(true);
 
     float X = (float) ((float)xm - (float)dx_screen)/e; 
@@ -139,6 +139,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     pp->getMagnitude();
     pView->add( pp->getInfo() );
     pp->setView( pView );
+    pp->setRB( RB ); 
 
     v_tStars.push_back( pp );
 
@@ -391,6 +392,8 @@ void Stars::suivi(rb_t* p)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::selectLeft( int xp, int yp)
 {
+    logf( (char*)"Stars::selectLeft(%d, %d) : %d ", xp, yp, __LINE__ );
+    log_tab(true);
     int nb = v_tStars.size();
     for( int n=0; n<nb; n++ )
     {
@@ -407,6 +410,8 @@ void Stars::selectLeft( int xp, int yp)
             v_tStars[n]->setZoom(true);
         }
     }
+    log_tab(false);
+    logf( (char*)"Stars::selectLeft(%d, %d) : %d ", xp, yp, __LINE__ );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
