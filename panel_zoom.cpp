@@ -8,6 +8,7 @@ PanelZoom::~PanelZoom()
     WindowsManager& wm = WindowsManager::getInstance();
 
     logf( (char*)"Destructeur PanelZoom()");
+    wm.sup( this );
     if ( pFond!= NULL )
     {
         sup(pFond);
@@ -76,12 +77,13 @@ void PanelZoom::setEchelle(float f)
         echelle = (float)pReadBgr->w/(float)dxp;
         fDX = dxp;
         fDY = dyp;
-        logf( (char*)"Stop setEchelle(%0.2f)", echelle );
+        logf( (char*)"  Stop setEchelle(%0.2f)", echelle );
     }
     
     int deltax = (dxp-fDX)/2 + dx*echelle;
     int deltay = (dyp-fDY)/2 + dy*echelle;
     
+    logf( (char*)"  setSize(%0.2f,%0.2f)", fDX, fDY );
     setSize( fDX, fDY );
     setPos( deltax, deltay );
 }
@@ -105,8 +107,9 @@ void PanelZoom::setPosAndSize(int xx, int yy, int ddx, int ddy)
     yWin = yy;
     dxWin = ddx;
     dyWin = ddy;
-    
-    //logf( (char*)"PanelZoom::setPosAndSize(%d, %d, %d, %d)", xx, y, ddx, ddy);
+    #ifdef DEBUG    
+    logf( (char*)"PanelZoom::setPosAndSize(%d, %d, %d, %d)", xx, yy, ddx, ddy);
+    #endif
     if ( !bFreePos )
     {
         if ( bPanelResultat )    yWin += panelResultat->getDY()+10;
@@ -121,26 +124,6 @@ void PanelZoom::setPosAndSize(int xx, int yy, int ddx, int ddy)
             
         }
     }
-    /*
-    if ( pReadBgr != NULL)
-    {
-        echelle = 10.0;
-        xFond  = -echelle * vStar.x + dxWin/2; 
-        yFond  = -echelle * vStar.y + dyWin/2;
-        dxFond = echelle * pReadBgr->w;
-        dyFond = echelle * pReadBgr->h;
-
-        pFond->setPosAndSize( xFond, yFond, dxFond, dyFond );
-        //logf( (char*)"pFond->SetPosAndSizep(%0.2f, %0.2f, %0.2f, %0.2f)", xFond, yFond, dxFond, dyFond );
-        pFond->deleteBackground();
-        pFond->setBackground( pReadBgr->ptr, pReadBgr->w, pReadBgr->h, pReadBgr->d);
-        ajuste();
-    }
-    else
-    {
-        logf( (char*)"PanelZoom::setPosAndSize(%d, %d, %d, %d) Pointeur NULL", xx, y, ddx, ddy);
-    }
-    */    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -188,6 +171,8 @@ void PanelZoom::setBackground( GLubyte* ptr, unsigned int w, unsigned int h, uns
     #ifdef DEBUG
     logf( (char*)"PanelZoom::setBackground(%lX, %d, %d, %d)", (long)ptr, w, h, d );
     #endif
+    w = w;
+    h = h;
     pFond->setBackground( ptr, w, h, d);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -328,7 +313,7 @@ void PanelZoom::releaseRight(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelZoom::setTextWidth(int ww )
+void PanelZoom::setTextureWidth(int ww )
 {
     w = ww;
     //logf( (char*)"PanelZoom::setTextWidth(%d)", w );
@@ -344,7 +329,7 @@ void PanelZoom::setTextWidth(int ww )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelZoom::setTextHeight(int hh )
+void PanelZoom::setTextureHeight(int hh )
 {
     h = hh;
     //logf( (char*)"PanelZoom::setTextHeight(%d)", h );
@@ -356,6 +341,30 @@ void PanelZoom::setTextHeight(int hh )
     dyFond = echelle * h;
 
     pFond->setPosAndSize( xFond, yFond, dxFond, dyFond );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelZoom::setTextureSize(int ww, int hh )
+{
+//#define DEBUG
+    #ifdef DEBUG
+    logf( (char*)"PanelZoom::setTextureSize(%d, %d)", w, h );
+    logf( (char*)"  echelle %d", echelle );
+    logf( (char*)"  vStar(%0.2f, %0.2f)", vStar.x, vStar.y );
+    logf( (char*)"  size(%d, %d)", getPosDX(), getPosDY() );
+    #endif
+    h = hh;
+    w = ww;
+
+    echelle = 10.0;
+    xFond  = -echelle * vStar.x + getPosDX()/2; 
+    yFond  = -echelle * vStar.y + getPosDY()/2;
+    dxFond = echelle * w;
+    dyFond = echelle * h;
+
+    pFond->setPosAndSize( xFond, yFond, dxFond, dyFond );
+//#undef DEBUG
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

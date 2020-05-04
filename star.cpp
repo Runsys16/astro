@@ -121,8 +121,7 @@ void Star::setRBzoom()
         panelZoom->setBackground( pView->getBackground() );
         
         //panelZoom->setBackground( (GLubyte*)ptr, (unsigned int)width, (unsigned int)height, (unsigned int)bitplane );
-        panelZoom->setTextWidth( width );
-        panelZoom->setTextHeight( height );
+        panelZoom->setTextureSize( width, height );
         
         #ifdef DEBUG_SETRBZOOM
         logf( (char*)"_Texture2D : %lX", (long)pView->getBackground() );
@@ -799,18 +798,15 @@ void Star::updatePos(int X, int Y, float ew, float eh)
     {
         //panelZoom->setRB( RB );
         //panelZoom->setBackground( pView->getBackground() );
-        panelZoom->setTextWidth(RB->w );
-        panelZoom->setTextHeight(RB->h );
+        //panelZoom->setTextureSize( RB->w, RB->h );
         float xx = 1.0 * x;
         float yy = 1.0 * y;
         panelZoom->setPosStar(pos.x, pos.y);
         panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
 
-        panelZoom->setTextWidth(RB->w );
-        panelZoom->setTextHeight(RB->h );
+        panelZoom->setTextureSize( RB->w, RB->h );
 
         panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
-        //panelZoom->setPosAndSize( x_screen+40 + dx_screen, y_screen+40 + dy_screen, 200, 200 );
         panelZoom->updatePos();
     }
 }
@@ -833,8 +829,7 @@ void Star::suivi()
     panelZoom->setPosStar(pos.x, pos.y);
     panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
 
-    panelZoom->setTextWidth(RB->w );
-    panelZoom->setTextHeight(RB->h );
+    panelZoom->setTextureSize( RB->w, RB->h );
 
     panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 300, 300 );
     panelZoom->updatePos();
@@ -867,8 +862,7 @@ void Star::setZoom(bool b)
             panelZoom->setPosStar(pos.x, pos.y);
             panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
 
-            panelZoom->setTextWidth(RB->w );
-            panelZoom->setTextHeight(RB->h );
+            panelZoom->setTextureSize( RB->w, RB->h );
 
             panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
             

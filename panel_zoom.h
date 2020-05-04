@@ -78,8 +78,9 @@ virtual void            releaseRight( int, int);
         void            setBackground(_Texture2D*);
 		void		    setBackground( GLubyte*, unsigned, unsigned, unsigned );
     
-        void            setTextWidth(int w );
-        void            setTextHeight(int h );
+        void            setTextureWidth(int w );
+        void            setTextureHeight(int h );
+        void            setTextureSize(int, int);
 
 inline  float           getEchelle()                    { return echelle; }
 inline  float           getCentX()                      { return dx; }
