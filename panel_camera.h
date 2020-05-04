@@ -29,7 +29,11 @@ protected:
     float               fTimeClign;
     float               fTime1;
     bool                bTime1;
-
+    
+    int                 x_old;
+    int                 y_old;
+    int                 dx_old;
+    int                 dy_old;
 
 public:
     PanelCamera();
@@ -39,6 +43,7 @@ public:
             void		displaySuivi();
             void		displayCentre();
     virtual void		displayGL();
+    virtual void		updatePos();
     virtual void        releaseLeft( int, int);
     virtual void        releaseMiddle( int, int);
 

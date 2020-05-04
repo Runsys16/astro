@@ -57,6 +57,7 @@ public:
 virtual void            update();
         void            glCroix(float,float,float,vec4);
 virtual void	        displayGL();
+virtual void	        updatePos();
 
 virtual void            releaseLeft( int, int);
 

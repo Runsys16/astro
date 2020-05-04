@@ -261,6 +261,20 @@ void PanelZoom::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelZoom::updatePos()
+{
+    echelle = 10.0;
+    xFond  = -echelle * vStar.x + getPosDX()/2; 
+    yFond  = -echelle * vStar.y + getPosDY()/2;
+    dxFond = echelle * w;
+    dyFond = echelle * h;
+    pFond->setPosAndSize( xFond, yFond, dxFond, dyFond );
+
+    PanelWindow::updatePos();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelZoom::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelZoom::releaseLeft(xm=%d, ym=%d)", xm, ym );
