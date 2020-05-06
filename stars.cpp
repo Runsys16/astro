@@ -234,12 +234,15 @@ void Stars::findAllStars()
                     }
                     
                     Star * pp = new Star();
+                    /*
                     pp->setPtr( RB->ptr );
                     pp->setWidth( RB->w );
                     pp->setHeight( RB->h );
-
+                    */
+                    pp->setRB( RB );
                     pp->setXY( x_find, y_find );
                     pp->find();
+
                     pp->updatePos(dx_view, dy_view, ech, ech);
                     pp->computeMag();
                     //pp->getMagnitude();
@@ -264,6 +267,9 @@ void Stars::findAllStars()
         sprintf( t, "%d", size() );
         pNbStars->changeText( t );
     }
+
+    //update_stars();
+    suivi( RB );
     
     log_tab(false);
     logf( (char*)"Stars::findAllStars()" );

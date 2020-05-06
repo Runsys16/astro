@@ -532,6 +532,9 @@ bool Star::find( int size)
         //logf( (char*)"Iteration Max : %d/%d (%d,%d)  nb=%d", i, size, x, y, nbNotFound );
         return false;
     }
+    //logf( (char*)"Star::find(%d)", size );
+    //logf( (char*)"  (%0.2f, %0.2f)", pos.x, pos.y );
+    
     return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -762,6 +765,8 @@ void Star::glMark( int dx,  int dy )
     int x = x_screen - delta_x;// + dx_screen;
     int y = y_screen - delta_y;// + dy_screen;
     
+    //logf( (char*)"Star::glCercle() : (%d, %d )", x, y );
+    //logf( (char*)"                 : (%d, %d )", x_screen, y_screen );
 	glBegin(GL_LINES);
 
 	    glVertex2i(x, y+5);         glVertex2i(x, y+dy);

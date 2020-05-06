@@ -63,6 +63,7 @@ void PanelCamera::findAllStar()
     stars.setView( this );
     stars.setRB( pReadBgr );
     stars.findAllStars();
+    update_stars();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -615,7 +616,9 @@ void PanelCamera::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::updatePos()
 {
-    logf( (char*)"PanelCamera::releaseLeft() : %d", __LINE__ );
+    #ifdef DEBUG
+    logf( (char*)"PanelCamera::updatePos() : %d", __LINE__ );
+    #endif
     PanelWindow::updatePos();
     if (    getX()  != x_old  ||
             getY()  != y_old  ||

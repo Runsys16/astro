@@ -1,5 +1,8 @@
 #include "panel_zoom.h"
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+#define ECHELLE 10.0
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -263,7 +266,7 @@ void PanelZoom::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelZoom::updatePos()
 {
-    echelle = 10.0;
+    echelle = ECHELLE;
     xFond  = -echelle * vStar.x + getPosDX()/2; 
     yFond  = -echelle * vStar.y + getPosDY()/2;
     dxFond = echelle * w;
@@ -332,7 +335,7 @@ void PanelZoom::setTextureWidth(int ww )
     w = ww;
     //logf( (char*)"PanelZoom::setTextWidth(%d)", w );
 
-    echelle = 10.0;
+    echelle = ECHELLE;
     xFond  = -echelle * vStar.x + dxWin/2; 
     yFond  = -echelle * vStar.y + dyWin/2;
     dxFond = echelle * w;
@@ -348,7 +351,7 @@ void PanelZoom::setTextureHeight(int hh )
     h = hh;
     //logf( (char*)"PanelZoom::setTextHeight(%d)", h );
 
-    echelle = 10.0;
+    echelle = ECHELLE;
     xFond  = -echelle * vStar.x + getDX()/2; 
     yFond  = -echelle * vStar.y + getDY()/2;
     dxFond = echelle * w;
@@ -371,7 +374,7 @@ void PanelZoom::setTextureSize(int ww, int hh )
     h = hh;
     w = ww;
 
-    echelle = 10.0;
+    echelle = ECHELLE;
     xFond  = -echelle * vStar.x + getPosDX()/2; 
     yFond  = -echelle * vStar.y + getPosDY()/2;
     dxFond = echelle * w;

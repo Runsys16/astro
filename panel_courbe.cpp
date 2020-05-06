@@ -1374,6 +1374,7 @@ void PanelCourbe::build_fft3()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::sinusoide_fft3(CArray& x, float* t)
 {
+    if ( filtre == 0.0 )         filtre = 0.5;
     
     int n = round((float)nb/filtre);
     for( int i=0+n; i<nb-n; i++ )
