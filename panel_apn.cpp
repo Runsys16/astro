@@ -35,35 +35,36 @@ PanelApn::PanelApn()
 	
 	add( new PanelText( (char*)"Temps (s)\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
     pTime = new PanelSpinEditText();
-    pTime->set( 0, 60*15, 1, 1 );
+    pTime->set( 1, 60*15, 1,  5);
     pTime->set_delta( 20, 8 );
     pTime->changeText( "200" );
     pTime->setPos( x+dx, p*dy );
     pTime->setSize( 160-dx, dy );
     pTime->setExtraString( "pTime" );
     p++;
+
 	add( new PanelText( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pIso = new PanelSpinEditText();
     pIso->set( 100, 3200, 100, 1 );
     pIso->set_delta( 20, 8 );
-    
     vector<float> t_iso{ 100, 200, 400, 800, 1600 };
     pIso->set_enum( t_iso );
-
     pIso->changeText( "800" );
     pIso->setPos( x+dx, p*dy );
     pIso->setSize( 160-dx, dy );
     pIso->setExtraString( "pIso" );
     p++;
+    
 	add( new PanelText( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pFrames = new PanelSpinEditText();
-    pFrames->set( 0, 200, 1, 1 );
+    pFrames->set( 0, 200, 1, 2 );
     pFrames->set_delta( 20, 8 );
     pFrames->changeText( "1" );
     pFrames->setPos( x+dx, p*dy );
     pFrames->setSize( 160-dx, dy );
     pFrames->setExtraString( "pFrames" );
     p++;
+
 	add( new PanelText( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pTimeOut = new PanelSpinEditText();
     pTimeOut->set( 1, 10, 1, 1);
@@ -73,9 +74,10 @@ PanelApn::PanelApn()
     pTimeOut->setSize( 160-dx, dy );
     pTimeOut->setExtraString( "pTimeOut" );
     p++;
+
 	add( new PanelText( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pNum = new PanelSpinEditText();
-    pNum->set( 1, 200, 1 , 1 );
+    pNum->set( 1, 200, 1 , 2 );
     pNum->set_delta( 20, 8 );
     pNum->changeText( "0" );
     pNum->setPos( x+dx, p*dy );
@@ -107,10 +109,15 @@ PanelApn::PanelApn()
     else                                        iNum        = 0;
 
     pTime->changeText( sTime );
+    pTime->set_val( stod(sTime) );
     pIso->changeText( to_string(iIso) );
+    pIso->set_val( iIso );
     pFrames->changeText( to_string(iFrames) );
+    pFrames->set_val( iFrames );
     pTimeOut->changeText( to_string(iTimeOut) );
+    pTimeOut->set_val( iTimeOut );
     pNum->changeText( to_string(iNum) );
+    pNum->set_val( iNum );
     
     wm.onTop(this);
     wm.changeCapture(this);
