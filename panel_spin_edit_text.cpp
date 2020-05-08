@@ -181,6 +181,12 @@ void PanelSpinEditText::clickLeft( int xm, int ym )
 
  	WindowsManager&     wm  = WindowsManager::getInstance();
     wm.onTop(pCadran);
+
+    if ( pVal!= NULL )
+    {          
+        logf( (char*)"  val=%0.2f *pVal=%0.2f", val, *pVal );
+        val_angle = val = *pVal;
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
