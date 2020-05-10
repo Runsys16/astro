@@ -75,6 +75,8 @@ void Camera::init()
 
     nb_images   = 0;
     sSauveDir = "/home/rene/.astropilot/";
+    
+    start_thread();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -429,10 +431,12 @@ void Camera::threadExtractImg()
     while( true )
     {
         
-        mainloop();
-
-        if ( getFd() != -1 )            bCharging = true;
-
+        if ( ( !bPause || bOneFrame ) && bCharging == false ) 
+        {
+            mainloop();
+            if ( getFd() != -1 )            bCharging = true;
+            bOneFrame = false;
+        }
     }
     //logf((char*)"Camera::threadExtractImg()  stop %s", (char*)getName());
     bStartThread = false;
@@ -459,7 +463,14 @@ void Camera::change_background(void)
         panelPreview->deleteBackground();
         try
         {
-            panelPreview->setBackground( getBuffer(), vCameraSize.x, vCameraSize.y, 3);
+            //panelPreview->setBackground( getBuffer(), vCameraSize.x, vCameraSize.y, 3);
+            readBgr.ptr = getBuffer();
+            readBgr.w = vCameraSize.x;
+            readBgr.h = vCameraSize.y;
+            readBgr.d = 3;
+             
+            panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+            panelPreview->setRB( &readBgr);
             //logf((char*)" %s : %ld", getName(), getBuffer() );
             //if (bSuivi)    suivi();
         }
