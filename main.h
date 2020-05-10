@@ -120,9 +120,16 @@ typedef struct readBackground       rb_t;
     extern double                   pas_sideral;
     extern bool                     bSauve;
     extern string                   filenameSauve;
+
     extern int                      iDisplayfft;
+    extern bool                     bDisplayfftX;
+    extern bool                     bDisplayfftY;
+
+    extern int                      iDisplayCourbe;
+    extern bool                     bDisplayCourbeX;
+    extern bool                     bDisplayCourbeY;
+
     extern float                    filtre;
-    extern int                      aff_courbe;
 
 #endif
 

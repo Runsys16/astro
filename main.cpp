@@ -243,8 +243,13 @@ float               ySuivi;
 float               xSuiviSvg;
 float               ySuiviSvg;
 float               filtre      = 10.0;
-int                 aff_courbe  = 0;
+int                 iDisplayCourbe  = 0;
+bool                bDisplayCourbeX = true;
+bool                bDisplayCourbeY = true;
+
 int                 iDisplayfft = 0;
+bool                bDisplayfftX = true;
+bool                bDisplayfftY = true;
 
 float               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
@@ -2433,18 +2438,33 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'x':
         {
-            ++iDisplayfft %= 3;
-            //if ( bDisplayfft )      panelCourbe->build_fft3();
-            var.set("iDisplayfft", iDisplayfft);
+            ++iDisplayfft %= 4;
+
+            if ( iDisplayfft&0x1 )          bDisplayfftX = true;        
+            else                            bDisplayfftX = false;
+            if ( iDisplayfft&0x2 )          bDisplayfftY = true;
+            else                            bDisplayfftY = false;
+
+            var.set("bDisplayfftX", bDisplayfftX);
+            var.set("bDisplayfftY", bDisplayfftY);
+
             logf( (char*)"Key (x) : Affiche/Cache la FFT (%d)", iDisplayfft );
         }
         break;
 
     case 'X':
         {
-            ++aff_courbe %= 4;
-            var.set("aff_courbe", aff_courbe);
-            logf( (char*)"Key (x) : Affiche/Cache la FFT (%d)", iDisplayfft );
+            ++iDisplayCourbe %= 4;
+
+            if ( iDisplayCourbe&0x1 )       bDisplayCourbeX = true;        
+            else                            bDisplayCourbeX = false;
+            if ( iDisplayCourbe&0x2 )       bDisplayCourbeY = true;
+            else                            bDisplayCourbeY = false;
+
+            var.set("bDisplayCourbeX", bDisplayCourbeX);
+            var.set("bDisplayCourbeY", bDisplayCourbeY);
+
+            logf( (char*)"Key (x) : Affiche/Cache la courbe (%d)", iDisplayfft );
         }
         break;
 
@@ -3606,17 +3626,15 @@ void charge_var()
 	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 	cam_mgr.active();
 
-    if ( var.existe("bSimu") )          bSimu       = var.getb("bSimu");
-    if ( var.existe("bAffSuivi") )      bAffSuivi   = var.getb("bAffSuivi");
-    if ( var.existe("bAffCentre") )     bAffCentre  = var.getb("bAffCentre");
-    if ( var.existe("bSound") )         bSound      = var.getb("bSound");
-    if ( var.existe("bInverseCouleur")) bInverseCouleur = var.getb("bInverseCouleur");
-    if ( var.existe("fLimitCorrection")) fLimitCorrection = var.getf("fLimitCorrection");
-    if ( var.existe("filtre"))          filtre      = var.geti("filtre");
-    if ( var.existe("aff_courbe"))      aff_courbe  = var.geti("aff_courbe");
-    if ( var.existe("iDisplayfft"))     iDisplayfft = var.geti("iDisplayfft");
-    if ( var.existe("fpos_ad"))         fpos_ad     = var.getf("fpos_ad");
-    if ( var.existe("fpos_dc"))         fpos_dc     = var.getf("fpos_dc");
+    if ( var.existe("bSimu") )              bSimu           = var.getb("bSimu");
+    if ( var.existe("bAffSuivi") )          bAffSuivi       = var.getb("bAffSuivi");
+    if ( var.existe("bAffCentre") )         bAffCentre      = var.getb("bAffCentre");
+    if ( var.existe("bSound") )             bSound          = var.getb("bSound");
+    if ( var.existe("bInverseCouleur"))     bInverseCouleur = var.getb("bInverseCouleur");
+    if ( var.existe("fLimitCorrection"))    fLimitCorrection = var.getf("fLimitCorrection");
+    if ( var.existe("filtre"))              filtre          = var.geti("filtre");
+    if ( var.existe("fpos_ad"))             fpos_ad         = var.getf("fpos_ad");
+    if ( var.existe("fpos_dc"))             fpos_dc         = var.getf("fpos_dc");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

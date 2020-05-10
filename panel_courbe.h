@@ -124,22 +124,29 @@ private:
     PanelCheckBox*      pCBAffCourbe;
     bool                bCBAffCourbe;
     
-    PanelText*          pAffFFT;
-    PanelCheckBox*      pCBAffFFT;
-    bool                bCBAffFFT;
+    PanelText*          pAffFFTX;
+    PanelCheckBox*      pCBAffFFTX;
+    //bool                bCBAffFFTX;
+
+    PanelText*          pAffFFTY;
+    PanelCheckBox*      pCBAffFFTY;
+    //bool                bCBAffFFTY;
 
     PanelText*          pCourbeX;
     PanelCheckBox*      pCBCourbeX;
-    bool                bCBCourbeX;
+    //bool                bCBCourbeX;
 
     PanelText*          pCourbeY;
     PanelCheckBox*      pCBCourbeY;
-    bool                bCBCourbeY;
+    //bool                bCBCourbeY;
 
     PanelText*          pFilename;
     
-    int                 aff_courbe_old;
-    int                 iDisplayfft_old;
+    bool                bDisplayCourbeX_old;
+    bool                bDisplayCourbeY_old;
+    
+    bool                bDisplayfftX_old;
+    bool                bDisplayfftY_old;
     int                 filtre_old;
 
 public :
