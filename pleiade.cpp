@@ -39,6 +39,7 @@ Pleiade::Pleiade()
     if( bPause )                bOneFrame = true;
 
     //bFreePtr = true;
+    bStartThread = false;
     start_thread();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -71,6 +72,7 @@ void Pleiade::start_thread()
 void Pleiade::charge_background()
 {
     //while( bPause && bOneFrame);
+    logf((char*)"[thread Pleiade::charge_background()] lit une frame");
     
     while( true )
     {
@@ -100,7 +102,7 @@ void Pleiade::change_background(void)
 {
 //#define CHANGE_BACKGROUND
     #ifdef CHANGE_BACKGROUND
-    logf((char*)"Pleiade::change_background()");
+    logf((char*)"Pleiade::change_background() %s", BOOL2STR(bCharging) );
     #endif
     
     if ( bCharging ) 

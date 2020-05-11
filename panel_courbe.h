@@ -124,6 +124,10 @@ private:
     PanelCheckBox*      pCBAffCourbe;
     bool                bCBAffCourbe;
     
+    PanelText*          pAffPt;
+    PanelCheckBox*      pCBAffPt;
+    bool                bDisplayPt;
+
     PanelText*          pAffFFTX;
     PanelCheckBox*      pCBAffFFTX;
     //bool                bCBAffFFTX;
@@ -147,7 +151,8 @@ private:
     
     bool                bDisplayfftX_old;
     bool                bDisplayfftY_old;
-    int                 filtre_old;
+    bool                bDisplayPt_old;
+    float               filtre_old;
 
 public :
 static bool             bDebug;

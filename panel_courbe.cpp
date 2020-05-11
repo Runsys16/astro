@@ -52,10 +52,12 @@ PanelCourbe::PanelCourbe()
     vOrigine.y      = var.getf("vOrigine.y");
     vOrigine.z      = 0.0;
 
-    if ( var.existe("bDisplayCourbeX") )      bDisplayCourbeX = var.getb("bDisplayCourbeX");
-    if ( var.existe("bDisplayCourbeY") )      bDisplayCourbeY = var.getb("bDisplayCourbeY");
-    if ( var.existe("bDisplayfftX") )         bDisplayfftX = var.getb("bDisplayfftX");
-    if ( var.existe("bDisplayfftY") )         bDisplayfftY = var.getb("bDisplayfftY");
+    if ( var.existe("bDisplayCourbeX") )        bDisplayCourbeX = var.getb("bDisplayCourbeX");
+    if ( var.existe("bDisplayCourbeY") )        bDisplayCourbeY = var.getb("bDisplayCourbeY");
+    if ( var.existe("bDisplayfftX") )           bDisplayfftX    = var.getb("bDisplayfftX");
+    if ( var.existe("bDisplayfftY") )           bDisplayfftY    = var.getb("bDisplayfftY");
+    if ( var.existe("bDisplayPt") )             bDisplayPt      = var.getb("bDisplayPt");
+    else                                        { bDisplayPt=true; var.set("bDisplayPt", bDisplayPt ); }
 
     taille_mini     = var.getf("taille_mini_unite");
 
@@ -66,6 +68,7 @@ PanelCourbe::PanelCourbe()
     ech_w           = 1.0;
     ech_h           = 1.0;
 
+    bDisplayPt_old      = !bDisplayPt;
     bDisplayCourbeX_old = true;//Displayfft_old;
     bDisplayCourbeY_old = true;
     bDisplayfftX_old = true;//Displayfft_old;
@@ -80,6 +83,8 @@ PanelCourbe::PanelCourbe()
     signalY.resize(256);
     signal_inverseX.resize(256);
     signal_inverseY.resize(256);
+
+    nb = 256;
 
     init_panel();
 
@@ -142,6 +147,13 @@ void PanelCourbe::init_panel()
     pAffCourbe    = init_text( x, y*dy, (char*)"On" );
     //pCBAffCourbe  = init_check_box( x, y++*dy );
     y++;
+
+    sprintf( s, (char*)"Points" );
+    pAffPt    = init_text( x, y*dy, (char*)s );
+    pCBAffPt  = init_check_box( x, y++*dy );
+    pCBAffPt->setListener( &bDisplayPt );
+    if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
+    else                            pAffPt->setColor( (unsigned long)0xff808080 );
 
     if ( bDisplayfftX )         sprintf( s, (char*)"X fft On" );
     else                        sprintf( s, (char*)"X fft Off" );
@@ -838,7 +850,7 @@ void PanelCourbe::glCourbes()
         else                            glColor4fv( color_X );
         
        glCourbe(    tabx, t_vCourbe.size(), sizeof(data)/4, xStartAxe, decal_x, decal_y, getDY()/2, 0.0,
-                    courbe1*ech_w, delta_courbe1*ech_h, true );
+                    courbe1*ech_w, delta_courbe1*ech_h, bDisplayPt );
     }
     
     if ( bDisplayCourbeY )
@@ -847,7 +859,7 @@ void PanelCourbe::glCourbes()
         else                            glColor4fv( color_Y );
         
             glCourbe(   taby, t_vCourbe.size(), sizeof(data)/4, xStartAxe, decal_x, decal_y, getDY()/2, 0.0,
-                        courbe1*ech_w, delta_courbe1*ech_h, true );
+                        courbe1*ech_w, delta_courbe1*ech_h, bDisplayPt );
     }
         
     //if ( iDisplayfft < 2 )
@@ -1032,6 +1044,9 @@ void PanelCourbe::updatePos()
     ech_h = (float)getDY() / hSc;
     
     
+    pAffPt->setPos(       getDX()-100, pAffPt->getPosY() );
+    pCBAffPt->setPos(     getDX()-120, pAffPt->getPosY() );
+
     pCourbeX->setPos(       getDX()-100, pCourbeX->getPosY() );
     pCBCourbeX->setPos(     getDX()-120, pCourbeX->getPosY() );
 
@@ -1074,10 +1089,10 @@ void PanelCourbe::updatePos()
     }
     //--------------------------------------------------------------    
     if ( bDisplayCourbeX  )                 pCourbeX->setColor( (unsigned long)0xff0808ff );
-    else                                    pCourbeX->setColor( (unsigned long)0x800000ff );
+    else                                    pCourbeX->setColor( (unsigned long)0xff808080 );
 
     if ( bDisplayCourbeY )                  pCourbeY->setColor( (unsigned long)0xffffff00 );
-    else                                    pCourbeY->setColor( (unsigned long)0x80ffff00 );
+    else                                    pCourbeY->setColor( (unsigned long)0xff808080 );
 
     //--------------------------------------------------------------    
     if ( bDisplayfftX != bDisplayfftX_old )  {
@@ -1100,14 +1115,21 @@ void PanelCourbe::updatePos()
         var.set( "bDisplayfftY", bDisplayfftY );
     }
     //--------------------------------------------------------------    
+    if ( bDisplayPt != bDisplayPt_old )  {
+        if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
+        else                            pAffPt->setColor( (unsigned long)0xff808080 );
+        //pCBAffFFTY->setVal( bDisplayfftY );
+        var.set( "bDisplayPt", bDisplayPt );
+    }
+    //--------------------------------------------------------------    
     if ( bDisplayfftX  )            pAffFFTX->setColor( (unsigned long)0xff0808ff );
-    else                            pAffFFTX->setColor( (unsigned long)0x800000ff );
+    else                            pAffFFTX->setColor( (unsigned long)0xff808080 );
 
     if ( bDisplayfftY )             pAffFFTY->setColor( (unsigned long)0xffffff00 );
-    else                            pAffFFTY->setColor( (unsigned long)0x80ffff00 );
+    else                            pAffFFTY->setColor( (unsigned long)0xff808080 );
     //--------------------------------------------------------------    
     filtre = (float)nb / fVal;
-    logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
+    //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
     
     if ( filtre_old != filtre )
     {
@@ -1119,6 +1141,8 @@ void PanelCourbe::updatePos()
     }
     //--------------------------------------------------------------    
     //logf( (char*)"filtre %0.2f nb %d  fVal %0.2f)", filtre, nb, fVal );
+
+    bDisplayPt_old = bDisplayPt;
 
     bDisplayCourbeX_old = bDisplayCourbeX;
     bDisplayCourbeY_old = bDisplayCourbeY;
@@ -1341,7 +1365,7 @@ void PanelCourbe::build_fft3()
 {
     //logf( (char*)"PanelCourbe::build_fft3()");
     //if (  <256 )        return;
-    if ( iDisplayfft==0 )               return;    
+    //if ( iDisplayfft==0 )               return;    
     if ( t_vCourbe.size() <= 256 )      return;
     
     t_fOut.clear();
