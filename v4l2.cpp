@@ -1402,7 +1402,10 @@ void Device_cam::callback(bool b, int ii, char* str)
     }
     else
     {
-        callback_enregistre(b, extra, str);
+        //callback_enregistre(b, extra, str);
+        string filename = string(str);
+        if ( filename.find(".cam")==string::npos )      filename += ".cam";
+        capability_load(filename);
     }
     
 }

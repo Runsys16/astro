@@ -597,7 +597,7 @@ void CallbackFits::callback( bool bb, int ii, char* str)
 //--------------------------------------------------------------------------------------------------------------------
 void callback_enregistre( bool b, int ii, char* str)
 {
-    logf( (char*)"callback_enregistre( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
+    logf( (char*)"main::callback_enregistre( %s, %d, \"%s\" )  line %d", BOOL2STR(b), ii, (char*)str, __LINE__ );
 
     if ( ii == 1 )
     {
