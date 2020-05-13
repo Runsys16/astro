@@ -110,6 +110,7 @@ public :
     void                        setExtra( int );
     void                        setColor( unsigned long );
     void                        setFocus();
+    void                        setFilename( string );
     
 inline bool                     getVisible()                        { setColor(color); return pW->getVisible(); }
 

@@ -586,6 +586,7 @@ bool Camera::keyboard(char key)
         //capability_save();
         logf( (char*)"capability_save()" );
         FileBrowser::getInstance().setFiltre(".cam");
+        FileBrowser::getInstance().setFilename("");
         setExtra(10);
         FileBrowser::getInstance().setNewline(true);
         FileBrowser::getInstance().change_dir(sSauveDir);

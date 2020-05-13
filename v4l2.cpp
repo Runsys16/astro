@@ -226,6 +226,7 @@ void Device_cam::capability_load( string filename )    {
         
         Control *   p = getControl( sCtrl );
         if ( p != NULL )            p->setValue( val );
+        else                        logf( (char*)"pControl NULL : line %d", __LINE__ );
         
         nbLigne++;
     }    
