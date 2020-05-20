@@ -33,7 +33,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-string t_sHelp1[] =
+vector<string> t_sHelp1 =
 {
 	"---- CAMERA ----",
 	"     H\t: Change le nom d une image de la camera",
@@ -88,11 +88,11 @@ string t_sHelp1[] =
 	"     z\t: Charge les traces",
 	"     Z\t: Sauve les traces"
 };
-string t_sHelp2[] = 
+vector<string> t_sHelp2 = 
 {
 	"---- TOUCHE DE FONCTION ----",
-	"    F1\t: Panneau de controle de la camera",
-	"    F2\t: Help",
+	"    F1\t: Help",
+	"    F2\t: Panneau de controle de la camera",
 	"    F3\t: Panneau de suivi",
 	"    F4\t: Courbe de suivi",
 	"    F5\t: Console de log",
@@ -2946,93 +2946,20 @@ static void CreateHelp()
 	int dy = 15;
 	int l=50;
 
-	
-	addString( "---- CAMERA ----");
-	addString( "     H\t: Change le nom d une image de la camera");
-	addString( "     h\t: Enregistre une image de la camera courante");
-	addString( "     A\t: enregistre les parametres de la camera");
-	addString( "     a\t: rappelle les parametres de la camera");
-    addString( "" );    
-	addString( "\t  Brightness\t\tB/b" );
-	addString( "\t  Contrast\t\tC/c" );
-	addString( "\t  Saturation\t\tS/s" );
-	addString( "\t  Hue\t\t\tH/h" );
-	addString( "\t  Gamma\t\tG/g" );
-	addString( "\t  Sharpness\t\tZ/z" );
-	addString( "\t  Exposure\t\tE/e" );
-	addString( "\t  White balance\tW/w" );
-	addString( "");
-	addString( "---- MODE NORMAL ----");
-	addString( "ctrl+TAB\t: camera suivante" );
-	addString( "TAB\t: Change l'affichage des fichiers" );
-	addString( "     f\t: Ouvrir un fichier image");
-	addString( "     F\t: Active/Desactive la simu");
-	addString( "     i\t: Prend une photo sur le PENTAX");
-	addString( "     I\t: Inverse les couleur pour la recherhce d'une etoile");
-	addString( "     K\t: Active/desactive le son");
-	addString( "     l\t: List les ports /dev + les controles ");
-	addString( "     L\t: List les variables");
-	addString( "     n\t: Affiche/cache les images (F7)");
-	addString( "     N\t: Mode nuit on/off");
-	addString( "     o\t: Ouvre/Ferme la fenetre pleiades");
-	addString( "     p\t: Pause de l'affichage de pleiades");
-	addString( "     P\t: Image suivante");
-	addString( "     q\t: Lance un script python");
-	addString( "     Q\t: Mise en station via polaris");
-	addString( "     r\t: Rappel les mesures de suivi");
-	addString( "     R\t: Test alert BOX");
-	addString( "     W\t: Surveille un repertoire");
-	addString( "     -\t: Toutes les images sont affichees en icones");
-	addString( "");
-	addString( "---- TRANSFORM MATRIX ----");
-	addString( "   a/A\t: Vecteur en ascension droite");
-	addString( "   d/D\t: Vecteur en declinaison");
-	addString( "     m\t: Deplacement à la souris");
-	addString( "     M\t: Calcul la matrice de transformation");
-	addString( "     O\t: Mode souris / mode suivi");
-	addString( "     y\t: Affiche les vecteurs");
-	addString( "");
-	addString( "---- TRACES ----");
-	addString( "     C\t: Lance/arrete l\'enregistrement de trace");
-	addString( "     c\t: Nouvelle trace");
-	addString( "     e\t: Affiche les traces (ctrl+tab)");
-	addString( "     E\t: Supprime la derniere trace");
-	addString( "     z\t: Charge les traces");
-	addString( "     Z\t: Sauve les traces");
-
+    //----------------------------------------------------------------------------------------------------------------
+	for( int i=0; i<t_sHelp1.size(); i++ )
+	{
+    	addString( t_sHelp1[i] );
+	}
+    //----------------------------------------------------------------------------------------------------------------
     y_help = 0;
-	addString2( "---- TOUCHE DE FONCTION ----");
-	addString2( "    F1\t: Panneau de controle de la camera");
-	addString2( "    F2\t: Help");
-	addString2( "    F3\t: Panneau de suivi");
-	addString2( "    F4\t: Courbe de suivi");
-	addString2( "    F5\t: Console de log");
-	addString2( "    F6\t: Console arduino");
-	addString2( "    F7\t: Affiche/Cache les images");
-	addString2( "   F10\t: Mode DEBUG WindowManager");
-	addString2( "   F11\t: Charge la prochaine image");
-	addString2( "   F12\t: Efface la derniere image"); 
-	addString2( "");
-	addString2( "---- SUIVI ----");
-	addString2( "   j/J\t: Change la taille du cercle d'asservissement");
-	addString2( "     s\t: Recherche toutes les etoiles");
-	addString2( "ctrl+D\t: Efface toutes les etoiles");
-	addString2( "     S\t: Lance/Stop le suivi");
-	addString2( "   t/T\t: change le temps de correction");
-    addString2( "     U\t: Affichage du centre de la camera on/off");
-    addString2( "     u\t: Affichage du suivi on/off");
-	addString2( "     V\t: Initialise les coordonnees de suivi");
-	addString2( "     v\t: Sauvegarde des coordonnees de suivi (fichier .guid)");
-	addString2( "     w\t: Centre l'asservissement");
-	addString2( "     Y\t: Lance l'asservissement");
-	addString2( "");
-	addString2( "---- FFT ----");
-	addString2( "   g/G\t: Change la valeur du filtre"   );
-	addString2( "     x\t: Affiche/Cache la fft");
-	addString2( "     X\t: Choix de l'abcisse ou de l'ordonnée");
-	addString2( "");
-	addString2( "ctrl+q\t: --- SORTIE DU LOGICIEL ---" );
+	for( int i=0; i<t_sHelp2.size(); i++ )
+	{
+    	addString2( t_sHelp2[i] );
+	}
+    //----------------------------------------------------------------------------------------------------------------
 
+    
 	WindowsManager::getInstance().add(panelHelp);
 	
 	DY = ++l*dy;

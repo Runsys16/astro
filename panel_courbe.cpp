@@ -144,16 +144,27 @@ void PanelCourbe::init_panel()
     int dy = 16;
     char s[55];
     
-    pAffCourbe    = init_text( x, y*dy, (char*)"On" );
-    //pCBAffCourbe  = init_check_box( x, y++*dy );
-    y++;
+    if ( bDisplayCourbeX )      sprintf( s, (char*)"Abscisse On" );
+    else                        sprintf( s, (char*)"Abscisse Off" );
+    pCourbeX    = init_text( x, y*dy, (char*)s );
+    pCBCourbeX  = init_check_box( x, y++*dy );
+    pCBCourbeX->setListener( &bDisplayCourbeX );
 
+    if ( bDisplayCourbeX )      sprintf( s, (char*)"Ordonnee On" );
+    else                        sprintf( s, (char*)"Ordonnee Off" );
+    pCourbeY    = init_text( x, y*dy, (char*)s );
+    pCBCourbeY  = init_check_box( x, y++*dy );
+    pCBCourbeY->setListener( &bDisplayCourbeY );
+    
     sprintf( s, (char*)"Points" );
     pAffPt    = init_text( x, y*dy, (char*)s );
     pCBAffPt  = init_check_box( x, y++*dy );
     pCBAffPt->setListener( &bDisplayPt );
     if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
     else                            pAffPt->setColor( (unsigned long)0xff808080 );
+
+    pAffCourbe    = init_text( x, y*dy, (char*)"On" );
+    y++;
 
     if ( bDisplayfftX )         sprintf( s, (char*)"X fft On" );
     else                        sprintf( s, (char*)"X fft Off" );
@@ -167,18 +178,6 @@ void PanelCourbe::init_panel()
     pCBAffFFTY  = init_check_box( x, y++*dy );
     pCBAffFFTY->setListener( &bDisplayfftY );
 
-    if ( bDisplayCourbeX )      sprintf( s, (char*)"Abscisse On" );
-    else                        sprintf( s, (char*)"Abscisse Off" );
-    pCourbeX    = init_text( x, y*dy, (char*)s );
-    pCBCourbeX  = init_check_box( x, y++*dy );
-    pCBCourbeX->setListener( &bDisplayCourbeX );
-
-    if ( bDisplayCourbeX )      sprintf( s, (char*)"Ordonnee On" );
-    else                        sprintf( s, (char*)"Ordonnee Off" );
-    pCourbeY    = init_text( x, y*dy, (char*)s );
-    pCBCourbeY  = init_check_box( x, y++*dy );
-    pCBCourbeY->setListener( &bDisplayCourbeY );
-    
     pFilename       = new PanelText( (char*)"--",     PanelText::NORMAL_FONT, 200, 0 );
 
     add( pFilename );
