@@ -266,17 +266,19 @@ void PanelApn::commande_photo()
 {
     VarManager&         var = VarManager::getInstance();
 
-    string filename = " -o /home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/test-"
+    string filename = " -o /home/rene/Documents/astronomie/k200d/test-"
                         + to_string(iNum++);
     string iso = " -i " + pIso->getText();
     string stime = " -t " + pTime->getText();
-    string frames = " -F " + pFrames->getText();
+    string frames = " -d=4 -F " + pFrames->getText();
     string timeout = " --timeout=" + pTimeOut->getText();
     string focus = " -f";
     string mode = " -m M";
+    string format = " --file_format=JPG";
+    //string format = " --file_format=DNG";
     string command = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli";
 
-    command = command + filename + iso + stime + timeout + mode;
+    command = command + filename + iso + stime + frames +  timeout + mode + format;
 
 
     pNum->changeText( to_string(iNum) );
@@ -299,7 +301,7 @@ void PanelApn::commande_photo()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelApn::photo()
 {
-    string dir = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/";
+    string dir = "/home/rene/Documents/astronomie/k200d/";
 
     thread( &PanelApn::commande_photo, this ).detach();
     Surveillance::getInstance().start(dir);

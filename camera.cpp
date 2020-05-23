@@ -11,12 +11,13 @@ Camera::~Camera()
     logf( (char*)"Destructeur ~Camera() -----------" );
     bCharging = false;
 
-    close_device();
 
     logf( (char*)"  join()" );
+    bExitThread = true;
     while( bStartThread );
-
     logf( (char*)"  join() OK" );
+
+    close_device();
     
     WindowsManager& vm = WindowsManager::getInstance();
 
@@ -28,6 +29,7 @@ Camera::~Camera()
     
     delete panelPreview;
     delete panelControl;
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -67,6 +69,7 @@ void Camera::init()
     logf((char*)"Camera::init() -------------");
 
     bCharging = true;
+    bExitThread = false;
     vCameraSize.x = -1;
     vCameraSize.y = -1;
     
@@ -426,7 +429,7 @@ void charge_camera()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::threadExtractImg()
 {
-    //logf((char*)"Camera::threadExtractImg() start %s", (char*)getName());
+    logf((char*)"[THREAD] Camera::threadExtractImg() start %s", (char*)getName());
 
     while( true )
     {
@@ -437,8 +440,10 @@ void Camera::threadExtractImg()
             if ( getFd() != -1 )            bCharging = true;
             bOneFrame = false;
         }
+        
+        if ( bExitThread )  break;
     }
-    //logf((char*)"Camera::threadExtractImg()  stop %s", (char*)getName());
+    logf((char*)"[THREAD] Camera::threadExtractImg()  stop %s", (char*)getName());
     bStartThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------

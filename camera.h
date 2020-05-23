@@ -30,7 +30,8 @@ protected:
     
     std::atomic<bool>           bCharging;
     thread                      thread_chargement;
-    bool                        bStartThread;
+    atomic<bool>                bStartThread;
+    atomic<bool>                bExitThread;
     
     float                       hz;
     float                       previousTime;

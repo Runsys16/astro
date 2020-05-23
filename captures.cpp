@@ -45,9 +45,10 @@ bool Captures::isMouseOverCapture(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::charge_image( string dirname, string filename )
 {
-    logf( (char*)"Captures::ajoute() ..." );
+    logf( (char*)"Captures::charge_image() ..." );
     logf( (char*)"    %s",(char*)dirname.c_str() );
     logf( (char*)"    %s",(char*)filename.c_str() );
+    log_tab( true );
 
     if ( current_capture != -1 )    captures[current_capture]->setIcone(true);   
     
@@ -56,8 +57,10 @@ void Captures::charge_image( string dirname, string filename )
     captures.push_back( new Capture(dirname, filename) );
     sauve();
     current_capture = captures.size() - 1;
-
     resize_all();
+    onTop( captures[current_capture] );
+    log_tab( false );
+    logf( (char*)"Captures::charge_image() ..." );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

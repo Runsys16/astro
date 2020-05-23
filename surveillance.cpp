@@ -60,16 +60,17 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
 
 
     if (i->len > 0)                 
-        logf( (char*)"wd=%2d; %s name = %s", i->wd, (char*)slog.c_str(), i->name );
+        logf( (char*)"wd=%2d; %s name = %s iState=%d", i->wd, (char*)slog.c_str(), i->name, iState );
 
 
 
 
-    if ( (i->mask & IN_CREATE) && (i->len > 0) ){
+    if ( (i->mask & IN_MODIFY) && (i->len > 0) ){
         iState = 1;
     }
 
-    if ( (i->mask & IN_CLOSE_WRITE) && (i->len > 0) && iState == 1)
+    if (    ( (i->mask & IN_CLOSE_WRITE) || (i->mask & IN_CLOSE_NOWRITE) )
+         && (i->len > 0) && iState == 1)
     {
         iState = 2;
     //}
