@@ -1756,8 +1756,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    break;
     
     case 'A':
-        logf( (char*)"Key (A) : Pt1 Ascension droite" );
         {
+        if ( !bAfficheVec )
+        {
+            logf( (char*)"Key (A) : Pt1 Ascension droite si les vecteurs sont affiches (y)" );
+            break; 
+        }
+        logf( (char*)"Key (A) : Pt1 Ascension droite" );
         if ( !bModeManuel )
         {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
@@ -1786,6 +1791,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'a':
         {
+        if ( !bAfficheVec )
+        {
+            logf( (char*)"Key (A) : Pt0 Ascension droite si les vecteurs sont affiches (y)" );
+            break; 
+        }
+
         logf( (char*)"Key (a) : Pt0 Ascension droite" );
         if ( !bModeManuel )
         {
@@ -1851,6 +1862,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'D':
         {
+        if ( !bAfficheVec )
+        {
+            logf( (char*)"Key (A) : Pt1 Declinaison si les vecteurs sont affiches (y)" );
+            break; 
+        }
+
         logf( (char*)"Key (D) : Pt1 Declinaison" );
         if ( !bModeManuel )
         {
@@ -1885,6 +1902,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'd':
         {
+        if ( !bAfficheVec )
+        {
+            logf( (char*)"Key (A) : Pt0 Declinaison si les vecteurs sont affiches (y)" );
+            break; 
+        }
+
         logf( (char*)"Key (d) : Pt0 Declinaison" );
         
         if ( !bModeManuel )
