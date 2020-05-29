@@ -441,6 +441,115 @@ void commande_polaris()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+/*
+    RA_ICRS (deg)   (F15.11) Barycentric right ascension (ICRS) at Ep=2015.5 (ra) [ucd=pos.eq.ra;meta.main]
+    e_RA_ICRS (mas) (F7.4)  Standard error of right ascension (e_RA*cosDE) (ra_error) [ucd=stat.error;pos.eq.ra]
+    DE_ICRS (deg)   (F15.11) Barycentric declination (ICRS) at Ep=2015.5 (dec) [ucd=pos.eq.dec;meta.main]
+    e_DE_ICRS (mas) (F7.4)  Standard error of declination (dec_error) [ucd=stat.error;pos.eq.dec]
+    Source          (I19)   Unique source identifier (unique within a particular Data Release) (source_id) (G2) [ucd=meta.id;meta.main]
+    Plx (mas)       (F10.4) ? Absolute stellar parallax (parallax) [ucd=pos.parallax]
+    e_Plx (mas)     (F7.4)  ? Standard error of parallax (parallax_error) [ucd=stat.error;pos.parallax]
+    pmRA (mas/yr)   (F9.3)  ? Proper motion in right ascension direction (pmRA*cosDE) (pmra) (3) [ucd=pos.pm;pos.eq.ra]
+    e_pmRA (mas/yr) (F6.3)  ? Standard error of proper motion in right ascension direction (pmra_error) [ucd=stat.error;pos.pm;pos.eq.ra]
+    pmDE (mas/yr)   (F9.3)  ? Proper motion in declination direction (pmdec) (4) [ucd=pos.pm;pos.eq.dec]
+    e_pmDE (mas/yr) (F6.3)  ? Standard error of proper motion in declination direction (pmdec_error) [ucd=stat.error;pos.pm;pos.eq.dec]
+    Dup             (I1)    [0/1] Source with duplicate sources (duplicated_source) (21) [ucd=meta.code.status]
+    FG (e-/s)       (E11.4) G-band mean flux (phot_g_mean_flux) [ucd=phot.flux;stat.mean;em.opt]
+    e_FG (e-/s)     (E11.4) Error on G-band mean flux (phot_g_mean_flux_error) [ucd=stat.error;phot.flux;stat.mean]
+    Gmag (mag)      (F7.4)  G-band mean magnitude (Vega) (phot_g_mean_mag) (23) [ucd=phot.mag;stat.mean;em.opt]
+    e_Gmag (mag)    (F6.4)  Standard error of G-band mean magnitude (Vega) (added by CDS) (phot_g_mean_mag_error) (37) [ucd=stat.error;phot.mag;stat.mean]
+    FBP (e-/s)      (E11.4) ? Mean flux in the integrated BP band (phot_bp_mean_flux) [ucd=phot.flux;stat.mean;em.opt.B]
+    e_FBP (e-/s)    (E11.4) ? Error on the integrated BP mean flux (phot_bp_mean_flux_error) (25) [ucd=stat.error;phot.flux;stat.mean]
+    BPmag (mag)     (F7.4)  ? Integrated BP mean magnitude (Vega) (phot_bp_mean_mag) (26) [ucd=phot.mag;stat.mean;em.opt.B]
+    e_BPmag (mag)   (F6.4)  ? Standard error of BP mean magnitude (Vega) (added by CDS) (phot_bp_mean_mag_error) (37) [ucd=stat.error;phot.mag;stat.mean]
+    FRP (e-/s)      (E11.4) ? Mean flux in the integrated RP band (phot_rp_mean_flux) [ucd=phot.flux.density;em.opt.R]
+    e_FRP (e-/s)    (E11.4) ? Error on the integrated RP mean flux (phot_rp_mean_flux_error) (28) [ucd=stat.error;phot.flux;stat.mean]
+    RPmag (mag)     (F7.4)  ? Integrated RP mean magnitude (Vega) (phot_rp_mean_mag) (29) [ucd=phot.mag;stat.mean;em.opt.R]
+    e_RPmag (mag)   (F6.4)  ? Standard error of RP mean magnitude (Vega) (added by CDS) (phot_rp_mean_mag_error) (37) [ucd=stat.error;phot.mag;stat.mean]
+    BP-RP (mag)     (F7.4)  ? BP-RP colour (photBpMeanMag-photRMeanMag) (bp_rp) [ucd=phot.color;em.opt.B;em.opt.R]
+    RV (km/s)       (F7.2)  ? Spectroscopic radial velocity in the solar barycentric reference frame (radial_velocity) [ucd=spect.dopplerVeloc.opt;pos.barycenter]
+    e_RV (km/s)     (F5.2)  ? Radial velocity error (radial_velocity_error) (30) [ucd=stat.error;spect.dopplerVeloc.opt;pos.barycenter]
+    Teff (K)        (F7.2)  ? Stellar effective temperature (estimate from Apsis-Priam) (teff_val) [ucd=phys.temperature.effective]
+    AG (mag)        (F7.4)  ? Estimate of extinction in the G band from Apsis-Priam (a_g_val) [ucd=phys.absorption.gal]
+    E(BP-RP) (mag)  (F7.4)  ? Estimate of redenning E(BP-RP) from Apsis-Priam (e_bp_min_rp_val) [ucd=phot.color.excess]
+    Rad (solRad)    (F6.2)  ? Estimate of radius from Apsis-FLAME (radius_val) [ucd=phys.size.radius]
+    Lum (solLum)    (F9.3)  ? Esimate of luminosity from Apsis-FLAME (lum_val) [ucd=phys.luminosity]
+*/
+//--------------------------------------------------------------------------------------------------------------------
+void vizier_parse_line( string & line )
+{
+    if ( line.size() < 294 )        return;
+    /*
+    logf( (char*)"----------------------------------" );
+    logf( (char*)"line size %d", line.size() );
+    logf( (char*)"%s", (char*)line.c_str() );
+    //logf( (char*)"%s", (char*)line.substr(133+14,7).c_str() );
+    */
+    double fRA = stod( line.substr(0,15), 0 );
+    double fDE = stod( line.substr(22+2,15), 0 );
+    string name = line.substr(44+4, 19);
+    double mag = stod( line.substr(133+14,7), 0 );
+ 
+    logf( (char*)"Etoile %s  (%0.4f, %0.4f)  mag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)mag );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void vizier_thread( void )
+{
+    string find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<10\" -r 2000 m45";
+    //string find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" ngc4535";
+    string rep = "/home/rene/Documents/astronomie/logiciel/python/cds-client/python-cdsclient/";
+
+    char buf1[BUFSIZ]; //BUFSIZ est une constante connue du système
+    FILE *ptr;
+    string cmd = rep + find;
+    bool bRead = false;
+    bool bEntete = false;
+ 
+    if ((ptr = popen(cmd.c_str(), "r")) != NULL)
+    {
+        while (fgets(buf1, BUFSIZ, ptr) != NULL)
+        {
+            //(void) printf("%s", buf1);
+            string s = string( buf1 );
+            if ( s.find( "-----------" ) == 0 )
+            {
+                bRead = !bRead;
+                bEntete = true;
+                continue;
+            }
+
+            if ( s.find( "#END#" ) == 0 )
+            {
+                bRead = true;
+                bEntete = false;
+                continue;
+            }
+           
+            if ( !bRead && bEntete  )
+            {
+                vizier_parse_line( s );
+            } 
+            //logf ( (char*)"%s", s.c_str() );
+        }
+        pclose(ptr);
+    }
+    else
+    {
+        fprintf(stderr, "Echec de popen\n");
+        exit(1);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void vizier( void )
+{
+    thread( &vizier_thread ).detach();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
 //--------------------------------------------------------------------------------------------------------------------
 string get_basename( string s)
 {
@@ -2248,11 +2357,28 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         logf( (char*)"Key (q) : Lance un script python");
         //Py_SetProgramName(argv[0]);  /* optional but recommended */
+        vizier();
+
+        /*
+	    char filename[] = "pyemb7.py";
+	    FILE* fp;
+
+	    Py_Initialize();
+
+	    fp = _Py_fopen(filename, "r");
+	    PyRun_SimpleFile(fp, filename);
+
+	    Py_Finalize();
+        
+        
+        
         Py_Initialize();
         PyRun_SimpleString("from time import time,ctime\n"
                          "print( 'Hello Word' )\n");
         Py_Finalize();
+        */
         }
+        // ./find_gaia_dr2.py -r 200 ngc4535
         break;
 
     case 'Q':
@@ -3214,7 +3340,7 @@ void log( char* chaine )
 //--------------------------------------------------------------------------------------------------------------------
 void logf(char *fmt, ...)
 {
-    char chaine[255];
+    char chaine[1024];
     va_list arglist;
 
     va_start( arglist, fmt );
@@ -3417,7 +3543,8 @@ void getX11Screen()
     XRRScreenResources *scr;
     XRRCrtcInfo *crtc_info;
 
-    dpy = XOpenDisplay(":0");
+    //dpy = XOpenDisplay(":0");
+    dpy = XOpenDisplay(NULL);
     scr = XRRGetScreenResources (dpy, DefaultRootWindow(dpy));
     //0 to get the first monitor   
     crtc_info = XRRGetCrtcInfo (dpy, scr, scr->crtcs[0]);         

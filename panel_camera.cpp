@@ -564,10 +564,11 @@ void PanelCamera::displayGL()
     float dy = getDY()/2;
 
 
+    PanelWindow::displayGL();
+
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( gris, gris, gris, 0.2 );    
     
-    PanelWindow::displayGL();
 
 
 
