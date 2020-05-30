@@ -605,7 +605,7 @@ void PanelCamera::displayGL()
         glVecDC();
     }
 
-    glColor4f( 1.0, 0.0, 0.0, 0.8 );
+    glColor4f( 1.0, 1.0, 1.0, 0.8 );
     int n = catalog.size();
     for ( int i=0; i<n; i++ )
     {
