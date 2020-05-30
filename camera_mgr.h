@@ -4,6 +4,7 @@
 
 #include "camera.h"
 #include "serial.h"
+#include "star_catalogue.h"
 
 #include <WindowsManager.h>
 #include <thread>
@@ -77,6 +78,7 @@ public:
     void                        screen2tex(float&,float&);
     
     void                        start_threads();
+    void                        add_catalogue(star_catalogue*);
    
 private:
     vector<Camera*>             pCameras;

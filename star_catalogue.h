@@ -12,7 +12,7 @@ using namespace std;
 
 class star_catalogue 
 {
-private :
+public :
         double          fRA;
         double          fDE;
         double          fMag;

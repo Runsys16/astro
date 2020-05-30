@@ -131,6 +131,11 @@ typedef struct readBackground       rb_t;
 
     extern float                    filtre;
 
+    extern double                   Xref;
+    extern double                   Yref;
+    extern double                   Zref;
+    
+
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------

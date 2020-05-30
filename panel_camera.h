@@ -8,7 +8,7 @@
 #include "main.h"
 #include "var_mgr.h"
 #include "stars.h"
-//#include "capture.h"
+#include "star_catalogue.h"
 #include <WindowsManager.h>
 
 using namespace std;
@@ -34,6 +34,8 @@ protected:
     int                 y_old;
     int                 dx_old;
     int                 dy_old;
+
+    vector<star_catalogue*>      catalog;
 
 public:
     PanelCamera();
@@ -90,6 +92,7 @@ inline float            getCentY()                                      { return
 inline Stars*           getStars()                                      { return &stars; }
 inline rb_t*            getRB()                                         { return pReadBgr; }
 
+inline void             add_catalogue(star_catalogue* p)                { catalog.push_back(p); }
 };
 
 

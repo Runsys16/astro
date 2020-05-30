@@ -25,6 +25,7 @@
 #include "panel_courbe.h"
 #include "panel_apn.h"
 #include "panel_stdout.h"
+#include "star_catalogue.h"
 #include <GL/freeglut_ext.h>
 
 #define SIZEPT  20
@@ -326,6 +327,12 @@ bool bRet = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+double Xref = 0.0;
+double Yref = 0.0;
+double Zref = 900.0;
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 string workDirCaptures = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame/";
 string workDirSauveCourbe = "/home/rene/.astropilot/";
 string workDirFileBrowser = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/";
@@ -490,14 +497,17 @@ void vizier_parse_line( string & line )
     string name = line.substr(44+4, 19);
     double mag = stod( line.substr(133+14,7), 0 );
  
-    logf( (char*)"Etoile %s  (%0.4f, %0.4f)  mag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)mag );
+    star_catalogue* p = new star_catalogue( fRA, fDE, mag, name );
+    Camera_mgr::getInstance().add_catalogue( p );
+ 
+    logf( (char*)"Etoile %s\t(%0.4f,\t%0.4f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)mag );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_thread( void )
 {
-    string find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<10\" -r 2000 m45";
+    string find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<7\" -r 4000 m45";
     //string find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" ngc4535";
     string rep = "/home/rene/Documents/astronomie/logiciel/python/cds-client/python-cdsclient/";
 
@@ -1676,9 +1686,40 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
             */
         }
 		break;
+	case 97:
+	    {
+	        Xref -= 1.0;
+	    }
+	    break;
+	case 122:
+	    {
+	        Xref += 1.0;
+	    }
+	    break;
+	case 113:
+	    {
+	        Yref -= 1.0;
+	    }
+	    break;
+	case 115:
+	    {
+	        Yref += 1.0;
+	    }
+	    break;
+	case 119:
+	    {
+	        Zref -= 1.0;
+	    }
+	    break;
+	case 120:
+	    {
+	        Zref += 1.0;
+	    }
+	    break;
     default:
 		{
 		    cout << "Default..." << endl;
+		    logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
         }
         break;
     }		

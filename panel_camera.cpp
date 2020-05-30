@@ -605,6 +605,16 @@ void PanelCamera::displayGL()
         glVecDC();
     }
 
+    glColor4f( 1.0, 0.0, 0.0, 0.8 );
+    int n = catalog.size();
+    for ( int i=0; i<n; i++ )
+    {
+        double x = -(catalog[i]->fRA - 56.0 ) * Zref + 1920.0 - 400.0 +Xref;
+        double y = -(catalog[i]->fDE - 23.5 ) * Zref + 1200.0 + 0.0 + Yref;
+        double r = (12.0 - catalog[i]->fMag ) * 1.0;
+        glCercle( x, y, r );
+    }
+
     displayGLTrace();
     //*/
     

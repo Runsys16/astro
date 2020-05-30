@@ -98,9 +98,8 @@ inline bool                     getControlVisible()             { return panelCo
 inline PanelCamera *            getPanelPreview()               { return panelPreview; }
 inline float                    getHertz()                      { return hz; }
 inline PanelText *              getPanelNbStars()               { return pNbStars; }
-//inline Stars*                   getStars()                      { return &stars; }
 
-    //inline int                  getFd()                         { return getFd
+inline void                     add_catalogue(star_catalogue* p){ panelPreview->add_catalogue(p); }
 };
 
 #endif
