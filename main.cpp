@@ -327,9 +327,9 @@ bool bRet = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-double Xref = 0.0;
-double Yref = 0.0;
-double Zref = 900.0;
+double Xref = -402.0;
+double Yref = -365.0;
+double Zref = 782.0;
 bool   bAffCatalog = true;
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -496,12 +496,12 @@ void vizier_parse_line( string & line )
     double fRA = stod( line.substr(0,15), 0 );
     double fDE = stod( line.substr(22+2,15), 0 );
     string name = line.substr(44+4, 19);
-    double mag = stod( line.substr(133+14,7), 0 );
+    double fMag = stod( line.substr(133+14,7), 0 );
  
-    star_catalogue* p = new star_catalogue( fRA, fDE, mag, name );
+    star_catalogue* p = new star_catalogue( fRA, fDE, fMag, name );
     Camera_mgr::getInstance().add_catalogue( p );
  
-    logf( (char*)"Etoile %s\t(%0.4f,\t%0.4f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)mag );
+    logf( (char*)"Etoile %s\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1687,54 +1687,58 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
             */
         }
 		break;
-	//'e'
-	case 101:
+
+	case 'e':
 	    {
 	        bAffCatalog = !bAffCatalog;
             VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
 	    }
 	    break;
 	
-	//'a'
-	case 97:
+	case 'a':
 	    {
 	        Xref -= 1.0;
+	        logf( (char*)"Xref : %0.2f", (float)Xref );
 	    }
 	    break;
-	//'z'
-	case 122:
+	case 'z':
 	    {
 	        Xref += 1.0;
+	        logf( (char*)"Xref : %0.2f", (float)Xref );
 	    }
 	    break;
-	//'q'
-	case 113:
+
+	case 'q':
 	    {
 	        Yref -= 1.0;
+	        logf( (char*)"Yref : %0.2f", (float)Yref );
 	    }
 	    break;
-	//'s'
-	case 115:
+
+	case 's':
 	    {
 	        Yref += 1.0;
+	        logf( (char*)"Yref : %0.2f", (float)Yref );
 	    }
 	    break;
-	//'w'
-	case 119:
+
+	case 'w':
 	    {
 	        Zref -= 1.0;
+	        logf( (char*)"Zref : %0.2f", (float)Zref );
 	    }
 	    break;
-	//'x'
-	case 120:
+
+	case 'x':
 	    {
 	        Zref += 1.0;
+	        logf( (char*)"Zref : %0.2f", (float)Zref );
 	    }
 	    break;
     default:
 		{
 		    cout << "Default..." << endl;
-		    logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
+		    logf( (char*)"glutKeyboardFuncCtrl  key=%c", (char)key );
         }
         break;
     }		
@@ -1781,7 +1785,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     else
 	if (modifier == GLUT_ACTIVE_ALT)
 	{
-        logf( (char*)" Touche ALT %c", key );
+        //logf( (char*)" Touche ALT %c", key );
         glutKeyboardFuncCtrl(key,  x,  y);
         return;
 	}
@@ -2467,17 +2471,26 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 's':
         {
-        logf( (char*)"Key (s) : Trouve toutes les etoies" );
+            logf( (char*)"Key (s) : Trouve toutes les etoies" );
             
             if ( Captures::getInstance().isMouseOverCapture(x, y)  )
             {
                 Captures::getInstance().findAllStar();
+    
+                //Captures::getInstance().deleteAllStars();
             }
             else
             {
                 if ( Camera_mgr::getInstance().getCurrent() != NULL )
-                    Camera_mgr::getInstance().findAllStars();
+                {
+                    if ( Camera_mgr::getInstance().getCurrent()->getNbStars() == 0 )
+                        Camera_mgr::getInstance().findAllStars();
+                    else
+            		    Camera_mgr::getInstance().deleteAllStars();
+        		}
             }
+            
+            
         }
         break;
 

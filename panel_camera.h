@@ -91,6 +91,7 @@ inline float            getCentX()                                      { return
 inline float            getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
 inline rb_t*            getRB()                                         { return pReadBgr; }
+inline int              getNbStars()                                    { return stars.size(); }
 
 inline void             add_catalogue(star_catalogue* p)                { catalog.push_back(p); }
 };
