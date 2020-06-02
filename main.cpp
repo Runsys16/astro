@@ -330,6 +330,7 @@ bool bRet = false;
 double Xref = 0.0;
 double Yref = 0.0;
 double Zref = 900.0;
+bool   bAffCatalog = true;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1686,31 +1687,45 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
             */
         }
 		break;
+	//'e'
+	case 101:
+	    {
+	        bAffCatalog = !bAffCatalog;
+            VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
+	    }
+	    break;
+	
+	//'a'
 	case 97:
 	    {
 	        Xref -= 1.0;
 	    }
 	    break;
+	//'z'
 	case 122:
 	    {
 	        Xref += 1.0;
 	    }
 	    break;
+	//'q'
 	case 113:
 	    {
 	        Yref -= 1.0;
 	    }
 	    break;
+	//'s'
 	case 115:
 	    {
 	        Yref += 1.0;
 	    }
 	    break;
+	//'w'
 	case 119:
 	    {
 	        Zref -= 1.0;
 	    }
 	    break;
+	//'x'
 	case 120:
 	    {
 	        Zref += 1.0;
@@ -1723,6 +1738,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
         }
         break;
     }		
+    logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

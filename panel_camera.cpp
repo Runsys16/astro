@@ -15,6 +15,8 @@ vec4                colorTraces[] =
 //--------------------------------------------------------------------------------------------------------------------
 PanelCamera::PanelCamera()
 {
+    VarManager& var = VarManager::getInstance();
+
     echelle         = 1.0;
     dx              = 0.0;
     dy              = 0.0;
@@ -26,6 +28,8 @@ PanelCamera::PanelCamera()
     fTimeClign      = 0.8;
     
     setExtraString( "panelCamera" );
+    
+    if ( var.existe("bAffCatalog") )         bAffCatalog  = var.getb( "bAffCatalog");
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -605,16 +609,19 @@ void PanelCamera::displayGL()
         glVecDC();
     }
 
-    glColor4f( 1.0, 0.0, 0.0, 0.8 );
-    int n = catalog.size();
-    for ( int i=0; i<n; i++ )
+    if ( bAffCatalog )
     {
-        double x = -(catalog[i]->fRA - 56.0 ) * Zref + 1920.0 - 400.0 +Xref;
-        double y = -(catalog[i]->fDE - 23.5 ) * Zref + 1200.0 + 0.0 + Yref;
-        double r = (12.0 - catalog[i]->fMag ) * 1.0;
-        glCercle( x, y, r );
+        glColor4f( 1.0, 0.0, 0.0, 0.8 );
+        int n = catalog.size();
+        for ( int i=0; i<n; i++ )
+        {
+            double x = -(catalog[i]->fRA - 56.0 ) * Zref + 1920.0 - 400.0 +Xref;
+            double y = -(catalog[i]->fDE - 23.5 ) * Zref + 1200.0 + 0.0 + Yref;
+            double r = (12.0 - catalog[i]->fMag ) * 0.5;
+            glCercle( x, y, r );
+        }
     }
-
+    
     displayGLTrace();
     //*/
     

@@ -134,6 +134,7 @@ typedef struct readBackground       rb_t;
     extern double                   Xref;
     extern double                   Yref;
     extern double                   Zref;
+    extern bool                     bAffCatalog;
     
 
 #endif
