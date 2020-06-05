@@ -8,7 +8,7 @@
 #include "main.h"
 #include "var_mgr.h"
 #include "stars.h"
-#include "star_catalogue.h"
+#include "catalog.h"
 #include <WindowsManager.h>
 
 using namespace std;
@@ -34,8 +34,13 @@ protected:
     int                 y_old;
     int                 dx_old;
     int                 dy_old;
+    
+    double              fRefCatalogX;
+    double              fRefCatalogY;
+    int                 fRefCatalogDecalX;
+    int                 fRefCatalogDecalY;
 
-    vector<star_catalogue*>      catalog;
+    //vector<StarCatalog*>      catalog;
 
 public:
     PanelCamera();
@@ -85,7 +90,10 @@ public:
 
     void                setRB(rb_t* p);
     vec2*               getSuivi();
-    
+    void                add_catalogue(StarCatalog*);
+    void                setRefCatalog(double _0, double _1);
+
+   
 inline float            getEchelle()                                    { return echelle; }
 inline float            getCentX()                                      { return dx; }
 inline float            getCentY()                                      { return dy; }
@@ -93,8 +101,6 @@ inline Stars*           getStars()                                      { return
 inline rb_t*            getRB()                                         { return pReadBgr; }
 inline int              getNbStars()                                    { return stars.size(); }
 
-inline void             add_catalogue(star_catalogue* p)                { catalog.push_back(p); }
 };
-
 
 #endif

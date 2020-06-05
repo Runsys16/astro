@@ -281,9 +281,14 @@ void PanelCamera::screen2tex(int& xx, int& yy)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::glCercle(int x, int y, int rayon)
 {
+    float step = 300.0/(float)rayon;
+    if ( step < 1.0 )           step = 1.0;
+    
+    //logf ( (char*)" rayon %d   step %0.2f", rayon, step );
+    
 	glBegin(GL_LINE_LOOP);
 
-        for( float i=0; i<=360.0; i+=1.0 )
+        for( float i=0; i<=360.0; i+=step )
         {
             float fx = (float)x+ (float)rayon*cos(DEG2RAD(i));
             float fy = (float)y+ (float)rayon*sin(DEG2RAD(i));
@@ -611,19 +616,45 @@ void PanelCamera::displayGL()
 
     if ( bAffCatalog )
     {
-        glColor4f( 1.0, 1.0, 1.0, 0.8 );
-        int n = catalog.size();
-        for ( int i=0; i<n; i++ )
-
+        int n = vizier.size();
+        if ( n!= 0)
         {
-            glColor4f( 1.0, 0.0, 0.0, 0.8 );
-            int n = catalog.size();
+            glColor4f( 1.0, 0.7, 0.0, 0.8 );
+            //logf( (char*)"Affiche VIZIER  %0.4f", fRefCatalogX );
             for ( int i=0; i<n; i++ )
             {
-                double x = -(catalog[i]->fRA - 56.0 ) * Zref + 1920.0 - 400.0 +Xref;
-                double y = -(catalog[i]->fDE - 23.5 ) * Zref + 1200.0 + 0.0 + Yref;
-                double r = (12.0 - catalog[i]->fMag ) * 0.5;
-                glCercle( x, y, r );
+                int n = vizier.size();
+                for ( int i=0; i<n; i++ )
+                {
+                    /*
+                    if ( i==0 )
+                    {
+                        logf( (char*)"Affiche VIZIER  %0.4f, star %0.4f", fRefCatalogX, vizier.get(i)->fRA );
+                    }
+                    double x = -(vizier.get(i)->fRA - fRefCatalogX ) * Zref + 1920.0 - 400.0 +Xref;
+                    double y = -(vizier.get(i)->fDE - fRefCatalogY ) * Zref + 1200.0 + 0.0 + Yref;
+
+                    double x = -(vizier.get(i)->fRA - fRefCatalogX ) * Zref + fRefCatalogDecalX + getX() + Xref;
+                    double y = -(vizier.get(i)->fDE - fRefCatalogY ) * Zref + fRefCatalogDecalY + getY() + Yref;
+
+                    */
+
+                    double xx = (vizier.get(i)->fRA - fRefCatalogX );
+                    double yy = (vizier.get(i)->fDE - fRefCatalogY );
+
+                    vec3 v = vec3( xx, yy, 1.0 );
+                    mat3 m;
+                    m.rotate( vec3(0.0,0.0,1.0), Wref );
+                    vec3 w = m * v;
+                    
+                    double x = -w.x * Zref + fRefCatalogDecalX + getX() + Xref;
+                    double y = -w.y * Zref + fRefCatalogDecalY + getY() + Yref;
+
+                    
+
+                    double r = (12.0 - vizier.get(i)->fMag ) * 0.8;
+                    glCercle( x, y, r );
+                }
             }
         }
     }    
@@ -717,6 +748,27 @@ void PanelCamera::releaseMiddle(int xm, int ym)
     
     log_tab(false);
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::add_catalogue(StarCatalog* p)
+{
+    vizier.add( p );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::setRefCatalog(double _0, double _1)
+{
+    fRefCatalogX = _0;
+    fRefCatalogY = _1;
+    
+    fRefCatalogDecalX = stars.getSuiviScreenX();
+    fRefCatalogDecalY = stars.getSuiviScreenY();
+    
+    Xref = 0.0;
+    Yref = 0.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

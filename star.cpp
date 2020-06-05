@@ -937,9 +937,24 @@ void Star::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 void Star::position(double ra, double dc)
 {
-    logf( (char*)"Star::position(%0.2f,%0.2lf)", ra, dc );
+    logf( (char*)"Star::position(%0.8f,%0.8lf)", RAD2DEG(ra), RAD2DEG(dc) );
     ra_rad = ra;
     dc_rad = dc;
+    
+    struct hms HMS;
+    struct dms DMS;
+
+    rad2hms( HMS, ra );
+    rad2dms( DMS, dc );
+
+    char s_ra[255];
+    char s_de[255];
+    sprintf( s_ra, " %d %d %0.2f", (int)HMS.h, (int)HMS.m, HMS.s );
+    logf( (char*)"  ra = %s", s_ra );
+    sprintf( s_de, " %d %d %0.2f", (int)DMS.d, (int)DMS.m, DMS.s );
+    logf( (char*)"  de = %s", s_de );
+    
+    vizier_load_stars( string(s_ra) + string(s_de), RAD2DEG(ra), RAD2DEG(dc) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -23,9 +23,12 @@
 #include "surveillance.h"
 #include "Mathlib.h"
 #include "panel_courbe.h"
+//#include "catalog.h"
 
 
 #define BOOL2STR(b) b?(char*)"true":(char*)"false"
+
+class Catalog;
 
 
 using namespace std;
@@ -134,7 +137,9 @@ typedef struct readBackground       rb_t;
     extern double                   Xref;
     extern double                   Yref;
     extern double                   Zref;
+    extern double                   Wref;
     extern bool                     bAffCatalog;
+    extern Catalog                  vizier;
     
 
 #endif
@@ -178,6 +183,9 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void                vizier_load_stars( string, double, double );
+
+
 string              get_basename(string);
 unsigned int        get_color(vec4);
 bool                fexists(const char *filename);

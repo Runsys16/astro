@@ -94,13 +94,15 @@ virtual    ~Camera();
     
     void                        setColor(long);
 
-inline bool                     getControlVisible()             { return panelControl!= NULL  ? panelControl->getVisible() : false; }
-inline PanelCamera *            getPanelPreview()               { return panelPreview; }
-inline float                    getHertz()                      { return hz; }
-inline PanelText *              getPanelNbStars()               { return pNbStars; }
-inline int                      getNbStars()                    { return panelPreview->getNbStars(); }
+inline bool                     getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }
+inline PanelCamera *            getPanelPreview()                   { return panelPreview; }
+inline float                    getHertz()                          { return hz; }
+inline PanelText *              getPanelNbStars()                   { return pNbStars; }
+inline int                      getNbStars()                        { return panelPreview->getNbStars(); }
 
-inline void                     add_catalogue(star_catalogue* p){ panelPreview->add_catalogue(p); }
+inline void                     add_catalogue(StarCatalog* p)       { panelPreview->add_catalogue(p); }
+inline void                     setRefCatalog(double _0, double _1) { panelPreview->setRefCatalog(_0, _1); }
+
 };
 
 #endif

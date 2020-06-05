@@ -78,7 +78,8 @@ public:
     void                        screen2tex(float&,float&);
     
     void                        start_threads();
-    void                        add_catalogue(star_catalogue*);
+    void                        add_catalogue(StarCatalog*);
+    void                        setRefCatalog(double, double);
    
 private:
     vector<Camera*>             pCameras;

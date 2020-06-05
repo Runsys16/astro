@@ -3,7 +3,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-star_catalogue::star_catalogue( double ra, double de, double mag, string n )
+StarCatalog::StarCatalog( double ra, double de, double mag, string n )
 {
     fRA = ra;
     fDE = de;

@@ -45,6 +45,9 @@ public:
     void                    position(double, double);
     void                    set_delta(float, float);
 
+    int                     getSuiviScreenX();
+    int                     getSuiviScreenY();
+
 inline int                  size(void)                  { return v_tStars.size(); }    
 
            

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class star_catalogue 
+class StarCatalog 
 {
 public :
         double          fRA;
@@ -19,7 +19,7 @@ public :
         string          name;
 
 public :
-        star_catalogue( double, double, double, string );
+        StarCatalog( double, double, double, string );
 };
 
 #endif

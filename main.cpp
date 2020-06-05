@@ -26,6 +26,7 @@
 #include "panel_apn.h"
 #include "panel_stdout.h"
 #include "star_catalogue.h"
+#include "catalog.h"
 #include <GL/freeglut_ext.h>
 
 #define SIZEPT  20
@@ -324,13 +325,21 @@ bool bDec = true;
 bool bSui = false;
 bool bJoy = false;
 bool bRet = false;
-//--------------------------------------------------------------------------------------------------------------------
-//
+/*
 //--------------------------------------------------------------------------------------------------------------------
 double Xref = -402.0;
 double Yref = -365.0;
 double Zref = 782.0;
+//
+//--------------------------------------------------------------------------------------------------------------------
+*/
+double Xref = -195.0;
+double Yref = -144.0;
+double Zref = 922.0;
+double Wref = 0.0;
 bool   bAffCatalog = true;
+Catalog vizier;
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -498,7 +507,7 @@ void vizier_parse_line( string & line )
     string name = line.substr(44+4, 19);
     double fMag = stod( line.substr(133+14,7), 0 );
  
-    star_catalogue* p = new star_catalogue( fRA, fDE, fMag, name );
+    StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
     Camera_mgr::getInstance().add_catalogue( p );
  
     logf( (char*)"Etoile %s\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
@@ -506,10 +515,22 @@ void vizier_parse_line( string & line )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void vizier_thread( void )
+void vizier_thread( string s )
 {
-    string find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<7\" -r 4000 m45";
-    //string find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" ngc4535";
+    string find;
+    
+    if ( s == "" )
+    {
+        //string find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" ngc4535";
+        find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" m45";
+    }
+    else
+    {
+        find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<7\" -r 4000 " + s;
+    }
+    
+    logf( (char*)"Lance la requete : %s", find.c_str() );
+
     string rep = "/home/rene/Documents/astronomie/logiciel/python/cds-client/python-cdsclient/";
 
     char buf1[BUFSIZ]; //BUFSIZ est une constante connue du système
@@ -555,9 +576,12 @@ void vizier_thread( void )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void vizier( void )
+void vizier_load_stars( string s, double ra, double de )
 {
-    thread( &vizier_thread ).detach();
+    vizier.clear();
+
+    thread( &vizier_thread, s ).detach();
+    Camera_mgr::getInstance().setRefCatalog( ra, de );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1692,47 +1716,64 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	    {
 	        bAffCatalog = !bAffCatalog;
             VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
+	        logf( (char*)"Xref : %0.2f", (float)Xref );
+	        logf( (char*)"Yref : %0.2f", (float)Yref );
+	        logf( (char*)"Zref : %0.2f", (float)Zref );
+	        logf( (char*)"Wref : %0.2f", (float)Wref );
+	        logf( (char*)"bAffCataog : %s", BOOL2STR(bAffCatalog) );
 	    }
 	    break;
 	
+	case 'd':
+	    {
+	        Wref -= 0.25;
+	        //logf( (char*)"Wref : %0.2f", (float)Wref );
+	    }
+	    break;
+	case 'f':
+	    {
+	        Wref += 0.25;
+	        //logf( (char*)"Wref : %0.2f", (float)Wref );
+	    }
+	    break;
 	case 'a':
 	    {
 	        Xref -= 1.0;
-	        logf( (char*)"Xref : %0.2f", (float)Xref );
+	        //logf( (char*)"Xref : %0.2f", (float)Xref );
 	    }
 	    break;
 	case 'z':
 	    {
 	        Xref += 1.0;
-	        logf( (char*)"Xref : %0.2f", (float)Xref );
+	        //logf( (char*)"Xref : %0.2f", (float)Xref );
 	    }
 	    break;
 
 	case 'q':
 	    {
 	        Yref -= 1.0;
-	        logf( (char*)"Yref : %0.2f", (float)Yref );
+	        //logf( (char*)"Yref : %0.2f", (float)Yref );
 	    }
 	    break;
 
 	case 's':
 	    {
 	        Yref += 1.0;
-	        logf( (char*)"Yref : %0.2f", (float)Yref );
+	        //logf( (char*)"Yref : %0.2f", (float)Yref );
 	    }
 	    break;
 
 	case 'w':
 	    {
 	        Zref -= 1.0;
-	        logf( (char*)"Zref : %0.2f", (float)Zref );
+	        //logf( (char*)"Zref : %0.2f", (float)Zref );
 	    }
 	    break;
 
 	case 'x':
 	    {
 	        Zref += 1.0;
-	        logf( (char*)"Zref : %0.2f", (float)Zref );
+	        //logf( (char*)"Zref : %0.2f", (float)Zref );
 	    }
 	    break;
     default:
@@ -1742,7 +1783,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
         }
         break;
     }		
-    logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
+    //logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2418,7 +2459,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         logf( (char*)"Key (q) : Lance un script python");
         //Py_SetProgramName(argv[0]);  /* optional but recommended */
-        vizier();
+        vizier_load_stars(string(""), 56.0, 24.0);
 
         /*
 	    char filename[] = "pyemb7.py";
