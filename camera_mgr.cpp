@@ -83,6 +83,7 @@ void Camera_mgr::add( Camera* p )
     active();
     onBottom();
     
+    vizier.charge();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -552,7 +553,7 @@ void  Camera_mgr::add_catalogue(StarCatalog* p)
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::setRefCatalog(double _0, double _1)
 {   
-    if (pCurrent == NULL)                   return;
+    if (pCurrent == NULL)                   { logf((char*)"pCurrent NULL"); return; }
     pCurrent->setRefCatalog(_0, _1);
 }
 //--------------------------------------------------------------------------------------------------------------------

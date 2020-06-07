@@ -30,6 +30,11 @@ PanelCamera::PanelCamera()
     setExtraString( "panelCamera" );
     
     if ( var.existe("bAffCatalog") )         bAffCatalog  = var.getb( "bAffCatalog");
+    
+    Xref = 435.0;
+    Yref = 367.0;
+    Zref = 783.0;
+    Wref = 5.50;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -761,14 +766,15 @@ void PanelCamera::add_catalogue(StarCatalog* p)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::setRefCatalog(double _0, double _1)
 {
+    logf( (char*)"PanelCamera::setRefCatalog(%0.4f,%0.4f) ...", _0, _1 );
     fRefCatalogX = _0;
     fRefCatalogY = _1;
     
     fRefCatalogDecalX = stars.getSuiviScreenX();
     fRefCatalogDecalY = stars.getSuiviScreenY();
     
-    Xref = 0.0;
-    Yref = 0.0;
+    //Xref = 0.0;
+    //Yref = 0.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

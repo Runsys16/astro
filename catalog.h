@@ -14,14 +14,19 @@
 class Catalog
 {
 private:
+    string                          sFilename;
     string                          sName;
     vector<StarCatalog*>            stars;
 
 public:
     Catalog();
+    Catalog(string);
+    Catalog(string, string);
     ~Catalog();
     
     void                            add( StarCatalog* );
+    void                            sauve();
+    void                            charge();
     
 inline int                          size()                      { return stars.size(); }
 inline StarCatalog*                 get(int i)                  { return stars[i]; }
