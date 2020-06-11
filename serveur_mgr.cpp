@@ -118,6 +118,9 @@ void Serveur_mgr::traite_connexion2()
         
         Camera_mgr::getInstance().position(ra, dc);
         Captures::getInstance().position(ra, dc);
+        Xref = 0.0;
+        Yref = 0.0;
+        //Zref = 0.0;
 
     }
     

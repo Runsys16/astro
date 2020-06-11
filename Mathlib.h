@@ -352,6 +352,127 @@ inline vec2::vec2(const vec4 &_v) {
 
 /*****************************************************************************/
 /*                                                                           */
+/* mat2                                                                      */
+/*                                                                           */
+/*****************************************************************************/
+
+class mat2 {
+public:
+	mat2(void) {
+		mat[0] = 1.0; mat[2] = 0.0;
+		mat[1] = 0.0; mat[3] = 1.0;
+	}
+	mat2(float m0, float m1, float m2, float m3) {
+		mat[0] = m0; mat[2] = m2;
+		mat[1] = m1; mat[3] = m3;
+	}
+	mat2(const float *m) {
+		mat[0] = m[0]; mat[2] = m[2];
+		mat[1] = m[1]; mat[3] = m[3];
+	}
+	mat2(const mat2 &m) {
+		mat[0] = m[0]; mat[2] = m[2];
+		mat[1] = m[1]; mat[3] = m[3];
+	}
+	mat2(const vec2 &u, const vec2 &v ) {
+		mat[0] = u.x; mat[2] = v.x;
+		mat[1] = u.y; mat[3] = v.y;
+	}
+	//mat2(const mat2 &m);
+	
+	vec2 operator*(const vec2 &v) const {
+		return vec2(mat[0] * v[0] + mat[2] * v[1],
+					mat[1] * v[0] + mat[3] * v[1]);
+	}
+	mat2 operator*(float f) const {
+		return mat2(mat[0] * f, mat[1] * f, mat[2] * f, mat[3] * f);
+	}
+	mat2 operator*(const mat2 &m) const {
+		return mat2(mat[0] * m[0] + mat[2] * m[1],
+					mat[1] * m[0] + mat[3] * m[1],
+					mat[0] * m[2] + mat[2] * m[3],
+					mat[1] * m[2] + mat[3] * m[3]);
+	}
+	mat2 operator+(const mat2 &m) const {
+		return mat2(mat[0] + m[0], mat[1] + m[1], mat[2] + m[2],
+					mat[3] + m[3]);
+	}
+	mat2 operator-(const mat2 &m) const {
+		return mat2(mat[0] - m[0], mat[1] - m[1], mat[2] - m[2],
+					mat[3] - m[3]);
+	}
+	
+	mat2 &operator*=(float f) { return *this = *this * f; }
+	mat2 &operator*=(const mat2 &m) { return *this = *this * m; }
+	mat2 &operator+=(const mat2 &m) { return *this = *this + m; }
+	mat2 &operator-=(const mat2 &m) { return *this = *this - m; }
+	
+	operator float*() { return mat; }
+	operator const float*() const { return mat; }
+	
+	float &operator[](int i) { return mat[i]; }
+	const float operator[](int i) const { return mat[i]; }
+	
+	mat2 transpose(void) const {
+		return mat2(mat[0], mat[1],
+					mat[2], mat[3]);
+	}
+	float det(void) const {
+		return ((mat[0] * mat[3]) -
+				(mat[1] * mat[2]) );
+	}
+	mat2 inverse(void) const {
+		float idet = 1.0f / det();
+		return mat2( mat[3] * idet,
+					-mat[1] * idet,
+					-mat[2] * idet,
+					 mat[0] * idet );
+	}
+	
+	void zero(void) {
+		mat[0] = 0.0;
+		mat[1] = 0.0;
+		mat[2] = 0.0;
+		mat[3] = 0.0;
+	}
+	void identity(void) {
+		mat[0] = 1.0; mat[2] = 0.0;
+		mat[1] = 0.0; mat[3] = 1.0;
+	}
+	void rotate(float angle) {
+		DegToRad(angle);
+		float c = (float)cos(angle);
+		float s = (float)sin(angle);
+		mat[0] = c; 	mat[2] = -s;
+		mat[1] = s;		mat[3] = c;	
+	}
+	void scale(float x,float y) {
+		mat[0] = x; mat[2] = 0;
+		mat[1] = 0; mat[3] = y;
+	}
+	void scale(const vec2 &v) {
+		scale(v.x,v.y);
+	}
+    /*
+	void orthonormalize(void) {
+		vec3 x(mat[0],mat[1],mat[2]);
+		vec3 y(mat[3],mat[4],mat[5]);
+		vec3 z;
+		x.normalize();
+		z.cross(x,y);
+		z.normalize();
+		y.cross(z,x);
+		y.normalize();
+		mat[0] = x.x; mat[3] = y.x; mat[6] = z.x;
+		mat[1] = x.y; mat[4] = y.y; mat[7] = z.y;
+		mat[2] = x.z; mat[5] = y.z; mat[8] = z.z;
+	}
+        */
+	float mat[4];
+};
+
+/*****************************************************************************/
+/*                                                                           */
 /* mat3                                                                      */
 /*                                                                           */
 /*****************************************************************************/

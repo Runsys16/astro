@@ -227,6 +227,7 @@ bool                bAffSuivi      = true;
 bool                bSound         = true;
 bool                bInverseCouleur= false;
 bool                bCentrageSuivi = false;
+bool                bFirstStart = true;
 
 int                 wImg;
 int                 hImg;
@@ -1430,6 +1431,12 @@ void getSuiviParameter(void)
 static void idleGL(void)
 {
     Timer&          timer = Timer::getInstance();
+
+    if ( bFirstStart && bPause )
+    {
+        bOneFrame = true;
+    }
+    bFirstStart = false;
 
     #ifdef IDLEGL
     log_tab(false);

@@ -86,6 +86,7 @@ void Catalog::charge()
     if ( !fichier ) 
     {
         logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)sFilename.c_str() );
+        return;
     }
     
     char output[255];

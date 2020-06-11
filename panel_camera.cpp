@@ -31,10 +31,10 @@ PanelCamera::PanelCamera()
     
     if ( var.existe("bAffCatalog") )         bAffCatalog  = var.getb( "bAffCatalog");
     
-    Xref = 435.0;
-    Yref = 367.0;
-    Zref = 783.0;
-    Wref = 5.50;
+    Xref = 524.0;
+    Yref = 438.0;
+    Zref = 933.0;
+    Wref = 5.00;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
