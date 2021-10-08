@@ -71,11 +71,11 @@ public:
     
     void                position(double, double);
     
-    inline bool         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
-    inline bool         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
-    inline bool         getSuivi(vec2& v)                               { v.x=xSuivi; v.y=ySuivi; }
-    inline float        getSuiviX()                                     { xSuivi; }
-    inline float        getSuiviY()                                     { ySuivi; }
+    inline void         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
+    inline void         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
+    inline void         getSuivi(vec2& v)                               { v.x=xSuivi; v.y=ySuivi; }
+    inline float        getSuiviX()                                     { return xSuivi; }
+    inline float        getSuiviY()                                     { return ySuivi; }
 
     inline bool         getSuivi()                                      { return bSuivi; }
     inline void         toggleSuivi()                                   { bSuivi = !bSuivi; }
@@ -103,7 +103,7 @@ public:
     inline void         setDC(double d)                                 { dc_rad = d; }
 
     inline int          getNotFound()                                   { return nbNotFound; }
-    inline int          resetNotFound()                                 { nbNotFound = 0; }
+    inline void         resetNotFound()                                 { nbNotFound = 0; }
 
     
 private:

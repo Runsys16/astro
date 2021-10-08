@@ -218,24 +218,24 @@ void Star::computeMag()
     magnitude = -(log( ponderation ) / log(2.0)) + 17.0;
     
     if ( bSuivi )
-        sprintf( p_sInfo, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
+        snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
     else
-        sprintf( p_sInfo, "mag=%0.2f", magnitude );
+        snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f", magnitude );
     
     if ( haveCoord() )
     {
-        char sDEC[255];
-        char sRA[255];
+        char sDEC[64];
+        char sRA[64];
         
         struct dms DMS;
         rad2dms( DMS, dc_rad );
-        sprintf( sDEC, "DC=%02d-%02dm%0.2fs", (int)DMS.d, (int)DMS.m, DMS.s );
+        snprintf( sDEC, sizeof(sDEC)-1, "DC=%02d-%02dm%0.2fs", (int)DMS.d, (int)DMS.m, DMS.s );
 
         struct hms HMS;
         rad2hms( HMS, ra_rad );
-        sprintf( sRA,  "AD=%02dh%02dm%0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
+        snprintf( sRA,  sizeof(sRA)-1, "AD=%02dh%02dm%0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
 
-        sprintf( p_sInfo, "mag=%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
+        snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
     }
 
     pInfo->changeText( p_sInfo );

@@ -100,6 +100,7 @@ vector<string> t_sHelp2 =
 	"    F5\t: Console de log",
 	"    F6\t: Console arduino",
 	"    F7\t: Affiche/Cache les images",
+	"    F8\t: Prends une photo avec le pentax",
 	"   F10\t: Mode DEBUG WindowManager",
 	"   F11\t: Charge la prochaine image",
 	"   F12\t: Efface la derniere image", 
@@ -2855,6 +2856,14 @@ static void glutSpecialFunc(int key, int x, int y)	{
         Captures::getInstance().switchAffIcones();
         }
         break;
+    case GLUT_KEY_F8:
+        {
+            if ( panelApn == NULL )         panelApn = new PanelApn();
+            else
+                panelApn->setVisible( !panelApn->getVisible() );
+        }
+        break;
+
     case GLUT_KEY_F10:
         {
         bDebug = !bDebug;

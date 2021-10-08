@@ -90,6 +90,9 @@ PanelCourbe::PanelCourbe()
 
     string* pFile = var.gets( "FileResultat" );
     logf( (char*)"Chargement de %s", pFile->c_str() );
+    
+    t_vCourbe.reserve(512);
+
     if ( pFile!=NULL )
     {
         if ( pFile->find( "---" ) == std::string::npos )

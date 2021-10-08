@@ -279,6 +279,7 @@ bool FileBrowser::isInsideDir( int x, int y )
 
     log_tab(false);
     logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
+    return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
