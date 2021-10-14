@@ -24,135 +24,135 @@ clean:
 	rm -f $(OBJDIR)*.o
 	rm -f $(BIN_NAME)
 
-$(OBJDIR)main.o: main.cpp v4l2.h control.h timer.h status.cpp captures.h
+$(OBJDIR)main.o: $(SRCDIR)main.cpp $(SRCDIR)v4l2.h $(SRCDIR)control.h $(SRCDIR)timer.h $(SRCDIR)status.cpp $(SRCDIR)captures.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 		
-$(OBJDIR)v4l2.o: v4l2.cpp v4l2.h control.h
+$(OBJDIR)v4l2.o: $(SRCDIR)v4l2.cpp $(SRCDIR)v4l2.h $(SRCDIR)control.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)control.o: control.cpp control.h
+$(OBJDIR)control.o: $(SRCDIR)control.cpp $(SRCDIR)control.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)timer.o: timer.cpp timer.h
+$(OBJDIR)timer.o: $(SRCDIR)timer.cpp $(SRCDIR)timer.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)camera.o: camera.cpp camera.h
+$(OBJDIR)camera.o: $(SRCDIR)camera.cpp $(SRCDIR)camera.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)camera_mgr.o: camera_mgr.cpp camera_mgr.h
+$(OBJDIR)camera_mgr.o: $(SRCDIR)camera_mgr.cpp $(SRCDIR)camera_mgr.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)pleiade.o: pleiade.cpp pleiade.h
+$(OBJDIR)pleiade.o: $(SRCDIR)pleiade.cpp $(SRCDIR)pleiade.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)serial.o: serial.cpp serial.h
+$(OBJDIR)serial.o: $(SRCDIR)serial.cpp $(SRCDIR)serial.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)connexion_mgr.o: connexion_mgr.cpp connexion_mgr.h
+$(OBJDIR)connexion_mgr.o: $(SRCDIR)connexion_mgr.cpp $(SRCDIR)connexion_mgr.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_console_serial.o: panel_console_serial.cpp panel_console_serial.h
+$(OBJDIR)panel_console_serial.o: $(SRCDIR)panel_console_serial.cpp $(SRCDIR)panel_console_serial.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)console.o: console.cpp console.h
+$(OBJDIR)console.o: $(SRCDIR)console.cpp $(SRCDIR)console.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)serveur_mgr.o: serveur_mgr.cpp serveur_mgr.h
+$(OBJDIR)serveur_mgr.o: $(SRCDIR)serveur_mgr.cpp $(SRCDIR)serveur_mgr.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)capture.o: capture.cpp capture.h
+$(OBJDIR)capture.o: $(SRCDIR)capture.cpp $(SRCDIR)capture.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)var_mgr.o: var_mgr.cpp var_mgr.h
+$(OBJDIR)var_mgr.o: $(SRCDIR)var_mgr.cpp $(SRCDIR)var_mgr.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)alert_box.o: alert_box.cpp alert_box.h
+$(OBJDIR)alert_box.o: $(SRCDIR)alert_box.cpp $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)file_browser.o: file_browser.cpp file_browser.h panel_dir.h panel_file.h
+$(OBJDIR)file_browser.o: $(SRCDIR)file_browser.cpp $(SRCDIR)file_browser.h $(SRCDIR)panel_dir.h $(SRCDIR)panel_file.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_capture.o: panel_capture.cpp panel_capture.h stars.h
+$(OBJDIR)panel_capture.o: $(SRCDIR)panel_capture.cpp $(SRCDIR)panel_capture.h $(SRCDIR)stars.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_camera.o: panel_camera.cpp panel_camera.h stars.h
+$(OBJDIR)panel_camera.o: $(SRCDIR)panel_camera.cpp $(SRCDIR)panel_camera.h $(SRCDIR)stars.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_zoom.o: panel_zoom.cpp panel_zoom.h
+$(OBJDIR)panel_zoom.o: $(SRCDIR)panel_zoom.cpp $(SRCDIR)panel_zoom.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)star.o: star.cpp star.h
+$(OBJDIR)star.o: $(SRCDIR)star.cpp $(SRCDIR)star.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)stars.o: stars.cpp stars.h star.h panel_zoom.h
+$(OBJDIR)stars.o: $(SRCDIR)stars.cpp $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)captures.o: captures.cpp captures.h stars.h capture.h main.h fits.h
+$(OBJDIR)captures.o: $(SRCDIR)captures.cpp $(SRCDIR)captures.h $(SRCDIR)stars.h $(SRCDIR)capture.h $(SRCDIR)main.h $(SRCDIR)fits.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_dir.o: panel_dir.cpp panel_dir.h main.h
+$(OBJDIR)panel_dir.o: $(SRCDIR)panel_dir.cpp $(SRCDIR)panel_dir.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_file.o: panel_file.cpp panel_file.h main.h
+$(OBJDIR)panel_file.o: $(SRCDIR)panel_file.cpp $(SRCDIR)panel_file.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)bluetooth.o: bluetooth.cpp bluetooth.h main.h
+$(OBJDIR)bluetooth.o: $(SRCDIR)bluetooth.cpp $(SRCDIR)bluetooth.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)surveillance.o: surveillance.cpp surveillance.h main.h
+$(OBJDIR)surveillance.o: $(SRCDIR)surveillance.cpp $(SRCDIR)surveillance.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)fits.o: fits.cpp fits.h main.h
+$(OBJDIR)fits.o: $(SRCDIR)fits.cpp $(SRCDIR)fits.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_courbe.o: panel_courbe.cpp panel_courbe.h main.h
+$(OBJDIR)panel_courbe.o: $(SRCDIR)panel_courbe.cpp $(SRCDIR)panel_courbe.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_apn.o: panel_apn.cpp panel_apn.h main.h
+$(OBJDIR)panel_apn.o: $(SRCDIR)panel_apn.cpp $(SRCDIR)panel_apn.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_stdout.o: panel_stdout.cpp panel_stdout.h main.h
+$(OBJDIR)panel_stdout.o: $(SRCDIR)panel_stdout.cpp $(SRCDIR)panel_stdout.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_spin_edit_text.o: panel_spin_edit_text.cpp panel_spin_edit_text.h main.h
+$(OBJDIR)panel_spin_edit_text.o: $(SRCDIR)panel_spin_edit_text.cpp $(SRCDIR)panel_spin_edit_text.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)star_catalogue.o: star_catalogue.cpp star_catalogue.h main.h
+$(OBJDIR)star_catalogue.o: $(SRCDIR)star_catalogue.cpp $(SRCDIR)star_catalogue.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)catalog.o: catalog.cpp catalog.h star_catalogue.h main.h
+$(OBJDIR)catalog.o: $(SRCDIR)catalog.cpp $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
