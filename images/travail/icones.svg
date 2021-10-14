@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 744.09448819 1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="icones.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4248-2">
+      <stop
+         style="stop-color:#ff8000;stop-opacity:1"
+         offset="0"
+         id="stop4346" />
+      <stop
+         style="stop-color:#ffe396;stop-opacity:1"
+         offset="1"
+         id="stop4348" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4248"
+       inkscape:collect="always">
+      <stop
+         id="stop4250"
+         offset="0"
+         style="stop-color:#004d00;stop-opacity:1" />
+      <stop
+         id="stop4252"
+         offset="1"
+         style="stop-color:#96ff9c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4193">
+      <stop
+         style="stop-color:#ff0000;stop-opacity:1;"
+         offset="0"
+         id="stop4195" />
+      <stop
+         style="stop-color:#ffbf96;stop-opacity:1"
+         offset="1"
+         id="stop4197" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4193"
+       id="radialGradient4199"
+       cx="300.50015"
+       cy="322.70813"
+       fx="300.50015"
+       fy="322.70813"
+       r="81.38842"
+       gradientTransform="matrix(-0.37241231,0.4711862,-0.38351212,-0.30311711,397.14709,419.6027)"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4248"
+       id="radialGradient4199-7"
+       cx="300.50015"
+       cy="322.70813"
+       fx="300.50015"
+       fy="322.70813"
+       r="81.38842"
+       gradientTransform="matrix(-0.37241231,0.4711862,-0.38351212,-0.30311711,452.83765,419.16122)"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4248-2"
+       id="radialGradient4199-7-6"
+       cx="300.50015"
+       cy="322.70813"
+       fx="300.50015"
+       fy="322.70813"
+       r="81.38842"
+       gradientTransform="matrix(-0.37241231,0.4711862,-0.38351212,-0.30311711,504.31202,417.95715)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.0605409"
+     inkscape:cx="105.18426"
+     inkscape:cy="671.32009"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer6"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1145"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="fOND"
+     style="display:none">
+    <rect
+       style="display:inline;opacity:0.8;fill:#000000;fill-opacity:1;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4153"
+       width="577.14288"
+       height="407.85715"
+       x="65.714287"
+       y="218.07649"
+       rx="0"
+       ry="0" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="B1"
+     style="display:inline">
+    <rect
+       style="display:inline;opacity:0.8;fill:#ffffff;fill-opacity:1;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136"
+       width="42.184479"
+       height="36.784866"
+       x="151.42279"
+       y="452.9201"
+       rx="8.3945017"
+       ry="8.3945017"
+       inkscape:export-xdpi="34.139999"
+       inkscape:export-ydpi="34.139999"
+       inkscape:export-filename="/home/rene/programmes/opengl/video/astro/images/fermer.tga.png" />
+    <rect
+       style="display:inline;opacity:0.8;fill:url(#radialGradient4199);fill-opacity:1;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-3"
+       width="38.453278"
+       height="33.531258"
+       x="153.28839"
+       y="454.54691"
+       rx="7.6520114"
+       ry="7.6520114"
+       inkscape:export-xdpi="34.139999"
+       inkscape:export-ydpi="34.139999"
+       inkscape:export-filename="/home/rene/programmes/opengl/video/astro/images/fermer.tga.png" />
+    <path
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:5.90582752;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 161.43977,459.76903 183.3757,483.2236"
+       id="path4160"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="34.139999"
+       inkscape:export-ydpi="34.139999"
+       inkscape:export-filename="/home/rene/programmes/opengl/video/astro/images/fermer.tga.png" />
+    <path
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:5.90582752;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 183.59029,459.76903 161.65436,483.2236"
+       id="path4160-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="34.139999"
+       inkscape:export-ydpi="34.139999"
+       inkscape:export-filename="/home/rene/programmes/opengl/video/astro/images/fermer.tga.png" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="B2"
+     style="display:inline">
+    <rect
+       style="display:inline;opacity:0.8;fill:#ffffff;fill-opacity:1;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-5"
+       width="42.184479"
+       height="36.784866"
+       x="207.11336"
+       y="452.47864"
+       rx="8.3945017"
+       ry="8.3945017"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+    <rect
+       style="display:inline;opacity:0.8;fill:url(#radialGradient4199-7);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-3-6"
+       width="38.453278"
+       height="33.531258"
+       x="208.97896"
+       y="454.10544"
+       rx="7.6520114"
+       ry="7.6520114"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+    <path
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:5.90582752;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 241.25406,470.56622 -26.13971,-0.0523"
+       id="path4160-6-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="B3"
+     style="display:inline">
+    <rect
+       style="display:inline;opacity:0.8;fill:#ffffff;fill-opacity:1;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-5-1"
+       width="42.184479"
+       height="36.784866"
+       x="258.58774"
+       y="451.27457"
+       rx="8.3945017"
+       ry="8.3945017"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+    <rect
+       style="display:inline;opacity:0.8;fill:url(#radialGradient4199-7-6);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-3-6-8"
+       width="38.453278"
+       height="33.531258"
+       x="260.45334"
+       y="452.90137"
+       rx="7.6520114"
+       ry="7.6520114"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+    <path
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:5.90582752;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 292.24312,479.67498 -26.13971,-0.0523"
+       id="path4160-6-9-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+    <path
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:5.90582752;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 292.32255,459.36838 -26.13971,-0.0523"
+       id="path4160-6-9-7-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+    <path
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:5.90582752;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 269.07794,482.5754 0.0523,-26.1397"
+       id="path4160-6-9-7-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+    <path
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:5.90582752;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 289.33961,482.5754 0.0523,-26.1397"
+       id="path4160-6-9-7-2-0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="51"
+       inkscape:export-ydpi="51" />
+  </g>
+</svg>

@@ -1,0 +1,3 @@
+#!/bin/bash
+edition *.cpp
+edition *.h makefile ed

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 744.09448819 1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="bouton.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient4301"
+       inkscape:collect="always">
+      <stop
+         id="stop4303"
+         offset="0"
+         style="stop-color:#000000;stop-opacity:1;" />
+      <stop
+         id="stop4305"
+         offset="1"
+         style="stop-color:#c9cbc9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       gradientTransform="matrix(1.04688,0,0,1.1010152,-17.452905,43.566546)"
+       inkscape:collect="always"
+       xlink:href="#linearGradient4301"
+       id="linearGradient4152-3"
+       x1="356.80469"
+       y1="433.65015"
+       x2="356.3222"
+       y2="568.06006"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4301"
+       id="linearGradient4190"
+       x1="305.06607"
+       y1="500.31381"
+       x2="305.06607"
+       y2="436.67422"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(5.0507627,122.22846)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4301"
+       id="linearGradient4190-7"
+       x1="297.56607"
+       y1="436.38525"
+       x2="297.20892"
+       y2="504.88852"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(3.562291,123.27641)" />
+    <linearGradient
+       gradientTransform="matrix(1.04688,0,0,1.1010152,-18.941379,44.61449)"
+       inkscape:collect="always"
+       xlink:href="#linearGradient4301"
+       id="linearGradient4152-3-3"
+       x1="356.80469"
+       y1="433.65015"
+       x2="356.3222"
+       y2="568.06006"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="317.3489"
+     inkscape:cy="436.99252"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer4"
+     showgrid="false"
+     showguides="false"
+     inkscape:window-width="1600"
+     inkscape:window-height="876"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:none">
+    <rect
+       style="opacity:1;fill:url(#linearGradient4152-3);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-5"
+       width="270.69327"
+       height="99.09137"
+       x="190.42755"
+       y="543.19714"
+       rx="29.178659"
+       ry="86.236023"
+       inkscape:export-xdpi="18"
+       inkscape:export-ydpi="18" />
+    <rect
+       style="opacity:1;fill:url(#linearGradient4190);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136"
+       width="258.57144"
+       height="90"
+       x="197.0562"
+       y="549.75525"
+       rx="27.872019"
+       ry="78.324097"
+       inkscape:export-xdpi="18"
+       inkscape:export-ydpi="18" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Calque 4"
+     style="display:inline">
+    <rect
+       style="opacity:1;fill:url(#linearGradient4152-3-3);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-5-6"
+       width="270.69327"
+       height="99.09137"
+       x="188.93909"
+       y="544.24506"
+       rx="29.178659"
+       ry="86.236023"
+       inkscape:export-xdpi="18"
+       inkscape:export-ydpi="18" />
+    <rect
+       style="opacity:1;fill:url(#linearGradient4190-7);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4136-0"
+       width="258.57144"
+       height="90"
+       x="195.56773"
+       y="550.80316"
+       rx="27.872019"
+       ry="78.324097"
+       inkscape:export-xdpi="18"
+       inkscape:export-ydpi="18" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Calque 2"
+     style="display:inline">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:68.13095093px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="269.12201"
+       y="618.10333"
+       id="text4196"
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="18.165052"
+       inkscape:export-ydpi="18.165052"><tspan
+         sodipodi:role="line"
+         id="tspan4198"
+         x="269.12201"
+         y="618.10333">OK</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:68.13095093px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="265.93137"
+       y="614.41357"
+       id="text4196-1"
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="18.165052"
+       inkscape:export-ydpi="18.165052"><tspan
+         sodipodi:role="line"
+         id="tspan4198-2"
+         x="265.93137"
+         y="614.41357">OK</tspan></text>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Calque 3"
+     style="display:none">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:70.19536591px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="227.0507"
+       y="617.21729"
+       id="text4196-5-2"
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="18"
+       inkscape:export-ydpi="18"><tspan
+         sodipodi:role="line"
+         id="tspan4198-6-9"
+         x="227.0507"
+         y="617.21729">QUIT</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:70.19536591px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="222.96042"
+       y="614.75354"
+       id="text4196-5"
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="18"
+       inkscape:export-ydpi="18"><tspan
+         sodipodi:role="line"
+         id="tspan4198-6"
+         x="222.96042"
+         y="614.75354">QUIT</tspan></text>
+  </g>
+</svg>
