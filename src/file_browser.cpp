@@ -224,6 +224,8 @@ void FileBrowser::change_dir( int n )
 
     tDirNames.clear();
     tFileNames.clear();
+    
+    dirScroll = fileScroll = 0;
         
     logf( (char*)" Explore %s", (char*)dirname.c_str() );
     workingDir = dirname;
@@ -246,6 +248,8 @@ void FileBrowser::change_dir( string dirname )
     tDirNames.clear();
     tFileNames.clear();
         
+    dirScroll = fileScroll = 0;
+
     logf( (char*)" Explore %s", (char*)dirname.c_str() );
     workingDir = dirname;
     explore_dir(  );
@@ -255,7 +259,7 @@ void FileBrowser::change_dir( string dirname )
 //--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::isInsideDir( int x, int y )
 {
-    logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
+    logf( (char*)"FileBrowser::isInsideDir(%d, %d)", x, y );
     log_tab(true);
 
     int Y = panelDir->Screen2y(y);
@@ -265,7 +269,7 @@ bool FileBrowser::isInsideDir( int x, int y )
     {
         logf( (char*)"NOK" );
         log_tab(false);
-        logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
+        logf( (char*)"FileBrowser::isInsideDir(%d, %d)", x, y );
         return false;
     }
 
@@ -278,7 +282,7 @@ bool FileBrowser::isInsideDir( int x, int y )
     dirScroll = 0;
 
     log_tab(false);
-    logf( (char*)"FileBrowser::isInsideFile(%d, %d)", x, y );
+    logf( (char*)"FileBrowser::isInsideDir(%d, %d)", x, y );
     return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -294,12 +298,14 @@ bool FileBrowser::isInsideFile( int x, int y )
     
     int m = panelFile->getPosDY() / DY;
     int n = m*X + Y;
+    n -= fileScroll;
 
     logf( (char*)"--- X=%d Y=%d m=%d n=%d/%d", X, Y, m, n, tFileNames.size() );
     
     if ( n >= tFileNames.size() )
     {
         logf( (char*)"NOK X=%d Y=%d m=%d n=%d", X, Y, m, n );
+        logf( (char*)"FileScroll = %d", fileScroll );
         log_tab(false);
         logf( (char*)"FileBrowser::isInsideFile()" );
         return false;
@@ -565,6 +571,8 @@ void FileBrowser::scrollFile( int n )
 {
     if ( n!=1 && n!=-1 )            return;
     
+    fileScroll += n;
+
     vector<Panel*>& childs = panelFile->getChilds();
     int max =  panelFile->getPosDY() / DY - 1;
 
