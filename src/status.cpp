@@ -1,3 +1,18 @@
+class PanelButtonAsservissement : public PanelButton
+{
+public:
+    virtual void		wheelUp( int, int);
+    virtual void		wheelDown( int, int);
+};
+
+class PanelTextAsservissement : public Panel
+{
+public:
+    virtual void		wheelUp( int, int);
+    virtual void		wheelDown( int, int);
+};
+
+
 PanelButton *       pButtonSerial;
 PanelButton *       pButtonStdOut;
 PanelButton *       pButtonControl;
@@ -11,11 +26,16 @@ PanelCheckBox *     pButtonSui;
 PanelCheckBox *     pButtonRet;
 PanelCheckBox *     pButtonMode;
 
-PanelButton *       pFlecheHaut;
-PanelButton *       pFlecheBas;
+PanelButtonAsservissement *       pFlecheHaut;
+PanelButtonAsservissement *       pFlecheBas;
 
-PanelButton *       pUrgentUp;
-PanelButton *       pUrgentDown;
+PanelButtonAsservissement *       pUrgentUp;
+PanelButtonAsservissement *       pUrgentDown;
+
+PanelText*          pErr;
+PanelText*          pUrg;
+PanelTextAsservissement*          pErrA;
+PanelTextAsservissement*          pUrgA;
 
 PanelCheckBox *     pButtonAsserv;
 
@@ -103,6 +123,126 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelTextAsservissement::wheelUp( int, int)
+{
+    char s[20];
+    float err = panelCourbe->get_err();
+    log((char*)"PanelTextAsservissement::wheelUp()" );
+    
+    if ( this == pUrgA  )
+    {
+	    fLimitCorrection /= 0.9f;
+        var.set("fLimitCorrection", (float)fLimitCorrection);
+        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+    }
+    else if ( this == pErrA )
+    {
+        err /= 0.9;
+        panelCourbe->set_err( err );
+        var.set( "err", err );
+
+        sprintf( s, "+%0.2f", err );
+        panelCourbe->get_pXMax()->changeText( (char*)s );
+        panelCourbe->get_pYMax()->changeText( (char*)s );
+
+        sprintf( s, "-%0.2f", err );
+        panelCourbe->get_pXMin()->changeText( (char*)s );
+        panelCourbe->get_pYMin()->changeText( (char*)s );
+        logf( (char*) "err = %0.2f", (float)err );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelTextAsservissement::wheelDown( int, int)
+{
+    char s[20];
+    float err = panelCourbe->get_err();
+    log((char*)"PanelTextAsservissement::wheelDown()" );
+    
+    if ( this == pUrgA )
+    {
+	    fLimitCorrection *= 0.9f;
+        var.set("fLimitCorrection", (float)fLimitCorrection);
+        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+    }
+    else if ( this == pErrA )
+    {
+        err *= 0.9;
+        panelCourbe->set_err( err );
+        var.set( "err", err );
+
+        sprintf( s, "+%0.2f", err );
+        panelCourbe->get_pXMax()->changeText( (char*)s );
+        panelCourbe->get_pYMax()->changeText( (char*)s );
+
+        sprintf( s, "-%0.2f", err );
+        panelCourbe->get_pXMin()->changeText( (char*)s );
+        panelCourbe->get_pYMin()->changeText( (char*)s );
+        logf( (char*) "err = %0.2f", (float)err );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelButtonAsservissement::wheelUp( int, int)
+{
+    char s[20];
+    float err = panelCourbe->get_err();
+    if ( this == pUrgentUp || this == pUrgentDown )
+    {
+	    fLimitCorrection /= 0.9f;
+        var.set("fLimitCorrection", (float)fLimitCorrection);
+        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+    }
+    else if ( this == pFlecheHaut || this == pFlecheBas)
+    {
+        err /= 0.9;
+        panelCourbe->set_err( err );
+        var.set( "err", err );
+
+        sprintf( s, "+%0.2f", err );
+        panelCourbe->get_pXMax()->changeText( (char*)s );
+        panelCourbe->get_pYMax()->changeText( (char*)s );
+
+        sprintf( s, "-%0.2f", err );
+        panelCourbe->get_pXMin()->changeText( (char*)s );
+        panelCourbe->get_pYMin()->changeText( (char*)s );
+        logf( (char*) "err = %0.2f", (float)err );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelButtonAsservissement::wheelDown( int, int)
+{
+    char s[20];
+    float err = panelCourbe->get_err();
+    if ( this == pUrgentUp || this == pUrgentDown )
+    {
+	    fLimitCorrection *= 0.9f;
+        var.set("fLimitCorrection", (float)fLimitCorrection);
+        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+    }
+    else if ( this == pFlecheHaut || this == pFlecheBas)
+    {
+        err *= 0.9;
+        panelCourbe->set_err( err );
+        var.set( "err", err );
+
+        sprintf( s, "+%0.2f", err );
+        panelCourbe->get_pXMax()->changeText( (char*)s );
+        panelCourbe->get_pYMax()->changeText( (char*)s );
+
+        sprintf( s, "-%0.2f", err );
+        panelCourbe->get_pXMin()->changeText( (char*)s );
+        panelCourbe->get_pYMin()->changeText( (char*)s );
+        logf( (char*) "err = %0.2f", (float)err );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void cb_fleche(PanelButton* pPanel)
 {
     char s[20];
@@ -142,12 +282,15 @@ void cb_fleche(PanelButton* pPanel)
     {
 		fLimitCorrection *= 1.1f;
         var.set("fLimitCorrection", (float)fLimitCorrection);
+        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+
     }
     else
     if ( pPanel == pUrgentDown )
     {
 		fLimitCorrection *= 0.9f;
         var.set("fLimitCorrection", (float)fLimitCorrection);
+        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
     }
 
 }
@@ -328,9 +471,9 @@ PanelButton* create_window_button( int i, string tex)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void create_fleches( int x, char* up, char* down, PanelButton* &pUp, PanelButton* &pDown )
+void create_fleches( int x, char* up, char* down, PanelButtonAsservissement* &pUp, PanelButtonAsservissement* &pDown )
 {
-    pUp = new PanelButton();
+    pUp = new PanelButtonAsservissement();
     panelStatus->add(pUp);
     
     pUp->setPosAndSize( x, 2, 10, 8 );
@@ -342,7 +485,7 @@ void create_fleches( int x, char* up, char* down, PanelButton* &pUp, PanelButton
 	pUp->setCallBackUp(   cb_fleche );
 
 
-    pDown = new PanelButton();
+    pDown = new PanelButtonAsservissement();
     panelStatus->add(pDown);
 
     pDown->setPosAndSize( x, 2+8, 10, 8 );
@@ -375,6 +518,19 @@ void create_windows_button()
     
     create_fleches( 730, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
     create_fleches( 780, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
+
+    pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 742, 2 );
+    pErrA = new PanelTextAsservissement();
+    pErrA->setPosAndSize(742, 2, 32, 20);
+	panelStatus->add( pErr );
+	panelStatus->add( pErrA );
+
+    pUrg  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 792, 2 );
+    pUrgA = new PanelTextAsservissement();
+    pUrgA->setPosAndSize(792, 2, 32, 20);
+	panelStatus->add( pUrg );
+	panelStatus->add( pUrgA );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

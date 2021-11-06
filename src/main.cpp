@@ -153,8 +153,8 @@ PanelText*          pJoyXY;
 PanelText*          pArduino;
 PanelText*          pStellarium;
 PanelText*          pPas;
-PanelText*          pErr;
-PanelText*          pUrg;
+//PanelText*          pErr;
+//PanelText*          pUrg;
 PanelText*          pDeplacement;
 PanelText*          pAD;
 PanelText*          pDC;
@@ -3313,12 +3313,6 @@ static void CreateStatus()	{
     pMode = new PanelText( (char*)"Mode ---",   PanelText::NORMAL_FONT, 350, 2 );
 	panelStatus->add( pMode );
  
-    pErr = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 742, 2 );
-	panelStatus->add( pErr );
-
-    pUrg = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 792, 2 );
-	panelStatus->add( pUrg );
-
     pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 850, 2 );
 	panelStatus->add( pAsservi );
 

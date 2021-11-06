@@ -29,13 +29,13 @@ PanelCourbe::PanelCourbe()
 
     wm.add(this);
     
- 	setBackground((char*)"images/background.tga");
+    setBackground((char*)"images/background.tga");
 
     pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
-	add( pXMax );
+    add( pXMax );
 
     pXMin = new PanelText( (char*)"-err",		PanelText::NORMAL_FONT, 5, 60 );
-	add( pXMin );
+    add( pXMin );
 
     
     pYMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 70 );
