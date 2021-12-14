@@ -17,9 +17,16 @@ public :
         double          fDE;
         double          fMag;
         string          name;
+        PanelText *     pInfo;
+        char            p_sInfo[225];
 
 public :
         StarCatalog( double, double, double, string );
+        ~StarCatalog();
+        
+inline  double          getRA()             {return fRA;}
+inline  double          getDE()             {return fDE;}
+inline  PanelText*      getInfo()           {return pInfo;}
 };
 
 #endif

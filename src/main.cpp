@@ -68,6 +68,7 @@ vector<string> t_sHelp1 =
 	"     p\t: Pause de l'affichage de pleiades",
 	"     P\t: Image suivante",
 	"     q\t: Lance un script python",
+	"      \t: Lance VIZIER",
 	"     Q\t: Mise en station via polaris",
 	"     r\t: Rappel les mesures de suivi",
 	"     R\t: Test alert BOX",
@@ -104,6 +105,7 @@ vector<string> t_sHelp2 =
 	"   F10\t: Mode DEBUG WindowManager",
 	"   F11\t: Charge la prochaine image",
 	"   F12\t: Efface la derniere image", 
+	"    CR\t: Plein Ecran", 
 	"",
 	"---- SUIVI ----",
 	"   j/J\t: Change la taille du cercle d'asservissement",
@@ -122,6 +124,14 @@ vector<string> t_sHelp2 =
 	"   g/G\t: Change la valeur du filtre"   ,
 	"     x\t: Affiche/Cache la fft",
 	"     X\t: Choix de l'abcisse ou de l'ordonnée",
+	"",
+	"---- Vizier ----",
+	" Alt+e\t: Affiche catalog"   ,
+	"   d/f\t: Rotation"   ,
+	"   a/z\t: X"   ,
+	"   q/s\t: Y"   ,
+	"   w/x\t: Zoom X"   ,
+	"   c/v\t: Zoom Y"   ,
 	"",
 	"ctrl+q\t: --- SORTIE DU LOGICIEL ---" 
 };
@@ -335,10 +345,11 @@ double Zref = 782.0;
 //
 //--------------------------------------------------------------------------------------------------------------------
 */
-double Xref = -195.0;
-double Yref = -144.0;
-double Zref = 922.0;
-double Wref = 0.0;
+double Xref  = -1.0;
+double Yref  = -1.0;
+double ZrefX = -1.0;
+double ZrefY = -1.0;
+double Wref  = -1.0;
 bool   bAffCatalog = true;
 Catalog vizier;
 
@@ -512,7 +523,7 @@ void vizier_parse_line( string & line )
     StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
     Camera_mgr::getInstance().add_catalogue( p );
  
-    logf( (char*)"Etoile %s\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
+    logf( (char*)"main::vizier_parse_line() Etoile %s\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1724,35 +1735,50 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	    {
 	        bAffCatalog = !bAffCatalog;
             VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
-	        logf( (char*)"Xref : %0.2f", (float)Xref );
-	        logf( (char*)"Yref : %0.2f", (float)Yref );
-	        logf( (char*)"Zref : %0.2f", (float)Zref );
-	        logf( (char*)"Wref : %0.2f", (float)Wref );
+	        logf( (char*)"Xref  : %0.2f", (float)Xref );
+	        logf( (char*)"Yref  : %0.2f", (float)Yref );
+	        logf( (char*)"ZrefX : %0.2f", (float)ZrefX );
+	        logf( (char*)"ZrefY : %0.2f", (float)ZrefY );
+	        logf( (char*)"Wref  : %0.2f", (float)Wref );
 	        logf( (char*)"bAffCataog : %s", BOOL2STR(bAffCatalog) );
+
+            var.set( "bAffCatalog", bAffCatalog );
+            /*
+            var.set( "Xref",  (float)Xref );
+            var.set( "Yref",  (float)Yref );
+            var.set( "ZrefX", (float)ZrefX );
+            var.set( "ZrefY", (float)ZrefY );
+            var.set( "Wref",  (float)Wref );
+            */
+	        
 	    }
 	    break;
 	
 	case 'd':
 	    {
 	        Wref -= 0.25;
+            var.set( "Wref",  (float)Wref );
 	        //logf( (char*)"Wref : %0.2f", (float)Wref );
 	    }
 	    break;
 	case 'f':
 	    {
 	        Wref += 0.25;
+            var.set( "Wref",  (float)Wref );
 	        //logf( (char*)"Wref : %0.2f", (float)Wref );
 	    }
 	    break;
 	case 'a':
 	    {
 	        Xref -= 1.0;
+            var.set( "Xref",  (float)Xref );
 	        //logf( (char*)"Xref : %0.2f", (float)Xref );
 	    }
 	    break;
 	case 'z':
 	    {
 	        Xref += 1.0;
+            var.set( "Xref",  (float)Xref );
 	        //logf( (char*)"Xref : %0.2f", (float)Xref );
 	    }
 	    break;
@@ -1760,6 +1786,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	case 'q':
 	    {
 	        Yref -= 1.0;
+            var.set( "Yref",  (float)Yref );
 	        //logf( (char*)"Yref : %0.2f", (float)Yref );
 	    }
 	    break;
@@ -1767,20 +1794,38 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	case 's':
 	    {
 	        Yref += 1.0;
+            var.set( "Yref",  (float)Yref );
 	        //logf( (char*)"Yref : %0.2f", (float)Yref );
 	    }
 	    break;
 
 	case 'w':
 	    {
-	        Zref -= 1.0;
+	        ZrefX -= 1.0;
+            var.set( "ZrefX", (float)ZrefX );
 	        //logf( (char*)"Zref : %0.2f", (float)Zref );
 	    }
 	    break;
 
 	case 'x':
 	    {
-	        Zref += 1.0;
+	        ZrefX += 1.0;
+            var.set( "ZrefX", (float)ZrefX );
+	        //logf( (char*)"Zref : %0.2f", (float)Zref );
+	    }
+	    break;
+	case 'c':
+	    {
+	        ZrefY -= 1.0;
+            var.set( "ZrefY", (float)ZrefY );
+	        //logf( (char*)"Zref : %0.2f", (float)Zref );
+	    }
+	    break;
+
+	case 'v':
+	    {
+	        ZrefY += 1.0;
+            var.set( "ZrefY", (float)ZrefY );
 	        //logf( (char*)"Zref : %0.2f", (float)Zref );
 	    }
 	    break;
@@ -3833,6 +3878,13 @@ void charge_var()
     if ( var.existe("filtre"))              filtre          = var.geti("filtre");
     if ( var.existe("fpos_ad"))             fpos_ad         = var.getf("fpos_ad");
     if ( var.existe("fpos_dc"))             fpos_dc         = var.getf("fpos_dc");
+    if ( var.existe("Xref"))                Xref            = var.getf("Xref");
+    if ( var.existe("Yref"))                Yref            = var.getf("Yref");
+    if ( var.existe("ZrefX"))               ZrefX           = var.getf("ZrefX");
+    if ( var.existe("ZrefY"))               ZrefY           = var.getf("ZrefY");
+    if ( var.existe("Wref"))                Wref            = var.getf("Wref");
+    if ( var.existe("bAffCatalog"))         bAffCatalog     = var.getb("bAffCatalog");
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

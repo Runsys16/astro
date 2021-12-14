@@ -136,7 +136,8 @@ typedef struct readBackground       rb_t;
 
     extern double                   Xref;
     extern double                   Yref;
-    extern double                   Zref;
+    extern double                   ZrefX;
+    extern double                   ZrefY;
     extern double                   Wref;
     extern bool                     bAffCatalog;
     extern Catalog                  vizier;

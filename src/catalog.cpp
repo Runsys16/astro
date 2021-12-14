@@ -76,7 +76,7 @@ void Catalog::sauve()
 void Catalog::charge()
 {
     //return;
-    logf( (char*)"Lecture du ficher '%s'", (char*)sFilename.c_str() );
+    logf( (char*)"Catalog::charge() Lecture du ficher '%s'", (char*)sFilename.c_str() );
 
     stars.clear();
     
@@ -93,6 +93,7 @@ void Catalog::charge()
     while (!fichier.eof()) {
         fichier >> output;
         fichier >> output;
+        if (fichier.eof())      break;
         string val = string(output);
         double fRA = stof(val);
 
@@ -112,13 +113,17 @@ void Catalog::charge()
         
         StarCatalog* p = new StarCatalog(fRA, fDE, fMag, name);
         
-        logf( (char*)"%0.4f %0.4f %0.4f %s", fRA, fDE, fMag, name.c_str() );
+        logf( (char*)"Catalog::charge()  Etoile RA=%0.4f %DE=0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );
         stars.push_back(p);
 
         if ( name == "66714384141781760" )
         {   
             Camera_mgr::getInstance().setRefCatalog( fRA, fDE );
             logf( (char*)"Ajout de la reference %0.2f",fMag );
+        }
+        else
+        {
+            //Camera_mgr::getInstance().add_catalogue(p);
         }
                
     }

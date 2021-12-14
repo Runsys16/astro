@@ -31,19 +31,37 @@ PanelCamera::PanelCamera()
     
     if ( var.existe("bAffCatalog") )         bAffCatalog  = var.getb( "bAffCatalog");
     
-    Xref = 524.0;
-    Yref = 438.0;
-    Zref = 933.0;
-    Wref = 5.00;
-
+    if (        Xref == -1.0 
+            &&  Yref == -1.0
+            &&  ZrefX == -1.0
+            &&  ZrefY == -1.0
+            &&  Wref == -1.0 )  {
+        Xref = 525.0;
+        Yref = 438.0;
+        ZrefX = 934.0;
+        ZrefY = 1018.0;
+        Wref = 5.50;
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+#include "camera_mgr.h"
 void PanelCamera::idle(float f)
 {
+    int color = 0;
+    if ( bNuit )        color = 0xFFFF0000;
+    else                color = 0xFFFFFFFF;
+
     stars.set_delta( getPosX(), getPosY() );
     
+    Camera_mgr& cam_mgr = Camera_mgr::getInstance();
+    Camera* cam = cam_mgr.getCurrent();
+    cam->getpCamFilename()->setColor(color);
+    cam->getPanelNbStars()->setColor(color);
+    cam->getPanelName()->setColor(color);
+
+    //pCamFilename
     
     fTime += fSens * f;
     fTime1 += f;
@@ -62,6 +80,50 @@ void PanelCamera::idle(float f)
     {
         fSens = 1.0;
     }
+    //----------------------------------------------
+    //                 Vizier
+    //----------------------------------------------
+    int n = vizier.size();
+    if ( bAffCatalog && n!=0 )
+    {
+        for ( int i=0; i<n; i++ )
+        {
+
+            double xx = (vizier.get(i)->fRA - fRefCatalogX );
+            double yy = (vizier.get(i)->fDE - fRefCatalogY );
+
+            vec3 v = vec3( xx, yy, 1.0 );
+            mat3 m;
+            m.rotate( vec3(0.0,0.0,1.0), Wref );
+            vec3 w = m * v;
+            
+            double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
+            double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
+            
+            PanelText* pInfo = vizier.get(i)->pInfo;
+            if ( pInfo->getParent() == NULL )    this->add(pInfo);
+
+            pInfo->setPos(x+10, y-80);
+            pInfo->setVisible(true);
+
+            //logf( (char*)"%08X", (int)color );
+            if ( bNuit )        color = 0xFFFF0000;
+            else                color = 0xCCFFB200;
+            pInfo->setColor(color);
+        }
+    }    
+    else
+    if ( n!= 0)
+    {
+        for ( int i=0; i<n; i++ )
+        {
+            PanelText* pInfo = vizier.get(i)->pInfo;
+            pInfo->setVisible(false);
+        }
+    }    
+    //----------------------------------------------
+    
+    stars.idle();
     PanelWindow::idle(f);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -578,11 +640,11 @@ void PanelCamera::displayGL()
     float dy = getDY()/2;
 
 
-    PanelWindow::displayGL();
 
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( gris, gris, gris, 0.2 );    
     
+    PanelWindow::displayGL();
 
 
 
@@ -619,51 +681,32 @@ void PanelCamera::displayGL()
         glVecDC();
     }
 
-    if ( bAffCatalog )
+    int n = vizier.size();
+    if ( bAffCatalog && n!= 0)
     {
-        int n = vizier.size();
-        if ( n!= 0)
+        if ( bNuit )        glColor4f( 1.0,  0.0,  0.0, 1.0 );
+        else                glColor4f( 1.0, 0.7, 0.0, 0.8 );
+
+        for ( int i=0; i<n; i++ )
         {
-            glColor4f( 1.0, 0.7, 0.0, 0.8 );
-            //logf( (char*)"Affiche VIZIER  %0.4f", fRefCatalogX );
-            for ( int i=0; i<n; i++ )
-            {
-                int n = vizier.size();
-                for ( int i=0; i<n; i++ )
-                {
-                    /*
-                    if ( i==0 )
-                    {
-                        logf( (char*)"Affiche VIZIER  %0.4f, star %0.4f", fRefCatalogX, vizier.get(i)->fRA );
-                    }
-                    double x = -(vizier.get(i)->fRA - fRefCatalogX ) * Zref + 1920.0 - 400.0 +Xref;
-                    double y = -(vizier.get(i)->fDE - fRefCatalogY ) * Zref + 1200.0 + 0.0 + Yref;
 
-                    double x = -(vizier.get(i)->fRA - fRefCatalogX ) * Zref + fRefCatalogDecalX + getX() + Xref;
-                    double y = -(vizier.get(i)->fDE - fRefCatalogY ) * Zref + fRefCatalogDecalY + getY() + Yref;
+            double xx = (vizier.get(i)->fRA - fRefCatalogX );
+            double yy = (vizier.get(i)->fDE - fRefCatalogY );
 
-                    */
+            vec3 v = vec3( xx, yy, 1.0 );
+            mat3 m;
+            m.rotate( vec3(0.0,0.0,1.0), Wref );
+            vec3 w = m * v;
+            
+            double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
+            double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
+            
 
-                    double xx = (vizier.get(i)->fRA - fRefCatalogX );
-                    double yy = (vizier.get(i)->fDE - fRefCatalogY );
-
-                    vec3 v = vec3( xx, yy, 1.0 );
-                    mat3 m;
-                    m.rotate( vec3(0.0,0.0,1.0), Wref );
-                    vec3 w = m * v;
-                    
-                    double x = -w.x * Zref + fRefCatalogDecalX + getX() + Xref;
-                    double y = -w.y * Zref + fRefCatalogDecalY + getY() + Yref;
-
-                    
-
-                    double r = (12.0 - vizier.get(i)->fMag ) * 0.8;
-                    glCercle( x, y, r );
-                }
-            }
+            double r = (12.0 - vizier.get(i)->fMag ) * 0.8;
+            glCercle( x, y, r );
         }
     }    
-
+    
     displayGLTrace();
     //*/
     
@@ -760,6 +803,25 @@ void PanelCamera::releaseMiddle(int xm, int ym)
 void PanelCamera::add_catalogue(StarCatalog* p)
 {
     vizier.add( p );
+    
+    double xx = (p->getRA() - fRefCatalogX );
+    double yy = (p->getDE() - fRefCatalogY );
+
+    vec3 v = vec3( xx, yy, 1.0 );
+    mat3 m;
+    m.rotate( vec3(0.0,0.0,1.0), Wref );
+    vec3 w = m * v;
+    
+    double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
+    double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
+    
+    logf( (char*)"PanelCamera::add_catalogue(%0.4f,%0.4f) ...", x, y );
+    //p->getInfo()->setX(x);
+    //p->getInfo()->setY(y);
+    p->getInfo()->setPos(x,y);
+    
+    
+    this->add(p->getInfo());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

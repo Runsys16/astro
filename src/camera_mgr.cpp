@@ -67,6 +67,7 @@ void Camera_mgr::add( string sdev_name )
 void Camera_mgr::add( Camera* p )
 {
     logf((char*)"Camera_mgr::add() -------------" );
+    log_tab(true);
 
 
     pCameras.push_back( p );
@@ -84,6 +85,8 @@ void Camera_mgr::add( Camera* p )
     onBottom();
     
     vizier.charge();
+    log_tab(false);
+    logf((char*)"Camera_mgr::add() -------------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

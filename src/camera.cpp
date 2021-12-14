@@ -224,7 +224,7 @@ void Camera::start_thread()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreatePreview()	{
-    logf((char*)"CreatePreview ------------- %s", getName() );
+    logf((char*)"Camera::CreatePreview ------------- %s", getName() );
     log_tab(true);
 
 	WindowsManager& wm = WindowsManager::getInstance();
@@ -249,9 +249,9 @@ void Camera::CreatePreview()	{
 	
 	
 	//string pStr = getName();
-	PanelTextOmbre* pTO = new PanelTextOmbre( (char*)getName(),	PanelText::LARGE_FONT, 0, 10 );
-	pTO->setAlign( PanelText::CENTER );
-	panelPreview->add( pTO );
+	pPanelName = new PanelText( (char*)getName(),	PanelText::LARGE_FONT, 0, 10 );
+	pPanelName->setAlign( PanelText::CENTER );
+	panelPreview->add( pPanelName );
 	
 
 	//panelPreview->setCanMove(false);
@@ -262,7 +262,7 @@ void Camera::CreatePreview()	{
     logf((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
 
     log_tab(false);
-    logf((char*)"CreatePreview ------------- %s", getName() );
+    logf((char*)"Camera::CreatePreview ------------- %s", getName() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -710,7 +710,7 @@ vec2* Camera::getSuivi()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::setColor( long color )
 {
-    //panelPreview->setColor( color );
+    panelPreview->setColor( color );
     panelControl->setColor( color );
 }
 
