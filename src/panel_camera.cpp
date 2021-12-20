@@ -100,6 +100,9 @@ void PanelCamera::idle(float f)
             double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
             double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
             
+            vizier.get(i)->setXScreen(x);
+            vizier.get(i)->setYScreen(y);
+            
             PanelText* pInfo = vizier.get(i)->pInfo;
             if ( pInfo->getParent() == NULL )    this->add(pInfo);
 
@@ -397,7 +400,7 @@ void PanelCamera::glCroix( int x,  int y,  int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displayGLTrace(void)
 {
-    if ( !bAffTrace )              return;
+    //if ( !bAffTrace )              return;
 
     //logf( (char*)"Affiche les traces" );
     int nbv = t_vTrace.size();
@@ -613,6 +616,29 @@ void PanelCamera::displayCentre()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::displayVizier()
+{
+    int n = vizier.size();
+    if ( n!= 0)
+    {
+        if ( bNuit )        glColor4f( 1.0,  0.0,  0.0, 1.0 );
+        else                glColor4f( 1.0, 0.7, 0.0, 0.8 );
+
+        for ( int i=0; i<n; i++ )
+        {
+
+            double x = vizier.get(i)->getXScreen();
+            double y = vizier.get(i)->getYScreen();
+            
+
+            double r = (12.0 - vizier.get(i)->fMag ) * 1.8;
+            glCercle( x, y, r );
+        }
+    }    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displayGL()
 {
     //logf( (char*)"*** PanelCamera::displayGL() ***" );
@@ -651,13 +677,14 @@ void PanelCamera::displayGL()
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
 
-
     stars.displayGL();
     
     if ( bAffCentre )           displayCentre();
     if ( bAffSuivi )            displaySuivi();
+    if ( bAffCatalog )          displayVizier();
+    if ( bAffTrace )            displayGLTrace();
+    if ( bAfficheVec)           { glVecAD(); glVecDC(); }
 
-    //*
     if ( bModeManuel )
     {
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
@@ -666,49 +693,12 @@ void PanelCamera::displayGL()
 	    int x = xClick;
 	    int y = yClick;
 
-	    //logf( (char*)"--(%d,%d)", x, y );
 	    tex2screen(x,y);
-	    //logf( (char*)"  (%d,%d)", x, y );
 
 	    glCroix(x, y, 50, 50);
         glCercle(x, y, 25);
-
     }
 
-    if ( bAfficheVec)
-    {
-        glVecAD();
-        glVecDC();
-    }
-
-    int n = vizier.size();
-    if ( bAffCatalog && n!= 0)
-    {
-        if ( bNuit )        glColor4f( 1.0,  0.0,  0.0, 1.0 );
-        else                glColor4f( 1.0, 0.7, 0.0, 0.8 );
-
-        for ( int i=0; i<n; i++ )
-        {
-
-            double xx = (vizier.get(i)->fRA - fRefCatalogX );
-            double yy = (vizier.get(i)->fDE - fRefCatalogY );
-
-            vec3 v = vec3( xx, yy, 1.0 );
-            mat3 m;
-            m.rotate( vec3(0.0,0.0,1.0), Wref );
-            vec3 w = m * v;
-            
-            double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
-            double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
-            
-
-            double r = (12.0 - vizier.get(i)->fMag ) * 0.8;
-            glCercle( x, y, r );
-        }
-    }    
-    
-    displayGLTrace();
-    //*/
     
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -803,7 +793,7 @@ void PanelCamera::releaseMiddle(int xm, int ym)
 void PanelCamera::add_catalogue(StarCatalog* p)
 {
     vizier.add( p );
-    
+    /*
     double xx = (p->getRA() - fRefCatalogX );
     double yy = (p->getDE() - fRefCatalogY );
 
@@ -819,7 +809,7 @@ void PanelCamera::add_catalogue(StarCatalog* p)
     //p->getInfo()->setX(x);
     //p->getInfo()->setY(y);
     p->getInfo()->setPos(x,y);
-    
+    */
     
     this->add(p->getInfo());
 }

@@ -215,12 +215,25 @@ void Star::tex2screen( int& x, int& y )
 //--------------------------------------------------------------------------------------------------------------------
 void Star::computeMag()
 {
-    magnitude = -(log( ponderation ) / log(2.0)) + 17.0;
-    
+    double x0=2.77, y0=17995.92;
+    double x1=4.24, y1=7085.42;
+    //double x1=6.79, y1=389.9;
+
+    double A = (x0-x1) / (log(y0)-log(y1));
+    double B = x0 - (A* log(y0));
+
+    magnitude = (A * log( ponderation )) + B;
+
+    double mag = -(log( ponderation ) / log(2.0)) + 17.0;
+    //magnitude = mag;
+
     if ( bSuivi )
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
     else
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f", magnitude );
+    
+    snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
+    //logf( "Star::computeMag() '%s' m = %0.2f ponderation = %0.2f", p_sInfo, mag, ponderation );
     
     if ( haveCoord() )
     {
@@ -239,7 +252,7 @@ void Star::computeMag()
     }
 
     pInfo->changeText( p_sInfo );
-    }
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -672,6 +685,8 @@ void Star::glCercle(int rayon)
 
     int xx = x_screen - delta_x;// + dx_screen;
     int yy = y_screen - delta_y;// + dy_screen;
+    //int xx = pos.x - delta_x;// + dx_screen;
+    //int yy = pos.y - delta_y;// + dy_screen;
     
     xSuivi = pos.x;
     ySuivi = pos.y;
@@ -806,12 +821,13 @@ void Star::updatePos(int X, int Y, float ew, float eh)
         //panelZoom->setTextureSize( RB->w, RB->h );
         float xx = 1.0 * x;
         float yy = 1.0 * y;
-        panelZoom->setPosStar(pos.x, pos.y);
-        panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
+        //panelZoom->setPosStar(pos.x, pos.y);
+        //panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
 
         panelZoom->setTextureSize( RB->w, RB->h );
 
-        panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
+        //panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
+        panelZoom->setPosAndSize( (x_screen)+40, (y_screen)+40, 200, 200 );
         panelZoom->updatePos();
     }
 }
@@ -832,11 +848,13 @@ void Star::suivi()
     //panelZoom->setRB( RB );
     //panelZoom->setBackground( pView->getBackground() );
     panelZoom->setPosStar(pos.x, pos.y);
+    //panelZoom->setPosStar(x_screen, y_screen);
     panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
 
     panelZoom->setTextureSize( RB->w, RB->h );
 
-    panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 300, 300 );
+    //panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 300, 300 );
+    panelZoom->setPosAndSize( (x_screen)+40, (y_screen)+40, 200, 200 );
     panelZoom->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -869,7 +887,8 @@ void Star::setZoom(bool b)
 
             panelZoom->setTextureSize( RB->w, RB->h );
 
-            panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
+            //panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
+            panelZoom->setPosAndSize( (x_screen)+40, (y_screen)+40, 200, 200 );
             
             logf( (char*)"Star::setZoom() setBackGround() : %d", __LINE__ );
             setRBzoom();

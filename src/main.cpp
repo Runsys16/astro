@@ -128,8 +128,8 @@ vector<string> t_sHelp2 =
 	"---- Vizier ----",
 	" Alt+e\t: Affiche catalog"   ,
 	"   d/f\t: Rotation"   ,
-	"   a/z\t: X"   ,
-	"   q/s\t: Y"   ,
+	"   a/z\t: Translation X"   ,
+	"   q/s\t: Translation Y"   ,
 	"   w/x\t: Zoom X"   ,
 	"   c/v\t: Zoom Y"   ,
 	"",
@@ -522,8 +522,14 @@ void vizier_parse_line( string & line )
  
     StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
     Camera_mgr::getInstance().add_catalogue( p );
- 
-    logf( (char*)"main::vizier_parse_line() Etoile %s\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
+    
+    logf( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
+
+    if ( name == "  66714384141781760" )
+    {   
+        Camera_mgr::getInstance().setRefCatalog( fRA, fDE );
+        logf( (char*)"Ajout de la reference %0.2f",fMag );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -591,7 +597,7 @@ void vizier_thread( string s )
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_load_stars( string s, double ra, double de )
 {
-    vizier.clear();
+    vizier.efface();
 
     thread( &vizier_thread, s ).detach();
     Camera_mgr::getInstance().setRefCatalog( ra, de );
@@ -2566,6 +2572,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 's':
         {
             logf( (char*)"Key (s) : Trouve toutes les etoies" );
+            log_tab(true);
             
             if ( Captures::getInstance().isMouseOverCapture(x, y)  )
             {
@@ -2583,8 +2590,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             		    Camera_mgr::getInstance().deleteAllStars();
         		}
             }
-            
-            
+            log_tab(false);
         }
         break;
 

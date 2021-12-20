@@ -47,7 +47,7 @@ void Stars::add(Star * p)
     if ( pNbStars != NULL )
     {
         char t[] = "00000000000";  
-        sprintf( t, "%d", size() );
+        sprintf( t, "%d", (int)v_tStars.size() );
         pNbStars->changeText( t );
     }
 
@@ -82,7 +82,7 @@ void Stars::sup(Star * p)
     }
 
     char t[] = "00000000000";  
-    sprintf( t, "%d", size() );
+    sprintf( t, "%d", (int)v_tStars.size() );
     pNbStars->changeText( t );
     log_tab(false);
     logf( (char*)"Stars::Sup Star()" );
@@ -135,11 +135,26 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     
     logf( (char*)"Appelle star::updatePos()" );
     pp->updatePos( dx_screen, dy_screen, e, e ); 
+
+    logf( (char*)"find(%d, %d)", pp->getXScreen(), pp->getYScreen()  );
+    if ( starExist(pp->getXScreen(), pp->getYScreen()) )        { 
+        delete pp;
+        logf( (char*)"Etoile existe deja ..." );
+
+        log_tab(false);
+        logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
+        return NULL;
+    }
+
+
     pp->computeMag();
     pp->getMagnitude();
     pView->add( pp->getInfo() );
     pp->setView( pView );
     pp->setRB( RB ); 
+
+
+
 
     v_tStars.push_back( pp );
 
@@ -148,7 +163,8 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
 
     char t[] = "00000000000";  
-    sprintf( t, "%d", size() );
+    sprintf( t, "%d", (int)v_tStars.size() );
+    logf( (char*)"Nb etoiles %d", (int)v_tStars.size() );
     pNbStars->changeText( t );
     
     log_tab(false);
@@ -170,8 +186,8 @@ bool Stars::starExist(int xp, int yp, int no )
     int nb = v_tStars.size();
     for( int n=0; n<nb; n++ )
     {
-        int x_star = v_tStars[n]->getX();
-        int y_star = v_tStars[n]->getY();
+        int x_star = v_tStars[n]->getXScreen();
+        int y_star = v_tStars[n]->getYScreen();
         
         int dx = abs(xp-x_star);
         int dy = abs(yp-y_star);
@@ -225,9 +241,10 @@ void Stars::findAllStars()
                 int y_find = p->getY();
                 p->computeMag();
                 
-                if ( p->getMagnitude() < 9.0 )     
+                if ( p->getMagnitude() < 11.0 )     
                 {
-                    if ( starExist(x_find, y_find) )            
+                    p->updatePos(dx_view, dy_view, ech, ech);
+                    if ( starExist(p->getXScreen(), p->getYScreen()) )            
                     {
                         //logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, y_find, p->getMagnitude() );
                         continue;
@@ -261,15 +278,16 @@ void Stars::findAllStars()
     }
     delete p;
 
+    //update_stars();
+    suivi( RB );
+
     if ( pNbStars != NULL )
     {
         char t[] = "00000000000";  
-        sprintf( t, "%d", size() );
+        sprintf( t, "%d", (int)v_tStars.size() );
+        logf( (char*)"Nb etoiles %d", (int)v_tStars.size() );
         pNbStars->changeText( t );
     }
-
-    //update_stars();
-    suivi( RB );
     
     log_tab(false);
     logf( (char*)"Stars::findAllStars()" );
@@ -417,7 +435,7 @@ void Stars::selectLeft( int xp, int yp)
         }
     }
     log_tab(false);
-    logf( (char*)"Stars::selectLeft(%d, %d) : %d ", xp, yp, __LINE__ );
+    //logf( (char*)"Stars::selectLeft(%d, %d) : %d ", xp, yp, __LINE__ );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -466,6 +484,13 @@ void Stars::selectStar( int xp, int yp)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb)
 {
+    update_stars( DX, DY, pView, rb, 1.0 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ech_usr)
+{
     //logf( (char*)"Stars::update()  --- DEB ---" );
     
     int nb = v_tStars.size();
@@ -486,6 +511,7 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb)
     float eh = (float)pView->getDY() / (float)RB->h;
     if ( ew<eh )    ech = ew; 
     else            ech = eh;
+    ech *= ech_usr;
     //ech = (float)pView->getDX() / (float)RB->w; 
     
     //logf( (char*)"Stars::update() dx=%d, dy=%d, ech=%0.2f", dx, dy, ech );
@@ -519,15 +545,20 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb)
         }
         //*/       
         //v_tStars[i]->computeMag();
-        pStar->updatePos( dx, dy, ew, eh );
+        pStar->updatePos( dx, dy, ech_usr, ech_usr );
     }
     //* 
     nb = t.size();
     int tot = v_tStars.size();    
+    if ( pNbStars != NULL )
+    {
+        char t[] = "00000000000";  
+        sprintf( t, "%d", (int)v_tStars.size() );
+        //logf( (char*)"Nb etoiles %d", (int)v_tStars.size() );
+        pNbStars->changeText( t );
+    }
     if ( nb!= 0 )
     {   
-        //logf( (char*)" Stars::update() debut Erase NB %d/%d  = %d", nb, tot, tot-nb );
-    
         for (int i=nb; i!=0; i-- )
         {
             int j = t[i-1];
@@ -546,7 +577,7 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb)
     if ( nb != 0 )
     {
         char t[] = "00000000000";  
-        sprintf( t, "%d", size() );
+        sprintf( t, "%d", (int)v_tStars.size() );
         pNbStars->changeText( t );
     }
     //*/

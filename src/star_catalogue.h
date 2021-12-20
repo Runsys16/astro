@@ -13,6 +13,8 @@ using namespace std;
 class StarCatalog 
 {
 public :
+        double          fXScreen;
+        double          fYScreen;
         double          fRA;
         double          fDE;
         double          fMag;
@@ -24,9 +26,13 @@ public :
         StarCatalog( double, double, double, string );
         ~StarCatalog();
         
-inline  double          getRA()             {return fRA;}
-inline  double          getDE()             {return fDE;}
-inline  PanelText*      getInfo()           {return pInfo;}
+inline  void            setXScreen(double d)    { fXScreen = d;}
+inline  void            setYScreen(double d)    { fYScreen = d;}
+inline  double          getXScreen()            {return fXScreen;}
+inline  double          getYScreen()            {return fYScreen;}
+inline  double          getRA()                 {return fRA;}
+inline  double          getDE()                 {return fDE;}
+inline  PanelText*      getInfo()               {return pInfo;}
 };
 
 #endif

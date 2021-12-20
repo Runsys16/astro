@@ -5,7 +5,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 StarCatalog::~StarCatalog()
 {
-    logf( (char*)"Destructeur StarCatalog()" );
+    logf( (char*)"Destructeur StarCatalog() %s", (char*)name.c_str() );
     if (pInfo != NULL)
     {
         Panel*  pp = pInfo->getParent();

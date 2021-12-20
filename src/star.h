@@ -90,6 +90,8 @@ public:
 
     inline int          getX()                                          { return x; }
     inline int          getY()                                          { return y; }
+    inline int          getXScreen()                                    { return x_screen; }
+    inline int          getYScreen()                                    { return y_screen; }
     inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
     inline float        getMagnitude()                                  { return magnitude; }
     inline PanelText*   getInfo()                                       { return pInfo; }

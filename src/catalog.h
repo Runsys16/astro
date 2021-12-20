@@ -24,6 +24,7 @@ public:
     Catalog(string, string);
     ~Catalog();
     
+    void                            efface();
     void                            add( StarCatalog* );
     void                            sauve();
     void                            charge();

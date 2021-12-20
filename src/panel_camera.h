@@ -49,6 +49,7 @@ public:
     virtual void		update_stars();
             void		displaySuivi();
             void		displayCentre();
+            void		displayVizier();
     virtual void		displayGL();
     virtual void		updatePos();
     virtual void        releaseLeft( int, int);
