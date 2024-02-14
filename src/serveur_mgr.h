@@ -56,13 +56,13 @@ public:
     float                       com2rad( int);
     void                        decode(struct stellarium& ss, unsigned char* buffer);
 
-    void                        traite_connexion1();
-    void                        thread_listen_1();
-    void                        start_1();
+    void                        traite_connexion_deplacement();
+    void                        thread_listen_deplacement();
+    void                        start_deplacement();
 
-    void                        traite_connexion2();
-    void                        thread_listen_2();
-    void                        start_2();
+    void                        traite_connexion_init();
+    void                        thread_listen_init();
+    void                        start_init();
    
     void                        write_stellarium( char* s);
     

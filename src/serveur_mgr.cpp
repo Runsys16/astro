@@ -57,7 +57,7 @@ void Serveur_mgr::decode( struct stellarium& ss, unsigned char* buffer )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::traite_connexion2()
+void Serveur_mgr::traite_connexion_init()
 {
     unsigned char buffer[255];
     int n;
@@ -65,7 +65,7 @@ void Serveur_mgr::traite_connexion2()
     while( traite_2 )
     {
         n = read(sock_ref,buffer,255);
-        logf( (char*)"Serveur_mgr::traite_connexion2()" );
+        logf( (char*)"Serveur_mgr::traite_connexion_init()" );
 
         if (n <= 0)
         {
@@ -78,38 +78,19 @@ void Serveur_mgr::traite_connexion2()
         struct stellarium ss;
         decode( ss, buffer );
 
-        float ra = com2rad(ss.ra);
-        float dc = com2rad(ss.dc);
+        double ra = com2rad(ss.ra);
+        double dc = com2rad(ss.dc);
 
-/*
-        CODE PYTHON
-            a = ad_rad
-            d = dc_rad
+        logf( (char*)"  reception de ra=%0.10f, dc=%0.10f", ra, dc);
 
-            a = a - aHoraire
-            if (a <0.0 ):      a = 2.0*math.pi + a
-            
-            #d = math.pi/2.0 - d
-            
-            if ( a > math.pi ):
-                a =  a - math.pi
-                d = math.pi - d
-*/
-
-        if (ra <0.0 )           ra = 2.0*M_PI + ra;
-        if ( ra > M_PI )
-        {
-            ra =  ra - M_PI;
-            dc = M_PI - dc;
-        }
 
         struct hms HMS;
         rad2hms( HMS, ra );
-        logf( (char*)"  AD : %02d:%02d:%0.2f (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+        logf( (char*)"  AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( DMS, dc );
-        logf( (char*)"  Dc : %02d:%02d:%0.2f (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+        logf( (char*)"  Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );
@@ -132,9 +113,9 @@ void Serveur_mgr::traite_connexion2()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::thread_listen_2()
+void Serveur_mgr::thread_listen_init()
 {
-    logf( (char*)"Serveur_mgr::thread_listen_2()");
+    logf( (char*)"Serveur_mgr::thread_listen_init()");
 
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
@@ -197,10 +178,10 @@ void Serveur_mgr::thread_listen_2()
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
-		logf( (char*)"Serveur_mgr::thread_listen_2() connexion SOCKET 2" );
+		logf( (char*)"Serveur_mgr::thread_listen_init() connexion SOCKET 2" );
 		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
 
-		traite_connexion2();
+		traite_connexion_init();
 	}
     logf( (char*)"** Fermeture de sock_2" );
 	close(sock_2);
@@ -209,15 +190,15 @@ void Serveur_mgr::thread_listen_2()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::start_2()
+void Serveur_mgr::start_init()
 {
-    th_2 = std::thread(&Serveur_mgr::thread_listen_2, this);
+    th_2 = std::thread(&Serveur_mgr::thread_listen_init, this);
     th_2.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::traite_connexion1()
+void Serveur_mgr::traite_connexion_deplacement()
 {
     unsigned char buffer[255];
     int n;
@@ -232,6 +213,7 @@ void Serveur_mgr::traite_connexion1()
             break;  
         }
 
+        logf( (char*)"Serveur_mgr::traite_connexion_deplacement()" );
         logf( (char*)"nb octet lu : %d", n);
 
         struct stellarium ss;
@@ -240,39 +222,18 @@ void Serveur_mgr::traite_connexion1()
         float ra = com2rad(ss.ra);
         float dc = com2rad(ss.dc);
 
-/*
-        CODE PYTHON
-            a = ad_rad
-            d = dc_rad
-
-            a = a - aHoraire
-            if (a <0.0 ):      a = 2.0*math.pi + a
-            
-            #d = math.pi/2.0 - d
-            
-            if ( a > math.pi ):
-                a =  a - math.pi
-                d = math.pi - d
-*/
-
-        if (ra <0.0 )           ra = 2.0*M_PI + ra;
-        if ( ra > M_PI )
-        {
-            ra =  ra - M_PI;
-            dc = M_PI - dc;
-        }
 
         struct hms HMS;
         rad2hms( HMS, ra );
-        logf( (char*)"  AsDrte : %02d:%02d:%0.2f (%0.4f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+        logf( (char*)"  AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( DMS, dc );
-        logf( (char*)"  Declin : %02d:%02d:%0.2f (%0.4f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+        logf( (char*)"  DC : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "A%f;D%f", RAD2DEG(ra), RAD2DEG(dc) );
-        //sprintf( cmd, "a%f;d%f", RAD2DEG(ra), RAD2DEG(dc) );
+        logf( (char*)"  Envoi arduino : %s", cmd );
         Serial::getInstance().write_string(cmd);
 
     }
@@ -285,9 +246,9 @@ void Serveur_mgr::traite_connexion1()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::thread_listen_1()
+void Serveur_mgr::thread_listen_deplacement()
 {
-    logf( (char*)"Serveur_mgr::thread_listen_1()");
+    logf( (char*)"Serveur_mgr::thread_listen_deplacement()");
     
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
@@ -348,10 +309,10 @@ void Serveur_mgr::thread_listen_1()
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
-		logf( (char*)"Serveur_mgr::thread_listen_1() connexion SOCKET 1" );
+		logf( (char*)"Serveur_mgr::thread_listen_deplacement() connexion SOCKET 1" );
 		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
 
-		traite_connexion1();
+		traite_connexion_deplacement();
 		
 		
 	}
@@ -362,9 +323,9 @@ void Serveur_mgr::thread_listen_1()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::start_1()
+void Serveur_mgr::start_deplacement()
 {
-    th_1 = std::thread(&Serveur_mgr::thread_listen_1, this);
+    th_1 = std::thread(&Serveur_mgr::thread_listen_deplacement, this);
     th_1.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------

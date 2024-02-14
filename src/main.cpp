@@ -59,7 +59,8 @@ vector<string> t_sHelp1 =
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
-	"     K\t: Active/desactive le son",
+	"     k\t: Active/desactive le son",
+	"     K\t: Lance un carree de recherche",
 	"     l\t: List les ports /dev + les controles ",
 	"     L\t: List les variables",
 	"     n\t: Affiche/cache les images (F7)",
@@ -70,8 +71,7 @@ vector<string> t_sHelp1 =
 	"     q\t: Lance un script python",
 	"      \t: Lance VIZIER",
 	"     Q\t: Mise en station via polaris",
-	"     r\t: Rappel les mesures de suivi",
-	"     R\t: Test alert BOX",
+//	"     r\t: Test alert BOX",
 	"     W\t: Surveille un repertoire",
 	"     -\t: Toutes les images sont affichees en icones",
 	"",
@@ -116,7 +116,8 @@ vector<string> t_sHelp2 =
     "     U\t: Affichage du centre de la camera on/off",
     "     u\t: Affichage du suivi on/off",
 	"     V\t: Initialise les coordonnees de suivi",
-	"     v\t: Sauvegarde des coordonnees de suivi (fichier .guid)",
+	"     v\t: Sauvegarde fichier de suivi (.guid)",
+	"     r\t: Charge ficher de suivi (.guid)",
 	"     w\t: Centre l'asservissement",
 	"     Y\t: Lance l'asservissement",
 	"",
@@ -971,12 +972,14 @@ float dms2rad(struct dms& DMS)
 void rad2hms(struct hms& HMS, float r)
 {
     float sign = 1.0;
+    float hDouze = 0.0;
     if ( r<0.0 )
     {
         sign = -1.0;
-        r *=-1.0;
+        //r *=-1.0;
+        hDouze = 24.0;
     }
-    float h = r / M_PI * 12.0;
+    float h = hDouze + (r / M_PI * 12.0);
     int H = h;
     HMS.h = H;
     
@@ -988,21 +991,21 @@ void rad2hms(struct hms& HMS, float r)
     float s = (m-M) * 60.0;
     HMS.s = s;
     
-    HMS.h *= sign;
+    //HMS.h *= sign;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void rad2dms(struct dms& DMS, float r)
+void rad2dms(struct dms& DMS, float v)
 {
     float sign = 1.0;
-    if ( r<0.0 )
+    if ( v<0.0 )
     {
         sign = -1.0;
-        r *=-1.0;
+        v *=-1.0;
     }
 
-    float d = r / M_PI * 180.0;
+    float d = v / M_PI * 180.0;
     int D = d;
     DMS.d = D;
     
@@ -1205,7 +1208,7 @@ void change_ad(float ad)
     rad2hms( HMS, ad);
     
     char    buff[255];
-    sprintf( buff, "AsDr : %02dh%02dm%0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
+    sprintf( buff, "AD: %02dh %02dm %0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
     
     pAD->changeText( buff );
 
@@ -1225,7 +1228,10 @@ void change_dc(float dc)
     rad2dms( DMS, dc);
     
     char    buff[255];
-    sprintf( buff, "Decl : %02dd%02dm%0.2fs", (int)DMS.d, (int)DMS.m, DMS.s );
+    char 	signe[2];
+    if ( dc <0.0 )		signe[0] = '-';
+    else				signe[0] = 0;
+    sprintf( buff, "DC: %s%02d %02d\' %0.2f\"", signe, (int)DMS.d, (int)DMS.m, DMS.s );
     
     pDC->changeText( buff );
 
@@ -2095,7 +2101,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         char cmd[255];
         sprintf( cmd, "a-1000p" );
-        //logf( (char*)"Envoi de la commande",  cmd );
+        logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
         }
         break;
@@ -2207,7 +2213,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         char cmd[255];
         sprintf( cmd, "d1000p" );
-        //logf( (char*)"Envoi de la commande",  cmd );
+        logf( (char*)"Envoi de la commande",  cmd );
         Serial::getInstance().write_string(cmd);
         }
         break;
@@ -2510,6 +2516,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'P':  // '-'
         {
         logf( (char*)"Key (P) : Une image");
+        updatePanelPause(true);
         bOneFrame = true;
         }
         break;
@@ -3998,8 +4005,8 @@ int main(int argc, char **argv)
     Connexion_mgr::getInstance().start();
     PanelConsoleSerial::getInstance();
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
-    Serveur_mgr::getInstance().start_1();
-    Serveur_mgr::getInstance().start_2();
+    Serveur_mgr::getInstance().start_init();
+    Serveur_mgr::getInstance().start_deplacement();
 
     init_var();
     var.setSauve();

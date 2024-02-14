@@ -178,6 +178,11 @@ void PanelCapture::updatePos()
     //stars.update_stars(getParent()->getX(), getParent()->getY(), this, NULL );
 
     PanelSimple::updatePos();
+
+    if ( coef != ech_geo )
+    {
+        stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
