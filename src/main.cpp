@@ -3069,7 +3069,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
         int dc = (int) (vTr.y * 1000.0);
         char cmd[255];
         sprintf( cmd, "a%dp;d%dp", ad, dc );
-        logf( (char*)"Envoi de la commande",  cmd );
+        logf( (char*)"Envoi de la commande : \"%s\"",  cmd );
 
         Serial::getInstance().write_string(cmd);
 	}
@@ -3116,10 +3116,7 @@ static void glutMotionFunc(int x, int y)	{
     //WindowsManager::getInstance().onBottom(panelPreView);
     onTop();
 
-	if ( bMouseDeplace  )
-	{
-        logf( (char*)" motion func (%d, %d)", x, y );
-	}
+	//if ( bMouseDeplace  )        logf( (char*)" motion func (%d, %d)", x, y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3544,7 +3541,7 @@ void logf(char *fmt, ...)
     va_list arglist;
 
     va_start( arglist, fmt );
-    vsprintf( chaine, fmt, arglist );
+    vsnprintf( chaine, sizeof(chaine), fmt, arglist );
     va_end( arglist );
     
     log((char*)chaine);

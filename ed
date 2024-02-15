@@ -1,3 +1,4 @@
 #!/bin/bash
 edition src/*.cpp
-edition src/*.h Makefile ./ed
+edition src/*.h Makefile ./ed ~/programmes/github.txt
+

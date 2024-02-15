@@ -44,7 +44,7 @@ double  oldPas = -1.0;
 double  old;
 float   err_old = -1.0;
 float   urg_old = -1.0;
-bool    bFirst = true;
+bool    bFirstStatus = true;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -81,6 +81,21 @@ void set_asservissement(void)
 void set_mode(void)
 {
     var.set("bModeManuel", bModeManuel);
+
+    if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
+    else                            pMode->changeText((char*)"Mode souris");
+   
+    pButtonMode->setVal(bModeManuel);
+    
+    logf( (char*)"status::set_mode() bModeManuel = %s", bModeManuel?(char*)"true":(char*)"false" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void set_mode(bool b)
+{
+    var.set("bModeManuel", b);
+    bModeManuel = b;
 
     if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
     else                            pMode->changeText((char*)"Mode souris");
@@ -417,7 +432,7 @@ void cb_rotationCheck(PanelCheckBox* p)	{
 	{
     	bModeManuel = !bModeManuel;
         var.set("bModeManuel", bModeManuel);
-        set_mode();
+        set_mode(bModeManuel);
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -596,14 +611,15 @@ void idleStatus()
 
     
     if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
-    if ( bModeManuel != pButtonMode->getVal() )     set_mode();
 
-    if ( bFirst )
+    if ( bFirstStatus )
     {
         logf( (char*)"[WARNING]Change mode " );
-        bFirst = false,
-        set_mode();
+        set_mode(bModeManuel);
     }
+
+    bFirstStatus = false;
+    if ( bModeManuel != pButtonMode->getVal() )     set_mode(bModeManuel);
 
 }
 //--------------------------------------------------------------------------------------------------------------------
