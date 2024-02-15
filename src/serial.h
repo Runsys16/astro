@@ -18,6 +18,7 @@
 #include "main.h"
 
 extern float fTimeMili;
+#define VER_ARDUINO		"1.0.0"
 
 
 using namespace std;
@@ -45,6 +46,10 @@ SINGLETON_BEGIN( Serial )
         bool            bFree;
         
         vector<string>  tCommandes;
+        string			sVersionArduino;
+
+		bool			bVersionArduino;
+		string			sVersionArduinoValable;
 
     private:
         void            emet_commande();
@@ -68,6 +73,7 @@ SINGLETON_BEGIN( Serial )
 
         void            start_thread();
         void            reset();
+	    void			testVersionArduino();
     
 inline  bool            getFree()                               { return bFree; }
 

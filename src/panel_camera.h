@@ -39,6 +39,7 @@ protected:
     double              fRefCatalogY;
     int                 fRefCatalogDecalX;
     int                 fRefCatalogDecalY;
+    ivec2				vDeplaceDepuis;
 
     //vector<StarCatalog*>      catalog;
 

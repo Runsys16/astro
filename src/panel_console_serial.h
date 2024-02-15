@@ -40,7 +40,6 @@ protected:
     float                           ad_change;
     float                           dc_change;
 
-
 public :
     PanelConsoleSerial();
 

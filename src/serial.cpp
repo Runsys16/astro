@@ -1,5 +1,6 @@
 #include "serial.h"    /* Standard input/output definitions */
 #include "panel_console_serial.h"    
+#include "var_mgr.h"
 #include <unistd.h>
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -31,6 +32,7 @@ void Serial::init( string dev)
     start_thread();
     
     bPrintInfo = true;
+    sVersionArduino = "";
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -182,6 +184,8 @@ void Serial::read_thread()
     unsigned char b[1];
     int i=0;
     logf( (char*)"START Serial::read_thread" );
+    VarManager& var= VarManager::getInstance();
+    
     do {
         if ( fd == -1 ) break;
          
@@ -212,6 +216,10 @@ void Serial::read_thread()
                 
                 string test = buffer;
                 //sound_thread();
+	            if ( var.getb("bVerboseArduino") )	{
+		            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+		        }
+                
                 if ( test.find("=INFO START") != string::npos )
                 {
                     bPrintInfo = false;
@@ -219,6 +227,12 @@ void Serial::read_thread()
                 else
                 if ( test.find("=INFO STOP") != string::npos )
                 {
+					if ( bVersionArduino ) {		// pas de reception de version
+						logf((char*)"[ Erreur ] Mauvaise version Arduino" );
+						logf((char*)"[ Erreur ]   pas de version" );
+						bVersionArduino = false;
+					}
+						
                     bPrintInfo = true;
                     bAffiche = false;
                 }
@@ -308,6 +322,22 @@ void Serial::read_thread()
                     bFree = true;
                     emet_commande();
                     //PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+                }
+                else
+                if ( test.find("Version :") != string::npos )
+                {
+			        if ( bVersionArduino )		{
+			        	logf( (char*)"Test version Arduino (\"%s\")", buffer);
+			        	bVersionArduino = false;					// une seule fois
+			        	if ( test.find( VER_ARDUINO ) == string::npos )	{
+			        		logf((char*)"[ Erreur ] Mauvaise version Arduino %s", buffer );
+			        		logf((char*)"[ Erreur ]   recherchée \"Version %s\"  | trouvée \"%s\"", VER_ARDUINO, buffer );
+			        	}
+			        	else {
+			        		logf((char*)"  Version OK" );
+			        	}
+			        }
+
                 }
 
                 /*
@@ -458,6 +488,14 @@ void Serial::reset()
 {
     tCommandes.clear();
     bFree = true;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::testVersionArduino()
+{
+	bVersionArduino = true;
+	sVersionArduinoValable = VER_ARDUINO;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

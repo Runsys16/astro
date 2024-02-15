@@ -74,6 +74,8 @@ vector<string> t_sHelp1 =
 //	"     r\t: Test alert BOX",
 	"     W\t: Surveille un repertoire",
 	"     -\t: Toutes les images sont affichees en icones",
+	"     b\t: Panel Courbe mode DEBUG",
+	"     B\t: Arduino bavard",
 	"",
 	"---- TRANSFORM MATRIX ----",
 	"   a/A\t: Vecteur en ascension droite",
@@ -219,27 +221,28 @@ bool                bArretUrgence;
 bool                bAffIconeCapture = true;;
 
 
-bool                bPanelControl  = true;
-bool                bPanelHelp     = false;
-bool                bPanelResultat = false;
-bool                bPanelCourbe   = false;
-bool                bPanelStdOut   = false;
-bool                bPanelSerial   = false;
-bool                bAfficheVec    = false;
-bool                bMouseDeplace  = false;
-bool                bFileBrowser   = false;
-bool                bStellarium    = false;
-bool                bPleiade       = false;
-bool                bSauve         = false;
-bool                bOneFrame      = false;
-bool                bStdOut        = false;
-bool                bSimu          = false;
-bool                bAffCentre     = false;
-bool                bAffSuivi      = true;
-bool                bSound         = true;
-bool                bInverseCouleur= false;
-bool                bCentrageSuivi = false;
-bool                bFirstStart = true;
+bool                bPanelControl  		= true;
+bool                bPanelHelp     		= false;
+bool                bPanelResultat 		= false;
+bool                bPanelCourbe   		= false;
+bool                bPanelStdOut   		= false;
+bool                bPanelSerial		= false;
+bool                bAfficheVec			= false;
+bool                bMouseDeplace		= false;
+bool                bMouseDeplaceVers	= false;
+bool                bFileBrowser		= false;
+bool                bStellarium			= false;
+bool                bPleiade			= false;
+bool                bSauve				= false;
+bool                bOneFrame			= false;
+bool                bStdOut				= false;
+bool                bSimu				= false;
+bool                bAffCentre			= false;
+bool                bAffSuivi			= true;
+bool                bSound				= true;
+bool                bInverseCouleur		= false;
+bool                bCentrageSuivi		= false;
+bool                bFirstStart			= true;
 
 int                 wImg;
 int                 hImg;
@@ -1169,11 +1172,15 @@ void change_hertz(float hz)
 //--------------------------------------------------------------------------------------------------------------------
 void change_arduino(bool b)
 {
+    logf( (char*)"Change Arduin %s", (char*)BOOL2STR(b) );
+
     if ( b )    pArduino->changeText((char*)"Arduino");
     else        pArduino->changeText((char*)"----");
     
     if ( b )    PanelConsoleSerial::getInstance().setPrompt("Arduino> ");
     else        PanelConsoleSerial::getInstance().setPrompt("No connect> ");
+
+    if ( b )    Serial::getInstance().testVersionArduino();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2116,6 +2123,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     
     case 'B':
         {
+        	if ( var.existe("bVerboseArduino") )    {
+        		bool b = !var.getb("bVerboseArduino");
+        		var.set("bVerboseArduino", !b);
+			    logf( (char*)"bVerboseArduino = %s", BOOL2STR(b) );
+        	}
         //logf( (char*)"Key (b) : Bluetooth disconnect" );
         //BluetoothManager::getInstance().disconnect();
         }
@@ -2450,6 +2462,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         logf( (char*)"Key (m) : Autorisation du deplcament par la souris (bouton du milieu) ...");
         bMouseDeplace = !bMouseDeplace;
         logf( (char*)"  bMouseDeplace = %s", BOOL2STR(bMouseDeplace) );
+
+        if ( bMouseDeplace )			bMouseDeplaceVers = false;
 
 	    if (bMouseDeplace)              pDeplacement->changeText((char*)"Depl");
         else                            pDeplacement->changeText((char*)"----");
@@ -3005,6 +3019,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     
 	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 0 )
 	{
+		bMouseDeplaceVers = true;
         getSuiviParameter();
 
         mgr.onBottom();
@@ -3026,6 +3041,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	}
 	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 1 )
 	{
+        bMouseDeplaceVers = false;
         getSuiviParameter();
 
         mgr.onBottom();
@@ -3099,6 +3115,11 @@ static void glutMotionFunc(int x, int y)	{
 	WindowsManager::getInstance().motionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
     onTop();
+
+	if ( bMouseDeplace  )
+	{
+        logf( (char*)" motion func (%d, %d)", x, y );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3897,7 +3918,8 @@ void charge_var()
     if ( var.existe("ZrefY"))               ZrefY           = var.getf("ZrefY");
     if ( var.existe("Wref"))                Wref            = var.getf("Wref");
     if ( var.existe("bAffCatalog"))         bAffCatalog     = var.getb("bAffCatalog");
-    
+   	if ( !var.existe("bVerboseArduino") )   var.set("bVerboseArduino", false);
+   
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

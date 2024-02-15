@@ -695,10 +695,28 @@ void PanelCamera::displayGL()
 
 	    tex2screen(x,y);
 
+		vDeplaceDepuis.x = x;
+		vDeplaceDepuis.y = y;
+		
 	    glCroix(x, y, 50, 50);
         glCercle(x, y, 25);
     }
 
+    if ( bMouseDeplaceVers )
+    {
+        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
+	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
+	    
+	    int x = mouse.x;
+	    int y = mouse.y;
+
+		glBegin(GL_LINES);
+		    glVertex2i(x,y);                glVertex2i(vDeplaceDepuis.x, vDeplaceDepuis.y);
+		glEnd();        
+
+	    glCroix(x, y, 50, 50);
+        //glCercle(x, y, 25);
+    }
     
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

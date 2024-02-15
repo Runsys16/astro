@@ -80,6 +80,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bPanelCourbe;
     extern bool                     bSimu;
     extern bool                     bMouseDeplace;
+    extern bool                     bMouseDeplaceVers;
     extern bool                     bAffCentre;
     extern bool                     bAffSuivi;
     extern bool                     bAfficheVec;
@@ -117,8 +118,10 @@ typedef struct readBackground       rb_t;
     extern PanelWindow*             panelResultat;
     #endif
     
+    extern ivec2					mouse;
     extern vec3                     vecAD[2];
     extern vec3                     vecDC[2];
+    extern vec3                     vDepl[2];
 
     extern double                   pas_sideral;
     extern bool                     bSauve;

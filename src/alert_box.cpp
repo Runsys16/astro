@@ -9,7 +9,7 @@ AlertBox::AlertBox(string m)
 	pT = new PanelText( (char*)sMessage.c_str(),		PanelText::LARGE_FONT, 0, 0 );
 	pT->setAlign( PanelText::CENTER );
 
-	pRetour = new PanelText( (char*)"Appuyer sur n'importe quelle touche ...",		PanelText::NORMAL_FONT, 0, 20 );
+	pRetour = new PanelText( (char*)"Sinon appuyez sur n'importe quelle touche ...",		PanelText::NORMAL_FONT, 0, 20 );
 	pRetour->setAlign( PanelText::CENTER );
 
     pW = new PanelWindow();
