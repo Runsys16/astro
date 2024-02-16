@@ -243,13 +243,13 @@ void Serial::read_thread()
                 {
                     changeJoy(false);
                     
-                    system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
+                    if ( bSound)	system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
                 }
                 else 
                 if ( test.find("Change joy ...OK") != string::npos )
                 {
                     changeJoy(true);
-                    system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
+                    if ( bSound)	system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
                 }
                 else
                 if ( test.find("Retour Stellarium on") != string::npos )
