@@ -174,7 +174,7 @@ PanelText*          pPas;
 PanelText*          pDeplacement;
 PanelText*          pAD;
 PanelText*          pDC;
-PanelText*          pMode;
+//PanelText*          pMode;
 PanelText*          pAsservi;
 /*
 PanelText*          pXMax;
@@ -1488,7 +1488,7 @@ static void idleGL(void)
     char sFPS[] = "fps 0000";
     sprintf( sFPS,"fps %d", *Timer::getInstance().getvFPSCounter() );
     pFPS->changeText((char*)sFPS);
-    	timer.Idle();
+    timer.Idle();
 
 
     #ifdef IDLEGL
@@ -2469,14 +2469,19 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'm':
         {
-        logf( (char*)"Key (m) : Autorisation du deplcament par la souris (bouton du milieu) ...");
-        bMouseDeplace = !bMouseDeplace;
-        logf( (char*)"  bMouseDeplace = %s", BOOL2STR(bMouseDeplace) );
+        if ( !bModeManuel )	{
+        	bModeManuel = true;
+        }
 
-        if ( bMouseDeplace )			bMouseDeplaceVers = false;
 
-	    if (bMouseDeplace)              pDeplacement->setColor(COLOR_WHITE);
-        else                            pDeplacement->setColor(COLOR_GREY);
+	    logf( (char*)"Key (m) : Autorisation du deplcament par la souris (bouton du milieu) ...");
+	    bMouseDeplace = !bMouseDeplace;
+	    logf( (char*)"  bMouseDeplace = %s", BOOL2STR(bMouseDeplace) );
+
+	    if ( bMouseDeplace )			bMouseDeplaceVers = false;
+
+		if (bMouseDeplace)              pDeplacement->setColor(COLOR_WHITE);
+	    else                            pDeplacement->setColor(COLOR_GREY);
         }
         break;
 
@@ -2524,9 +2529,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'O':
         {
-    	bModeManuel = !bModeManuel;
         logf( (char*)"Key (O) : Mode manuel (%s)", BOOL2STR(bModeManuel) );
-        set_mode();
+        set_mode(!bModeManuel);
         }
     	break;
 
@@ -3039,8 +3043,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 	    
 	    mgr.screen2tex(X,Y);
 	    
-	    xClick = X;
-	    yClick = Y;
+	    //xClick = X;
+	    //yClick = Y;
 
         vDepl[0].x = xClick;
         vDepl[0].y = yClick;
@@ -3402,15 +3406,8 @@ static void CreateStatus()	{
     change_dc( fpos_dc );
 	panelStatus->add( pDC );
 
-    pMode = new PanelText( (char*)"Mode ---",           PanelText::NORMAL_FONT, 350, 2 );
-	panelStatus->add( pMode );
- 
     pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 850, 2 );
 	panelStatus->add( pAsservi );
-
-
-	//if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
-    //else                            pMode->changeText((char*)"Mode souris");
 
 
 
@@ -4007,12 +4004,6 @@ int main(int argc, char **argv)
     
     CreateAllWindows();
     set_asservissement();
-    //set_mode();
-    inverse_texture( pButtonSerial,  bPanelSerial,       "arduino" );
-    inverse_texture( pButtonStdOut,  bPanelStdOut,       "" );
-    inverse_texture( pButtonHelp,    bPanelHelp,         "help" );
-    inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
-    //inverse_texture( pButtonMode,    bModeManuel,        "cible" );
 
     panelCourbe->get_vOrigine().x = xSuivi;
     panelCourbe->get_vOrigine().y = ySuivi;

@@ -13,18 +13,20 @@ public:
 };
 
 
-PanelButton *       pButtonSerial;
-PanelButton *       pButtonStdOut;
-PanelButton *       pButtonControl;
-PanelButton *       pButtonHelp;
-PanelButton *       pButtonResultat;
-PanelButton *       pButtonCourbe;
+//PanelCheckBox *     pButtonMode;
+PanelCheckBox *     pButtonSerial;
+PanelCheckBox *     pButtonStdOut;
+PanelCheckBox *     pButtonControl;
+PanelCheckBox *     pButtonResultat;
+PanelCheckBox *     pButtonCourbe;
+PanelCheckBox *     pButtonHelp;
 PanelCheckBox *     pButtonAsc;
 PanelCheckBox *     pButtonDec;
 PanelCheckBox *     pButtonJoy;
 PanelCheckBox *     pButtonSui;
 PanelCheckBox *     pButtonRet;
 PanelCheckBox *     pButtonMode;
+PanelCheckBox *     pButtonSon;
 
 PanelButtonAsservissement *       pFlecheHaut;
 PanelButtonAsservissement *       pFlecheBas;
@@ -55,7 +57,7 @@ void inverse_texture(PanelButton *, bool, string);
 void                logf( char *, ...);
 void set_courbe(void)
 {
-    inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
+    //inverse_texture( pButtonCourbe,  bPanelCourbe,       "courbe" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -83,27 +85,12 @@ void set_asservissement(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void set_mode(void)
-{
-    var.set("bModeManuel", bModeManuel);
-
-    if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
-    else                            pMode->changeText((char*)"Mode souris");
-   
-    pButtonMode->setVal(bModeManuel);
-    
-    logf( (char*)"status::set_mode() bModeManuel = %s", bModeManuel?(char*)"true":(char*)"false" );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void set_mode(bool b)
 {
     var.set("bModeManuel", b);
     bModeManuel = b;
 
-    if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
-    else                            pMode->changeText((char*)"Mode souris");
+    if (!bModeManuel)               bMouseDeplace = false;
    
     pButtonMode->setVal(bModeManuel);
     
@@ -126,16 +113,16 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
     string down = "images/" + tex + "_down.tga";
     string over = "images/" + tex + "_over.tga";
     
-    logf( (char*)"inverse_texture() , %d \"%s\"", (int) b, tex.c_str() );
-    if ( !b )
+    //logf( (char*)"inverse_texture() , %d \"%s\"", (int) b, tex.c_str() );
+    if ( b )
     {
-        pButton->setUp(   (char*)over.c_str() );
+        pButton->setUp(   (char*)down.c_str() );
         pButton->setDown( (char*)down.c_str() );
         pButton->setOver( (char*)down.c_str() );
     }
     else
     {
-        pButton->setUp(   (char*)down.c_str() );
+        pButton->setUp(   (char*)over.c_str() );
         pButton->setDown( (char*)over.c_str() );
         pButton->setOver( (char*)over.c_str() );
     }
@@ -320,7 +307,7 @@ void cb_fleche(PanelButton* pPanel)
 void call_back_up(PanelButton* pPanel)
 {
 	logf( (char*) "Button CallBack up()" );
-	
+	/*
 	if ( pPanel == pButtonSerial )
 	{
         bPanelSerial = !bPanelSerial;
@@ -354,16 +341,6 @@ void call_back_up(PanelButton* pPanel)
         }
 	}
 	else
-	if ( pPanel == pButtonHelp )
-	{
-        bPanelHelp = !bPanelHelp;
-        var.set("bPanelHelp", bPanelHelp);
-        panelHelp->setVisible(bPanelHelp);
-        log( (char*)"Toggle panelHelp !!!" );
-
-        inverse_texture( pPanel, bPanelHelp, "help" );
-	}
-	else
 	if ( pPanel == pButtonResultat )
 	{
         bPanelResultat = !bPanelResultat;
@@ -383,6 +360,7 @@ void call_back_up(PanelButton* pPanel)
 
         inverse_texture( pPanel, bPanelCourbe, "courbe" );
 	}
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -439,6 +417,70 @@ void cb_rotationCheck(PanelCheckBox* p)	{
         var.set("bModeManuel", bModeManuel);
         set_mode(bModeManuel);
 	}
+	else
+	if ( p == pButtonHelp )
+	{
+        bPanelHelp = !bPanelHelp;
+        var.set("bPanelHelp", bPanelHelp);
+        panelHelp->setVisible(bPanelHelp);
+        log( (char*)"Toggle panelHelp !!!" );
+	}
+	else
+	if ( p == pButtonSerial )
+	{
+        bPanelSerial = !bPanelSerial;
+        var.set("bPanelSerial", bPanelSerial);
+        PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
+        logf( (char*)"Toggle serial !!!" );
+	}
+	else
+	if ( p == pButtonStdOut )
+	{
+        bPanelStdOut = !bPanelStdOut;
+        var.set("bPanelStdOut", bPanelStdOut);
+        panelStdOut->setVisible(bPanelStdOut);
+        logf( (char*)"Toggle panelStdOut !!!" );
+	}
+	else
+	if ( p == pButtonControl )
+	{
+        Camera_mgr::getInstance().togglePanel();
+        log( (char*)"Toggle panelCamera !!!" );
+
+        Camera * p = Camera_mgr::getInstance().getCurrent();
+        if ( p )
+        {
+            bool b = p->getControlVisible();
+        }
+	}
+	else
+	if ( p == pButtonResultat )
+	{
+        bPanelResultat = !bPanelResultat;
+        var.set("bPanelResultat", bPanelResultat);
+        panelResultat->setVisible(bPanelResultat);
+        log( (char*)"Toggle panelResultat !!!" );
+
+        //inverse_texture( pPanel, bPanelResultat, "cible" );
+	}
+	else
+	if ( p == pButtonCourbe )
+	{
+        bPanelCourbe = !bPanelCourbe;
+        var.set("bPanelCourbe", bPanelCourbe);
+        panelCourbe->setVisible(bPanelCourbe);
+        log( (char*)"Toggle panelCourbe !!!" );
+	}
+	else
+	if ( p == pButtonSon )
+	{
+        bSound = !bSound;
+        var.set("bSound", bSound);
+        pButtonSon->setVal(bSound);
+        logf((char*)"Bouton son Active/sDesactive le son : %s", BOOL2STR(bSound) );
+	}
+	/*
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -521,20 +563,23 @@ void create_fleches( int x, char* up, char* down, PanelButtonAsservissement* &pU
 //--------------------------------------------------------------------------------------------------------------------
 void create_windows_button()
 {
-    pButtonControl  = create_window_button( 0, "camera" );
-    pButtonHelp     = create_window_button( 1, "help" );
-    pButtonResultat = create_window_button( 2, "cible" );
-    pButtonCourbe   = create_window_button( 3, "courbe" );
-    pButtonStdOut   = create_window_button( 4, "" );
-    pButtonSerial   = create_window_button( 5, "arduino" );
+	int pos = 0;
+    pButtonHelp     = create_window_check_box( pos++, "help" );
+    pButtonControl  = create_window_check_box( pos++, "camera" );
+    pButtonResultat = create_window_check_box( pos++, "cible" );
+    pButtonCourbe   = create_window_check_box( pos++, "courbe" );
+    pButtonStdOut   = create_window_check_box( pos++, "console" );
+    pButtonSerial   = create_window_check_box( pos++, "arduino" );
 
-    pButtonMode     = create_window_check_box( 7, "cible" );
-    pButtonAsserv   = create_window_check_box( 8, "cadena" );
-    pButtonAsc      = create_window_check_box( 10, "asc" );
-    pButtonDec      = create_window_check_box( 11, "dec" );
-    pButtonJoy      = create_window_check_box( 12, "joy" );
-    pButtonSui      = create_window_check_box( 13, "terre" );
-    pButtonRet      = create_window_check_box( 14, "retour" );
+    pButtonMode     = create_window_check_box( pos++, "mode" );
+    pButtonAsserv   = create_window_check_box( pos++, "cadena" );
+    pButtonSon      = create_window_check_box( pos++, "son" );
+
+    pButtonAsc      = create_window_check_box( pos++, "asc" );
+    pButtonDec      = create_window_check_box( pos++, "dec" );
+    pButtonJoy      = create_window_check_box( pos++, "joy" );
+    pButtonSui      = create_window_check_box( pos++, "terre" );
+    pButtonRet      = create_window_check_box( pos++, "retour" );
     
     create_fleches( 730, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
     create_fleches( 780, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
@@ -588,17 +633,19 @@ void idleStatus()
         Camera_mgr::getInstance().change_background_camera();
         if (bOneFrame)      { updatePanelPause(true); }
     //}
-    /*
-    //change_joy( xSuivi, ySuivi );
-    //-----------------------------------------------------------------------
-    // Gestion de apause
-    //-----------------------------------------------------------------------
-    if (bModeManuel || bOneFrame )    {
-        Camera_mgr::getInstance().change_background_camera();
-        if (bOneFrame)      { updatePanelPause(true); }
-        bOneFrame = false;
-    }
-    */
+
+
+    bool b;
+    Camera * p = Camera_mgr::getInstance().getCurrent();
+    if ( p )      b = p->getControlVisible();
+    pButtonControl->setVal( b );
+
+    pButtonSerial->setVal( bPanelSerial );
+    pButtonStdOut->setVal( bPanelStdOut );
+    pButtonResultat->setVal( bPanelResultat );
+    pButtonCourbe->setVal( bPanelCourbe );
+    pButtonHelp->setVal( bPanelHelp );
+    pButtonSon->setVal( bSound );
 
     if (err_old != panelCourbe->get_err() )
     {

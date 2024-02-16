@@ -337,7 +337,7 @@ int                 main(int argc, char **argv);
 //  satatus.cpp
 //
 void set_asservissement(void);
-void set_mode(void);
+void set_mode(bool);
 void inverse_texture(PanelButton *, bool, string);
 void set_courbe();
 
