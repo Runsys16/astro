@@ -1,4 +1,4 @@
 #!/bin/bash
 edition src/*.cpp
-edition src/*.h Makefile ./ed ~/programmes/github.txt
+edition src/*.h Makefile ./ed ~/programmes/lulubella.txt
 

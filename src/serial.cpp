@@ -16,6 +16,7 @@ Serial::Serial()
     nbZero = 0;
     
     bFree = true;
+    bConnect = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -185,6 +186,7 @@ void Serial::read_thread()
     int i=0;
     logf( (char*)"START Serial::read_thread" );
     VarManager& var= VarManager::getInstance();
+    bConnect = true;
     
     do {
         if ( fd == -1 ) break;
@@ -374,6 +376,7 @@ void Serial::read_thread()
         
     } while( true );
 
+    bConnect = false;
     logf( (char*)"FIN   Serial::read_thread" );
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,2 @@
+#!/bin/bash
+make -j4 && gdb ./astro -ex "r -e video0 -e video1"

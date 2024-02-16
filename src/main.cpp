@@ -32,6 +32,8 @@
 #define SIZEPT  20
 //#define DEBUG 1
 //#define IDLEGL
+#define COLOR_GREY      0xFF404040
+#define COLOR_WHITE      0xFFFFFFFF
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -162,7 +164,8 @@ PanelText*          pCamFilename;
 PanelText*          pRef;
 PanelText*          pEtoile;
 PanelText*          pEcart;
-PanelText*          pJoyXY;
+PanelText*          pCoordSuivi;
+PanelText*          pSuivi;
 PanelText*          pArduino;
 PanelText*          pStellarium;
 PanelText*          pPas;
@@ -1174,8 +1177,11 @@ void change_arduino(bool b)
 {
     logf( (char*)"Change Arduin %s", (char*)BOOL2STR(b) );
 
-    if ( b )    pArduino->changeText((char*)"Arduino");
-    else        pArduino->changeText((char*)"----");
+    //if ( b )    pArduino->changeText((char*)"Arduino");
+    //else        pArduino->changeText((char*)"----");
+    
+    if ( b )    pArduino->setColor(COLOR_WHITE);
+    else        pArduino->setColor(COLOR_GREY);
     
     if ( b )    PanelConsoleSerial::getInstance().setPrompt("Arduino> ");
     else        PanelConsoleSerial::getInstance().setPrompt("No connect> ");
@@ -1188,8 +1194,10 @@ void change_arduino(bool b)
 void change_joy(int x, int y)
 {
     static char sJoyXY[255];
-    sprintf( sJoyXY, "Suivi(%d, %d) %s", x, y, BOOL2STR(bSuivi) );
-    pJoyXY->changeText((char*)sJoyXY );
+    sprintf( sJoyXY, "(%d, %d)", x, y );//, BOOL2STR(bSuivi) );
+    pCoordSuivi->changeText((char*)sJoyXY );
+    if ( bSuivi )           pSuivi->setColor(COLOR_WHITE);
+    else                    pSuivi->setColor(COLOR_GREY);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1197,8 +1205,10 @@ void change_joy(int x, int y)
 void change_joy(float x, float y)
 {
     static char sJoyXY[255];
-    sprintf( sJoyXY, "Suivi(%0.2f, %0.2f) %s", x, y, BOOL2STR(bSuivi) );
-    pJoyXY->changeText((char*)sJoyXY );
+    sprintf( sJoyXY, "(%0.2f, %0.2f)", x, y );//, BOOL2STR(bSuivi) );
+    pCoordSuivi->changeText((char*)sJoyXY );
+    if ( bSuivi )           pSuivi->setColor(COLOR_WHITE);
+    else                    pSuivi->setColor(COLOR_GREY);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2125,7 +2135,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         	if ( var.existe("bVerboseArduino") )    {
         		bool b = !var.getb("bVerboseArduino");
-        		var.set("bVerboseArduino", !b);
+        		var.set("bVerboseArduino", b);
 			    logf( (char*)"bVerboseArduino = %s", BOOL2STR(b) );
         	}
         //logf( (char*)"Key (b) : Bluetooth disconnect" );
@@ -2465,8 +2475,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         if ( bMouseDeplace )			bMouseDeplaceVers = false;
 
-	    if (bMouseDeplace)              pDeplacement->changeText((char*)"Depl");
-        else                            pDeplacement->changeText((char*)"----");
+	    if (bMouseDeplace)              pDeplacement->setColor(COLOR_WHITE);
+        else                            pDeplacement->setColor(COLOR_GREY);
         }
         break;
 
@@ -3137,7 +3147,7 @@ void setColor()
 
     unsigned long color;
     if (bNuit)                  color = 0xFFFF0000;
-    else                        color = 0xFFFFFFFF;
+    else                        color = COLOR_WHITE;
 
     PanelConsoleSerial::getInstance().getConsole()->setColor(color);
 
@@ -3362,48 +3372,46 @@ static void CreateStatus()	{
     pHertz = new PanelText( (char*)"0",		            PanelText::NORMAL_FONT, width-150, 2 );
 	panelStatus->add( pHertz );
 
-    pArduino = new PanelText( (char*)"----",		    PanelText::NORMAL_FONT, width-280, 2 );
+    pArduino = new PanelText( (char*)"Arduino",		    PanelText::NORMAL_FONT, width-280, 2 );
+    pArduino->setColor(COLOR_GREY);
 	panelStatus->add( pArduino );
 
-    pJoyXY = new PanelText( (char*)"Joy(---, ---)",		PanelText::NORMAL_FONT, width-620, 2 );
-	panelStatus->add( pJoyXY );
+    pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, width-560, 2 );
+	panelStatus->add( pCoordSuivi );
 
-    pStellarium = new PanelText( (char*)"----",		    PanelText::NORMAL_FONT, width-230, 2 );
+    pSuivi = new PanelText( (char*)"Suivi",		        PanelText::NORMAL_FONT, width-440, 2 );
+	panelStatus->add( pSuivi );
+
+    pStellarium = new PanelText( (char*)"Stellarium",   PanelText::NORMAL_FONT, width-230, 2 );
+    pStellarium->setColor(COLOR_GREY);
 	panelStatus->add( pStellarium );
 
-    pPas = new PanelText( (char*)"pas:",		        PanelText::NORMAL_FONT, width-380, 2 );
+    pPas = new PanelText( (char*)"pas:",		        PanelText::NORMAL_FONT, width-370, 2 );
+    pPas->setColor(COLOR_GREY);
 	panelStatus->add( pPas );
 
-    pDeplacement = new PanelText( (char*)" ",		    PanelText::NORMAL_FONT, width-410, 2 );
+    pDeplacement = new PanelText( (char*)"Depl",		PanelText::NORMAL_FONT, width-405, 2 );
+    pDeplacement->setColor(COLOR_GREY);
 	panelStatus->add( pDeplacement );
 
-
-
-    pAD = new PanelText( (char*)" ",		    PanelText::NORMAL_FONT, 60, 2 );
+    pAD = new PanelText( (char*)"AD:",		            PanelText::NORMAL_FONT, 60, 2 );
     change_ad( fpos_ad );
 	panelStatus->add( pAD );
-    pDC = new PanelText( (char*)"Decl :",		PanelText::NORMAL_FONT, 200, 2 );
+    
+    pDC = new PanelText( (char*)"DC:",		            PanelText::NORMAL_FONT, 200, 2 );
     change_dc( fpos_dc );
 	panelStatus->add( pDC );
 
-    pMode = new PanelText( (char*)"Mode ---",   PanelText::NORMAL_FONT, 350, 2 );
+    pMode = new PanelText( (char*)"Mode ---",           PanelText::NORMAL_FONT, 350, 2 );
 	panelStatus->add( pMode );
  
-    pAsservi = new PanelText( (char*)" ",		PanelText::NORMAL_FONT, 850, 2 );
+    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 850, 2 );
 	panelStatus->add( pAsservi );
 
-
-	if (bMouseDeplace)              pDeplacement->changeText((char*)"Depl");
-    else                            pDeplacement->changeText((char*)"----");
 
 	//if (!bModeManuel)               pMode->changeText((char*)"Mode suivi");
     //else                            pMode->changeText((char*)"Mode souris");
 
-    if (bCorrection)                pAsservi->changeText((char*)"Asservissemnent");
-    else                            pAsservi->changeText((char*)" ");
-
-    if ( bStellarium )              pStellarium->changeText( (char*)"Stellarium" );
-    else                            pStellarium->changeText( (char*)"----" );
 
 
 
@@ -3413,6 +3421,7 @@ static void CreateStatus()	{
  	panelStatus->setBackground((char*)"images/background.tga");
  	
  	create_windows_button();
+
 
     logf((char*)"** CreateStatus()  panelSatuts  %d,%d %dx%d", x, y, dx, dy);
 }
@@ -4031,7 +4040,7 @@ int main(int argc, char **argv)
     var.setSauve();
     
     if ( var.getb("bNuit") )    panelStdOut->setColor( 0xffff0000 );
-    else                        panelStdOut->setColor( 0xffffffff );
+    else                        panelStdOut->setColor( COLOR_WHITE );
     
     float gris = 0.2;
     glClearColor( gris, gris, gris,1.0);

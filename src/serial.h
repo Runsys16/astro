@@ -50,6 +50,8 @@ SINGLETON_BEGIN( Serial )
 
 		bool			bVersionArduino;
 		string			sVersionArduinoValable;
+		
+		bool            bConnect;
 
     private:
         void            emet_commande();
@@ -74,7 +76,8 @@ SINGLETON_BEGIN( Serial )
         void            start_thread();
         void            reset();
 	    void			testVersionArduino();
-    
+	    
+inline  bool            isConnect()                             { return bConnect; }
 inline  bool            getFree()                               { return bFree; }
 
 SINGLETON_END()

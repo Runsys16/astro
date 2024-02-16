@@ -68,12 +68,17 @@ void set_asservissement(void)
     var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
     var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
-    if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
-    else                        pAsservi->changeText((char*)" ");
+    //if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
+    //else                        pAsservi->changeText((char*)" ");
+
+    //pAsservi->changeText((char*)"Asservissemnent");
+
+    if (bCorrection)            pAsservi->setColor(0xFFFFFFFF);
+    else                        pAsservi->setColor(0XFF404040);
    
     pButtonAsserv->setVal(bCorrection);
     
-    logf( (char*)"asservissement = %s", bCorrection?(char*)"true":(char*)"false" );
+    logf( (char*)"set_asservissement() bCorrection = %s", bCorrection?(char*)"true":(char*)"false" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -559,12 +564,14 @@ void idleStatus()
     if ( Serveur_mgr::getInstance().isConnect() )
     {
        bStellarium = true;
-       pStellarium->changeText( (char*)"Stellarium" );
+       //pStellarium->changeText( (char*)"Stellarium" );
+       pStellarium->setColor(0xFFFFFFFF);
     }
     else
     {
        bStellarium = false;
-       pStellarium->changeText( (char*)"----" );
+       //pStellarium->changeText( (char*)"----" );
+       pStellarium->setColor(0xFF404040);
     }
     
     if ( pas_sideral != oldPas )
@@ -607,8 +614,21 @@ void idleStatus()
         char str[255];
         sprintf( str, "%0.2f", urg_old );
         pUrg->changeText( (char*)str );
-    }
+    }    if ( bSuivi )           pSuivi->setColor(COLOR_WHITE);
+    else                    pSuivi->setColor(COLOR_GREY);
 
+
+	if (bMouseDeplace)              pDeplacement->setColor(COLOR_WHITE);
+    else                            pDeplacement->setColor(COLOR_GREY);
+
+    if (bCorrection)                pAsservi->setColor(COLOR_WHITE);
+    else                            pAsservi->setColor(COLOR_GREY);
+
+    if ( Serial::getInstance().isConnect() )        pArduino->setColor(COLOR_WHITE);
+    else                                            pArduino->setColor(COLOR_GREY);
+
+    if ( bSuivi )                   pSuivi->setColor(COLOR_WHITE);
+    else                            pSuivi->setColor(COLOR_GREY);
     
     if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
 
@@ -616,6 +636,7 @@ void idleStatus()
     {
         logf( (char*)"[WARNING]Change mode " );
         set_mode(bModeManuel);
+        set_asservissement();
     }
 
     bFirstStatus = false;
