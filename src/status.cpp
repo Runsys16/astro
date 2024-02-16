@@ -499,7 +499,7 @@ PanelCheckBox* create_window_check_box( int i, string tex)
     pCheckBox->setCallBackMouse( cb_rotationCheck );
 
     pCheckBox->setBackground( (char*)NULL );
-    pCheckBox->setPosAndSize( 450+ i*18, 2, 16, 16 );
+    pCheckBox->setPosAndSize( 320+ i*18, 2, 16, 16 );
 
     panelStatus->add(pCheckBox);
     return pCheckBox;
@@ -581,18 +581,18 @@ void create_windows_button()
     pButtonSui      = create_window_check_box( pos++, "terre" );
     pButtonRet      = create_window_check_box( pos++, "retour" );
     
-    create_fleches( 730, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
-    create_fleches( 780, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
+    create_fleches( 580, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
+    create_fleches( 630, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
 
-    pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 742, 2 );
+    pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 592, 2 );
     pErrA = new PanelTextAsservissement();
-    pErrA->setPosAndSize(742, 2, 32, 20);
+    pErrA->setPosAndSize(592, 2, 32, 20);
 	panelStatus->add( pErr );
 	panelStatus->add( pErrA );
 
-    pUrg  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 792, 2 );
+    pUrg  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 642, 2 );
     pUrgA = new PanelTextAsservissement();
-    pUrgA->setPosAndSize(792, 2, 32, 20);
+    pUrgA->setPosAndSize(642, 2, 32, 20);
 	panelStatus->add( pUrg );
 	panelStatus->add( pUrgA );
 

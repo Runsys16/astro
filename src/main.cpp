@@ -3406,7 +3406,7 @@ static void CreateStatus()	{
     change_dc( fpos_dc );
 	panelStatus->add( pDC );
 
-    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 850, 2 );
+    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 685, 2 );
 	panelStatus->add( pAsservi );
 
 
