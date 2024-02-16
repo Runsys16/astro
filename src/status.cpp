@@ -27,6 +27,8 @@ PanelCheckBox *     pButtonSui;
 PanelCheckBox *     pButtonRet;
 PanelCheckBox *     pButtonMode;
 PanelCheckBox *     pButtonSon;
+PanelCheckBox *     pButtonPause;
+PanelCheckBox *     pButtonDeplacement;
 
 PanelButtonAsservissement *       pFlecheHaut;
 PanelButtonAsservissement *       pFlecheBas;
@@ -479,13 +481,30 @@ void cb_rotationCheck(PanelCheckBox* p)	{
         pButtonSon->setVal(bSound);
         logf((char*)"Bouton son Active/sDesactive le son : %s", BOOL2STR(bSound) );
 	}
+	else
+	if ( p == pButtonPause )
+	{
+        bPause = !bPause;
+        var.set("bPause", bPause);
+        pButtonPause->setVal(bPause);
+        logf((char*)"Bouton Pause : %s", BOOL2STR(bPause) );
+	}
+	else
+	if ( p == pButtonDeplacement )
+	{
+        if ( !bModeManuel )				bModeManuel = true;
+        bMouseDeplace = !bMouseDeplace;
+        var.set("bMouseDeplace", bMouseDeplace);
+        pButtonDeplacement->setVal(bMouseDeplace);
+        logf((char*)"bMouseDeplace : %s", BOOL2STR(bMouseDeplace) );
+	}
 	/*
 	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-PanelCheckBox* create_window_check_box( int i, string tex)
+PanelCheckBox* create_window_check_box( string tex, int dx)
 {
     if ( tex.length() == 0 )    return NULL;
         
@@ -499,10 +518,17 @@ PanelCheckBox* create_window_check_box( int i, string tex)
     pCheckBox->setCallBackMouse( cb_rotationCheck );
 
     pCheckBox->setBackground( (char*)NULL );
-    pCheckBox->setPosAndSize( 320+ i*18, 2, 16, 16 );
+    pCheckBox->setPosAndSize( dx, 2, 16, 16 );
 
     panelStatus->add(pCheckBox);
     return pCheckBox;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+PanelCheckBox* create_window_check_box( int i, string tex)
+{
+    return create_window_check_box(tex, 320+ i*18);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -572,6 +598,7 @@ void create_windows_button()
     pButtonSerial   = create_window_check_box( pos++, "arduino" );
 
     pButtonMode     = create_window_check_box( pos++, "mode" );
+    pButtonDeplacement    = create_window_check_box( pos++, "pas" );
     pButtonAsserv   = create_window_check_box( pos++, "cadena" );
     pButtonSon      = create_window_check_box( pos++, "son" );
 
@@ -581,18 +608,22 @@ void create_windows_button()
     pButtonSui      = create_window_check_box( pos++, "terre" );
     pButtonRet      = create_window_check_box( pos++, "retour" );
     
-    create_fleches( 580, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
-    create_fleches( 630, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
+    pButtonPause    = create_window_check_box( "pause", 10 );
 
-    pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 592, 2 );
+	int X = pos*18 + 325;
+
+    create_fleches( X, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
+    create_fleches( X+50, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
+
+    pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, X+12, 2 );
     pErrA = new PanelTextAsservissement();
-    pErrA->setPosAndSize(592, 2, 32, 20);
+    pErrA->setPosAndSize(X+12, 2, 32, 20);
 	panelStatus->add( pErr );
 	panelStatus->add( pErrA );
 
-    pUrg  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, 642, 2 );
+    pUrg  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, X+62, 2 );
     pUrgA = new PanelTextAsservissement();
-    pUrgA->setPosAndSize(642, 2, 32, 20);
+    pUrgA->setPosAndSize(X+62, 2, 32, 20);
 	panelStatus->add( pUrg );
 	panelStatus->add( pUrgA );
 
@@ -646,6 +677,8 @@ void idleStatus()
     pButtonCourbe->setVal( bPanelCourbe );
     pButtonHelp->setVal( bPanelHelp );
     pButtonSon->setVal( bSound );
+    pButtonPause->setVal( bPause );
+    pButtonDeplacement->setVal( bMouseDeplace );
 
     if (err_old != panelCourbe->get_err() )
     {

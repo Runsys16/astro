@@ -185,7 +185,7 @@ PanelText*          pYMin;
 
 PanelText*          pHertz;
 PanelText*          pFPS;
-PanelText *         pStatus;
+//PanelText *         pStatus;
 
 Pleiade*            pPleiade;
 
@@ -835,20 +835,11 @@ void captureOnTop(Capture* p)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void updatePanelPause()
-{
-    if ( bPause )   pStatus->changeText((char*)"Pause" );
-    else            pStatus->changeText((char*)"----" );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void updatePanelPause(bool b)
 {
     if ( b != bPause)            
     {
         bPause = b; 
-        updatePanelPause();
         var.set("bPause", bPause);
     }
 }
@@ -2480,8 +2471,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
 	    if ( bMouseDeplace )			bMouseDeplaceVers = false;
 
-		if (bMouseDeplace)              pDeplacement->setColor(COLOR_WHITE);
-	    else                            pDeplacement->setColor(COLOR_GREY);
         }
         break;
 
@@ -3364,10 +3353,10 @@ static void CreateStatus()	{
 	panelStatus = new PanelSimple();
 	panelStatus->setPosAndSize( x, y, dx, dy );
 
-	pStatus = new PanelText( (char*)"Status",		PanelText::NORMAL_FONT, 10, 2 );
-	panelStatus->add( pStatus );
-    if ( bPause )   pStatus->changeText((char*)"Pause" );
-    else            pStatus->changeText((char*)"-----" );
+	//pStatus = new PanelText( (char*)"",		PanelText::NORMAL_FONT, 10, 2 );
+	//panelStatus->add( pStatus );
+    //if ( bPause )   pStatus->changeText((char*)"Pause" );
+    //else            pStatus->changeText((char*)"-----" );
 
     logf((char*)"** CreateStatus()  panelSatuts  %d", width);
     pFPS = new PanelText( (char*)"0",		            PanelText::NORMAL_FONT, width-100, 2 );
@@ -3406,7 +3395,7 @@ static void CreateStatus()	{
     change_dc( fpos_dc );
 	panelStatus->add( pDC );
 
-    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 685, 2 );
+    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 705, 2 );
 	panelStatus->add( pAsservi );
 
 
