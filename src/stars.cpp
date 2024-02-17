@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include "panel_camera.h"
 
+//#define DEBUG_UPDATES   0
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -491,7 +492,9 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ech_usr)
 {
-    //logf( (char*)"Stars::update()  --- DEB ---" );
+    #ifdef DEBUG_UPDATES  
+        logf( (char*)"Stars::update()  --- DEB ---" );
+    #endif
     
     int nb = v_tStars.size();
     if (nb == 0)        return;
@@ -514,8 +517,10 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
     ech *= ech_usr;
     //ech = (float)pView->getDX() / (float)RB->w; 
     
-    //logf( (char*)"Stars::update() dx=%d, dy=%d, ech=%0.2f", dx, dy, ech );
-    //logf( (char*)"     w=%d, h=%d", RB->w, RB->h );
+    #ifdef DEBUG_UPDATES  
+        logf( (char*)"Stars::update() dx=%d, dy=%d, ech=%0.2f", dx, dy, ech );
+        logf( (char*)"     w=%d, h=%d", RB->w.load(), RB->h.load() );
+    #endif
 
     vector<int> t;
     t.clear();
@@ -528,9 +533,11 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
         if ( !pStar->find() && pStar->getNotFound() > 10   )
         {
             t.push_back(i);
-            logf( (char*)" Stars::update() push_back  !Star->find() = %d", i );
+            #ifdef DEBUG_UPDATES  
+                logf( (char*)" Stars::update() push_back  !Star->find() = %d", i );
+            #endif
         }
-        //*
+        // Star existe
         else
         {
             pStar->resetNotFound();
@@ -538,14 +545,20 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
             int x_find = pStar->getX();
             int y_find = pStar->getY();
 
+            #ifdef DEBUG_UPDATES  
+                logf( (char*)" x_find=%d, y_find=%d", x_find, y_find );
+            #endif
             if ( starExist(x_find, y_find, i) )        { 
                 t.push_back(i);
-                logf( (char*)" Stars::update() push_back existe = %d", i );
+                #ifdef DEBUG_UPDATES  
+                    logf( (char*)" Stars::update() push_back existe = %d", i );
+                #endif
             }
         }
         //*/       
         //v_tStars[i]->computeMag();
-        pStar->updatePos( dx, dy, ech_usr, ech_usr );
+        //pStar->updatePos( dx, dy, ech_usr, ech_usr );
+        pStar->updatePos( dx, dy, ew, eh );
     }
     //* 
     nb = t.size();
@@ -554,7 +567,11 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
     {
         char t[] = "00000000000";  
         sprintf( t, "%d", (int)v_tStars.size() );
-        //logf( (char*)"Nb etoiles %d", (int)v_tStars.size() );
+        
+        #ifdef DEBUG_UPDATES  
+            logf( (char*)"Nb etoiles %d", (int)v_tStars.size() );
+        #endif
+        
         pNbStars->changeText( t );
     }
     if ( nb!= 0 )
@@ -569,11 +586,15 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
 
             tot = v_tStars.size();
         
-            logf( (char*)" reste %d", tot );
+            #ifdef DEBUG_UPDATES  
+                logf( (char*)" reste %d", tot );
+            #endif
         }
     }
 
-    //logf( (char*)"Stars::update()  --- FIN ---" );
+    #ifdef DEBUG_UPDATES  
+        logf( (char*)"Stars::update()  --- FIN ---" );
+    #endif
     if ( nb != 0 )
     {
         char t[] = "00000000000";  

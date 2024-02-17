@@ -752,7 +752,7 @@ void PanelCamera::releaseLeft(int xm, int ym)
     if ( pReadBgr == NULL )     { logf( (char*)" return Pointeur NULL" ); return; }
     
     log_tab(true);
-    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), pReadBgr->w.load() );
+    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), (float)pReadBgr->w.load() );
     
     float e = (float)getDX() / (float)pReadBgr->w.load(); 
     //float e = (float)getDX() / (float)1920.0; 
