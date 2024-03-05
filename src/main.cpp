@@ -15,6 +15,7 @@
 #include "timer.h"
 #include "pleiade.h"
 #include "panel_console_serial.h"
+#include "panel_spin_edit_text.h"
 #include "serveur_mgr.h"
 #include "capture.h"
 #include "var_mgr.h"

@@ -29,6 +29,8 @@ protected:
        PanelSimple*     pBoule;
        
             vector<float>   t_val;
+            int         x_click;
+            int         y_click;
             
 public:
                         PanelSpinEditText();
@@ -51,6 +53,9 @@ inline      void        set(float m, float M, float s, float n)
 	virtual void		clickLeft( int, int );
 	virtual void		motionLeft( int, int );
 	virtual void		releaseLeft( int, int );
+
+	virtual void		clickRight( int, int );
+	virtual void		releaseRight( int, int );
 
     virtual void		updatePos();
 

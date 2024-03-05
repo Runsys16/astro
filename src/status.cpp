@@ -29,6 +29,8 @@ PanelCheckBox *     pButtonMode;
 PanelCheckBox *     pButtonSon;
 PanelCheckBox *     pButtonPause;
 PanelCheckBox *     pButtonDeplacement;
+PanelSpinEditText*  pCercleAsserv;
+PanelSpinEditText*  pCercleErr;
 
 PanelButtonAsservissement *       pFlecheHaut;
 PanelButtonAsservissement *       pFlecheBas;
@@ -243,7 +245,8 @@ void PanelButtonAsservissement::wheelDown( int, int)
         panelCourbe->get_pXMax()->changeText( (char*)s );
         panelCourbe->get_pYMax()->changeText( (char*)s );
 
-        sprintf( s, "-%0.2f", err );
+        sprintf( s, "-%0.2f", err );    float err = panelCourbe->get_err();
+
         panelCourbe->get_pXMin()->changeText( (char*)s );
         panelCourbe->get_pYMin()->changeText( (char*)s );
         logf( (char*) "err = %0.2f", (float)err );
@@ -321,7 +324,8 @@ void call_back_up(PanelButton* pPanel)
 	}
 	else
 	if ( pPanel == pButtonStdOut )
-	{
+	{    float err = panelCourbe->get_err();
+
         bPanelStdOut = !bPanelStdOut;
         var.set("bPanelStdOut", bPanelStdOut);
         panelStdOut->setVisible(bPanelStdOut);
@@ -587,6 +591,29 @@ void create_fleches( int x, char* up, char* down, PanelButtonAsservissement* &pU
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+int xAsserv, yAsserv;
+void click_left_cercle_asserv( int xm, int ym ) 
+{
+    logf((char*)"click_left_cercle_asserv( %d, %d)", xm, ym );
+    //pCercleAsserv->setPosAndSize( 200, -200, 180, 20 );
+    xAsserv =     pCercleAsserv->getPosX();
+    yAsserv =     pCercleAsserv->getPosY();
+    pCercleAsserv->setPos( xAsserv, yAsserv-100-8 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void release_left_cercle_asserv( int xm, int ym ) 
+{
+    logf((char*)"release_left_cercle_asserv( %d, %d)", xm, ym );
+    //pCercleAsserv->setPosAndSize( 200, 0, 180, 20 );
+    //int x =     pCercleAsserv->getX();
+    //int y =     pCercleAsserv->getY();
+    pCercleAsserv->setPos( xAsserv, yAsserv );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void create_windows_button()
 {
 	int pos = 0;
@@ -618,15 +645,52 @@ void create_windows_button()
     pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, X+12, 2 );
     pErrA = new PanelTextAsservissement();
     pErrA->setPosAndSize(X+12, 2, 32, 20);
-	panelStatus->add( pErr );
+	//panelStatus->add( pErr );
 	panelStatus->add( pErrA );
-
+    /*
+    */
     pUrg  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, X+62, 2 );
     pUrgA = new PanelTextAsservissement();
     pUrgA->setPosAndSize(X+62, 2, 32, 20);
-	panelStatus->add( pUrg );
+	//panelStatus->add( pUrg );
 	panelStatus->add( pUrgA );
+	
+    char s[55];
+	pCercleAsserv = new PanelSpinEditText();
+    pCercleAsserv->setPosAndSize( X+62, 2, 180, 20 );
+    pCercleAsserv->setClickLeft( click_left_cercle_asserv );
+    pCercleAsserv->setReleaseLeft( release_left_cercle_asserv );
 
+    sprintf( s,"%0.0f", fLimitCorrection );
+    pCercleAsserv->changeText( s );
+
+    //  Valeur de l'edition dimension de la
+    pCercleAsserv->set( 1, 600, 1, 2 );
+    pCercleAsserv->set_delta( 20, -100 );
+    //pCercleAsserv->set_nb( 2 );
+    pCercleAsserv->set_val( fLimitCorrection );
+    pCercleAsserv->set_pVal( &fLimitCorrection );
+
+    panelStatus->add( pCercleAsserv );
+
+
+	pCercleErr = new PanelSpinEditText();
+    pCercleErr->setPosAndSize( X+12, 2, 180, 20 );
+    //pCercleErr->setClickLeft( click_left_cercle_asserv );
+    //pCercleErr->setReleaseLeft( release_left_cercle_asserv );
+
+    sprintf( s,"%0.0f", fLimitCorrection );
+    pCercleErr->changeText( s );
+
+    //  Valeur de l'edition dimension de la
+    pCercleErr->set( 1, 10, 0.02, 2 );
+    pCercleErr->set_delta( 20, -100 );
+    //pCercleAsserv->set_nb( 2 );
+    float f = 0.0;//panelCourbe->get_err();
+    pCercleErr->set_val( f );
+    pCercleErr->set_pVal( NULL );
+
+    panelStatus->add( pCercleErr );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -680,6 +744,7 @@ void idleStatus()
     pButtonPause->setVal( bPause );
     pButtonDeplacement->setVal( bMouseDeplace );
 
+    /*
     if (err_old != panelCourbe->get_err() )
     {
         err_old = panelCourbe->get_err();
@@ -697,7 +762,7 @@ void idleStatus()
     }    if ( bSuivi )           pSuivi->setColor(COLOR_WHITE);
     else                    pSuivi->setColor(COLOR_GREY);
 
-
+    */
 	if (bMouseDeplace)              pDeplacement->setColor(COLOR_WHITE);
     else                            pDeplacement->setColor(COLOR_GREY);
 

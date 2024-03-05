@@ -172,6 +172,9 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
 void PanelSpinEditText::clickLeft( int xm, int ym )
 {
     logf( (char*)"PanelSpinEditText::clickLeft(%d, %d)", xm, ym );
+    log_tab(true);
+    logf( (char*)"	delta (%d, %d)", delta_x, delta_y );
+    x_click = xm; y_click = ym;
     pCadran->setPos( x_raw - 100 + delta_x, y_raw - 100 + delta_y );
     pCadran->updatePos();
     pCadran->setVisible( true );
@@ -187,14 +190,19 @@ void PanelSpinEditText::clickLeft( int xm, int ym )
         logf( (char*)"  val=%0.2f *pVal=%0.2f", val, *pVal );
         val_angle = val = *pVal;
     }
+    
+    if ( click_left_cb != NULL )        (*click_left_cb)( xm, ym);
+
+    log_tab(false);
 }
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::motionLeft( int xm, int ym )
 {
     //logf( (char*)"PanelSpinEditText::motionLeft(%d, %d)", xm, ym );
-
+    
     compute_pos_relatif( xm, ym );
     //logf( (char*)"  (%0.2f, %0.2f)", v.x, v.y );
     //logf( (char*)"  angle = %0.2f", angle );
@@ -218,6 +226,27 @@ void PanelSpinEditText::releaseLeft( int xm, int ym )
     pCadran->setVisible( false );
 
     if ( pVal!= NULL )          *pVal = val;
+    
+    if ( release_left_cb != NULL )        (*release_left_cb)( xm, ym);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::clickRight( int xm, int ym )
+{
+    logf( (char*)"PanelSpinEditText::clickRight(%d, %d)", xm, ym );
+    logf( (char*)"	delta (%d, %d)", delta_x, delta_y );
+    x_click = xm; y_click = ym;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::releaseRight( int xm, int ym )
+{
+    logf( (char*)"PanelSpinEditText::releaseRight(%d, %d)", xm, ym );
+    
+    set_delta( delta_x + (xm-x_click), delta_y + (ym-y_click) );
+    logf( (char*)"	delta (%d, %d)", delta_x, delta_y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
