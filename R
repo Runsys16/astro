@@ -1,3 +1,3 @@
 #!/bin/bash
-make -j4 && ./astro -e video0 -e video1
+make -j$(nproc) && ./astro -e video0 -e video1
 export PATH=".:"$PATH

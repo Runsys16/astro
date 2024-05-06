@@ -106,7 +106,7 @@ void PanelCamera::idle(float f)
             PanelText* pInfo = vizier.get(i)->pInfo;
             if ( pInfo->getParent() == NULL )    this->add(pInfo);
 
-            pInfo->setPos(x+10, y-80);
+            pInfo->setPos(x+10-getX(), y-30-getY());
             pInfo->setVisible(true);
 
             //logf( (char*)"%08X", (int)color );
@@ -630,6 +630,7 @@ void PanelCamera::displayVizier()
             double x = vizier.get(i)->getXScreen();
             double y = vizier.get(i)->getYScreen();
             
+			//vizier.get(i)->pInfo->setPos(x+10-getX(), y-80);
 
             double r = (12.0 - vizier.get(i)->fMag ) * 1.8;
             glCercle( x, y, r );
