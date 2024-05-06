@@ -28,8 +28,12 @@ bool Connexion_mgr::isExclude(string st)
     int nb = exclude.size();
     for( int i=0; i<nb; i++ )
     {
-        if ( st.find(exclude[i]) != string::npos )      return true;
+        if ( st.find(exclude[i]) != string::npos ) {
+        	//logf( (char*)" %s exclue !!!", st.c_str() );
+	        return true;
+        }
     }
+   	//logf( (char*)" %s OK non-exclue !!!", st.c_str() );
     return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -53,7 +57,7 @@ void Connexion_mgr::add_port()
             }
         }
         if ( !bFound ){
-            if ( isExclude(t_port_polling[i])  )    return;
+            if ( isExclude(t_port_polling[i])  )    continue;
 
             sleep( 1 );
             if ( t_port_polling[i].find("video") != string::npos )
@@ -198,6 +202,8 @@ void Connexion_mgr::pooling()
 
     closedir(rep);    
 
+    //logf( (char*)"  add_port" );
+
     add_port();
     sup_port();
     
@@ -235,6 +241,14 @@ void Connexion_mgr::print_list()
     int nb1 = t_port_current.size();
     
     bool bFound = false;
+
+    logf( (char*)"  exclude : " );
+    vector<string>& exclude = getExclude();
+    int nb = exclude.size();
+    for( int i=0; i<nb; i++ )
+    {
+        logf( (char*)"    %s", exclude[i].c_str() );
+    }
 
     logf( (char*)"  t_port_polling : " );
     for( int i=0; i<nb0; i++ )
