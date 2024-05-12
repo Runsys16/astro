@@ -5,7 +5,7 @@ public:
     virtual void		wheelDown( int, int);
 };
 
-class PanelTextAsservissement : public Panel
+class PanelTextAsservissement : public PanelText
 {
 public:
     virtual void		wheelUp( int, int);
@@ -155,11 +155,16 @@ void PanelTextAsservissement::wheelUp( int, int)
         sprintf( s, "+%0.2f", err );
         panelCourbe->get_pXMax()->changeText( (char*)s );
         panelCourbe->get_pYMax()->changeText( (char*)s );
+        sprintf( s, "%d", (int)err );
+        pErrA->changeText( (char*)s );
+        pCercleErr->set_val( err );
+
 
         sprintf( s, "-%0.2f", err );
         panelCourbe->get_pXMin()->changeText( (char*)s );
         panelCourbe->get_pYMin()->changeText( (char*)s );
         logf( (char*) "err = %0.2f", (float)err );
+
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -643,7 +648,7 @@ void create_windows_button()
     create_fleches( X+50, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
 
     pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, X+12, 2 );
-    pErrA = new PanelTextAsservissement();
+    pErrA = new PanelTextAsservissement();// (char*)"000",		    PanelText::NORMAL_FONT, X+12, 2);
     pErrA->setPosAndSize(X+12, 2, 32, 20);
 	//panelStatus->add( pErr );
 	panelStatus->add( pErrA );

@@ -53,6 +53,7 @@ vector<string> t_sHelp1 =
 	"\t  Gamma\t\tG/g" ,
 	"\t  Sharpness\t\tZ/z" ,
 	"\t  Exposure\t\tE/e" ,
+	"\t  Exposure auto\t\tD/d" ,
 	"\t  White balance\tW/w" ,
 	"",
 	"---- MODE NORMAL ----",
@@ -2333,8 +2334,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'i':
         {
             if ( panelApn == NULL )         panelApn = new PanelApn();
-            else
-                panelApn->setVisible( !panelApn->getVisible() );
+            else                            panelApn->setVisible( !panelApn->getVisible() );
+            
+            //if ( panelApn->getVisible() )   panelApn->commande_photo();
         }
         break;
 

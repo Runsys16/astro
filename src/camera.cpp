@@ -527,6 +527,14 @@ bool Camera::keyboard(char key)
         pControl = getControl("Exposure (Absolute)");
         if (pControl)       pControl->moins();
         break;
+    case 'D':
+        pControl = getControl("Exposure ,Auto");
+        if (pControl)       pControl->plus();
+        break;
+    case 'd':    
+        pControl = getControl("Exposure ,Auto");
+        if (pControl)       pControl->moins();
+        break;
     case 'B':
         pControl = getControl("Bright");
         if (pControl)       pControl->plus();

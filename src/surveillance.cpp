@@ -14,24 +14,43 @@ Surveillance::Surveillance()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+bool Surveillance::isImage(string name)
+{
+    if (    name.find( ".jpg")  != string::npos
+      /*   || name.find( ".jpeg") != string::npos
+         || name.find( ".JPG")  != string::npos
+         || name.find( ".fits") != string::npos
+         || name.find( ".tga")  != string::npos
+         || name.find( ".png")  != string::npos
+       */
+    )
+    {
+        logf( (char*)"%s est une image\n", name.c_str() );
+        return true;
+    }        
+    logf( (char*)"%s n est pas une image\n", name.c_str() );
+
+    return false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 bool Surveillance::idleGL()
 {
     if ( bCharge && iState == 2 )
     {
-        if (    basename.find( ".jpg")  != string::npos
-             || basename.find( ".jpeg") != string::npos
-             || basename.find( ".JPG")  != string::npos
-             || basename.find( ".fits") != string::npos
-             || basename.find( ".tga")  != string::npos
-             || basename.find( ".png")  != string::npos
-        ){
+        if (   isImage( basename ) ) {
             charge_image( dirname, basename);
+            
+            logf( (char*)"charge(%s)", basename.c_str() );
+            logf( (char*)"charge(%s)", dirname.c_str() );
             iState = -1;
-            bCharge = false;
+            return true;
         }        
-        return true;
+        iState = -1;
     }
 
+    bCharge = false;
     return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -65,12 +84,18 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
 
 
 
+    /*
     if ( (i->mask & IN_MODIFY) && (i->len > 0) ){
         iState = 1;
     }
+    */
 
-    if (    ( (i->mask & IN_CLOSE_WRITE) || (i->mask & IN_CLOSE_NOWRITE) )
-         && (i->len > 0) && iState == 1)
+    if ( (i->mask & IN_CREATE) && (i->len > 0) ){
+        iState = 1;
+    }
+
+    //if (    ( (i->mask & IN_CLOSE_WRITE) || (i->mask & IN_CLOSE_NOWRITE) )
+    if (    ( (i->mask & IN_CLOSE_WRITE) )  && (i->len > 0) && iState == 1)
     {
         iState = 2;
     //}

@@ -60,7 +60,8 @@ public:
     bool                idleGL();
     void                displayInotifyEvent(struct inotify_event *);
     void                thread_surveille(string);
-    void                start(string); 
+    void                start(string);
+    bool                isImage(string);
     inline void         stop()                  { bRun = false; }
 
     virtual void        callback( bool, int, char* );
