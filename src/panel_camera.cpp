@@ -509,11 +509,18 @@ void PanelCamera::displaySuivi()
     //      DEBUG
     //logf( (char*)"Screen (%0.2f,%0.2f)  texture(%0.2f,%0.2f)", wSc, hSc, wTex, hTex );
     //logf( (char*)"     suivi (%0.2f,%0.2f) -> (%0.2f,%0.2f)", xSuivi, ySuivi, x, y );
+    vec4 color;
+    vec4 cBleu = vec4(0.5, 0.5, 1.0, 1.0);
 
     //-----------------------------------------------------------------------------
     //      Affichage en mode nuit ?
     if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );
-    else                glColor4f( 0.5,   0.4,  0.5, gris );    
+    else                glColor4f( 0.5,   0.4,  0.5, gris );
+
+    if ( bNuit )        color = vec4( 1.0,   0.0,  0.0, gris );
+    else                color = vec4( 0.5,   0.4,  0.5, gris );
+    
+    glColor4fv( color );
     //----- Affichage de la croix   ----------------------------------------------
     glCroix( vSuiviScr, 50 );
 
@@ -558,11 +565,14 @@ void PanelCamera::displaySuivi()
     //----- Cercle de correction --------------------------------------------------
     if ( !bCorrection )
     {
-        glLineStipple(1, 0xFFF0);
+        glLineStipple(1, 0xFF00);
         glEnable(GL_LINE_STIPPLE);    
     }
+    else
+        glColor4fv( cBleu );
 
     glCercle( vSuiviScr, echelle*(fLimitCorrection) );
+    glColor4fv( color );
 
     //----- Droite de correction --------------------------------------------------
     if ( pvStar!=NULL && vStarTex!=vec2(0.0,0.0) && vSuiviTex!=vec2(0.0,0.0)  )
