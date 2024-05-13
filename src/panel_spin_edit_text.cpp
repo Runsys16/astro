@@ -1,4 +1,5 @@
 #include "panel_spin_edit_text.h"
+#define ZONE_MORTE		20.0
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -21,6 +22,7 @@ PanelSpinEditText::PanelSpinEditText()
 
     delta_x = delta_y = 0;
     pVal = NULL;
+    cb_motion = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -115,7 +117,7 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
 
     //logf( (char*)"compute_pos_relatif()  l=%0.2f", v.length() ); 
 
-    if ( v.length() <= 40.0 )
+    if ( v.length() <= ZONE_MORTE )
     {
         vRef = v;
         vRef.normalize();
@@ -176,6 +178,7 @@ void PanelSpinEditText::clickLeft( int xm, int ym )
     logf( (char*)"	delta (%d, %d)", delta_x, delta_y );
     x_click = xm; y_click = ym;
     pCadran->setPos( x_raw - 100 + delta_x, y_raw - 100 + delta_y );
+    //pCadran->setPos( getPosX() - 100 + delta_x, getPosY() - 100 + delta_y );
     pCadran->updatePos();
     pCadran->setVisible( true );
     
@@ -203,6 +206,7 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
 {
     //logf( (char*)"PanelSpinEditText::motionLeft(%d, %d)", xm, ym );
     
+    
     compute_pos_relatif( xm, ym );
     //logf( (char*)"  (%0.2f, %0.2f)", v.x, v.y );
     //logf( (char*)"  angle = %0.2f", angle );
@@ -216,6 +220,7 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
  	WindowsManager&     wm  = WindowsManager::getInstance();
     wm.onTop(pCadran);
 
+	if ( cb_motion != NULL )			(*cb_motion)(xm, ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -266,8 +271,58 @@ void PanelSpinEditText::updatePos()
 
     */
 
-    vCentre.x = (float)x_raw  + delta_x;
-    vCentre.y = (float)y_raw  + delta_y;
+    //vCentre = vec2( (float)(x_raw  + delta_x), (float)(y_raw  + delta_y) );
+    vCentre = vec2( (float)(x_raw)+20, (float)(y_raw)+8 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::displayGL()
+{
+    PanelEditText::displayGL();
+
+    if ( pCadran && pCadran->getVisible()==false )		return;
+
+    //vCentre = vec2((float) delta_x, (float) delta_y);
+	/*
+
+	logf( (char*)"PanelSpinEditText::displayGL() centre (%0.2f,%0.2f)", vCentre.x, vCentre.y );
+
+    glBegin(GL_LINES);
+		//--------------------------------------------------------
+		// graduation horizontale
+		//--------------------------------------------------------
+        vec4 color       = vec4( 0.2, 0.9, 0.9, 1.0 );    
+		glColor4fv( (GLfloat*)&color );
+		{
+		    int x0 = vCentre.x-10;
+		    int y0 = vCentre.y;
+		    int x1 = vCentre.x+10;
+		    int y1 = vCentre.y;
+
+		    //xy2Screen(x0, y0);
+		    //xy2Screen(x1, y1);
+		    
+		    glVertex2i( x0, y0 );
+		    glVertex2i( x1, y1 );
+		}
+		//--------------------------------------------------------
+		{
+		    int x0 = vCentre.x;
+		    int y0 = vCentre.y+10;
+		    int x1 = vCentre.x;
+		    int y1 = vCentre.y-10;
+
+		    //xy2Screen(x0, y0);
+		    //xy2Screen(x1, y1);
+		    
+		    glVertex2i( x0, y0 );
+		    glVertex2i( x1, y1 );
+		}
+		//--------------------------------------------------------
+
+	glEnd();
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

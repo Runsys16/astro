@@ -5,6 +5,7 @@
 #include "main.h"
 
 
+typedef void (*motion_cb_t)(int,int);
 
 class PanelSpinEditText : public PanelEditText
 {
@@ -31,6 +32,7 @@ protected:
             vector<float>   t_val;
             int         x_click;
             int         y_click;
+            motion_cb_t cb_motion;
             
 public:
                         PanelSpinEditText();
@@ -43,7 +45,12 @@ inline      void        set_max(float f)            { max = f; }
 inline      void        set_step(float f)           { step = f; }                        
 inline      void        set_nb(float f)             { nb = f; }                        
 inline      void        set(float m, float M, float s, float n)
-                        { min = m; max = M+s; step = s; nb = n; }     
+							                        { min = m; max = M+s; step = s; nb = n; }     
+
+inline 		void		setMotion( motion_cb_t cb)               { cb_motion = cb; }
+inline      float*      get_pVal()          		{ return pVal; }                        
+
+
             void        set_enum(vector<float>);
                         
             void        boule_pos(int, int);                   
@@ -58,6 +65,7 @@ inline      void        set(float m, float M, float s, float n)
 	virtual void		releaseRight( int, int );
 
     virtual void		updatePos();
+    virtual void		displayGL();
 
 };
 

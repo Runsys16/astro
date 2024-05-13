@@ -1,16 +1,10 @@
 class PanelButtonAsservissement : public PanelButton
 {
-public:
-    virtual void		wheelUp( int, int);
-    virtual void		wheelDown( int, int);
+	public:
+		virtual void		wheelUp(int, int);
+		virtual void		wheelDown(int, int);
 };
 
-class PanelTextAsservissement : public PanelText
-{
-public:
-    virtual void		wheelUp( int, int);
-    virtual void		wheelDown( int, int);
-};
 
 
 //PanelCheckBox *     pButtonMode;
@@ -38,10 +32,6 @@ PanelButtonAsservissement *       pFlecheBas;
 PanelButtonAsservissement *       pUrgentUp;
 PanelButtonAsservissement *       pUrgentDown;
 
-PanelText*          pErr;
-PanelText*          pUrg;
-PanelTextAsservissement*          pErrA;
-PanelTextAsservissement*          pUrgA;
 
 PanelCheckBox *     pButtonAsserv;
 
@@ -134,69 +124,22 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelTextAsservissement::wheelUp( int, int)
+void setPanelCourbeErr( float e )
 {
+    logf( (char*) "setPanelCourbeErr( %0.2f )", (float)e );
+
     char s[20];
-    float err = panelCourbe->get_err();
-    log((char*)"PanelTextAsservissement::wheelUp()" );
-    
-    if ( this == pUrgA  )
-    {
-	    fLimitCorrection /= 0.9f;
-        var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
-    }
-    else if ( this == pErrA )
-    {
-        err /= 0.9;
-        panelCourbe->set_err( err );
-        var.set( "err", err );
 
-        sprintf( s, "+%0.2f", err );
-        panelCourbe->get_pXMax()->changeText( (char*)s );
-        panelCourbe->get_pYMax()->changeText( (char*)s );
-        sprintf( s, "%d", (int)err );
-        pErrA->changeText( (char*)s );
-        pCercleErr->set_val( err );
+    panelCourbe->set_err( e );
 
+    sprintf( s, "+%0.2f", e );
+    panelCourbe->get_pXMax()->changeText( (char*)s );
+    panelCourbe->get_pYMax()->changeText( (char*)s );
 
-        sprintf( s, "-%0.2f", err );
-        panelCourbe->get_pXMin()->changeText( (char*)s );
-        panelCourbe->get_pYMin()->changeText( (char*)s );
-        logf( (char*) "err = %0.2f", (float)err );
+    sprintf( s, "-%0.2f", e );
+    panelCourbe->get_pXMin()->changeText( (char*)s );
+    panelCourbe->get_pYMin()->changeText( (char*)s );
 
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelTextAsservissement::wheelDown( int, int)
-{
-    char s[20];
-    float err = panelCourbe->get_err();
-    log((char*)"PanelTextAsservissement::wheelDown()" );
-    
-    if ( this == pUrgA )
-    {
-	    fLimitCorrection *= 0.9f;
-        var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
-    }
-    else if ( this == pErrA )
-    {
-        err *= 0.9;
-        panelCourbe->set_err( err );
-        var.set( "err", err );
-
-        sprintf( s, "+%0.2f", err );
-        panelCourbe->get_pXMax()->changeText( (char*)s );
-        panelCourbe->get_pYMax()->changeText( (char*)s );
-
-        sprintf( s, "-%0.2f", err );
-        panelCourbe->get_pXMin()->changeText( (char*)s );
-        panelCourbe->get_pYMin()->changeText( (char*)s );
-        logf( (char*) "err = %0.2f", (float)err );
-    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -209,22 +152,19 @@ void PanelButtonAsservissement::wheelUp( int, int)
     {
 	    fLimitCorrection /= 0.9f;
         var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+        logf( (char*) "PanelButtonAsservissement::wheelUp() fLimitCorrection = %0.2f", (float)fLimitCorrection );
+        sprintf( s, "%0.0f", fLimitCorrection );
     }
     else if ( this == pFlecheHaut || this == pFlecheBas)
     {
         err /= 0.9;
-        panelCourbe->set_err( err );
+        logf( (char*) "PanelButtonAsservissement::wheelUp() err = %0.2f", (float)err );
         var.set( "err", err );
 
-        sprintf( s, "+%0.2f", err );
-        panelCourbe->get_pXMax()->changeText( (char*)s );
-        panelCourbe->get_pYMax()->changeText( (char*)s );
+		setPanelCourbeErr(err);
 
-        sprintf( s, "-%0.2f", err );
-        panelCourbe->get_pXMin()->changeText( (char*)s );
-        panelCourbe->get_pYMin()->changeText( (char*)s );
-        logf( (char*) "err = %0.2f", (float)err );
+        sprintf( s, "%0.2f", err );
+        pCercleErr->set_val( err );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -238,23 +178,19 @@ void PanelButtonAsservissement::wheelDown( int, int)
     {
 	    fLimitCorrection *= 0.9f;
         var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+        logf( (char*) "PanelButtonAsservissement::wheelDown() fLimitCorrection = %0.2f", (float)fLimitCorrection );
+        sprintf( s, "%0.0f", fLimitCorrection );
     }
     else if ( this == pFlecheHaut || this == pFlecheBas)
     {
         err *= 0.9;
-        panelCourbe->set_err( err );
+        logf( (char*) "PanelButtonAsservissement::wheelDown() err = %0.2f", (float)err );
         var.set( "err", err );
 
-        sprintf( s, "+%0.2f", err );
-        panelCourbe->get_pXMax()->changeText( (char*)s );
-        panelCourbe->get_pYMax()->changeText( (char*)s );
+		setPanelCourbeErr(err);
 
-        sprintf( s, "-%0.2f", err );    float err = panelCourbe->get_err();
-
-        panelCourbe->get_pXMin()->changeText( (char*)s );
-        panelCourbe->get_pYMin()->changeText( (char*)s );
-        logf( (char*) "err = %0.2f", (float)err );
+        sprintf( s, "%0.2f", err );
+        pCercleErr->set_val( err );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -262,37 +198,23 @@ void PanelButtonAsservissement::wheelDown( int, int)
 //--------------------------------------------------------------------------------------------------------------------
 void cb_fleche(PanelButton* pPanel)
 {
+    log( (char*) "cb_fleche()" );
+
     char s[20];
     float err = panelCourbe->get_err();
     
     if ( pPanel == pFlecheHaut )
     {
         err /= 0.9;
-        panelCourbe->set_err( err );
         var.set( "err", err );
-
-        sprintf( s, "+%0.2f", err );
-        panelCourbe->get_pXMax()->changeText( (char*)s );
-        panelCourbe->get_pYMax()->changeText( (char*)s );
-
-        sprintf( s, "-%0.2f", err );
-        panelCourbe->get_pXMin()->changeText( (char*)s );
-        panelCourbe->get_pYMin()->changeText( (char*)s );
+		setPanelCourbeErr(err);
     }
     else
     if ( pPanel == pFlecheBas )
     {
         err *= 0.9;
-        panelCourbe->set_err( err );
         var.set( "err", err );
-
-        sprintf( s, "+%0.2f", err );
-        panelCourbe->get_pXMax()->changeText( (char*)s );
-        panelCourbe->get_pYMax()->changeText( (char*)s );
-
-        sprintf( s, "-%0.2f", err );
-        panelCourbe->get_pXMin()->changeText( (char*)s );
-        panelCourbe->get_pYMin()->changeText( (char*)s );
+		setPanelCourbeErr(err);
     }
     else
     if ( pPanel == pUrgentUp )
@@ -619,9 +541,46 @@ void release_left_cercle_asserv( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void click_left_cercle_err( int xm, int ym ) 
+{
+    logf((char*)"click_left_cercle_err( %d, %d)", xm, ym );
+    //pCercleAsserv->setPosAndSize( 200, -200, 180, 20 );
+    xAsserv =     pCercleErr->getPosX();
+    yAsserv =     pCercleErr->getPosY();
+    pCercleErr->setPos( xAsserv, yAsserv-100-8 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void release_left_cercle_err( int xm, int ym ) 
+{
+    logf((char*)"release_left_cercle_err( %d, %d)", xm, ym );
+    pCercleErr->setPos( xAsserv, yAsserv );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void cb_motion( int xm, int ym ) 
+{
+    //logf((char*)"cb_motion( %d, %d)", xm, ym );
+	char s[20];
+    float err;
+    
+    
+    if ( panelCourbe )		err = panelCourbe->get_err();
+    snprintf( s, sizeof(s), "%0.2f", err );
+    pCercleErr->changeText( s );
+	setPanelCourbeErr(err);
+	var.set( "err", (float)err );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void create_windows_button()
 {
+    char s[55];
 	int pos = 0;
+	
     pButtonHelp     = create_window_check_box( pos++, "help" );
     pButtonControl  = create_window_check_box( pos++, "camera" );
     pButtonResultat = create_window_check_box( pos++, "cible" );
@@ -644,25 +603,29 @@ void create_windows_button()
 
 	int X = pos*18 + 325;
 
+	//--------------------------------------------------------
     create_fleches( X, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
     create_fleches( X+50, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
+	//--------------------------------------------------------
+	pCercleErr = new PanelSpinEditText();
+    pCercleErr->setPosAndSize( X+12, 2, 40, 20 );
+    pCercleErr->setClickLeft( click_left_cercle_err );
+    pCercleErr->setReleaseLeft( release_left_cercle_err );
 
-    pErr  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, X+12, 2 );
-    pErrA = new PanelTextAsservissement();// (char*)"000",		    PanelText::NORMAL_FONT, X+12, 2);
-    pErrA->setPosAndSize(X+12, 2, 32, 20);
-	//panelStatus->add( pErr );
-	panelStatus->add( pErrA );
-    /*
-    */
-    pUrg  = new PanelText( (char*)"000",		    PanelText::NORMAL_FONT, X+62, 2 );
-    pUrgA = new PanelTextAsservissement();
-    pUrgA->setPosAndSize(X+62, 2, 32, 20);
-	//panelStatus->add( pUrg );
-	panelStatus->add( pUrgA );
-	
-    char s[55];
+    sprintf( s,"%0.2f", var.getf("err")  );
+    pCercleErr->changeText( s );
+
+    pCercleErr->set( 0.0, 5.0, 0.02, 2 );
+    pCercleErr->set_delta( 20, -100 );
+    pCercleErr->set_val( 0.0 );					// initialisation à zero l'objet panelCourbe n'est pas encore créé
+    pCercleErr->set_pVal( NULL );
+    
+    pCercleErr->setMotion( cb_motion );			// callback sur deplacement de la souris
+
+    panelStatus->add( pCercleErr );
+	//--------------------------------------------------------
 	pCercleAsserv = new PanelSpinEditText();
-    pCercleAsserv->setPosAndSize( X+62, 2, 180, 20 );
+    pCercleAsserv->setPosAndSize( X+62, 2, 40, 20 );
     pCercleAsserv->setClickLeft( click_left_cercle_asserv );
     pCercleAsserv->setReleaseLeft( release_left_cercle_asserv );
 
@@ -677,25 +640,7 @@ void create_windows_button()
     pCercleAsserv->set_pVal( &fLimitCorrection );
 
     panelStatus->add( pCercleAsserv );
-
-
-	pCercleErr = new PanelSpinEditText();
-    pCercleErr->setPosAndSize( X+12, 2, 180, 20 );
-    //pCercleErr->setClickLeft( click_left_cercle_asserv );
-    //pCercleErr->setReleaseLeft( release_left_cercle_asserv );
-
-    sprintf( s,"%0.0f", fLimitCorrection );
-    pCercleErr->changeText( s );
-
-    //  Valeur de l'edition dimension de la
-    pCercleErr->set( 1, 10, 0.02, 2 );
-    pCercleErr->set_delta( 20, -100 );
-    //pCercleAsserv->set_nb( 2 );
-    float f = 0.0;//panelCourbe->get_err();
-    pCercleErr->set_val( f );
-    pCercleErr->set_pVal( NULL );
-
-    panelStatus->add( pCercleErr );
+	//--------------------------------------------------------
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -791,7 +736,15 @@ void idleStatus()
 
     bFirstStatus = false;
     if ( bModeManuel != pButtonMode->getVal() )     set_mode(bModeManuel);
+    
 
+	if ( panelCourbe!= NULL && pCercleErr->get_pVal()==NULL )
+	{
+		float* pErr = panelCourbe->get_perr();
+		logf( (char*)"err=%0.2f", *pErr );
+	    pCercleErr->set_pVal( pErr );
+	    pCercleErr->set_val( *pErr );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

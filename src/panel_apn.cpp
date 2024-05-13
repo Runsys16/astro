@@ -290,7 +290,7 @@ void PanelApn::commande_photo()
     int ret = system( (char*) command.c_str() );
     if ( ret != 0 )
     {
-        string mes = "Erreur de commande Pentax Valeur retourne : " +  to_string(ret);
+        string mes = "Erreur de commande Pentax Valeur retourne : " +  to_string((int)ret);
         alertBox(mes);
         logf( (char*)mes.c_str() );
     }
@@ -304,7 +304,7 @@ void PanelApn::photo()
     string dir = "/home/rene/Documents/astronomie/k200d/";
 
     thread( &PanelApn::commande_photo, this ).detach();
-    Surveillance::getInstance().start(dir);
+    //Surveillance::getInstance().start(dir);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
