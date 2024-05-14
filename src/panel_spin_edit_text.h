@@ -25,9 +25,10 @@ protected:
             
             vec2        vCentre;
             vec3        vRef;
-            
+       PanelEditText* 	pEditCopy;
        PanelSimple*     pCadran;
        PanelSimple*     pBoule;
+       Panel*			pPrevParent;
        
             vector<float>   t_val;
             int         x_click;
@@ -38,7 +39,7 @@ public:
                         PanelSpinEditText();
                         
 inline      void        set_pVal(float* v)          { pVal = v; }                        
-inline      void        set_delta(int x, int y)     { delta_x = x; delta_y = y; }                        
+inline      void        set_delta(int x, int y)     { delta_x = 0; delta_y = 0; }                        
 inline      void        set_val(float f)            { val_angle = val = f; }                        
 inline      void        set_min(float f)            { min = f; }                        
 inline      void        set_max(float f)            { max = f; }                        
@@ -57,6 +58,8 @@ inline      float*      get_pVal()          		{ return pVal; }
             void        compute_pos(int, int);                   
             void        compute_pos_relatif(int, int);                   
                         
+			void		ajusteDelta( int, int );
+
 	virtual void		clickLeft( int, int );
 	virtual void		motionLeft( int, int );
 	virtual void		releaseLeft( int, int );

@@ -525,7 +525,7 @@ void click_left_cercle_asserv( int xm, int ym )
     //pCercleAsserv->setPosAndSize( 200, -200, 180, 20 );
     xAsserv =     pCercleAsserv->getPosX();
     yAsserv =     pCercleAsserv->getPosY();
-    pCercleAsserv->setPos( xAsserv, yAsserv-100-8 );
+    //pCercleAsserv->setPos( xAsserv, yAsserv-100-8 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -536,7 +536,7 @@ void release_left_cercle_asserv( int xm, int ym )
     //pCercleAsserv->setPosAndSize( 200, 0, 180, 20 );
     //int x =     pCercleAsserv->getX();
     //int y =     pCercleAsserv->getY();
-    pCercleAsserv->setPos( xAsserv, yAsserv );
+    //pCercleAsserv->setPos( xAsserv, yAsserv );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -547,7 +547,7 @@ void click_left_cercle_err( int xm, int ym )
     //pCercleAsserv->setPosAndSize( 200, -200, 180, 20 );
     xAsserv =     pCercleErr->getPosX();
     yAsserv =     pCercleErr->getPosY();
-    pCercleErr->setPos( xAsserv, yAsserv-100-8 );
+    //pCercleErr->setPos( xAsserv, yAsserv-100-8 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -555,7 +555,7 @@ void click_left_cercle_err( int xm, int ym )
 void release_left_cercle_err( int xm, int ym ) 
 {
     logf((char*)"release_left_cercle_err( %d, %d)", xm, ym );
-    pCercleErr->setPos( xAsserv, yAsserv );
+    //pCercleErr->setPos( xAsserv, yAsserv );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -617,6 +617,7 @@ void create_windows_button()
 
     pCercleErr->set( 0.0, 5.0, 0.02, 2 );
     pCercleErr->set_delta( 20, -100 );
+    pCercleErr->set_delta( 0, 0 );
     pCercleErr->set_val( 0.0 );					// initialisation à zero l'objet panelCourbe n'est pas encore créé
     pCercleErr->set_pVal( NULL );
     

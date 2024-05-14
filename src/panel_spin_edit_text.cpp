@@ -8,17 +8,23 @@ PanelSpinEditText::PanelSpinEditText()
     PanelEditText();
     pCadran = new PanelSimple();
     pCadran->setBackground((char*)"images/cadran.tga");
+    pCadran->setPosAndSize( -100+20, -100+8, 200, 200 );
+
     pBoule = new PanelSimple();
     pBoule->setBackground((char*)"images/boule.tga");
-
- 	WindowsManager&     wm  = WindowsManager::getInstance();
-    wm.add( pCadran );
-    pCadran->add( pBoule );
-    
-    pCadran->setVisible( false );
-    pCadran->setPosAndSize( 300, 300, 200, 200 );
-    //pBoule->setVisible( false );
     pBoule->setPosAndSize( 55, 55, 20, 20 );
+
+	pEditCopy = new PanelEditText();
+	pEditCopy->setPos( 100-20, 100-8 );
+	
+ 	WindowsManager&     wm  = WindowsManager::getInstance();
+    pCadran->add( pBoule );
+    pCadran->add( pEditCopy );
+    wm.add( pCadran );
+    
+
+	pCadran->setVisible( false );
+	pCadran->setScissor( false );
 
     delta_x = delta_y = 0;
     pVal = NULL;
@@ -117,13 +123,13 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
 
     //logf( (char*)"compute_pos_relatif()  l=%0.2f", v.length() ); 
 
-    if ( v.length() <= ZONE_MORTE )
-    {
-        vRef = v;
-        vRef.normalize();
-        return;
-    }
 
+
+    if ( v.length() <= ZONE_MORTE )		{
+	    vRef = v;
+    	vRef.normalize();
+    	return;
+	}
     boule_pos(xm, ym);
     
     v.normalize();
@@ -171,21 +177,77 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::ajusteDelta( int ws, int hs )
+{
+    int dx = pCadran->getDX();
+    int dy = pCadran->getDY();
+    int dx2 = dx/2;
+    int dy2 = dy/2;
+
+	delta_x = 0;
+	delta_y = 0;
+	
+	int X=20, Y=8;
+	
+	//delta_x = delta_y = 0;
+	
+	if ( (x_raw+dx2) > ws )	{
+		X += -dx2;
+	}
+	if ( (x_raw-dx2) < 0 )	{
+		X += +dx2;
+	}
+	if ( (y_raw+dy2) > hs )	{
+		Y += -dy2;
+	}
+	if ( (y_raw-dy2) < 0 )	{
+		Y += +dy2;
+	}
+	
+	delta_x += X;
+	delta_y += Y;
+	
+	pCadran->setPos( getX() + delta_x - dx2, getY() + delta_y - dy2 );
+	pCadran->updatePos();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::clickLeft( int xm, int ym )
 {
     logf( (char*)"PanelSpinEditText::clickLeft(%d, %d)", xm, ym );
+
     log_tab(true);
-    logf( (char*)"	delta (%d, %d)", delta_x, delta_y );
-    x_click = xm; y_click = ym;
-    pCadran->setPos( x_raw - 100 + delta_x, y_raw - 100 + delta_y );
-    //pCadran->setPos( getPosX() - 100 + delta_x, getPosY() - 100 + delta_y );
-    pCadran->updatePos();
+    logf( (char*)"delta old (%d, %d)", delta_x, delta_y );
+
+	setVisible( false );
     pCadran->setVisible( true );
-    
-    vRef = vec3( 0.0, 0.0, 0.0 );
-    compute_pos_relatif( xm, ym );
+    pCadran->setCanMove(false);
+
 
  	WindowsManager&     wm  = WindowsManager::getInstance();
+	int ws = wm.getWidth();
+	int hs = wm.getHeight();
+    int dx2 = pCadran->getDX() / 2;
+    int dy2 = pCadran->getDY() / 2;
+    int xScreen = getX();
+    int yScreen = getY();
+    x_click = getPosX();
+    y_click = getPosY();
+    
+    logf( (char*)"position (%d, %d)", xScreen, yScreen );
+    pCadran->setPos(xScreen, yScreen);
+    pCadran->updatePos();
+    
+	ajusteDelta( ws, hs );
+    logf( (char*)"delta new (%d, %d)", delta_x, delta_y );
+	
+    logf( (char*)"pos_raw old (%d, %d)", pEditCopy->getX(), pEditCopy->getY() );
+    
+    logf( (char*)"cadran (%d, %d)  boule (%d,%d)", pCadran->getX(), pCadran->getY(), pBoule->getX(), pBoule->getY() );
+    
+    compute_pos_relatif( xm, ym );
+
     wm.onTop(pCadran);
 
     if ( pVal!= NULL )
@@ -195,6 +257,7 @@ void PanelSpinEditText::clickLeft( int xm, int ym )
     }
     
     if ( click_left_cb != NULL )        (*click_left_cb)( xm, ym);
+    
 
     log_tab(false);
 }
@@ -204,7 +267,7 @@ void PanelSpinEditText::clickLeft( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::motionLeft( int xm, int ym )
 {
-    //logf( (char*)"PanelSpinEditText::motionLeft(%d, %d)", xm, ym );
+    logf( (char*)"PanelSpinEditText::motionLeft(%d, %d)", xm, ym );
     
     
     compute_pos_relatif( xm, ym );
@@ -214,11 +277,12 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
     //logf( (char*)"  val = %0.2f", val );
     
     char s[50];
-    sprintf( s, "%0.0f", val );
+    sprintf( s, "%0.2f", val );
     changeText( (char*)s );
+    pEditCopy->changeText( (char*)s );
 
  	WindowsManager&     wm  = WindowsManager::getInstance();
-    wm.onTop(pCadran);
+    wm.onTop(pEditCopy);
 
 	if ( cb_motion != NULL )			(*cb_motion)(xm, ym);
 }
@@ -228,11 +292,14 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
 void PanelSpinEditText::releaseLeft( int xm, int ym )
 {
     logf( (char*)"PanelSpinEditText::releaseLeft(%d, %d)", xm, ym );
+    setVisible( true );
     pCadran->setVisible( false );
+    pCadran->setCanMove(true);
 
-    if ( pVal!= NULL )          *pVal = val;
+
+    if ( pVal!= NULL )          		*pVal = val;
     
-    if ( release_left_cb != NULL )        (*release_left_cb)( xm, ym);
+    if ( release_left_cb != NULL )		(*release_left_cb)( xm, ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -250,7 +317,6 @@ void PanelSpinEditText::releaseRight( int xm, int ym )
 {
     logf( (char*)"PanelSpinEditText::releaseRight(%d, %d)", xm, ym );
     
-    set_delta( delta_x + (xm-x_click), delta_y + (ym-y_click) );
     logf( (char*)"	delta (%d, %d)", delta_x, delta_y );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -260,39 +326,32 @@ void PanelSpinEditText::updatePos()
 {
     //logf( (char*)"PanelSpinEditText::updatePos()" );
     PanelEditText::updatePos();
-    /*
-    vCentre.x = (float)x_raw - (float)dx / 2.0 + (float)delta_x;
-    vCentre.y = (float)y_raw - (float)dy / 2.0 + (float)delta_y;
 
-    pCadran->setPos( x_raw - 100 + delta_x, y_raw - 100 + delta_y );
-    
-    vCentre.x = (float)x_raw;// - (float)dx / 2.0;
-    vCentre.y = (float)y_raw;// - (float)dy / 2.0;
+    int dx2 = pCadran->getDX() / 2;
+    int dy2 = pCadran->getDY() / 2;
 
-    */
-
-    //vCentre = vec2( (float)(x_raw  + delta_x), (float)(y_raw  + delta_y) );
-    vCentre = vec2( (float)(x_raw)+20, (float)(y_raw)+8 );
+    vCentre = vec2( (float)(pCadran->getX() + dx2), (float)(pCadran->getY() + dy2) );
+    //vCentre = vec2( (float)(x_raw)+20, (float)(y_raw)+8 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+//#define DBUG_CENTRE
 void PanelSpinEditText::displayGL()
 {
     PanelEditText::displayGL();
 
-    if ( pCadran && pCadran->getVisible()==false )		return;
+    if ( pEditCopy && pEditCopy->getVisible()==false )		return;
 
-    //vCentre = vec2((float) delta_x, (float) delta_y);
-	/*
+#ifdef DBUG_CENTRE
+    //logf( (char*)"cadran (%d, %d)  boule (%d,%d)", pCadran->getX(), pCadran->getY(), pBoule->getX(), pBoule->getY() );
 
-	logf( (char*)"PanelSpinEditText::displayGL() centre (%0.2f,%0.2f)", vCentre.x, vCentre.y );
 
     glBegin(GL_LINES);
 		//--------------------------------------------------------
 		// graduation horizontale
 		//--------------------------------------------------------
-        vec4 color       = vec4( 0.2, 0.9, 0.9, 1.0 );    
+        vec4 color       = vec4( 0.5, 0.5, 0.9, 1.0 );    
 		glColor4fv( (GLfloat*)&color );
 		{
 		    int x0 = vCentre.x-10;
@@ -322,7 +381,7 @@ void PanelSpinEditText::displayGL()
 		//--------------------------------------------------------
 
 	glEnd();
-	*/
+#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
