@@ -57,7 +57,7 @@ PanelApn::PanelApn()
     
 	add( new PanelText( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pFrames = new PanelSpinEditText();
-    pFrames->set( 0, 200, 1, 2 );
+    pFrames->set( 1, 200, 1, 2 );
     pFrames->set_delta( 20, 8 );
     pFrames->changeText( "1" );
     pFrames->setPos( x+dx, p*dy );
@@ -77,7 +77,7 @@ PanelApn::PanelApn()
 
 	add( new PanelText( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pNum = new PanelSpinEditText();
-    pNum->set( 1, 200, 1 , 2 );
+    pNum->set( 0, 200, 1 , 2 );
     pNum->set_delta( 20, 8 );
     pNum->changeText( "0" );
     pNum->setPos( x+dx, p*dy );

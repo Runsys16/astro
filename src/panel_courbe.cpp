@@ -193,7 +193,7 @@ void PanelCourbe::init_panel()
 
     //  Valeur de l'edition dimension de la
     pFiltreVal->set( 1, 128, 1, 1 );
-    pFiltreVal->set_delta( 20, 8 );
+    //pFiltreVal->set_delta( 20, 8 );
     pFiltreVal->set_pVal( &fVal );
 
     add( pFiltreVal );
@@ -1139,7 +1139,7 @@ void PanelCourbe::updatePos()
         pAffCourbe->changeText( s, true );
 
         VarManager::getInstance().set( "filtre", filtre );
-        logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
+        //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
     }
     //--------------------------------------------------------------    
     //logf( (char*)"filtre %0.2f nb %d  fVal %0.2f)", filtre, nb, fVal );

@@ -126,7 +126,7 @@ void inverse_texture(PanelButton * pButton, bool b, string tex )
 //--------------------------------------------------------------------------------------------------------------------
 void setPanelCourbeErr( float e )
 {
-    logf( (char*) "setPanelCourbeErr( %0.2f )", (float)e );
+    //logf( (char*) "setPanelCourbeErr( %0.2f )", (float)e );
 
     char s[20];
 
@@ -615,9 +615,9 @@ void create_windows_button()
     sprintf( s,"%0.2f", var.getf("err")  );
     pCercleErr->changeText( s );
 
-    pCercleErr->set( 0.0, 5.0, 0.02, 2 );
-    pCercleErr->set_delta( 20, -100 );
-    pCercleErr->set_delta( 0, 0 );
+    pCercleErr->set( 0.0, 5.0, 0.01, 4 );
+    pCercleErr->set_ndecimal( 2 );
+    //pCercleErr->set_delta( 0, 0 );
     pCercleErr->set_val( 0.0 );					// initialisation à zero l'objet panelCourbe n'est pas encore créé
     pCercleErr->set_pVal( NULL );
     

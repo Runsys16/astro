@@ -22,6 +22,7 @@ protected:
             
             int         delta_x;
             int         delta_y;
+            int         nDecimal;
             
             vec2        vCentre;
             vec3        vRef;
@@ -45,8 +46,9 @@ inline      void        set_min(float f)            { min = f; }
 inline      void        set_max(float f)            { max = f; }                        
 inline      void        set_step(float f)           { step = f; }                        
 inline      void        set_nb(float f)             { nb = f; }                        
+inline      void        set_ndecimal(int n)         { nDecimal = n; }                        
 inline      void        set(float m, float M, float s, float n)
-							                        { min = m; max = M+s; step = s; nb = n; }     
+							                        { min = m; max = M; step = s; nb = n; }     
 
 inline 		void		setMotion( motion_cb_t cb)               { cb_motion = cb; }
 inline      float*      get_pVal()          		{ return pVal; }                        
@@ -59,7 +61,8 @@ inline      float*      get_pVal()          		{ return pVal; }
             void        compute_pos_relatif(int, int);                   
                         
 			void		ajusteDelta( int, int );
-
+            void        clampVal();
+            
 	virtual void		clickLeft( int, int );
 	virtual void		motionLeft( int, int );
 	virtual void		releaseLeft( int, int );
