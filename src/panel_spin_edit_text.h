@@ -71,6 +71,7 @@ inline      float*      get_pVal()          		{ return pVal; }
 	virtual void		releaseRight( int, int );
 
     virtual void		updatePos();
+    virtual void		idle(float);
     virtual void		displayGL();
 
 };

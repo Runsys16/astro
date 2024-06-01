@@ -189,7 +189,7 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 void                vizier_load_stars( string, double, double );
 
-
+void 				get_info_arduino();
 string              get_basename(string);
 unsigned int        get_color(vec4);
 bool                fexists(const char *filename);

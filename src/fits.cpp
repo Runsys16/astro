@@ -73,7 +73,7 @@ void Fits::charge(string filename)
         {
             if ( k.find("SIMPLE") == std::string::npos )
             {
-                logf( (char*)"[ERREUR] Ce n'est pas unfichier FITS standard 'SIMPLE' non trouve" );
+                logf( (char*)"[ERREUR] Ce n'est pas un fichier FITS standard 'SIMPLE' non trouve" );
                 return;
             }
         }

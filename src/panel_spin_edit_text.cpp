@@ -43,13 +43,6 @@ void PanelSpinEditText::set_enum( vector<float> t )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::boule_pos( int xm, int ym )
 {
-    VarManager&         var = VarManager::getInstance();
-    if ( var.getb("bNuit") )    pCadran->setColor( 0xffff0000 );
-    else                        pCadran->setColor( 0xffffffff );
-    if ( var.getb("bNuit") )    pBoule->setColor( 0xffff0000 );
-    else                        pBoule->setColor( 0xffffffff );
-
-
     vec2 vm = vec2( xm, ym );
     vec2 v = vm - vCentre;
     v.y *= -1.0;
@@ -68,13 +61,6 @@ void PanelSpinEditText::boule_pos( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::compute_pos( int xm, int ym )
 {
-    VarManager&         var = VarManager::getInstance();
-    if ( var.getb("bNuit") )    pCadran->setColor( 0xffff0000 );
-    else                        pCadran->setColor( 0xffffffff );
-    if ( var.getb("bNuit") )    pBoule->setColor( 0xffff0000 );
-    else                        pBoule->setColor( 0xffffffff );
-
-
     vec2 ptm = vec2( xm, ym );
     vec2 v = ptm - vCentre;
     v.y *= -1.0;
@@ -108,15 +94,6 @@ void PanelSpinEditText::compute_pos( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
 {
-    VarManager&         var = VarManager::getInstance();
-    //logf( (char*)"compute_pos_relatif()  val_anglel=%0.2f", val_angle ); 
-
-    if ( var.getb("bNuit") )    pCadran->setColor( 0xffff0000 );
-    else                        pCadran->setColor( 0xffffffff );
-    if ( var.getb("bNuit") )    pBoule->setColor( 0xffff0000 );
-    else                        pBoule->setColor( 0xffffffff );
-
-
     vec3 ptm = vec3( xm, ym, 0.0 );
     vec3 ptc = vec3( vCentre.x, vCentre.y, 0.0 );
     vec3 v  = ptm - ptc; 
@@ -363,6 +340,23 @@ void PanelSpinEditText::updatePos()
 
     vCentre = vec2( (float)(pCadran->getX() + dx2), (float)(pCadran->getY() + dy2) );
     //vCentre = vec2( (float)(x_raw)+20, (float)(y_raw)+8 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::idle(float f)
+{
+    //log( (char*)"PanelSpinEditText::idle()" ); 
+    VarManager&         var = VarManager::getInstance();
+	long color;
+
+    if ( var.getb("bNuit") )        color = 0xffff0000;
+    else                            color = 0xffffffff;
+
+    setColor( color );
+    pCadran->setColor( color );
+    pBoule->setColor( color );
+    pEditCopy->setColor( color );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

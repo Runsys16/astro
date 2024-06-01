@@ -340,7 +340,7 @@ string              sAlert;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float fTimer = 0.0;
+float fTimer10s = 0.0;
 bool bAsc = true;
 bool bDec = true;
 bool bSui = false;
@@ -610,6 +610,17 @@ void vizier_load_stars( string s, double ra, double de )
 
     thread( &vizier_thread, s ).detach();
     Camera_mgr::getInstance().setRefCatalog( ra, de );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Force le lancement de la commande 'g' sur arduino 
+// voir idleGL()
+//
+//--------------------------------------------------------------------------------------------------------------------
+void get_info_arduino()
+{
+	fTimer10s = 9.0;
+    logf ( (char*)"main.c::get_info_arduino() fTimer = %0.2f", fTimer10s );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1600,10 +1611,11 @@ static void idleGL(void)
     
 	if ( elapsedTime != -1 )
 	{
-	    fTimer += elapsedTime;
-	    if ( fTimer >= 10.0 )
+	    fTimer10s += elapsedTime;
+	    if ( fTimer10s >= 10.0 )
 	    {
-	        fTimer -= 10.0;
+	        fTimer10s -= 10.0;
+		    //logf( (char*)"Timer 10s %0.2f", fTimer10s );
             
             char cmd[255];
             sprintf( cmd, "g" );

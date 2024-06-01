@@ -188,6 +188,11 @@ void Serial::read_thread()
     VarManager& var= VarManager::getInstance();
     bConnect = true;
     
+    // ne fonctionne pas     // don't say why ..
+    logf( (char*)"Envoi de la commande g" );
+    // write_string( "g\n", false );
+    get_info_arduino();
+    
     do {
         if ( fd == -1 ) break;
          
@@ -377,6 +382,12 @@ void Serial::read_thread()
     } while( true );
 
     bConnect = false;
+	
+	changeJoy( false );
+    changeDec( true );
+    changeAsc( true );
+	changeSui( false );
+	changeRetourPos( false );
     logf( (char*)"FIN   Serial::read_thread" );
 }
 //--------------------------------------------------------------------------------------------------------------------

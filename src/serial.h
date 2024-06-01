@@ -18,7 +18,7 @@
 #include "main.h"
 
 extern float fTimeMili;
-#define VER_ARDUINO		"1.0.1"
+#define VER_ARDUINO		"1.0.2"
 
 
 using namespace std;
