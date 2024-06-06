@@ -16,6 +16,7 @@ PanelSpinEditText::PanelSpinEditText()
 
 	pEditCopy = new PanelEditText();
 	pEditCopy->setPos( 100-20, 100-8 );
+	pEditCopy->hideCursor();
 	
  	WindowsManager&     wm  = WindowsManager::getInstance();
     pCadran->add( pBoule );
@@ -29,6 +30,8 @@ PanelSpinEditText::PanelSpinEditText()
     delta_x = delta_y = nDecimal = 0;
     pVal = NULL;
     cb_motion = NULL;
+    hideCursor();
+    //setVisible( false );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -346,6 +349,7 @@ void PanelSpinEditText::updatePos()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelSpinEditText::idle(float f)
 {
+	PanelEditText::idle(f);
     //log( (char*)"PanelSpinEditText::idle()" ); 
     VarManager&         var = VarManager::getInstance();
 	long color;
@@ -357,6 +361,7 @@ void PanelSpinEditText::idle(float f)
     pCadran->setColor( color );
     pBoule->setColor( color );
     pEditCopy->setColor( color );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
