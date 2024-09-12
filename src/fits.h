@@ -30,6 +30,8 @@ protected:
 	        string      value; 
 	    }row;
 	    
+	    uint32_t					size_fit;
+	    uint32_t					size_gl;
         vector<row>                 datas;
                 
         int                         nNAXIS;
@@ -52,13 +54,19 @@ protected:
         double                      dCD1_2;
         double                      dCD2_1;
         double                      dCD2_2;
-
+        
+        double						dBZERO;
+        double						dBSCALE;
+        
+        int16_t						iOFFSET;
 public :
         Fits(string);
         ~Fits();
         
-        void                        charge(string);
-        void                        chargeTexture();
+        void                        chargeHDU(int);
+        void						read_RGB_8(  uint16_t&, uint8_t* );
+        void						read_RGB_16( uint16_t&, uint16_t* );
+        void                        chargeTexture(int);
         
         int                         getInt( string );
         double                      getDouble( string );
@@ -71,8 +79,8 @@ public :
         void                        readCTYPE( string, string );
 
         void                        afficheDic();
+		bool						haveKey( string );
         void                        afficheDatas();
-
 
 inline  GLubyte*                    getPTR()                { return (bValid ?  readBgr.ptr.load() : NULL); };
 inline  int                         getW()                  { return (bValid ?  readBgr.w.load() : 0); };

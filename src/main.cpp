@@ -80,6 +80,7 @@ vector<string> t_sHelp1 =
 	"     -\t: Toutes les images sont affichees en icones",
 	"     b\t: Panel Courbe mode DEBUG",
 	"     B\t: Arduino bavard",
+	"     j\t: Lance Stellarium",	
 	"",
 	"---- TRANSFORM MATRIX ----",
 	"   a/A\t: Vecteur en ascension droite",
@@ -114,7 +115,6 @@ vector<string> t_sHelp2 =
 	"    CR\t: Plein Ecran", 
 	"",
 	"---- SUIVI ----",
-	"   j/J\t: Change la taille du cercle d'asservissement",
 	"     s\t: Recherche toutes les etoiles",
 	"ctrl+D\t: Efface toutes les etoiles",
 	"     S\t: Lance/Stop le suivi",
@@ -472,7 +472,43 @@ void commande_polaris()
     int ret = system( (char*) command.c_str() );
     if ( ret != 0 )
     {
-        string mes = "Pyhton polaris : " +  to_string(ret);
+        string mes = "Erreur Pyhton polaris : " +  to_string(ret);
+        alertBox(mes);
+        logf( (char*)mes.c_str() );
+    }
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void commande_stellarium()
+{
+    //VarManager&         var = VarManager::getInstance();
+    string command = "stellarium &";
+    logf( (char*) command.c_str() );
+    int ret = system( (char*) command.c_str() );
+
+    if ( ret != 0 )
+    {
+        string mes = "Erreur execution stellarium : " +  to_string(ret);
+        alertBox(mes);
+        logf( (char*)mes.c_str() );
+    }
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void commande_asi_studio()
+{
+    //VarManager&         var = VarManager::getInstance();
+    string command = "/home/rene/Documents/astronomie/logiciel/asi-studio/ASIStudio &";
+    logf( (char*) command.c_str() );
+    int ret = system( (char*) command.c_str() );
+
+    if ( ret != 0 )
+    {
+        string mes = "Erreur execution asi_studio : " +  to_string(ret);
         alertBox(mes);
         logf( (char*)mes.c_str() );
     }
@@ -894,6 +930,7 @@ void charge_image(string dirname, string basename)
          || basename.find( ".jpeg") != string::npos
          || basename.find( ".JPG")  != string::npos
          || basename.find( ".fits") != string::npos
+         || basename.find( ".fit")  != string::npos
          || basename.find( ".tga")  != string::npos
          || basename.find( ".png")  != string::npos
     ){
@@ -1700,8 +1737,51 @@ static void idleGL(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+static void delete_all_panels(Panel* p)
+{
+    //WindowsManager& 		wm 		= WindowsManager::getInstance();
+	std::vector<Panel*>& 	childs 	= p->getChilds();
+	int						nbPanel	= p->getNbPanel();
+	int						ID		= p->getID();
+
+	log_tab(true);
+    logf( (char*)"Panel ID %d, %d enfants", ID, nbPanel );
+    for( int i=nbPanel-1; i>=0; i-- )
+    {
+		Panel * child = childs[i];
+		delete_all_panels( child );
+		
+	    logf( (char*)"Efface ... childs[%d]", i );
+	    p->sup( child );
+		childs.erase( childs.begin()+i );
+		//delete( child );
+    }
+	//if ( ID != -1 )			delete p;
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void quit(void)
 {
+    //cout <<"exit_handler()"<< endl;
+    logf( (char*)"exit_handler()" );
+    Serveur_mgr::getInstance().close_all();
+
+    WindowsManager& 		wm 		= WindowsManager::getInstance();
+    int 					nbPanel	= wm.getNbPanel();
+	std::vector<Panel*>& 	childs 	= wm.getChilds();
+	
+    //cout <<"Nb Fenetre"<< nbPanel <<endl;
+    logf( (char*)"Nb Fenetre %d", nbPanel );
+    for( int i=nbPanel-1; i>=0; i-- )
+    {
+    	Panel *	p = childs[i];
+		delete_all_panels( p );
+		childs.erase( childs.begin()+i );
+		logf( (char*)"Delete ... %d", p->getID() );
+		//delete( p );
+    }
 	exit(0);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1874,6 +1954,42 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//Symboles de fonction  ASCII Touche CTRL
+//	décimal 	hexa. 	clavier 	terme anglais 	terme français
+// NULL 0	  	00 	Ctrl+@ 	Null 	Nul
+// SOH 	1  		01 	Ctrl+A 	Start of heading 	Début d'entête
+// STX 	2  		02 	Ctrl+B 	Start of text 	Début de texte
+// ETX 	3  		03 	Ctrl+C 	End of text 	Fin de texte
+// EOT 	4  		04 	Ctrl+D 	End of transmit 	Fin de communication
+// ENQ 	5  		05 	Ctrl+E 	Enquiry 	Demande
+// ACK 	6  		06 	Ctrl+F 	Acknowledge 	Accusé de réception
+// BELL 7  		07 	Ctrl+G 	Bell 	Sonnerie
+// BS 	8  		08 	Ctrl+H 	Backspace 	Retour arrière
+// HT 	9  		09 	Ctrl+I 	Horizontal tab 	Tabulation horizontale
+// LF 	10  	0A 	Ctrl+J 	Line feed 	Interligne
+// VT 	11  	0B 	Ctrl+K 	Vertical tab 	Tabulation verticale
+// FF 	12  	0C 	Ctrl+L 	Form feed 	Page suivante
+// CR 	13  	0D 	Ctrl+M 	Carriage return 	Retour en début de ligne
+// SO 	14  	0E 	Ctrl+N 	Shitf out 	Hors code
+// SI 	15  	0F 	Ctrl+O 	Shift in 	En code
+// DLE 	16  	10 	Ctrl+P 	Data line escape 	Echappement en transmission
+// DC1 	17  	11 	Ctrl+Q 	Device control 1 	Commande auxiliaire n° 1
+// DC2 	18  	12 	Ctrl+R 	Device control 2 	Commande auxiliaire n° 2
+// DC3 	19  	13 	Ctrl+S 	Device control 3 	Commande auxiliaire n° 3
+// DC4 	20  	14 	Ctrl+T 	Device control 4 	Commande auxiliaire n° 4
+// NAK 	21  	15 	Ctrl+U 	Negative acknowledge 	Accusé de réception négatif
+// SYN 	22  	16 	Ctrl+V 	Synchronous idle 	Synchronisation
+// ETB 	23  	17 	Ctrl+W 	End of transmit block 	Fin de bloc transmis
+// CAN 	24  	18 	Ctrl+X 	Cancel 	Annulation
+// EM 	25  	19 	Ctrl+Y 	End of medium 	Fin de support
+// SUB 	26  	1A 	Ctrl+Z 	Substitute 	Remplacement
+// ESC 	27  	1B 	Ctrl+[ 	Escape 	Echappement
+// FS 	28  	1C 	Ctrl+\ 	File separator 	Séparateur de fichier
+// GS 	29  	1D 	Ctrl+] 	Group separator 	Séparateur de groupe
+// RS 	30  	1E 	Ctrl+^ 	Record separator 	Séparateur d'enregistrement
+// US 	31  	1F 	Ctrl+_ 	Unit separator 	Séparateur d'unité
+// SP 	32  	20 		Space 	Espacement
+// DEL 	127  	7F 		Delete 	Effacement
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
@@ -2045,6 +2161,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	}
 	    break;
     
+    // touche '²' Au dessus de tab
     case 126:
     	{
            // Captures::getInstance().showIcones();
@@ -2361,16 +2478,22 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 	case 'j':
 		{
+			/*
     		fLimitCorrection *= 0.9f;
             logf( (char*)"Key (j) : Diminue la limite de correction : %0.2f", fLimitCorrection );
             var.set("fLimitCorrection", (float)fLimitCorrection);
+            */
+            thread( &commande_stellarium).detach();
         }
 		break;
 	case 'J':
 		{
+			/*
     		fLimitCorrection /= 0.9f;
             logf( (char*)"Key (J) : Augmente la limite de correction : %0.2f", fLimitCorrection );
             var.set("fLimitCorrection", (float)fLimitCorrection);
+            */
+            thread( &commande_asi_studio).detach();
         }
 		break;
 
@@ -3933,6 +4056,7 @@ void charge_var()
 //--------------------------------------------------------------------------------------------------------------------
 void exit_handler()
 {
+    cout <<"exit_handler()"<< endl;
     //BluetoothManager::getInstance().disconnect();
     Serveur_mgr::getInstance().close_all();
 }

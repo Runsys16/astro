@@ -228,11 +228,13 @@ void Star::computeMag()
     //magnitude = mag;
 
     if ( bSuivi )
-        snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
+        //snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
+        snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
     else
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f", magnitude );
     
-    snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
+    //snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
+    snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
     //logf( "Star::computeMag() '%s' m = %0.2f ponderation = %0.2f", p_sInfo, mag, ponderation );
     
     if ( haveCoord() )

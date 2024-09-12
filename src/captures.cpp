@@ -404,6 +404,7 @@ void Captures::supprime()
     if ( current_capture != -1 )
     {
         Capture* p = captures[current_capture];
+        if ( p == NULL )		logf( (char*)"[ERROR] Capture no %d pointeur NULL ", current_capture );
         delete p;
         captures.erase(captures.begin()+current_capture);
         sauve();

@@ -21,23 +21,6 @@ Capture::Capture()
     log_tab(true);
     
     logf((char*)"old_dir : %s", (char*)old_dir.c_str() );
-
-    /*
-    if ( getCurrentDirectory() == "" )
-    {
-        logf( (char*)"[Erreur] Impossible de charger le repertoire : " );
-        logf( (char*)"[Erreur] Veuillez fermer la fenetre touch'8'" );
-        create_preview();
-        log_tab(false);
-        return;
-    }
-
-    if ( old_dir != getCurrentDirectory() )
-    {
-        old_dir = getCurrentDirectory();
-        num = 0;
-    }
-    */
     
     pooling();
 
@@ -53,7 +36,6 @@ Capture::Capture()
         num = -1;
     }
 
-    //logf( (char*)"image : %s", filename.c_str() );
     vector<string> res = split(filename,"/");
     dirname = "";
     
@@ -63,8 +45,6 @@ Capture::Capture()
         dirname += "/" + res[i];
     }
     basename = res[nb-1];
-    //logf( (char*)"   dirname  : %s", (char*)dirname.c_str() );
-    //logf( (char*)"   basename : %s", (char*)basename.c_str() );
     
     create_preview();
 
@@ -135,23 +115,38 @@ Capture::Capture(string f )
 //--------------------------------------------------------------------------------------------------------------------
 Capture::~Capture()
 {
-    logf((char*)"Destructeur Capture() -----------" );
+    logf((char*)"Destructeur Capture::~Capture() -----------" );
     log_tab(true);
 
-	WindowsManager::getInstance().sup( this );
-	
     sup(pTitre);
     sup(panelPreview);
     sup(pNbStars);
 
-	delete panelPreview;
+    panelPreview->sup(pFermer);
+    panelPreview->sup(pIconiser);
+    panelPreview->sup(pMaximiser);
+
+    sup( panelPreview );
+
+
+    logf((char*)"Capture::~Capture() delete icons de fenetre" );
+	delete		pFermer;
+	delete		pIconiser;
+	delete		pMaximiser;
+
+    logf((char*)"Capture::~Capture() delete le titre" );
 	delete pTitre;
+    logf((char*)"Capture::~Capture() delete pNbStars" );
 	delete pNbStars;
+    logf((char*)"Capture::~Capture() delete le panelPreview" );
+	delete panelPreview;
 	
 	filenames.clear();
-
+    logf((char*)"Destructeur Capture::~Capture() reste %d fenetre", getNbPanel() );
+	WindowsManager::getInstance().sup( this );
+	
     log_tab(false);
-    logf((char*)"Destructeur Capture() -----------" );
+    logf((char*)"Destructeur Capture::~Capture() -----------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -319,7 +314,9 @@ void Capture::create_preview()	{
 	panelPreview = new PanelCapture(NULL, this);
 
     bFits = false;
-    if ( filename.find( ".fits" ) != std::string::npos )
+    if ( 	filename.find( ".fits" ) != std::string::npos  
+    	||	filename.find( ".fit" ) != std::string::npos
+    		)
     {
         logf((char*)"Fichier fits %s", (char*)filename.c_str() );
         fits = new Fits(filename);

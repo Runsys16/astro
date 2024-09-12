@@ -1,6 +1,9 @@
 #include "fits.h"
-
 //--------------------------------------------------------------------------------------------------------------------
+//
+// Lecture des fichiers FITS (Flexible Image Transport System)
+//		https://www.aanda.org/articles/aa/full_html/2010/16/aa15362-10/aa15362-10.html
+//		https://fits.gsfc.nasa.gov/standard30/fits_standard30.pdf
 //
 //--------------------------------------------------------------------------------------------------------------------
 Fits::Fits(string filename)
@@ -10,10 +13,6 @@ Fits::Fits(string filename)
     readBgr.ptr = NULL;
     _filename = filename;
     bValid = false;
-
-    charge(filename);
-    chargeTexture();
-    
     //afficheDic();
     //afficheDatas();
     dCRPIX1 = -1.0;
@@ -24,6 +23,16 @@ Fits::Fits(string filename)
     dCD1_2  = -1.0;
     dCD2_1  = -1.0;
     dCD2_2  = -1.0;
+    dBZERO  = -1.0;
+    dBSCALE = -1.0;
+    iOFFSET = -1;
+
+	int n = 0;
+    chargeHDU(n);
+    if ( haveKey( "EXTEND" )	)		chargeHDU(++n);
+    
+    chargeTexture(++n);
+    
     log_tab(false);
     logf((char*)"Constructeur Fits::Fits() -------------" );
 }
@@ -38,24 +47,24 @@ Fits::~Fits()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::charge(string filename)
+void Fits::chargeHDU(int n)
 {
-    _filename = filename;
+    //_filename = filename;
 
-    logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
+    logf( (char*)"Fits::chargeHDU(%d)", n );
 
     std::ifstream fichier;
     fichier.open(_filename, std::ios_base::app);
 
     if ( !fichier ) 
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)_filename.c_str() );
         return;
     }
 
     fichier.seekg( 0, fichier.end );
     int lenght = fichier.tellg();
-    fichier.seekg( 0, fichier.beg );
+    fichier.seekg( (long)n*LENGTH_HDU, fichier.beg );
 
     char buffer[LENGTH_HDU];
     fichier.read(buffer, LENGTH_HDU);
@@ -69,6 +78,7 @@ void Fits::charge(string filename)
             k = k + buffer[i*80+j];
         }
         
+      	/*
         if ( i==0 )
         {
             if ( k.find("SIMPLE") == std::string::npos )
@@ -77,16 +87,22 @@ void Fits::charge(string filename)
                 return;
             }
         }
+        */
         
         for( int j=10; j<80; j++ )
         {
             v = v + buffer[i*80+j];
         }
 
+        logf( (char*)"Lecture de  : '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
+        
              if ( k.find("BITPIX") == 0 )               readBITPIX(v);
         else if ( k.find("NAXIS")  == 0 )               readNAXIS( k, v );
         else if ( k.find("CR")     == 0 )               readCR( k, v );
         else if ( k.find("CD")     == 0 )               readCD( k, v );
+        else if ( k.find("BZERO")  == 0 )               dBZERO = getDouble( v );
+        else if ( k.find("BSCALE") == 0 )               dBSCALE = getDouble( v );
+        else if ( k.find("OFFSET") == 0 )               iOFFSET = getInt( v );
         
         row r;
         r.key = k;
@@ -99,74 +115,140 @@ void Fits::charge(string filename)
 
     fichier.close();
     
+	afficheDic();
+}
+//--------------------------------------------------------------------------------------------------------------------
+// Pour une image en 8eb par couleur
+// Lit une couleur du fichier fit, et applique les corrections si nessecaire
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::read_RGB_8( uint16_t &C, uint8_t* pBuffer )
+{
+	C = *pBuffer;
 
+	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = ((uint16_t)(( (double)(C) ) * dBSCALE + dBZERO) & 0xFF00) >> 8;
+	if ( iOFFSET != -1 )				C -= iOFFSET;
+}
+//--------------------------------------------------------------------------------------------------------------------
+// Pour une image en 16eb par couleur
+// Lit une couleur du fichier fit, et applique les corrections si nessecaire
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::read_RGB_16( uint16_t &C, uint16_t* pBuffer )
+{
+	C = *pBuffer;
+
+	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = ((uint16_t)(( (double)(C) ) * dBSCALE + dBZERO) & 0xFF00) >> 8;
+	if ( iOFFSET != -1 )				C -= iOFFSET;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::chargeTexture()
+void Fits::chargeTexture(int nHDU)
 {
-    unsigned long l = (long)nNAXIS * (long)nNAXIS1 * (long)nNAXIS2;
+	//unsigned int  nbOctet = ( nBITPIX == 16 ? 2 : 1);
+    //unsigned long l_fit = (long)nNAXIS * (long)nNAXIS1 * (long)nNAXIS2 * (long)nbOctet;
+    size_fit   = (long)nNAXIS1 * (long)nNAXIS2;
+    size_gl    = (long)nNAXIS1 * (long)nNAXIS2;
+    unsigned long l_fit = (long)nNAXIS * size_fit;
+    unsigned long l_gl  = (long)nNAXIS * size_fit;
     
-    logf( (char*)"Longueur du buffer : %ld = %ld x %ld x %ld", l, (long)nNAXIS, (long)nNAXIS1, (long)nNAXIS2 ); 
-
-    if ( l>0 )      
+    logf( (char*)"Fits::chargeTexture()" ); 
+    logf( (char*)"Longueur des buffer : fits %ld, opengl  %ld", (long)l_fit, (long)l_gl ); 
+	//---------------------------------------------------
+	// Mise en place la structure readBackground
+    if ( l_fit>0 && l_gl>0 )      
     {
         bValid = true;
         readBgr.w = nNAXIS1;
         readBgr.h = nNAXIS2;
         readBgr.d = nNAXIS;
     }
+	//---------------------------------------------------
+	// Allocation des buffer
+    GLubyte* 		pBuffer_gl = (GLubyte*)malloc( l_gl );
+    uint8_t* 		pBuffer_8  = NULL;
+    uint16_t* 		pBuffer_16 = NULL;
 
-    GLubyte* pBuffer;
-    pBuffer = (GLubyte*)malloc( l );
-    GLubyte* pBuffer0;
-    pBuffer0 = (GLubyte*)malloc( l );
-
-    if (  pBuffer == NULL || pBuffer0 == NULL ) 
-    {
+	if 		( nBITPIX == 16 )		pBuffer_16  = (uint16_t*)malloc( l_fit * sizeof(uint16_t) );
+	else if	( nBITPIX == 8  )		pBuffer_8   = (uint8_t*) malloc( l_fit * sizeof(uint8_t)  );
+    else {
+        logf( (char*)"[ERROR] Nompbre de bits par pixel non pris en charge ..." );
+        return;
+    }
+	//---------------------------------------------------
+    if ( pBuffer_gl == NULL ) 		{
         logf( (char*)"[ERROR] Impossible d\'alloue la memoire ..." );
         return;
     }
-
+    if (  pBuffer_8 == NULL && pBuffer_16 == NULL ) 		{
+        logf( (char*)"[ERROR] Impossible d\'alloue la memoire ..." );
+        return;
+    }
+	//---------------------------------------------------
+	// Ouvrir le fichier
     std::ifstream fichier;
     fichier.open(_filename, std::ios_base::app);
-    if ( !fichier ) 
-    {
+	//---------------------------------------------------
+    if ( !fichier ) 		{
         logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)_filename.c_str() );
         return;
     }
-
-
-    fichier.seekg( LENGTH_HDU, fichier.beg );
-
-    fichier.read((char*)pBuffer, l );
+	//---------------------------------------------------
+    // se placer apres l'entete HDU
+    fichier.seekg( LENGTH_HDU*nHDU, fichier.beg );
+	//---------------------------------------------------
+    // lecture des plans memoires
+	if 		( nBITPIX == 16 )		fichier.read( (char*)pBuffer_16, l_fit * sizeof(uint16_t) );
+	else if	( nBITPIX == 8  )		fichier.read( (char*)pBuffer_8,  l_fit * sizeof(uint8_t)  );
     fichier.close();    
+	//---------------------------------------------------
+    // Buffer sous la forme  NAXIS = 3   (3 plans)
+    //   NAXIS0     NAXIS1     NAXIS2        Buffer GL
+    // RRRRRRRRRR GGGGGGGGGG BBBBBBBBBB => RGBRGBRGB
 
-    // Buffer sous la forme
-    // RRRGGGBBB => RGBRGBRGB
-
+	//---------------------------------------------------
+	// Pour tout les plans
+	//    Pout tout le contenu d'un plan
+	//
+	// remplissage du pointeur pBuffer_gl alias le pointeur readBackground
+	unsigned long	p=0;
+    uint16_t 		R, G, B;
+	long			i_fit, i_gl;
+	
+    //if ( nBITPIX == 16 )	i_fit = 0;
+    //else		        	i_fit = 0;
     
-    unsigned long s = (long)nNAXIS1 * (long)nNAXIS2;
+    i_fit = 0;
+    i_gl = 0;
+	
+    for( long i_gl=0; i_gl<size_gl; i_gl++ )    {
 
-
-    for (unsigned long p=0; p<nNAXIS; p++ )
-    {
-        for( unsigned long ll=0; ll<s; ll++ )
+        if ( nBITPIX == 16 )			
         {
-            GLubyte R, G, B;
-            R = pBuffer[ll+ p*nNAXIS];
-            //G = pBuffer[ll+1*s];
-            //B = pBuffer[ll+2*s];
+            uint16_t RR, GG, BB;
             
-            pBuffer0[ll* (nNAXIS) + p] = R;
-            //pBuffer0[ll*3+1] = G;
-            //pBuffer0[ll*3+2] = B;   
+            read_RGB_16( R, pBuffer_16 + 0*size_fit + i_fit );
+            read_RGB_16( G, pBuffer_16 + 1*size_fit + i_fit );
+            read_RGB_16( B, pBuffer_16 + 2*size_fit + i_fit );
+		}
+		else  if ( nBITPIX == 8  )	
+		{
+            read_RGB_8( R, pBuffer_8 + 0*size_fit + i_fit );
+            read_RGB_8( G, pBuffer_8 + 0*size_fit + i_fit );
+            read_RGB_8( B, pBuffer_8 + 0*size_fit + i_fit );
         }
+    
+		i_fit++;
+        
+        pBuffer_gl[i_gl*3 + 0] = (GLubyte)R;
+        pBuffer_gl[i_gl*3 + 1] = (GLubyte)G;
+        pBuffer_gl[i_gl*3 + 2] = (GLubyte)B;
     }
-
-    free( pBuffer );
-    readBgr.ptr = pBuffer0;
+    //------------------------------------------------
+	// Liberation de la memoire
+	if 		( nBITPIX == 16 )		free( pBuffer_16 );
+	else if	( nBITPIX == 8  )		free( pBuffer_8  );
+	// Affectation dans la memoire gl de l'image affiché
+    readBgr.ptr = pBuffer_gl;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -235,13 +317,27 @@ void Fits::getRB( struct readBackground* p )
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::afficheDic()
 {
-    logf( (char*)"Affichage des donnes FITS" );
+    logf( (char*)"Affichage des donnees FITS" );
 
     int nb = datas.size();
     for( int i=0; i<nb; i++ )
     {
-        logf( (char*)" - %s : %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
+        logf( (char*)" - %s \t: %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool Fits::haveKey( string k )
+{
+    logf( (char*)"Affichage des donnees FITS" );
+
+    int nb = datas.size();
+    for( int i=0; i<nb; i++ )
+    {
+        if ( datas[i].key.find(k) == 0)		return true;
+    }
+    return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -266,6 +362,12 @@ void Fits::afficheDatas()
 
     logf( (char*)" - dCD2_1 %f", dCD2_1 );    
     logf( (char*)" - dCD2_2 %f", dCD2_2 );
+    logf( (char*)" - dCD2_2 %f", dCD2_2 );
+
+    logf( (char*)" - dBZERO %f", dBZERO );
+    logf( (char*)" - dBSCALE %f", dBSCALE );
+
+    logf( (char*)" - iOFFSET %d", iOFFSET );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
