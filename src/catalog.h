@@ -17,9 +17,11 @@ private:
     string                          sFilename;
     string                          sName;
     vector<StarCatalog*>            stars;
+    bool							bSauve;
 
 public:
     Catalog();
+    Catalog(bool);
     Catalog(string);
     Catalog(string, string);
     ~Catalog();
@@ -28,6 +30,7 @@ public:
     void                            add( StarCatalog* );
     void                            sauve();
     void                            charge();
+    void                            list();
     
 inline int                          size()                      { return stars.size(); }
 inline StarCatalog*                 get(int i)                  { return stars[i]; }

@@ -8,6 +8,7 @@ PanelDir::PanelDir(FileBrowser* p)
 {
     pFB = p;
     PanelSimple();
+    setExtraString( "PanelDir" );
 }
 
 //--------------------------------------------------------------------------------------------------------------------

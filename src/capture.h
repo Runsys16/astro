@@ -9,6 +9,7 @@
 #include "main.h"
 #include "panel_capture.h"
 #include "fits.h"
+#include "var_mgr.h"
 
 
 using namespace std;
@@ -21,6 +22,7 @@ protected:
     bool                        bIcone;
     bool                        bFullScreen;
     bool                        bFits;
+    bool						bAffInfoFits;
     
     vector<string>              filenames;
     string                      filename;
@@ -50,6 +52,7 @@ public :
     
     virtual void                update();
     virtual void                updatePos();
+    		void                updatePosIcones();
 
     virtual void                clickLeft( int, int);
     virtual void                releaseLeft( int, int);
@@ -72,6 +75,9 @@ public :
     void                        setColor(long);
 
     void                        afficheFits();
+    void                        afficheInfoFits();
+    void                        afficheInfoFits(bool);
+    bool                        getAfficheInfoFits()						{ return bAffInfoFits; }
     
 inline rb_t *                   getRB()                                     { return &readBgr; }
 
@@ -88,13 +94,14 @@ inline string                   getBasename()                               { re
 inline string                   getDirname()                                { return dirname; }
 inline PanelCapture*            getPreview()                                { return panelPreview; }
 
-inline void                     setIcone(bool b)                            { bIcone = b; panelPreview->setIcone(b); }
+	   void                     setIcone(bool b);
 inline bool                     getIcone()                                  { return bIcone; }
 
 inline void                     setFullScreen(bool b)                       { bFullScreen = b; }
 inline bool                     getFullScreen()                             { return bFullScreen; }
 
 inline bool                     isFits()                                    { return bFits; }
+inline Fits*                    getFits()                                   { return fits; }
 };
 
 

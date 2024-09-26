@@ -182,6 +182,7 @@ void Camera::CreateControl()	{
 
     panelControl = new PanelWindow();
     panelControl->setDisplayGL(displayGLnuit_cb);
+    panelControl->setExtraString("PanelConrol Cam");
     
 	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
@@ -231,7 +232,7 @@ void Camera::CreatePreview()	{
 
 	//panelPreview = new PanelSimple();
 	panelPreview = new PanelCamera();
-    //panelPreview->setDisplayGL(displayGLnuit_cb);
+    panelPreview->setExtraString( "PanelCamera View");
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();

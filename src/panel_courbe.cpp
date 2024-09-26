@@ -108,6 +108,8 @@ PanelCourbe::PanelCourbe()
     setVisible( var.getb( "bPanelCourbe" ) );
 
     build_unites_text();
+    
+    setExtraString("PanelCourbe");
 
     log_tab(false);
     logf( (char*)"PanelCourbe::PanelCourbe() Constructeur" );
@@ -192,7 +194,7 @@ void PanelCourbe::init_panel()
     pFiltreVal->changeText( s );
 
     //  Valeur de l'edition dimension de la
-    pFiltreVal->set( 1, 128, 1, 1 );
+    pFiltreVal->set( 1, 128, 128, 4 );
     //pFiltreVal->set_delta( 20, 8 );
     pFiltreVal->set_pVal( &fVal );
 

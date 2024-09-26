@@ -128,7 +128,7 @@ $(OBJDIR)surveillance.o: $(SRCDIR)surveillance.cpp $(SRCDIR)surveillance.h $(SRC
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)fits.o: $(SRCDIR)fits.cpp $(SRCDIR)fits.h $(SRCDIR)main.h
+$(OBJDIR)fits.o: $(SRCDIR)fits.cpp $(SRCDIR)fits.h $(SRCDIR)main.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
@@ -156,6 +156,14 @@ $(OBJDIR)catalog.o: $(SRCDIR)catalog.cpp $(SRCDIR)catalog.h $(SRCDIR)star_catalo
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
+$(OBJDIR)panel_fits.o: $(SRCDIR)panel_fits.cpp $(SRCDIR)panel_fits.h $(SRCDIR)var_mgr.h $(SRCDIR)main.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
+$(OBJDIR)panel_fits_correction.o: $(SRCDIR)panel_fits_correction.cpp $(SRCDIR)panel_fits.h $(SRCDIR)var_mgr.h $(SRCDIR)main.h $(SRCDIR)panel_spin_edit_text.h
+	@echo ---------   compilation de $@
+	$(GPP) -c $< -o $@  $(CFLAGS)
+	
 
 $(BIN_NAME): $(OBJDIR)main.o $(OBJDIR)v4l2.o $(OBJDIR)control.o $(OBJDIR)timer.o $(OBJDIR)camera.o \
              $(OBJDIR)camera_mgr.o $(OBJDIR)pleiade.o $(OBJDIR)serial.o $(OBJDIR)connexion_mgr.o \
@@ -165,8 +173,7 @@ $(BIN_NAME): $(OBJDIR)main.o $(OBJDIR)v4l2.o $(OBJDIR)control.o $(OBJDIR)timer.o
              $(OBJDIR)captures.o $(OBJDIR)panel_dir.o $(OBJDIR)panel_file.o $(OBJDIR)bluetooth.o \
              $(OBJDIR)surveillance.o $(OBJDIR)fits.o $(OBJDIR)panel_courbe.o $(OBJDIR)panel_apn.o \
              $(OBJDIR)panel_stdout.o $(OBJDIR)panel_spin_edit_text.o $(OBJDIR)star_catalogue.o \
-             $(OBJDIR)catalog.o
-             
+             $(OBJDIR)catalog.o $(OBJDIR)panel_fits.o $(OBJDIR)panel_fits_correction.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
 

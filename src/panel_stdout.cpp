@@ -42,7 +42,7 @@ PanelStdOut::PanelStdOut()	{
 
     string st = string("Bonjour\n");
     
-    setExtraString( "panelStdOut" );
+    setExtraString( "PanelStdOut" );
        
     logf((char*)"** CreateStdOut()  panelStdOut  %d,%d %dx%d", x, y, dx, dy);
 }

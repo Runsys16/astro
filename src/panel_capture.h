@@ -9,9 +9,13 @@
 #include "main.h"
 #include "var_mgr.h"
 #include "stars.h"
-//#include "capture.h"
+#include "catalog.h"
+
 
 class Capture;
+class Captures;
+class Fits;
+
 using namespace std;
 
 class PanelCapture : public PanelSimple
@@ -23,6 +27,7 @@ protected:
     float               dy;
     bool                bIcone;
     bool                bHaveMove;
+    bool                bInfoSouris;
     
     int                 xm_old;
     int                 ym_old;
@@ -30,17 +35,33 @@ protected:
     rb_t *              pReadBgr;
     
     Stars               stars;
+    Catalog*            pVizier;
     Capture*            pCapture;
+    
+    PanelText*			pCoord;
+    PanelText*			pJ2000_1;
+    PanelText*			pJ2000_2;
+    
+    bool				bAffGrille;
+    vector<vec2>		p1;
+    vector<vec2>		p2;
     
 public:
     PanelCapture( rb_t *, Capture* );
     ~PanelCapture();    
     
+    virtual void		passiveMotionFunc(int, int);
+    
     virtual void		update_stars();
+    		void		updatePosLigne();
     virtual void		updatePos();
+    		void		glCercle(int, int, int);
+    		void		displayCatalog();
+    		void		displayEchelle();
     virtual void		displayGL();
 
-    //virtual Panel*      isMouseOver( int, int);
+    virtual void        wheelUp( int, int);
+    virtual void        wheelDown( int, int);
 
     virtual void        clickLeft( int, int);
     virtual void        releaseLeft( int, int);
@@ -51,9 +72,6 @@ public:
     virtual void        clickMiddle( int, int);
     virtual void        motionMiddle( int, int);
     virtual void        releaseMiddle( int, int);
-
-    virtual void        wheelUp( int, int);
-    virtual void        wheelDown( int, int);
 
     void                findAllStars();
     void                deleteAllStars();
@@ -83,6 +101,12 @@ inline float            getCentY()                                      { return
 inline Stars*           getStars()                                      { return &stars; }
 inline void             setIcone(bool b)                                { bIcone = b; }
 inline bool             getIcone()                                      { return bIcone; }
+inline void             addP1P2(vec2 v, vec2 w)                         { p1.push_back(vec2(v)); p2.push_back(vec2(w)); }
+inline void             setAffGrille(bool b)                           	{ bAffGrille = b; }
+inline bool             getAffGrille()                           		{ return bAffGrille; }
+
+inline bool             getInfoSouris()                                 { return bInfoSouris; }
+	void             	setInfoSouris(bool);
 
 };
 

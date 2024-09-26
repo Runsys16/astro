@@ -183,7 +183,7 @@ void Serveur_mgr::thread_listen_init()
 
 		traite_connexion_init();
 	}
-    logf( (char*)"** Fermeture de sock_2" );
+    logf( (char*)"Fermeture de sock_2 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_2);
 	sock_2 = -1;
 }
@@ -316,7 +316,7 @@ void Serveur_mgr::thread_listen_deplacement()
 		
 		
 	}
-    logf( (char*)"** Fermeture de sock_1" );
+    logf( (char*)"Fermeture de sock_1 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_1);
 	sock_1 = -1;
 }
@@ -336,15 +336,103 @@ void Serveur_mgr::write_stellarium(char* s)
     if ( sock_stellarium != -1 )
     {
         write( sock_stellarium, s, 24 );
-        //logf( (char*)"Envoid a stellarium  %s", s );
+        
+        char trame[24*4+80];
+        char t[24*4+80];
+        
+        trame[0] = 0;
+        
+        for (int i=0; i<24; i++ )	{
+        	strcpy( t, trame );
+        	unsigned char c = s[i];
+        	snprintf( (char*)trame, sizeof(trame), "%s %02X", t, c );
+        }
+        logf( (char*)"Envoid a stellarium  %s", trame );
     }
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Envoi a stellarium la position du telescope
+//
+// Octet 	0 		= 24
+//			1 		= 0
+//			2 		= 0
+//			3		= 0
+//			4..11	= Heure (time(0) )
+//			12..15	= AD(rad) / M_PI * 2147483648
+//			16..19	= DC(rad) / M_PI * 2147483648
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::write_stellarium(double ad, double dc)
+{
+
+    unsigned char buff[24];
+    memset( buff, 0, 24);
+    //--------------------------------------------------------
+    buff[0] = 24;
+    //--------------------------------------------------------
+    time_t 			t 		= time(0);
+    long long 		tl 		= (unsigned long long)t;
+    unsigned char* 	conv 	= (unsigned char*)&tl;
+    
+    buff[4] = conv[0];
+    buff[5] = conv[1];
+    buff[6] = conv[2];
+    buff[7] = conv[3];
+    buff[8] = conv[4];
+    buff[9] = conv[5];
+    buff[10] = conv[6];
+    buff[11] = conv[7];
+    //--------------------------------------------------------
+    float fa, fd;
+    
+    fa = ad;// / M_PI * 2147483648;
+    fd = dc;//) / M_PI * 2147483648;
+
+    if ( fa <0.0 )    {      
+        fa = 180.0 + fa;
+        fd = 180.0 - fd;
+    }
+    if ( fa >180.0 )    {      
+        fa = fa - 360.0;
+    }
+    
+    if ( fd >180.0)    {      
+        fd = -fd + 180.0;
+        if ( fa < 180.0 )       fa = -180.0 + fa;
+    }
+    
+    float rfa = DEG2RAD(fa) / M_PI * 2147483648;
+    float rfd = DEG2RAD(fd) / M_PI * 2147483648;
+
+    int a = rfa;
+    int d = rfd;
+    //--------------------------------------------------------
+    conv = (unsigned char*)&a;
+    buff[12] = conv[0];
+    buff[13] = conv[1];
+    buff[14] = conv[2];
+    buff[15] = conv[3];
+    //--------------------------------------------------------
+    conv = (unsigned char*)&d;
+    buff[16] = conv[0];
+    buff[17] = conv[1];
+    buff[18] = conv[2];
+    buff[19] = conv[3];
+    //--------------------------------------------------------
+    if ( ad!=0.0 && dc!=0.0 )
+    {
+		write_stellarium( (char*)buff );
+        logf( (char*)"Em Stellarium Ad=%0.8f Dc=%0.8f", fa, fd );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::close_all()
 {
-    logf( (char*)"** Fermeture de tous les sockets ..." );
+    logf( (char*)"Fermeture de tous les sockets ..." );
+    log_tab(true);
 
     listen_1 = false;
     listen_2 = false;
@@ -353,7 +441,7 @@ void Serveur_mgr::close_all()
 
 	//close(sock_1);
 	//close(sock_2);
-    sleep(1);
+    //sleep(1);
 
     if ( sock_stellarium!= -1 )         shutdown(sock_stellarium, 2);
     if ( sock_ref!= -1 )                shutdown(sock_ref, 2);
@@ -363,15 +451,25 @@ void Serveur_mgr::close_all()
     if ( sock_2!= -1 )                  shutdown(sock_2, 2);
     //sleep(1);
     
+    /*
     sock_1          = -1;
     sock_2          = -1;
     sock_stellarium = -1;
     sock_ref        = -1;
+    */
 
-    sleep(1);
+    //sleep(1);
+    /*
+    logf( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
+    while( sock_1 != -1)	;
+    while( sock_2!= -1)	;
+    while( sock_stellarium != -1)	;
+    while( sock_ref!= -1)	;
+    */
+    logf( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
+    log_tab(false);
 }
-
-
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

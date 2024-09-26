@@ -6,35 +6,58 @@
 //		https://fits.gsfc.nasa.gov/standard30/fits_standard30.pdf
 //
 //--------------------------------------------------------------------------------------------------------------------
-Fits::Fits(string filename)
+Fits::Fits(string filename, PanelCapture* p)
 {
     logf((char*)"Constructeur Fits::Fits() -------------" );
     log_tab(true);
+    
     readBgr.ptr = NULL;
     _filename = filename;
+    pPanelCapture = p;
+    
     bValid = false;
-    //afficheDic();
-    //afficheDatas();
+    bFlip = true;
+
+    dCDELT1 =  1.0;
+    dCDELT2 =  1.0;
+
     dCRPIX1 = -1.0;
-    dCRVAL1 = -1.0;
     dCRPIX2 = -1.0;
-    dCRVAL2 = -1.0;
+
+    dCRVAL1 =  0.0;
+    dCRVAL2 =  0.0;
+
     dCD1_1  = -1.0;
     dCD1_2  = -1.0;
     dCD2_1  = -1.0;
     dCD2_2  = -1.0;
     dBZERO  = -1.0;
+
     dBSCALE = -1.0;
     iOFFSET = -1;
 
-	int n = 0;
-    chargeHDU(n);
-    if ( haveKey( "EXTEND" )	)		chargeHDU(++n);
+    dMin = 999999999999.9;
+    dMax = -999999999999.9;
+
+	//------------------------------------------------------------------------
+    VarManager& 	var	= VarManager::getInstance();
+
+
+
+    pPanelCorrectionFits = new PanelCorrectionFits();
+    pPanelCorrectionFits->setPos( 50, 50 );
     
-    chargeTexture(++n);
-    
+    pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
+    pPanelCorrectionFits->getCDELT1()->set_pVal( (float*)&dCDELT1 );
+	if ( var.getb("bAffFitsCorrection") )		pPanelCorrectionFits->setVisible(false);
+
+    pPanelFits = new PanelFits();
+    pPanelFits->setPosAndSize( 10, 10, 580, 250 );
+    pPanelFits->setVisible( false );
+
+	//------------------------------------------------------------------------
     log_tab(false);
-    logf((char*)"Constructeur Fits::Fits() -------------" );
+    logf((char*)"Constructeur Fits::Fits() -------END------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -43,6 +66,22 @@ Fits::~Fits()
 {
     if ( readBgr.ptr != NULL )          free( readBgr.ptr );
     readBgr.ptr = NULL;
+
+	delete pPanelFits;
+	delete pPanelCorrectionFits;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::chargeFits()
+{
+	int n = 0;
+	bEOF = false;
+	while( !bEOF )    chargeHDU(n++);
+    
+    chargeTexture(n);
+    
+    sauveMatrice();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -73,6 +112,9 @@ void Fits::chargeHDU(int n)
     {
         string k = "";
         string v = "";
+        
+		//if (  buffer[i*80+8] != '=' )			logf( (char*)"[WARNING] Mot cle non standart" );;
+        
         for( int j=0; j<8; j++ )
         {
             k = k + buffer[i*80+j];
@@ -89,98 +131,391 @@ void Fits::chargeHDU(int n)
         }
         */
         
-        for( int j=10; j<80; j++ )
+        for( int j=9; j<80; j++ )
         {
             v = v + buffer[i*80+j];
         }
 
-        logf( (char*)"Lecture de  : '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
+        //logf( (char*)"Lecture de  :             '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
+        logf( (char*)"Fits::chargeHDU()         '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
+        
         
              if ( k.find("BITPIX") == 0 )               readBITPIX(v);
         else if ( k.find("NAXIS")  == 0 )               readNAXIS( k, v );
         else if ( k.find("CR")     == 0 )               readCR( k, v );
+        else if ( k.find("CDELT")  == 0 )               readCDELT( k, v );
         else if ( k.find("CD")     == 0 )               readCD( k, v );
+        else if ( k.find("PC")     == 0 )               readPC( k, v );
         else if ( k.find("BZERO")  == 0 )               dBZERO = getDouble( v );
         else if ( k.find("BSCALE") == 0 )               dBSCALE = getDouble( v );
         else if ( k.find("OFFSET") == 0 )               iOFFSET = getInt( v );
+        //else if ( k.find("SWCREATE") == 0 )
+        else if ( k.find("HISTORY") == 0 )				
+        {
+        	k = "";
+	        for( int j=0; j<80; j++ )            k = k + buffer[i*80+j];
+	        v = "";
+        	//readHistory( k );
+        }
+        else if ( v.find("ASILive") != -1 )
+    	{ 
+    		log( (char*)"Image ASI" ); 
+    		bFlip = false; 
+    	}
         
         row r;
         r.key = k;
         r.value = v;
         datas.push_back( r );
         
-        if ( k.find("END") == 0 )       break;
+        pPanelFits->add_key_value( k, v);
+        
+        if ( k.find("END") == 0 )       { bEOF = true; break; }
     }
-
 
     fichier.close();
     
-	afficheDic();
+	//afficheDic();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool Fits::intersection( vec2&r, vec2& a, vec2& b, vec2& c, vec2& d )
+{
+    vec2 I = vec2(b.x - a.x, b.y - a.y);
+    vec2 J = vec2(d.x - c.x, d.y - c.y);
+    
+    float m = 0, k = 0, diviseur = I.x * J.y - I.y * J.x;
+ 
+    if(diviseur != 0)
+    {
+        m = (I.x * a.y - I.x * c.y - I.y * a.x + I.y * c.x ) / diviseur;
+        k = (J.x * a.y - J.x * c.y - J.y * a.x + J.y * c.x ) / diviseur;
+    }
+   	
+   	//vec2 rr = c + m * J;
+   	vec2 rr = a + k * I;
+   	r.x = rr.x;
+   	r.y = rr.y;
+   	
+   	if ( m>=a.x && m<=b.x) 			return true;
+	return false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::intersectionH( vec2&r, vec2& c, vec2& d )
+{
+	vec2 a = vec2( -nNAXISn[0]/2, -nNAXISn[1]/2 );
+	vec2 b = vec2(  nNAXISn[0]/2, -nNAXISn[1]/2 );
+
+	intersection( r, a, b, c, d);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::intersectionB( vec2&r, vec2& c, vec2& d )
+{
+	vec2 a = vec2( -nNAXISn[0]/2, nNAXISn[1]/2 );
+	vec2 b = vec2(  nNAXISn[0]/2, nNAXISn[1]/2 );
+
+	intersection( r, a, b, c, d);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::intersectionG( vec2&r, vec2& c, vec2& d )
+{
+	vec2 a = vec2( -nNAXISn[0]/2, -nNAXISn[1]/2 );
+	vec2 b = vec2( -nNAXISn[0]/2,  nNAXISn[1]/2 );
+
+	intersection( r, a, b, c, d);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::intersectionD( vec2&r, vec2& c, vec2& d )
+{
+	vec2 a = vec2( nNAXISn[0]/2, -nNAXISn[1]/2 );
+	vec2 b = vec2( nNAXISn[0]/2,  nNAXISn[1]/2 );
+
+	intersection( r, a, b, c, d);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+float Fits::computeEchelle(vec2 v)
+{
+	mat2 mInv = mMat.inverse();
+	vec2 w = mInv * v;
+	
+	return  5.0 * w.length() / v.length();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::sauveMatrice()
+{	
+	mat2 mMoinsX = mat2( -1.0, 0.0, 0.0, -1.0 );
+	mMat = mMoinsX * mAstroEchl * mAstroTrns;// * sym0;
+	//mMat = mAstroTrns * mAstroEchl * mMoinsX ;// * sym0;
+	//mMat = mAstroEchl * mAstroTrns;// * sym0;
+
+    row r;
+    r.key = "M_Trns";
+    r.value = mAstroTrns.to_st();
+    pPanelFits->add_key_value( r.key, r.value );
+    r.key = "M_Echl";
+    r.value = mAstroEchl.to_st();
+    pPanelFits->add_key_value( r.key, r.value );
+	
+	vec2 hg = vec2(0.0, 0.0);
+	vec2 bd = vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
+	vec2 v;
+
+    r.key = "M_Res";
+    r.value = mMat.to_st();
+    pPanelFits->add_key_value( r.key, r.value );
+
+	v = mMat * hg;
+    r.key = "HG";
+    r.value = v.to_st();
+    pPanelFits->add_key_value( r.key, r.value );
+	v = mMat * bd + vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
+    r.key = "BD";
+    r.value = v.to_st();
+    pPanelFits->add_key_value( r.key, r.value );
+
+	//-----------------------------------------------------------------
+	// Grille de coordonnee
+	
+	vec2 p1, pp1, p2, pp2;
+	vec2 p1N, pp1N;
+	vec2 p2N, pp2N;
+	vec2 p1E, pp1E;
+	vec2 p2E, pp2E;
+	vec2 c, s;
+
+	vec2 vHaut;
+	vec2 vGauche;
+	
+	s = vec2( 1.0, -1.0 );
+	c = vec2( nNAXISn[0]/2, nNAXISn[1]/2 );
+	
+
+	//-----------------------------------------------------------------
+	p1N = vec2( 00, 00 );			p2N = vec2( 00, -50 );
+	pp1N = mMat * p1N;				pp2N = mMat * p2N;
+	pp1N += c;						pp2N += c;
+	
+	intersectionH( 	vHaut,   pp1N, pp2N );
+	pPanelCapture->addP1P2( vHaut, vHaut + 2.0*(pp1N-vHaut) );
+
+	//-----------------------------------------------------------------
+	p1E = vec2( 00, 00 );			p2E = vec2( -50, 00 );
+	pp1E = mMat * p1E;				pp2E = mMat * p2E;
+	pp1E += c;						pp2E += c;
+
+	intersectionG( 	vGauche,   pp1E, pp2E );
+	pPanelCapture->addP1P2( vGauche, vGauche + 2.0*(pp1E-vGauche) );
+
+
+	vec2 vNord = pp2N - pp1N;
+	vec2 vEst  = pp2E - pp1E;
+	vec2 vStart1N = pp1N;
+	vec2 vStart2N = pp2N;
+	vec2 vStart1E = pp1E;
+	vec2 vStart2E = pp2E;
+	
+	float echN = computeEchelle( vec2(0.0, dCRVAL1) );
+	float echE = computeEchelle( vec2(dCRVAL2, 0.0) );
+	
+	logf( (char*)"l-Nord = %0.4f l-Est = %0.4f", echN, echE );
+	
+	for( float f=-10.0; f <(10.0); f+=1.0 )	{
+		//-----------------------------------------------------------------
+		pp1N = vStart1N + f*echN *(vEst);
+		pp2N = vStart2N + f*echN *(vEst);
+		
+		intersectionH( 	vHaut,  pp1N, pp2N );
+		pPanelCapture->addP1P2( vHaut, vHaut + 2.0*(pp1N-vHaut) );
+
+		//-----------------------------------------------------------------
+		pp1E = vStart1E + f*echE *(vNord);
+		pp2E = vStart2E + f*echE *(vNord);
+
+		intersectionG( 	vGauche, pp1E, pp2E );
+		
+		pPanelCapture->addP1P2( vGauche, vGauche + 2.0*(pp1E-vGauche) );
+
+	}
+
+	/*
+	//-----------------------------------------------------------------
+	p1N = vec2( 00, 00 );			p2N = vec2( 00, -50 );
+	pp1N = mMat * p1N;				pp2N = mMat * p2N;
+	pp1N += c;						pp2N += c;
+	*/
+
+	//-----------------------------------------------------------------
+
+
+	/*
+	vv = v1 = vec2( 00, 00 );
+	ww = v2 = vec2( 50, 00 );
+	pPanelCapture->addP1P2( v1+c, v2+c );
+	v1 = mMat * vv;
+	v2 = mMat * ww;
+	pPanelCapture->addP1P2( v1+c, v2+c );
+
+	vv = v1 = vec2( 50, 50 );
+	ww = v2 = vec2( 50, 00 );
+	pPanelCapture->addP1P2( v1+c, v2+c );
+	v1 = mMat * vv;
+	v2 = mMat * ww;
+	pPanelCapture->addP1P2( v1+c, v2+c );
+	vv = v1 = vec2( 50, 00 );
+	ww = v2 = vec2( 00, 00 );
+	pPanelCapture->addP1P2( s*v1+c, s*v2+c );
+	v1 = mMat * vv;
+	v2 = mMat * ww;
+	pPanelCapture->addP1P2( s*v1+c, s*v2+c );
+
+	pPanelCapture->setAffLignes(true);
+	*/
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 // Pour une image en 8eb par couleur
 // Lit une couleur du fichier fit, et applique les corrections si nessecaire
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::read_RGB_8( uint16_t &C, uint8_t* pBuffer )
+void Fits::read_RGB_8( float &C, uint8_t* pBuffer )
 {
 	C = *pBuffer;
 
-	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = ((uint16_t)(( (double)(C) ) * dBSCALE + dBZERO) & 0xFF00) >> 8;
+	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = C = (C * dBSCALE) + dBZERO ;
 	if ( iOFFSET != -1 )				C -= iOFFSET;
+
+	C /= 255.0;
+
+	if ( C>dMax )				dMax = C;
+	if ( C<dMin )				dMin = C;
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 // Pour une image en 16eb par couleur
 // Lit une couleur du fichier fit, et applique les corrections si nessecaire
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::read_RGB_16( uint16_t &C, uint16_t* pBuffer )
-{
-	C = *pBuffer;
+void Fits::read_RGB_16( float &C, int16_t* pBuffer )
+{	/*
+	uint8_t* p = (uint8_t*)pBuffer;
+	uint8_t  uLow  = *(p+0);
+	uint8_t  uHigh = *(p+1);
+	
+	
+	
+	C = ((uint16_t)uHigh<<8 + (uint16_t)uLow);
+	*/
+	int16_t c = *pBuffer;
+	
+	C = (float)c;
+	
+	//if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C * dBSCALE);
+	//if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C * dBSCALE) + dBZERO ;
+	//if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C-dBZERO) * dBSCALE;
+	//if ( iOFFSET != -1 )				C -= iOFFSET;
+	
+	/*
+	if ( C < 0.0 )
+	{ 
+		logf( (char*)"Pixel hors valeur" );
+		//C *= -1.0;
+	}
 
-	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = ((uint16_t)(( (double)(C) ) * dBSCALE + dBZERO) & 0xFF00) >> 8;
-	if ( iOFFSET != -1 )				C -= iOFFSET;
+	if ( C>dMax )				dMax = C;
+	if ( C<dMin )				dMin = C;
+	*/
+	
+	if ( isnan(C) )	logf( (char*)"[ERREUR] Ce n'est pas un chiffre %d", c );
+	C /= 65536.0;
+
+	if ( isnan(C) )	logf( (char*)"[ERREUR] Ce n'est pas un chiffre %d", c );
+
+	if ( C>dMax )				dMax = C;
+	if ( C<dMin )				dMin = C;
+
+	if ( C>1.0  )		c = 1.0;
+	if ( C<-1.0 )		c = -1.0;
+	//C /= 21758.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::chargeTexture(int nHDU)
 {
-	//unsigned int  nbOctet = ( nBITPIX == 16 ? 2 : 1);
-    //unsigned long l_fit = (long)nNAXIS * (long)nNAXIS1 * (long)nNAXIS2 * (long)nbOctet;
-    size_fit   = (long)nNAXIS1 * (long)nNAXIS2;
-    size_gl    = (long)nNAXIS1 * (long)nNAXIS2;
-    unsigned long l_fit = (long)nNAXIS * size_fit;
-    unsigned long l_gl  = (long)nNAXIS * size_fit;
+	//---------------------------------------------------
+    //nombre d'element d'un plan
+    // size_fit = size_gl = nNAXIS0 * nNAXIS1
+	//---------------------------------------------------
+    // Nombre total d'elements 
+	// l_fit = l_gl = nNAXIS1 * nNAXIS2 * .... * nNAXISm 
+	//---------------------------------------------------
+    size_fit = size_gl = nNAXISn[0] * nNAXISn[1];
+    
+	unsigned long l_fit = 1.0;		for (int i=0; i<nNAXIS; i++)	l_fit *= nNAXISn[i];
+	unsigned long l_gl  = 1.0;		for (int i=0; i<nNAXIS; i++)	l_gl  *= nNAXISn[i];
     
     logf( (char*)"Fits::chargeTexture()" ); 
-    logf( (char*)"Longueur des buffer : fits %ld, opengl  %ld", (long)l_fit, (long)l_gl ); 
+    log_tab(true);
+    logf( (char*)"Longueur des buffer : fits %ld, opengl  %ld", (long)l_fit*nBITPIX/8, (long)l_gl ); 
+    logf( (char*)"size_fits %ld, size_gl  %ld", (long)size_fit, (long)size_gl ); 
 	//---------------------------------------------------
 	// Mise en place la structure readBackground
+	// texture openGL
     if ( l_fit>0 && l_gl>0 )      
     {
         bValid = true;
-        readBgr.w = nNAXIS1;
-        readBgr.h = nNAXIS2;
-        readBgr.d = nNAXIS;
+        readBgr.w = nNAXISn[0];
+        readBgr.h = nNAXISn[1];
+        //readBgr.d = nNAXIS;
+        readBgr.d = 3;
     }
 	//---------------------------------------------------
 	// Allocation des buffer
-    GLubyte* 		pBuffer_gl = (GLubyte*)malloc( l_gl );
-    uint8_t* 		pBuffer_8  = NULL;
-    uint16_t* 		pBuffer_16 = NULL;
+    GLubyte* 		pBuffer_gl     	= (GLubyte*)malloc( 3*size_gl );
+    uint8_t* 		pBuffer_8   	= NULL;
+    int16_t* 		pBuffer_16  	= NULL;
+    float* 			pBuffer_fit 	= NULL;
 
-	if 		( nBITPIX == 16 )		pBuffer_16  = (uint16_t*)malloc( l_fit * sizeof(uint16_t) );
-	else if	( nBITPIX == 8  )		pBuffer_8   = (uint8_t*) malloc( l_fit * sizeof(uint8_t)  );
+	if 		( nBITPIX == 16 )		pBuffer_16  = (int16_t*)malloc( 2 * l_fit * sizeof(int16_t) );
+	else if	( nBITPIX == 8  )		pBuffer_8   = (uint8_t*)malloc( 1 * l_fit * sizeof(uint8_t) );
     else {
         logf( (char*)"[ERROR] Nompbre de bits par pixel non pris en charge ..." );
+        log_tab(false);
         return;
     }
+    
+	pBuffer_fit  = (float*)malloc( l_fit * sizeof(float) );
 	//---------------------------------------------------
-    if ( pBuffer_gl == NULL ) 		{
-        logf( (char*)"[ERROR] Impossible d\'alloue la memoire ..." );
+	// traitement des erreurs
+    if ( pBuffer_gl == NULL )	{
+        logf( (char*)"[ERROR] Impossible d\'alloue la memoire pBuffer_gl" );
+        log_tab(false);
         return;
     }
-    if (  pBuffer_8 == NULL && pBuffer_16 == NULL ) 		{
-        logf( (char*)"[ERROR] Impossible d\'alloue la memoire ..." );
+    if ( pBuffer_fit == NULL )	{
+        logf( (char*)"[ERROR] Impossible d\'alloue la memoire pBuffer_fit" );
+        log_tab(false);
+        return;
+    }
+    if (   nBITPIX == 8 && pBuffer_8 == NULL ) 		{
+        logf( (char*)"[ERROR] Impossible d\'alloue la memoire pBuffer_8" );
+        log_tab(false);
+        return;
+    }
+    if (   nBITPIX == 16 && pBuffer_16 == NULL ) 		{
+        logf( (char*)"[ERROR] Impossible d\'alloue la memoire pBuffer_16" );
+        log_tab(false);
         return;
     }
 	//---------------------------------------------------
@@ -190,6 +525,7 @@ void Fits::chargeTexture(int nHDU)
 	//---------------------------------------------------
     if ( !fichier ) 		{
         logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)_filename.c_str() );
+        log_tab(false);
         return;
     }
 	//---------------------------------------------------
@@ -197,8 +533,8 @@ void Fits::chargeTexture(int nHDU)
     fichier.seekg( LENGTH_HDU*nHDU, fichier.beg );
 	//---------------------------------------------------
     // lecture des plans memoires
-	if 		( nBITPIX == 16 )		fichier.read( (char*)pBuffer_16, l_fit * sizeof(uint16_t) );
-	else if	( nBITPIX == 8  )		fichier.read( (char*)pBuffer_8,  l_fit * sizeof(uint8_t)  );
+	if 		( nBITPIX == 16 )		fichier.read( (char*)pBuffer_16, l_fit * sizeof(int16_t) );
+	else if	( nBITPIX == 8  )		fichier.read( (char*)pBuffer_8,  l_fit * sizeof(uint8_t) );
     fichier.close();    
 	//---------------------------------------------------
     // Buffer sous la forme  NAXIS = 3   (3 plans)
@@ -211,44 +547,90 @@ void Fits::chargeTexture(int nHDU)
 	//
 	// remplissage du pointeur pBuffer_gl alias le pointeur readBackground
 	unsigned long	p=0;
-    uint16_t 		R, G, B;
+    float	 		R, G, B;
 	long			i_fit, i_gl;
+    long			y = nNAXISn[1]-1;
+    long 			x = 0;
+    long 			idx;
 	
-    //if ( nBITPIX == 16 )	i_fit = 0;
-    //else		        	i_fit = 0;
-    
     i_fit = 0;
     i_gl = 0;
-	
-    for( long i_gl=0; i_gl<size_gl; i_gl++ )    {
+    idx = 0;
+    float RR, GG, BB;
+	//---------------------------------------------------
+	// LECTURE DU FICHIER FIT  
+	//   Conversion  entier->float (0.0<Pix<1.0)
+	//---------------------------------------------------
+    for( long i_gl=0; i_gl<nNAXISn[0]*nNAXISn[1]; i_gl++ )    {
 
         if ( nBITPIX == 16 )			
         {
-            uint16_t RR, GG, BB;
-            
-            read_RGB_16( R, pBuffer_16 + 0*size_fit + i_fit );
-            read_RGB_16( G, pBuffer_16 + 1*size_fit + i_fit );
-            read_RGB_16( B, pBuffer_16 + 2*size_fit + i_fit );
+            	read_RGB_16( RR, pBuffer_16 + 0*size_fit + i_fit );
+		    GG = BB = RR;
+            if ( nNAXIS == 3 )	{
+            	read_RGB_16( GG, pBuffer_16 + 1*size_fit + i_fit );
+            	read_RGB_16( BB, pBuffer_16 + 2*size_fit + i_fit );
+            }
 		}
 		else  if ( nBITPIX == 8  )	
 		{
-            read_RGB_8( R, pBuffer_8 + 0*size_fit + i_fit );
-            read_RGB_8( G, pBuffer_8 + 0*size_fit + i_fit );
-            read_RGB_8( B, pBuffer_8 + 0*size_fit + i_fit );
+            	read_RGB_8( RR, pBuffer_8 + 0*size_fit + i_fit );
+		    GG = BB = RR;
+            if ( nNAXIS == 3 )	{
+            	read_RGB_8( GG, pBuffer_8 + 1*size_fit + i_fit );
+            	read_RGB_8( BB, pBuffer_8 + 2*size_fit + i_fit );
+            }
         }
-    
+
+	    pBuffer_fit[idx + 0] = RR;
+	    pBuffer_fit[idx + 1] = GG;
+	    pBuffer_fit[idx + 2] = BB;
+	    
+		idx += 3;
 		i_fit++;
-        
-        pBuffer_gl[i_gl*3 + 0] = (GLubyte)R;
-        pBuffer_gl[i_gl*3 + 1] = (GLubyte)G;
-        pBuffer_gl[i_gl*3 + 2] = (GLubyte)B;
+    }
+	//---------------------------------------------------
+	// INIT TEXTURE OPENGL
+	//---------------------------------------------------
+	for( long y=0; y<nNAXISn[1]; y++ )	{
+		for( long x=0; x<nNAXISn[0]; x++ )	{
+			long idx_gl;
+			long idx_fit;
+		    if ( bFlip )
+		    {
+				idx_gl		= (y * nNAXISn[0]) 	              + x;
+				idx_fit 	= ((nNAXISn[1]-1-y) * nNAXISn[0]) + x;
+	    	}
+			else
+			{
+				idx_gl		= (y * nNAXISn[0])  + x;
+				idx_fit 	= (y * nNAXISn[0])  + x;
+			}
+
+			idx_gl  *= 3;
+			idx_fit *= 3;
+			
+			pBuffer_gl[idx_gl + 0] = 255.0* pBuffer_fit[idx_fit + 0];
+			pBuffer_gl[idx_gl + 1] = 255.0* pBuffer_fit[idx_fit + 1];
+			pBuffer_gl[idx_gl + 2] = 255.0* pBuffer_fit[idx_fit + 2];
+		}
     }
     //------------------------------------------------
 	// Liberation de la memoire
 	if 		( nBITPIX == 16 )		free( pBuffer_16 );
 	else if	( nBITPIX == 8  )		free( pBuffer_8  );
-	// Affectation dans la memoire gl de l'image affiché
-    readBgr.ptr = pBuffer_gl;
+		
+	free( pBuffer_fit );
+    //------------------------------------------------
+	// Affectation de la texture du fond de fenetre 
+	readBgr.ptr = pBuffer_gl;
+	
+	string s0 = "Min, Max";
+	string s1 = "Min="+ to_string(dMin) +" Max="+ to_string(dMax) +" bFlip="+ string(BOOL2STR(bFlip)) ;
+	
+    pPanelFits->add_key_value( s0, s1 );
+
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -277,10 +659,10 @@ void Fits::readBITPIX( string value )
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::readNAXIS( string key, string value )
 {
-            if ( key.find("NAXIS ") == 0 )          nNAXIS  = getInt( value );   
-    else    if ( key.find("NAXIS1") == 0 )          nNAXIS1 = getInt( value );   
-    else    if ( key.find("NAXIS2") == 0 )          nNAXIS2 = getInt( value );   
-    else    if ( key.find("NAXIS3") == 0 )          nNAXIS3 = getInt( value );   
+    if ( key.find("NAXIS ") == 0 )          nNAXIS  = getInt( value );   
+    else {
+       nNAXISn.push_back( getInt(value) );   
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -295,12 +677,60 @@ void Fits::readCR( string key, string value )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Fits::readCDELT( string key, string value )
+{
+	bool	bOK = true;
+    if ( key.find("CDELT1") == 0 )	{
+            	dCDELT1  = getDouble( value );
+				pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
+				pPanelCorrectionFits->getCDELT1()->set_pVal( (float*)&dCDELT1 );
+	}
+    else    if ( key.find("CDELT2") == 0 )  {
+    			dCDELT2  = getDouble( value );
+				pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
+				pPanelCorrectionFits->getCDELT2()->set_pVal( (float*)&dCDELT2 );
+	}
+    else	bOK = false;
+    
+    if ( bOK )	{
+		//mAstroEchl = mat2( dCDELT1, dCDELT2, dCDELT1, dCDELT2 );
+		logf( (char*)"Matrice de transformation : %s", mAstroEchl.to_st() );
+	}
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Fits::readCD( string key, string value )
 {
+	bool	bOK = true;
             if ( key.find("CD1_1") == 0 )           dCD1_1  = getDouble( value );   
     else    if ( key.find("CD1_2") == 0 )           dCD1_2  = getDouble( value );
     else    if ( key.find("CD2_1") == 0 )           dCD2_1  = getDouble( value );
     else    if ( key.find("CD2_2") == 0 )           dCD2_2  = getDouble( value );
+    else	bOK = false;
+    
+    if ( bOK )	{
+		mAstroEchl = mat2( dCD1_1, dCD2_1, dCD1_2, dCD2_2 );
+		logf( (char*)"Matrice d'echelle: %s", mAstroEchl.to_st() );
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::readPC( string key, string value )
+{
+	bool	bOK = true;
+            if ( key.find("PC1_1") == 0 )           dPC1_1  = getDouble( value );   
+    else    if ( key.find("PC1_2") == 0 )           dPC1_2  = getDouble( value );
+    else    if ( key.find("PC2_1") == 0 )           dPC2_1  = getDouble( value );
+    else    if ( key.find("PC2_2") == 0 )           dPC2_2  = getDouble( value );
+    else	bOK = false;
+    
+    if ( bOK )	{
+		mAstroTrns = mat2( dPC1_1, dPC2_1, dPC1_2, dPC2_2 );
+		logf( (char*)"Matrice de transformation : %s", mAstroTrns.to_st() );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -322,7 +752,7 @@ void Fits::afficheDic()
     int nb = datas.size();
     for( int i=0; i<nb; i++ )
     {
-        logf( (char*)" - %s \t: %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
+        logf( (char*)" - %s\t: %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -347,9 +777,6 @@ void Fits::afficheDatas()
     logf( (char*)"Resultat parser" );
     logf( (char*)" - nBITPIX %d", nBITPIX );    
     logf( (char*)" - nNAXIS  %d", nNAXIS );    
-    logf( (char*)" - nNAXIS1 %d", nNAXIS1 );    
-    logf( (char*)" - nNAXIS2 %d", nNAXIS2 );    
-    logf( (char*)" - nNAXIS3 %d", nNAXIS3 );    
 
     logf( (char*)" - dCRPIX1 %f", dCRPIX1 );    
     logf( (char*)" - dCRVAL1 %f", dCRVAL1 );    
@@ -368,6 +795,122 @@ void Fits::afficheDatas()
     logf( (char*)" - dBSCALE %f", dBSCALE );
 
     logf( (char*)" - iOFFSET %d", iOFFSET );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::afficheInfoFits()
+{
+	if( pPanelFits != NULL )		{
+		pPanelFits->setVisible( !pPanelFits->getVisible() );
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::afficheInfoFits(bool b)
+{
+	logf( (char*)"Fits::afficheInfoFits(%s)", BOOL2STR(b) );
+	if( pPanelFits != NULL )		
+	{
+		pPanelFits->setVisible( b );
+		if ( b )
+			WindowsManager::getInstance().onTop(pPanelFits);
+			WindowsManager::getInstance().onTop(pPanelCorrectionFits);
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::screen2J2000(vec2& r, int x, int y )
+{
+//#define DEBUG
+#ifdef DEBUG
+	logf( (char*)"Fits::screen2J2000( %s, x=%d, y=%d )", r.to_st(), x, y );
+	log_tab( true );
+#endif
+
+	vec2 s = vec2(x, y);
+	s -= vec2( nNAXISn[0]/2, nNAXISn[1]/2 );
+#ifdef DEBUG
+	logf( (char*)"s=%s", s.to_st() );
+#endif
+	
+	mat2 m = mMat;
+	m.inverse();
+	r = m * s;
+#ifdef DEBUG
+	logf( (char*)"m.inverse*v: %s", r.to_st() );
+#endif
+	/*
+	vec2 w = mMat * s;
+	logf( (char*)"nMat*v: %s", w.to_st() );
+	*/
+
+	if ( dCDELT1 != -1.0 )
+	{
+		r.x *= dCDELT1;
+		r.y *= dCDELT2;
+	}
+#ifdef DEBUG
+	logf( (char*)"Coef deg/pix: %s", r.to_st() );
+#endif
+	/*
+	r+=vec2( nNAXISn[0]/2, nNAXISn[1]/2 );
+	logf( (char*)"Recentrage: %s", r.to_st() );
+	*/
+	r.y = -r.y;
+	r += vec2( dCRVAL1, dCRVAL2 );
+#ifdef DEBUG
+	logf( (char*)"valeur de retour %s", r.to_st() );
+	
+	log_tab( false );
+#endif
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::J2000_2_screen(vec2& r, vec2& s )
+{
+//#define DEBUG
+#ifdef DEBUG
+	logf( (char*)"Fits::J2000_2_screen( %s, %s )", r.to_st(), s.to_st() );
+	log_tab( true );
+#endif
+	vec2 crpix =  vec2( dCRPIX1, dCRPIX2 );
+	vec2 crval =  vec2( dCRVAL1, dCRVAL2 );
+	vec2 cdelt =  vec2( dCDELT1, dCDELT2 );
+
+	vec2 v = s;
+#ifdef DEBUG
+	logf( (char*)"v=%s", v.to_st() );
+#endif
+
+	v = s - crval;
+#ifdef DEBUG
+	logf( (char*)"%s = %s - %s", v.to_st(), s.to_st(), crval.to_st() );
+#endif
+
+	mat2 m = mMat;
+	r = m * v;
+#ifdef DEBUG
+	logf( (char*)"%s = m * %s", r.to_st(), v.to_st() );
+#endif
+
+	r.x = r.x / cdelt.x;
+	r.y = r.y / cdelt.y;
+#ifdef DEBUG
+	logf( (char*)"%s /= %s", r.to_st(), cdelt.to_st() );
+#endif
+	r.x = -r.x;
+	r += crpix;
+#ifdef DEBUG
+	logf( (char*)"valeur de retour %s", r.to_st() );
+	
+	log_tab( false );
+#endif
+	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

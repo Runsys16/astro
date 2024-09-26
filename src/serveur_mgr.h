@@ -29,6 +29,7 @@
 #include "Mathlib.h"
 #include "main.h"
 #include "serial.h"
+#include "serveur_mgr.h"
 
 using namespace std;
 
@@ -65,6 +66,7 @@ public:
     void                        start_init();
    
     void                        write_stellarium( char* s);
+    void                        write_stellarium( double, double );
     
     void                        close_all();
 

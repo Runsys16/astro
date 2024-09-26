@@ -2,6 +2,9 @@
 #define FITS_H  1
 
 #include "main.h"
+#include "panel_fits.h"
+#include "panel_capture.h"
+#include "panel_fits_correction.h"
 #include <dirent.h>
 
 #include <string>
@@ -33,39 +36,67 @@ protected:
 	    uint32_t					size_fit;
 	    uint32_t					size_gl;
         vector<row>                 datas;
+        
+        PanelFits*					pPanelFits;
+        PanelCapture*				pPanelCapture;
+        PanelCorrectionFits*		pPanelCorrectionFits;
+        
+        bool						bFlip;   // (0,0) Bottom, Left
+        bool						bEOF;
                 
-        int                         nNAXIS;
-        int                         nNAXIS1;
-        int                         nNAXIS2;
-        int                         nNAXIS3;
         int                         nBITPIX;
+        int                         nNAXIS;
+        vector<int>					nNAXISn;
         int                         nDATE;
 
         string                      sCTYPE1;
         string                      sCTYPE2;
         
-        double                      dCRVAL1;
-        double                      dCRVAL2;
-
-        double                      dCRPIX1;
-        double                      dCRPIX2;
+        double						dMin;
+        double						dMax;
         
+volatile double                      dCRVAL1;
+volatile double                      dCRVAL2;
+
+volatile double                      dCRPIX1;
+volatile double                      dCRPIX2;
+        
+        mat2						mAstroEchl;
+        mat2						mAstroTrns;
+        mat2						mMat;
+
         double                      dCD1_1;
         double                      dCD1_2;
         double                      dCD2_1;
         double                      dCD2_2;
+        
+volatile float                       dCDELT1;
+volatile float                       dCDELT2;
+
+        double                      dPC1_1;
+        double                      dPC1_2;
+        double                      dPC2_1;
+        double                      dPC2_2;
         
         double						dBZERO;
         double						dBSCALE;
         
         int16_t						iOFFSET;
 public :
-        Fits(string);
+        Fits(string, PanelCapture*);
         ~Fits();
         
+        void                        chargeFits();
+        bool						intersection( vec2&, vec2&, vec2&, vec2&, vec2& );
+        void						intersectionH( vec2&, vec2&, vec2& );
+        void						intersectionB( vec2&, vec2&, vec2& );
+        void						intersectionG( vec2&, vec2&, vec2& );
+        void						intersectionD( vec2&, vec2&, vec2& );
+        float                       computeEchelle(vec2);
+        void                        sauveMatrice();
         void                        chargeHDU(int);
-        void						read_RGB_8(  uint16_t&, uint8_t* );
-        void						read_RGB_16( uint16_t&, uint16_t* );
+        void						read_RGB_8(  float&, uint8_t* );
+        void						read_RGB_16( float&, int16_t* );
         void                        chargeTexture(int);
         
         int                         getInt( string );
@@ -75,19 +106,40 @@ public :
         void                        readBITPIX( string );
         void                        readNAXIS( string, string );
         void                        readCR( string, string );
+        void                        readCDELT( string, string );
         void                        readCD( string, string );
+        void                        readPC( string, string );
         void                        readCTYPE( string, string );
 
         void                        afficheDic();
 		bool						haveKey( string );
         void                        afficheDatas();
-
+		void						afficheInfoFits();
+		void						afficheInfoFits(bool);
+		
 inline  GLubyte*                    getPTR()                { return (bValid ?  readBgr.ptr.load() : NULL); };
 inline  int                         getW()                  { return (bValid ?  readBgr.w.load() : 0); };
 inline  int                         getH()                  { return (bValid ?  readBgr.h.load() : 0); };
 inline  int                         getD()                  { return (bValid ?  readBgr.d.load() : 0); };
+inline  PanelFits*                  getPanelFits()          { return pPanelFits; };
+inline  mat2&						getMatrix() 			{ return mMat; };
+inline  void 						setPanelCapture(PanelCapture* p) 			{ pPanelCapture = p; };
+inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionFits; }
 
         void                        getRB( struct readBackground* );
+        void						screen2J2000( vec2&, int, int );
+        void						J2000_2_screen( vec2&, vec2& );
+//        void						setView(Panel* p)		{ pPanelFits->setView(p); }
+
+inline	double                      getNAXIS1()				{ return nNAXISn[0]; }
+inline	double                      getNAXIS2()				{ return nNAXISn[1]; }
+inline	double                      getCRVAL1()				{ return dCRVAL1; }
+inline	double                      getCRVAL2()				{ return dCRVAL2; }
+inline	double                      getCRPIX1()				{ return dCRPIX1; }
+inline	double                      getCRPIX2()				{ return dCRPIX2; }
+inline	double                      getCDELT1()				{ return dCDELT1; }
+inline	double                      getCDELT2()				{ return dCDELT2; }
+//		mat2	                    getMatrix()				{ return nMat; }
 
 };
 //--------------------------------------------------------------------------------------------------------------------

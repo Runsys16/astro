@@ -30,6 +30,7 @@ protected:
        PanelSimple*     pCadran;
        PanelSimple*     pBoule;
        Panel*			pPrevParent;
+       //Panel*			pClick;
        
             vector<float>   t_val;
             int         x_click;
@@ -39,9 +40,10 @@ protected:
 public:
                         PanelSpinEditText();
                         
-inline      void        set_pVal(float* v)          { pVal = v; }                        
+			void        set_pVal(float*);
 inline      void        set_delta(int x, int y)     { delta_x = 0; delta_y = 0; }                        
-inline      void        set_val(float f)            { val_angle = val = f; }                        
+//inline      void        set_val(float f)            { val_angle = val = f; }                        
+			void        set_val(float f);//            { val_angle = val = f; }                        
 inline      void        set_min(float f)            { min = f; }                        
 inline      void        set_max(float f)            { max = f; }                        
 inline      void        set_step(float f)           { step = f; }                        
@@ -50,7 +52,7 @@ inline      void        set_ndecimal(int n)         { nDecimal = n; }
 inline      void        set(float m, float M, float s, float n)
 							                        { min = m; max = M; step = s; nb = n; }     
 
-inline 		void		setMotion( motion_cb_t cb)               { cb_motion = cb; }
+inline 		void		setMotion( motion_cb_t cb)  { cb_motion = cb; }
 inline      float*      get_pVal()          		{ return pVal; }                        
 
 

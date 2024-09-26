@@ -37,11 +37,12 @@ public:
     void                        pooling();
     void                        threadPooling();
     std::thread                 startThread();
-    bool                        isExclude(string);    
+    bool                        isExclude(string);  
     void                        add_port();
     void                        sup_port();
     
     void                        print_list();
+    void						stopThread()					{ bExitThread = true; }
     
    
 private:
@@ -50,6 +51,7 @@ private:
     vector<string>              t_port_current;
     
     bool                        bStart;
+    atomic<bool>				bExitThread;  
     
 SINGLETON_END()
 

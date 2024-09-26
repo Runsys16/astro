@@ -19,7 +19,7 @@ PanelApn::PanelApn()
     VarManager&         var = VarManager::getInstance();
 
     wm.add(this);
-    setExtraString( "panelApn" );
+    setExtraString( "PanelApn" );
     setSize( 160, 200 );
     
     setPos( 1000, 200 );

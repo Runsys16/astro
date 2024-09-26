@@ -22,7 +22,7 @@ PanelCheckBox *     pButtonRet;
 PanelCheckBox *     pButtonMode;
 PanelCheckBox *     pButtonSon;
 PanelCheckBox *     pButtonPause;
-PanelCheckBox *     pButtonDeplacement;
+PanelCheckBox *     pButtonDeplac;
 PanelSpinEditText*  pCercleAsserv;
 PanelSpinEditText*  pCercleErr;
 
@@ -421,12 +421,12 @@ void cb_rotationCheck(PanelCheckBox* p)	{
         logf((char*)"Bouton Pause : %s", BOOL2STR(bPause) );
 	}
 	else
-	if ( p == pButtonDeplacement )
+	if ( p == pButtonDeplac )
 	{
         if ( !bModeManuel )				bModeManuel = true;
         bMouseDeplace = !bMouseDeplace;
         var.set("bMouseDeplace", bMouseDeplace);
-        pButtonDeplacement->setVal(bMouseDeplace);
+        pButtonDeplac->setVal(bMouseDeplace);
         logf((char*)"bMouseDeplace : %s", BOOL2STR(bMouseDeplace) );
 	}
 	/*
@@ -581,25 +581,25 @@ void create_windows_button()
     char s[55];
 	int pos = 0;
 	
-    pButtonHelp     = create_window_check_box( pos++, "help" );
-    pButtonControl  = create_window_check_box( pos++, "camera" );
-    pButtonResultat = create_window_check_box( pos++, "cible" );
-    pButtonCourbe   = create_window_check_box( pos++, "courbe" );
-    pButtonStdOut   = create_window_check_box( pos++, "console" );
-    pButtonSerial   = create_window_check_box( pos++, "arduino" );
+    pButtonHelp     = create_window_check_box( pos++, "help" );		pButtonHelp->setExtraString( string("Button Help") );
+    pButtonControl  = create_window_check_box( pos++, "camera" );	pButtonControl->setExtraString( string("Button Control") );
+    pButtonResultat = create_window_check_box( pos++, "cible" );	pButtonResultat->setExtraString( string("Button Resultat") );
+    pButtonCourbe   = create_window_check_box( pos++, "courbe" );	pButtonCourbe->setExtraString( string("Button Courbe") );
+    pButtonStdOut   = create_window_check_box( pos++, "console" );	pButtonStdOut->setExtraString( string("Button StdOut") );
+    pButtonSerial   = create_window_check_box( pos++, "arduino" );	pButtonSerial->setExtraString( string("Button Serial") );
 
-    pButtonMode     = create_window_check_box( pos++, "mode" );
-    pButtonDeplacement    = create_window_check_box( pos++, "pas" );
-    pButtonAsserv   = create_window_check_box( pos++, "cadena" );
-    pButtonSon      = create_window_check_box( pos++, "son" );
+    pButtonMode     = create_window_check_box( pos++, "mode" );		pButtonMode->setExtraString( string("Button Mode") );
+    pButtonDeplac   = create_window_check_box( pos++, "pas" );		pButtonDeplac->setExtraString( string("Button Deplacement") );
+    pButtonAsserv   = create_window_check_box( pos++, "cadena" );	pButtonAsserv->setExtraString( string("Button Asservissement") );
+    pButtonSon      = create_window_check_box( pos++, "son" );		pButtonSon->setExtraString( string("Button Son") );
 
-    pButtonAsc      = create_window_check_box( pos++, "asc" );
-    pButtonDec      = create_window_check_box( pos++, "dec" );
-    pButtonJoy      = create_window_check_box( pos++, "joy" );
-    pButtonSui      = create_window_check_box( pos++, "terre" );
-    pButtonRet      = create_window_check_box( pos++, "retour" );
+    pButtonAsc      = create_window_check_box( pos++, "asc" );		pButtonAsc->setExtraString( string("Button Asc Droite") );
+    pButtonDec      = create_window_check_box( pos++, "dec" );		pButtonDec->setExtraString( string("Button Declinaison") );
+    pButtonJoy      = create_window_check_box( pos++, "joy" );		pButtonJoy->setExtraString( string("Button Joystick") );
+    pButtonSui      = create_window_check_box( pos++, "terre" );	pButtonSui->setExtraString( string("Button Suivi rotation terre") );
+    pButtonRet      = create_window_check_box( pos++, "retour" );	pButtonRet->setExtraString( string("Button Retour arduino") );
     
-    pButtonPause    = create_window_check_box( "pause", 10 );
+    pButtonPause    = create_window_check_box( "pause", 10 );		pButtonPause->setExtraString( string("Button Pause") );
 
 	int X = pos*18 + 325;
 
@@ -615,15 +615,16 @@ void create_windows_button()
     sprintf( s,"%0.2f", var.getf("err")  );
     pCercleErr->changeText( s );
 
-    pCercleErr->set( 0.0, 5.0, 0.01, 4 );
+    pCercleErr->set( 0.0, 5.0, 2, 4 );
     pCercleErr->set_ndecimal( 2 );
     //pCercleErr->set_delta( 0, 0 );
     pCercleErr->set_val( 0.0 );					// initialisation à zero l'objet panelCourbe n'est pas encore créé
-    pCercleErr->set_pVal( NULL );
+    //pCercleErr->set_pVal( NULL );
     
     pCercleErr->setMotion( cb_motion );			// callback sur deplacement de la souris
 
     panelStatus->add( pCercleErr );
+    pCercleErr->setExtraString( string("SpinEdit Err") );
 	//--------------------------------------------------------
 	pCercleAsserv = new PanelSpinEditText();
     pCercleAsserv->setPosAndSize( X+62, 2, 40, 20 );
@@ -634,13 +635,14 @@ void create_windows_button()
     pCercleAsserv->changeText( s );
 
     //  Valeur de l'edition dimension de la
-    pCercleAsserv->set( 1, 600, 1, 2 );
+    pCercleAsserv->set( 1, 600, 760, 4 );
     pCercleAsserv->set_delta( 20, -100 );
     //pCercleAsserv->set_nb( 2 );
     pCercleAsserv->set_val( fLimitCorrection );
     pCercleAsserv->set_pVal( &fLimitCorrection );
 
     panelStatus->add( pCercleAsserv );
+    pCercleAsserv->setExtraString( string("SpinEdit Asservi") );
 	//--------------------------------------------------------
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -693,7 +695,7 @@ void idleStatus()
     pButtonHelp->setVal( bPanelHelp );
     pButtonSon->setVal( bSound );
     pButtonPause->setVal( bPause );
-    pButtonDeplacement->setVal( bMouseDeplace );
+    pButtonDeplac->setVal( bMouseDeplace );
 
     /*
     if (err_old != panelCourbe->get_err() )

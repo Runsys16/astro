@@ -45,7 +45,7 @@ protected:
 
 public:
     PanelCamera();
-    
+
     virtual void		idle(float);
     virtual void		update_stars();
             void		displaySuivi();

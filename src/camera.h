@@ -61,6 +61,7 @@ virtual    ~Camera();
 //    void                        update();
 
     virtual void                start_thread();
+    		void                stop_thread()								{ bExitThread = true; }
     virtual void                CreatePreview();
     virtual void                resizePreview(int, int);
     virtual void                fullSizePreview(int, int);

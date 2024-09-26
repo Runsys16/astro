@@ -6,7 +6,10 @@
 PanelSpinEditText::PanelSpinEditText()
 {
     PanelEditText();
+    this->setExtraString("SpinEditText");
+
     pCadran = new PanelSimple();
+    pCadran->setExtraString("PanelSpinEditText:Cadran");
     pCadran->setBackground((char*)"images/cadran.tga");
     pCadran->setPosAndSize( -100+20, -100+8, 200, 200 );
 
@@ -31,7 +34,77 @@ PanelSpinEditText::PanelSpinEditText()
     pVal = NULL;
     cb_motion = NULL;
     hideCursor();
+    /*
+    pClick = new Panel();
+    pClick->setPosAndSize(10,10,10,10);
+    pClick->setPanelClickLeft(this);
+    */
     //setVisible( false );
+    //setExtraString( "PanelSpinEditText" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::set_pVal( float*  p )
+{
+	pVal	= p;
+	val		= *pVal;
+	
+    char s[50];
+    
+    switch( nDecimal )
+    {
+        case 0:
+            sprintf( s, "%0.0f", val );
+            break;
+        case 1 :
+            sprintf( s, "%0.1f", val );
+            break;
+        case 2:
+            sprintf( s, "%0.2f", val );
+            break;
+        case 6:
+            sprintf( s, "%0.6f", val );
+            break;
+        default:
+            sprintf( s, "%0.0f", val );
+            break;
+    }
+    //logf( (char*)"val=%0.2f max=%0.2f", val, max );
+    changeText( (char*)s );
+    pEditCopy->changeText( (char*)s );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::set_val( float  p )
+{
+	if ( pVal )		*pVal	= p;
+	val		= p;
+	
+    char s[50];
+    
+    switch( nDecimal )
+    {
+        case 0:
+            sprintf( s, "%0.0f", val );
+            break;
+        case 1 :
+            sprintf( s, "%0.1f", val );
+            break;
+        case 2:
+            sprintf( s, "%0.2f", val );
+            break;
+        case 6:
+            sprintf( s, "%0.6f", val );
+            break;
+        default:
+            sprintf( s, "%0.0f", val );
+            break;
+    }
+    //logf( (char*)"val=%0.2f max=%0.2f", val, max );
+    changeText( (char*)s );
+    pEditCopy->changeText( (char*)s );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -58,39 +131,6 @@ void PanelSpinEditText::boule_pos( int xm, int ym )
     vBoule.y *= -1;
     pBoule->setPos( vBoule.x, vBoule.y );
 
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelSpinEditText::compute_pos( int xm, int ym )
-{
-    vec2 ptm = vec2( xm, ym );
-    vec2 v = ptm - vCentre;
-    v.y *= -1.0;
-    float norme = v.length();
-    
-    angle = RAD2DEG( acos( v.y / norme ) );
-    if ( v.x <0.0 )         angle = 360.0 - angle;
-    
-    
-    boule_pos(xm, ym);
-
-    //--------------------------------------
-    if ( t_val.size() == 0 )
-    {
-        float new_val = (max - min) / 360.0 * angle + min;
-        val = new_val - fmod( new_val, step );
-    }
-    //--------------------------------------
-    else
-    {
-        float new_val = nb / 360.0 * angle;
-        int i = new_val;
-        val = t_val[i];
-    }    
-    //--------------------------------------
-    //logf( (char*)"PanelSpinEditText::compute_pos()  val = %0.2f", val ); 
-    if ( pVal!= NULL )          *pVal = val;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -123,23 +163,20 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
     if ( r.z < 0.0 )    angle = -angle;
     
     //logf( (char*)"compute_pos_relatif()  (%0.2f, %0.2f, %0.2f)", r.x, r.y, r.z ); 
-    //logf( (char*)"compute_pos_relatif()  angle=%0.2f", angle ); 
+    logf( (char*)"compute_pos_relatif()  angle=%0.2f", angle ); 
 
     vRef = v;
 
     //--------------------------------------
     if ( t_val.size() == 0 )
     {
-        val_angle += (max - min) / (nb*360.0) * angle;
-        //logf( (char*)"compute_pos_relatif()  val_angle=%0.2f", val_angle ); 
-
-        if ( val_angle >= max )      val_angle = max;
-        if ( val_angle <= min )      val_angle = min;
-
-        val = val_angle - fmod( val_angle, step );     
-
-        if ( val >= max )      val = max;
-
+        val_angle = (step) / (nb*360.0) * angle;
+        //val_angle = step * fmod( val_angle, step );     
+        logf( (char*)"compute_pos_relatif()  angle=%0.2f val_angle=%0.8f", angle, val_angle ); 
+        logf( (char*)"                       min=%0.8f max=%0.8f", min, max ); 
+        
+        val += val_angle;
+        clampVal();
     }    
     //--------------------------------------
     else
@@ -284,6 +321,9 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
         case 2:
             sprintf( s, "%0.2f", val );
             break;
+        case 6:
+            sprintf( s, "%0.6f", val );
+            break;
         default:
             sprintf( s, "%0.0f", val );
             break;
@@ -342,6 +382,9 @@ void PanelSpinEditText::updatePos()
     int dy2 = pCadran->getDY() / 2;
 
     vCentre = vec2( (float)(pCadran->getX() + dx2), (float)(pCadran->getY() + dy2) );
+    //pClick->setPosAndSize( 0, 0, 40, 15 );
+    
+    Panel::updatePos();
     //vCentre = vec2( (float)(x_raw)+20, (float)(y_raw)+8 );
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -40,6 +40,7 @@ Pleiade::Pleiade()
 
     //bFreePtr = true;
     bStartThread = false;
+    bExitThread = true;
     start_thread();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -72,13 +73,18 @@ void Pleiade::start_thread()
 void Pleiade::charge_background()
 {
     //while( bPause && bOneFrame);
+#ifdef DEBUG
     logf((char*)"[thread Pleiade::charge_background()] lit une frame");
-    
+#endif
+    bExitThread = false;
+
     while( true )
     {
         if ( ( !bPause || bOneFrame ) && bCharging == false ) 
         {    
-            //logf((char*)"[thread Pleiade::charge_background()] lit une frame");
+#ifdef DEBUG
+            logf((char*)"[thread Pleiade::charge_background()] lit une frame");
+#endif
             unsigned int w, h, d;
             readBgr.ptr = WindowsManager::OpenImage( (const std::string)sPleiade, w, h, d );
             readBgr.w = w;
@@ -91,9 +97,12 @@ void Pleiade::charge_background()
             //logf((char*)"[thread Pleiade::charge_background()] ptr = %lX", readBgr.ptr);
         }
         
+        if ( bExitThread.load() )	break;
     }
 
+#ifdef DEBUG
     logf( (char*)"[WARNING] [thread Pleiade::charge_background()] Fin du thread Pleiade::charge_background" );
+#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -140,7 +149,7 @@ void Pleiade::change_background(void)
         char num[55];
         
         sprintf( num, "%03d", count_png );
-        string titre = "suivi-20190103-" + string(num) + ".png";
+        string titre = "Pleiages : suivi-20190103-" + string(num) + ".png";
         panelPreview->setExtraString( string(titre) );
         
         pCamFilename->changeText( (char*)titre.c_str() );

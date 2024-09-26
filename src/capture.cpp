@@ -46,15 +46,16 @@ Capture::Capture()
     }
     basename = res[nb-1];
     
-    create_preview();
-
     bIcone = false;
     bFullScreen = false;
 
     setExtraString( "Capture ..." );
+	bAffInfoFits = false;
+
+    create_preview();
 
     log_tab(false);
-    logf((char*)"Constructeur Capture() -----------" );
+    logf((char*)"Constructeur Capture() ----END----" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -72,12 +73,14 @@ Capture::Capture(string dirname, string name)
     bFullScreen = false;
 
     logf( (char*)"image : %s", filename.c_str() );
+
+    setExtraString( "Capture :"+basename );
+	bAffInfoFits = false;
+
     create_preview();
 
-    setExtraString( "Capture ..." );
-
     log_tab(false);
-    logf((char*)"Constructeur Capture(%s, %s) -----------", (char*)dirname.c_str(), (char*)name.c_str() );
+    logf((char*)"Constructeur Capture(%s, %s) -----END------", (char*)dirname.c_str(), (char*)name.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -103,12 +106,16 @@ Capture::Capture(string f )
     basename = res[nb-1];
 
     logf( (char*)"basename : %s", basename.c_str() );
-    create_preview();
+    setExtraString( "Capture :"+basename );
+
 
     setExtraString( "Capture ..." );
+	bAffInfoFits = false;
+
+    create_preview();
 
     log_tab(false);
-    logf((char*)"Constructeur Capture(%s) -----------", (char*)f.c_str() );
+    logf((char*)"Constructeur Capture(%s) -----END------", (char*)f.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -143,10 +150,11 @@ Capture::~Capture()
 	
 	filenames.clear();
     logf((char*)"Destructeur Capture::~Capture() reste %d fenetre", getNbPanel() );
+    
 	WindowsManager::getInstance().sup( this );
 	
     log_tab(false);
-    logf((char*)"Destructeur Capture::~Capture() -----------" );
+    logf((char*)"Destructeur Capture::~Capture() -----END------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -204,17 +212,27 @@ void Capture::update()
 void Capture::updatePos()
 {
     Panel::updatePos();
-
+    updatePosIcones();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::updatePosIcones()
+{
     int dx = getDX();
     int DX = panelPreview->getPosX();
     int DY = panelPreview->getPosY();
 
-    pFermer->updatePos();
 
     pFermer->setPos(    dx - 20*3 -DX, 2 -DY);
     pMaximiser->setPos( dx - 20*2 -DX, 2 -DY);
     pIconiser->setPos(  dx - 20*1 -DX, 2 -DY);
 
+	pFermer->updatePos();
+	pIconiser->updatePos();
+	pMaximiser->updatePos();
+    //logf( (char*)"Captures::update() ..." );
+    return;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -259,6 +277,11 @@ void Capture::releaseLeft(int xm, int ym)
        logf( (char*)"Capture::releaseLeft() Iconiser" );
        Captures::getInstance().rotate_capture_plus(true);
     }
+
+    if ( bFits )	{
+		if ( !bIcone && bAffInfoFits )			fits->afficheInfoFits(true);
+		else									fits->afficheInfoFits(false);
+	}
 
     log_tab(false);
     logf( (char*)"Capture::releaseLeft(...)" );
@@ -319,7 +342,10 @@ void Capture::create_preview()	{
     		)
     {
         logf((char*)"Fichier fits %s", (char*)filename.c_str() );
-        fits = new Fits(filename);
+        fits = new Fits(filename, panelPreview );
+        fits->chargeFits();
+        fits->getPanelFits()->setParent(panelPreview);
+        fits->getPanelCorrectionFits()->setParent();
         fits->getRB(&readBgr);
         bFits = true;
     }
@@ -364,9 +390,11 @@ void Capture::create_preview()	{
 
 	//pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
 	pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
+	pTitre->setExtraString( "PanelText Titre" );
 	add( pTitre );
 	
 	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, getWidth()-50, 10 );
+	pNbStars->setExtraString( "PanelText NbStar" );
 	panelPreview->add( pNbStars );
 	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
@@ -378,7 +406,7 @@ void Capture::create_preview()	{
 
 
     log_tab(false);
-    logf((char*)"Capture::CreatePreview -------------" );
+    logf((char*)"Capture::CreatePreview ------END-------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -484,7 +512,21 @@ void Capture::fullscreen()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::onTop()
 {
-    WindowsManager::getInstance().onTop( this );
+    WindowsManager& wm	= WindowsManager::getInstance();
+    VarManager& 	var	= VarManager::getInstance();
+
+    wm.onTop( this );
+    if ( isFits() )	{
+		wm.onTop( fits->getPanelFits() );
+		wm.onTop( fits->getPanelCorrectionFits() );
+
+		if ( var.getb("bAffFitsCorrection") )	{
+			fits->getPanelCorrectionFits()->setVisible(true);
+		}
+		else {
+			fits->getPanelCorrectionFits()->setVisible(false);
+		}
+	}	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -524,11 +566,56 @@ void Capture::setColor(long c)
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::afficheFits()
 {
-    if (fits)
+	return;
+    if (bFits)
     {
         fits->afficheDic();
         fits->afficheDatas();
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::afficheInfoFits()
+{
+    if (bFits)
+    {
+    	bAffInfoFits = !bAffInfoFits;
+        if ( !bIcone && bAffInfoFits )			fits->afficheInfoFits(true);
+        else									fits->afficheInfoFits(false);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::afficheInfoFits(bool b)
+{
+	logf( (char*)"Capture::afficheInfoFits(%s)", BOOL2STR(b) );
+    if (bFits && !bIcone )
+    {
+        fits->afficheInfoFits( b );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::setIcone(bool b)
+{
+	bIcone = b;
+	panelPreview->setIcone(b);
+	
+	if ( bFits )	{
+		if ( bAffInfoFits )		{
+			fits->getPanelFits()->setVisible(true);
+			fits->getPanelCorrectionFits()->setVisible(true);
+			WindowsManager::getInstance().onTop(  fits->getPanelFits() );
+			WindowsManager::getInstance().onTop(  fits->getPanelCorrectionFits() );
+		}
+		else	{
+			fits->getPanelFits()->setVisible(false);
+			fits->getPanelCorrectionFits()->setVisible(false);
+		}
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

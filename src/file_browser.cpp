@@ -71,7 +71,7 @@ FileBrowser::FileBrowser()
     panelFilename->changeText( "" );
     pW->setDisplayGL(displayGLnuit_cb);
     //WindowsManager::getInstance().call_back_keyboard( panelFilename );
-    pW->setExtraString( "panleFileBrowser" );
+    pW->setExtraString( "panelFileBrowser" );
 
     
     dx = 700;

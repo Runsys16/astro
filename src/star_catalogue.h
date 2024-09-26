@@ -32,6 +32,8 @@ inline  double          getXScreen()            {return fXScreen;}
 inline  double          getYScreen()            {return fYScreen;}
 inline  double          getRA()                 {return fRA;}
 inline  double          getDE()                 {return fDE;}
+inline  double          getMag()                {return fMag;}
+inline  string&         getName()               {return name;}
 inline  PanelText*      getInfo()               {return pInfo;}
 };
 

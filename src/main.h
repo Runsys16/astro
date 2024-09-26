@@ -28,6 +28,11 @@
 
 #define BOOL2STR(b) b?(char*)"true":(char*)"false"
 
+#define COLOR_A(CCC)	((CCC&0xff000000)>>24)
+#define COLOR_R(CCC)	((CCC&0x00ff0000)>>16)
+#define COLOR_G(CCC)	((CCC&0x0000ff00)>>8)
+#define COLOR_B(CCC)	((CCC&0x000000ff))
+
 class Catalog;
 
 
@@ -145,6 +150,11 @@ typedef struct readBackground       rb_t;
     extern bool                     bAffCatalog;
     extern Catalog                  vizier;
     
+	extern float					hms2rad( struct hms& );
+	extern float					dms2rad( struct dms& );
+
+	extern void                		rad2hms( struct hms&, float );
+	extern void                		rad2dms( struct dms&, float );
 
 #endif
 
@@ -188,6 +198,9 @@ public :
 //
 //--------------------------------------------------------------------------------------------------------------------
 void                vizier_load_stars( string, double, double );
+void                vizier_load_stars( string );
+void                vizier_load_stars( Catalog*, string, double, double );
+void                vizier_load_stars( Catalog*, string );
 
 void 				get_info_arduino();
 string              get_basename(string);

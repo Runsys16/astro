@@ -9,6 +9,18 @@ Catalog::Catalog()
 
     sName = "";
     charge();
+    bSauve = true;
+    //Camera_mgr::getInstance().setRefCatalog( 56.0, 24.0 );
+    //logf( (char*)"Ajout de la reference %0.2f", 6 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+Catalog::Catalog(bool b)
+{
+    sFilename = "/home/rene/.astropilot/vizier.cat";
+    sName = "";
+    bSauve = b;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -40,7 +52,7 @@ Catalog::~Catalog()
 void Catalog::add( StarCatalog* p)
 {
     stars.push_back(p);
-    sauve();
+    if ( bSauve )			sauve();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -71,8 +83,8 @@ void Catalog::efface()
 //--------------------------------------------------------------------------------------------------------------------
 void Catalog::sauve()
 {
-    if ( sFilename == "" )
-        return;
+	if ( !bSauve )					return;
+    if ( sFilename == "" )        	return;
     
     std::ofstream fichier;
     fichier.open(sFilename);
@@ -119,17 +131,18 @@ void Catalog::charge()
         fichier >> output;
         if (fichier.eof())      break;
         string val = string(output);
-        double fRA = stof(val);
+        log( (char*)val.c_str() );
+        double fRA = stof(val.c_str());
 
         fichier >> output;
         fichier >> output;
         val = string(output);
-        double fDE = stof(val);
+        double fDE = stof(val.c_str());
 
         fichier >> output;
         fichier >> output;
         val = string(output);
-        double fMag = stof(val);
+        double fMag = stof(val.c_str());
 
         fichier >> output;
         fichier >> output;
@@ -137,10 +150,10 @@ void Catalog::charge()
         
         StarCatalog* p = new StarCatalog(fRA, fDE, fMag, name);
         
-        logf( (char*)"Catalog::charge()  Etoile RA=%0.4f %DE=0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );
+        logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );
         stars.push_back(p);
 
-        if ( name == "66714384141781760" )
+        if ( name.find("65221487868870784") == 0 )
         {   
             Camera_mgr::getInstance().setRefCatalog( fRA, fDE );
             logf( (char*)"Ajout de la reference %0.2f",fMag );
@@ -153,6 +166,24 @@ void Catalog::charge()
     }
 
     fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Catalog::list()
+{
+    //return;
+    logf( (char*)"Catalog::charge() Lecture du ficher '%s'", (char*)sFilename.c_str() );
+
+	for( int i; i<stars.size(); i++ )
+	{
+	
+        logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", 	stars[i]->getRA(),
+        																			stars[i]->getDE(),
+        																			stars[i]->getMag(),
+        																			stars[i]->getName().c_str()
+        																			); 
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -48,15 +48,24 @@ public:
     
     void                        setColor(long);
     vector<Capture*>&           get_captures()          { return captures; }
-
+	Capture*					getCurrentCapture()		{ return current_capture==-1 ? NULL : captures[current_capture]; }
+    
+    void						afficheInfoFits();
+	void						onTop();
+inline bool						isCurrent(Capture*p)	{ return p == captures[current_capture]; }
 private:
     vector<Capture*>            captures;
     int                         current_capture;
+    string                      sCurrentDir;
+
     bool                        bIcones;
     bool                        bShowIcones;
     bool                        bFullPreview;
     bool                        bShowPreview;
-    string                      sCurrentDir;
+    bool						bAfficheInfoSouris;
+    bool						bAfficheInfoFits;
+    bool						bAfficheGrille;
+    int							mode = 0;
 
 SINGLETON_END()
 

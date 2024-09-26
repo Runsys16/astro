@@ -810,8 +810,13 @@ void Star::updatePos(int X, int Y, float ew, float eh)
 
     ech_x = ew;
     ech_y = eh;
-    x_screen = ech_x*(pos.x+0.5) + (float)X;
-    y_screen = ech_y*(pos.y+0.5) + (float)Y;
+    //-------------------------------------
+    // pos deja decale de 0.5 (getFWHM())
+    //-------------------------------------
+    //x_screen = ech_x*(pos.x+0.5) + (float)X;
+    //y_screen = ech_y*(pos.y+0.5) + (float)Y;
+    x_screen = ech_x*(pos.x) + (float)X;
+    y_screen = ech_y*(pos.y) + (float)Y;
     
     pInfo->setPos( (x+8)*ech_x, (y+8)*ech_y );
     pInfo->updatePos();

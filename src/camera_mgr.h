@@ -81,6 +81,7 @@ public:
     void                        add_catalogue(StarCatalog*);
     void                        setRefCatalog(double, double);
    
+	void						stopAllCameras();
 private:
     vector<Camera*>             pCameras;
     Camera*                     pCurrent;

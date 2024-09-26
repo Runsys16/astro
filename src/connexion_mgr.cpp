@@ -6,6 +6,7 @@
 Connexion_mgr::Connexion_mgr()
 {
     bStart = false;
+    bExitThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -197,7 +198,9 @@ void Connexion_mgr::pooling()
             //logf( (char*)"  Found device ARDUINO '%s'", dev );
             t_port_polling.push_back( string((char*)dev));
             
+
         }
+        if ( bExitThread.load() )		break;
     }
 
     closedir(rep);    
@@ -218,10 +221,16 @@ void Connexion_mgr::pooling()
 //--------------------------------------------------------------------------------------------------------------------
 void Connexion_mgr::threadPooling()
 {
+    logf( (char*)"[WARNING] Demarrage du thread Connexion_mgr::threadPooling()" );
+    bExitThread = false;
+
     while( 1 )
     {   
         pooling();
+        if ( bExitThread.load() )		break;
     }
+    bStart = false;
+    logf( (char*)"[WARNING] Fin du thread Connexion_mgr::threadPooling()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

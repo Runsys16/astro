@@ -10,6 +10,7 @@ PanelConsoleSerial::PanelConsoleSerial()
     pw = new PanelWindow();
     pc = new PanelConsole( 100, 5);
     cb = new Console();
+    pw->setExtraString("PanelConsoleSerial");
     
     pw->setVisible(true);
     pw->add(pc);
@@ -161,16 +162,6 @@ void PanelConsoleSerial::writeln(char* str)
         fa = ad_change;// / M_PI * 2147483648;
         fd = dc_change;//) / M_PI * 2147483648;
 
-/*
-        if self.ad <0.0:      
-            self.ad = 180.0 + self.ad
-            self.dc = 180.0 - self.dc
-
-        if self.dc >180.0:      
-            self.dc = -self.dc  + 180.0
-            if self.ad < 180.0:
-                self.ad = -180.0 + self.ad
-*/        
         if ( fa <0.0 )
         {      
             fa = 180.0 + fa;
@@ -206,7 +197,8 @@ void PanelConsoleSerial::writeln(char* str)
         if ( ad_change!=0.0 && dc_change!=0.0 )
         {
             Serveur_mgr::getInstance().write_stellarium( (char*)buff );
-            //logf( (char*)"Em Stellarium Ad=%0.2f Dc%0.2f", ad_change, dc_change );
+            logf( (char*)"Em Stellarium Ad=%0.8f Dc=%0.8f", ad_change, dc_change );
+			//logf( (char*)"    -> %s",  (char*)buff );
         }
         return;
     }

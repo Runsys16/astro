@@ -44,11 +44,12 @@ PanelZoom::PanelZoom()
     //setBackground( (_Texture2D*)NULL );
     
     this->setScissor(true);
-    wm.add(this);
+    //wm.add(this);
     setPosAndSize( 10, 10, 200, 200 );
     bFreePos = false;
     
     wm.add(this);
+    setExtraString( "PanelZoom" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

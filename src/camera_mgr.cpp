@@ -84,7 +84,7 @@ void Camera_mgr::add( Camera* p )
     active();
     onBottom();
     
-    vizier.charge();
+    //vizier.charge();
     log_tab(false);
     logf((char*)"Camera_mgr::add() -------------" );
 }
@@ -560,6 +560,17 @@ void  Camera_mgr::setRefCatalog(double _0, double _1)
 {   
     if (pCurrent == NULL)                   { logf((char*)"pCurrent NULL"); return; }
     pCurrent->setRefCatalog(_0, _1);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::stopAllCameras()
+{   
+    int nb = pCameras.size();
+    for (int i=0; i<nb; i++)
+    {
+        if ( pCameras[i] )				pCameras[i]->stop_thread();
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

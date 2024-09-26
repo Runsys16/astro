@@ -59,10 +59,14 @@ vector<string> t_sHelp1 =
 	"---- MODE NORMAL ----",
 	"ctrl+TAB\t: camera suivante" ,
 	"TAB\t: Change l'affichage des fichiers" ,
+	"     b\t: Affiche les informations des fichiers fits",
+	"     B\t: Arduino bavard",
 	"     f\t: Ouvrir un fichier image",
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
+	"     j\t: Lance Stellarium",	
+	"     J\t: Affichage info fits",
 	"     k\t: Active/desactive le son",
 	"     K\t: Lance un carree de recherche",
 	"     l\t: List les ports /dev + les controles ",
@@ -78,9 +82,6 @@ vector<string> t_sHelp1 =
 //	"     r\t: Test alert BOX",
 	"     W\t: Surveille un repertoire",
 	"     -\t: Toutes les images sont affichees en icones",
-	"     b\t: Panel Courbe mode DEBUG",
-	"     B\t: Arduino bavard",
-	"     j\t: Lance Stellarium",	
 	"",
 	"---- TRANSFORM MATRIX ----",
 	"   a/A\t: Vecteur en ascension droite",
@@ -115,8 +116,8 @@ vector<string> t_sHelp2 =
 	"    CR\t: Plein Ecran", 
 	"",
 	"---- SUIVI ----",
-	"     s\t: Recherche toutes les etoiles",
 	"ctrl+D\t: Efface toutes les etoiles",
+	"     s\t: Recherche toutes les etoiles",
 	"     S\t: Lance/Stop le suivi",
 	"   t/T\t: change le temps de correction",
     "     U\t: Affichage du centre de la camera on/off",
@@ -360,7 +361,7 @@ double ZrefX = -1.0;
 double ZrefY = -1.0;
 double Wref  = -1.0;
 bool   bAffCatalog = true;
-Catalog vizier;
+Catalog vizier = Catalog();
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -502,7 +503,7 @@ void commande_stellarium()
 void commande_asi_studio()
 {
     //VarManager&         var = VarManager::getInstance();
-    string command = "/home/rene/Documents/astronomie/logiciel/asi-studio/ASIStudio &";
+    string command = "/home/rene/Documents/astronomie/logiciel/asi-studio/ASIStudio 2>&1 >/dev/null &";
     logf( (char*) command.c_str() );
     int ret = system( (char*) command.c_str() );
 
@@ -551,7 +552,7 @@ void commande_asi_studio()
     Lum (solLum)    (F9.3)  ? Esimate of luminosity from Apsis-FLAME (lum_val) [ucd=phys.luminosity]
 */
 //--------------------------------------------------------------------------------------------------------------------
-void vizier_parse_line( string & line )
+void vizier_parse_line( Catalog* pVizier, string & line )
 {
     if ( line.size() < 294 )        return;
     /*
@@ -560,42 +561,54 @@ void vizier_parse_line( string & line )
     logf( (char*)"%s", (char*)line.c_str() );
     //logf( (char*)"%s", (char*)line.substr(133+14,7).c_str() );
     */
+    /*
     double fRA = stod( line.substr(0,15), 0 );
     double fDE = stod( line.substr(22+2,15), 0 );
     string name = line.substr(44+4, 19);
     double fMag = stod( line.substr(133+14,7), 0 );
+    */
+    double fRA = stod( line.substr(0,15), 0 );
+    double fDE = stod( line.substr(16,15), 0 );
+    string name = line.substr(34, 17);
+    double fMag = stod( line.substr(167,15 ), 0 );
  
     StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
-    Camera_mgr::getInstance().add_catalogue( p );
+    pVizier->add(p);
     
     logf( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
 
+	/*
     if ( name == "  66714384141781760" )
     {   
         Camera_mgr::getInstance().setRefCatalog( fRA, fDE );
         logf( (char*)"Ajout de la reference %0.2f",fMag );
     }
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void vizier_thread( string s )
+void vizier_thread( Catalog* pVizier, string s )
 {
+    logf( (char*)"main::vizier_thread()" );
     string find;
     
     if ( s == "" )
     {
         //string find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" ngc4535";
-        find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" m45";
+        //find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" m45";
+        find = "find_gaia_dr3.py -r 10200 -m 2000 --Gmag=\"<8\" m45";
     }
     else
     {
-        find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<7\" -r 4000 " + s;
+        //find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<7\" -r 4000 " + s;
+        find = "find_gaia_dr3.py -m 2000 --Gmag=\"<16\" " + s;
     }
     
     logf( (char*)"Lance la requete : %s", find.c_str() );
 
-    string rep = "/home/rene/Documents/astronomie/logiciel/python/cds-client/python-cdsclient/";
+    string rep = "/home/rene/Documents/astronomie/logiciel/python/cds.cdsclient/cdsclient/";
+    //string rep = "/home/rene/Documents/astronomie/logiciel/python/cds-client/python-cdsclient/";
 
     char buf1[BUFSIZ]; //BUFSIZ est une constante connue du système
     FILE *ptr;
@@ -625,7 +638,7 @@ void vizier_thread( string s )
            
             if ( !bRead && bEntete  )
             {
-                vizier_parse_line( s );
+                vizier_parse_line( pVizier, s );
             } 
             //logf ( (char*)"%s", s.c_str() );
         }
@@ -636,16 +649,51 @@ void vizier_thread( string s )
         fprintf(stderr, "Echec de popen\n");
         exit(1);
     }
+    logf( (char*)"main::vizier_thread()  FIN" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void vizier_load_stars( Catalog* pVizier, string s, double ra, double de )
+{
+    pVizier->efface();
+
+    thread( &vizier_thread, pVizier, s ).detach();
+    Camera_mgr::getInstance().setRefCatalog( ra, de );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void vizier_load_stars( Catalog* pVizier, string s )
+{
+    pVizier->efface();
+
+    thread( &vizier_thread, pVizier, s ).detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_load_stars( string s, double ra, double de )
 {
-    vizier.efface();
+	vizier_load_stars( &vizier, s, ra, de );
+/*
+*    vizier.efface();
 
     thread( &vizier_thread, s ).detach();
     Camera_mgr::getInstance().setRefCatalog( ra, de );
+   */
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void vizier_load_stars( string s )
+{
+	vizier_load_stars( &vizier, s );
+/*
+    vizier.efface();
+
+    thread( &vizier_thread, s ).detach();
+*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1739,24 +1787,21 @@ static void idleGL(void)
 //--------------------------------------------------------------------------------------------------------------------
 static void delete_all_panels(Panel* p)
 {
-    //WindowsManager& 		wm 		= WindowsManager::getInstance();
 	std::vector<Panel*>& 	childs 	= p->getChilds();
 	int						nbPanel	= p->getNbPanel();
 	int						ID		= p->getID();
 
+    //logf( (char*)"Panel ID %d-%s, %d enfants", ID, p->getExtraString().c_str(), nbPanel );
+    if( nbPanel <= 0)		return;
+    
 	log_tab(true);
-    logf( (char*)"Panel ID %d, %d enfants", ID, nbPanel );
     for( int i=nbPanel-1; i>=0; i-- )
     {
 		Panel * child = childs[i];
 		delete_all_panels( child );
-		
-	    logf( (char*)"Efface ... childs[%d]", i );
-	    p->sup( child );
 		childs.erase( childs.begin()+i );
-		//delete( child );
     }
-	//if ( ID != -1 )			delete p;
+
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1765,23 +1810,30 @@ static void delete_all_panels(Panel* p)
 static void quit(void)
 {
     //cout <<"exit_handler()"<< endl;
+	bStdOut = false;
     logf( (char*)"exit_handler()" );
+
     Serveur_mgr::getInstance().close_all();
+	Camera_mgr::getInstance().stopAllCameras();
+	Connexion_mgr::getInstance().stopThread();
 
     WindowsManager& 		wm 		= WindowsManager::getInstance();
     int 					nbPanel	= wm.getNbPanel();
 	std::vector<Panel*>& 	childs 	= wm.getChilds();
 	
-    //cout <<"Nb Fenetre"<< nbPanel <<endl;
+    logf( (char*)"Fermeture de toute les fenetres" );
+	log_tab(true);
     logf( (char*)"Nb Fenetre %d", nbPanel );
     for( int i=nbPanel-1; i>=0; i-- )
     {
     	Panel *	p = childs[i];
+	    logf( (char*)"Panel ID %d-%s, %d enfants", p->getID(), p->getExtraString().c_str(), p->getNbPanel() );
 		delete_all_panels( p );
 		childs.erase( childs.begin()+i );
-		logf( (char*)"Delete ... %d", p->getID() );
-		//delete( p );
     }
+	log_tab(false);
+	
+	glutLeaveMainLoop();
 	exit(0);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1857,6 +1909,9 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	        logf( (char*)"bAffCataog : %s", BOOL2STR(bAffCatalog) );
 
             var.set( "bAffCatalog", bAffCatalog );
+            
+            logf( (char*)"Nb Etoiles %d", vizier.size() );
+            //vizier.list();
             /*
             var.set( "Xref",  (float)Xref );
             var.set( "Yref",  (float)Yref );
@@ -1997,6 +2052,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	
     bFileBrowser = FileBrowser::getInstance().getVisible();
     Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+    
     
         
     
@@ -2247,9 +2303,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'b':
         {
-            PanelCourbe::bDebug = !PanelCourbe::bDebug;
-        //logf( (char*)"Key (b) : Bluetooth start" );
-        //BluetoothManager::getInstance().start();
+            //PanelCourbe::bDebug = !PanelCourbe::bDebug;
+		    //logf( (char*)"Key (b) : Bluetooth start" );
+		    //BluetoothManager::getInstance().start();
+		    Captures::getInstance().afficheInfoFits();
         }
         break;
     
@@ -2488,12 +2545,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		break;
 	case 'J':
 		{
-			/*
-    		fLimitCorrection /= 0.9f;
-            logf( (char*)"Key (J) : Augmente la limite de correction : %0.2f", fLimitCorrection );
-            var.set("fLimitCorrection", (float)fLimitCorrection);
-            */
-            thread( &commande_asi_studio).detach();
+			var.set("bAffFitsCorrection", !var.getb("bAffFitsCorrection") );
+			Capture* p = Captures::getInstance().getCurrentCapture();
+			if ( p && !p->getIcone() )	{
+				p->onTop();
+			}
+            //thread( &commande_asi_studio).detach();
         }
 		break;
 
@@ -3298,6 +3355,7 @@ void setColor()
 void onTop()	
 {
     WindowsManager& wm = WindowsManager::getInstance();
+    Captures::getInstance().onTop();
     wm.onTop(panelStdOut);
     wm.onTop(panelStatus);
 }
@@ -3367,6 +3425,8 @@ static void CreateResultat()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 
     panelResultat = new PanelWindow();
+    panelResultat->setExtraString("panelResultat");
+    
     panelResultat->setDisplayGL(displayGLnuit_cb);
     int dx = 700;
     int dy = 30;
@@ -3429,7 +3489,8 @@ static void CreateHelp()
     int DY = 700;
     
     panelHelp = new PanelWindow();
-    panelHelp->setDisplayGL(displayGLnuit_cb);
+	panelHelp->setExtraString( (char*)"PanelHelp");
+    panelHelp ->setDisplayGL(displayGLnuit_cb);
 	panelHelp->setPosAndSize( X, Y, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
 	//panelHelp->setBackground( (char*)"/home/rene/programmes/opengl/video/images/background.tga");
@@ -3489,6 +3550,7 @@ static void CreateStatus()	{
 	char s[255];
 
 	panelStatus = new PanelSimple();
+	panelStatus->setExtraString( (char*)"PanelStatus");
 	panelStatus->setPosAndSize( x, y, dx, dy );
 
 	//pStatus = new PanelText( (char*)"",		PanelText::NORMAL_FONT, 10, 2 );
@@ -4049,6 +4111,7 @@ void charge_var()
     if ( var.existe("Wref"))                Wref            = var.getf("Wref");
     if ( var.existe("bAffCatalog"))         bAffCatalog     = var.getb("bAffCatalog");
    	if ( !var.existe("bVerboseArduino") )   var.set("bVerboseArduino", false);
+    if ( !var.existe("bAffFitsCorrection")) var.set("bAffFitsCorrection", true );
    
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4174,9 +4237,12 @@ int main(int argc, char **argv)
     setColor();
     
     compute_matrix();
-    //bStdOut = true;
     bCorrection = false;
+    
+	vizier.charge();
+	// -----------------------------------         EN ROUTE    
     glutMainLoop();
+	// -----------------------------------         BYE BYE
 
 
 	return 0;

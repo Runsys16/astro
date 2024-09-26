@@ -17,16 +17,20 @@ PanelCamera::PanelCamera()
 {
     VarManager& var = VarManager::getInstance();
 
-    echelle         = 1.0;
-    dx              = 0.0;
-    dy              = 0.0;
-    pReadBgr        = NULL;
-    fTime           = 0.5;
-    fTime1          = 0.0;
-    bTime1          = false;
-    fSens           = 1.0;
-    fTimeClign      = 0.8;
-    
+    echelle         	= 1.0;
+    dx              	= 0.0;
+    dy              	= 0.0;
+    pReadBgr        	= NULL;
+    fTime           	= 0.5;
+    fTime1          	= 0.0;
+    bTime1         		= false;
+    fSens          		= 1.0;
+    fTimeClign      	= 0.8;
+	fRefCatalogX    	= 0.0;
+	fRefCatalogY    	= 0.0;
+	fRefCatalogDecalX	= 0.0;
+	fRefCatalogDecalY	= 0.0;
+
     setExtraString( "panelCamera" );
     
     if ( var.existe("bAffCatalog") )         bAffCatalog  = var.getb( "bAffCatalog");
@@ -84,6 +88,7 @@ void PanelCamera::idle(float f)
     //                 Vizier
     //----------------------------------------------
     int n = vizier.size();
+    //logf( (char*)" vizier.size() = %d, %s", n, BOOL2STR(bAffCatalog) );;
     if ( bAffCatalog && n!=0 )
     {
         for ( int i=0; i<n; i++ )
@@ -99,10 +104,15 @@ void PanelCamera::idle(float f)
             
             double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
             double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
+
+    	    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalX, ZrefY );;
+    	    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalX, ZrefY );;
+    	    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalY, fRefCatalogDecalY );;
             
             vizier.get(i)->setXScreen(x);
             vizier.get(i)->setYScreen(y);
-            
+    
+        
             PanelText* pInfo = vizier.get(i)->pInfo;
             if ( pInfo->getParent() == NULL )    this->add(pInfo);
 
@@ -121,7 +131,7 @@ void PanelCamera::idle(float f)
         for ( int i=0; i<n; i++ )
         {
             PanelText* pInfo = vizier.get(i)->pInfo;
-            pInfo->setVisible(false);
+            pInfo->setVisible(true);
         }
     }    
     //----------------------------------------------
@@ -629,6 +639,7 @@ void PanelCamera::displayCentre()
 void PanelCamera::displayVizier()
 {
     int n = vizier.size();
+    //logf( (char*)"PanelCamera::displayVizier() %d etoiles", n );;
     if ( n!= 0)
     {
         if ( bNuit )        glColor4f( 1.0,  0.0,  0.0, 1.0 );
@@ -640,6 +651,7 @@ void PanelCamera::displayVizier()
             double x = vizier.get(i)->getXScreen();
             double y = vizier.get(i)->getYScreen();
             
+		    //logf( (char*)" get (%0.8f, %0.8f)", x, y );;
 			//vizier.get(i)->pInfo->setPos(x+10-getX(), y-80);
 
             double r = (12.0 - vizier.get(i)->fMag ) * 1.8;

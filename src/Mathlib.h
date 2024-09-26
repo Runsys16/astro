@@ -96,6 +96,7 @@ public:
 		_f = 1.0f / _f;
 		return (*this) * _f;
 	}
+	//const vec2 operator*(const vec2 &_v) const { return vec2(this->x * _v.x,this->y  _v.y); }
 	const vec2 operator+(const vec2 &_v) const { return vec2(this->x + _v.x,this->y + _v.y); }
 	const vec2 operator-() const { return vec2(-this->x,-this->y); }
 	const vec2 operator-(const vec2 &_v) const { return vec2(this->x - _v.x,this->y - _v.y); }
@@ -106,6 +107,7 @@ public:
 	vec2 &operator-=(const vec2 &_v) { return *this = *this - _v; }
 
 	float operator*(const vec2 &_v) const { return this->x * _v.x + this->y * _v.y; }
+	float operator/(const vec2 &_v) const { return this->x / _v.x + this->y / _v.y; }
 
 	operator float*() { return this->v; }
 	operator const float*() const { return this->v; }
@@ -144,6 +146,13 @@ public:
 	vec2 lerp(vec2 &u, vec2 &v, vec2& factor) { return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x), (u.y * (1 - factor.y)) + (v.y * factor.y))); }
 	float angle(void) { return (float)atan2(this->y,this->x); }
 	float angle(const vec2 &v) { return (float)atan2(v.y-this->y,v.x-this->x); }
+
+   	char sVec[40];
+    char*	to_st()
+    {
+    	snprintf( (char*)sVec, sizeof(sVec), "(%f, %f)", x, t );
+    	return  sVec;
+    }
 
 	union {
 		struct {float x,y;};
@@ -468,6 +477,12 @@ public:
 		mat[2] = x.z; mat[5] = y.z; mat[8] = z.z;
 	}
         */
+    char*	to_st()
+    {
+    	static char sMat[128];
+    	snprintf( (char*)sMat, sizeof(sMat), "(%f, %f, %f, %f)", mat[0], mat[1], mat[2], mat[3] );
+    	return  sMat;
+    }
 	float mat[4];
 };
 
