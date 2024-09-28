@@ -13,6 +13,9 @@ PanelCorrectionFits::~PanelCorrectionFits()
     sup(pCDELT2plus);
     delete pCDELT2plus;
     pCDELT2plus = 0; 
+
+    WindowsManager& wm = WindowsManager::getInstance();
+    wm.sup( this );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -21,10 +24,8 @@ PanelCorrectionFits::PanelCorrectionFits()
 {
 	logf( (char*)"Constructeur PanelCorrectionFits()");
 
-	WindowsManager&     wm  = WindowsManager::getInstance();
     VarManager&         var = VarManager::getInstance();
 
-    wm.add(this);
     setExtraString( "PanelCorrectionFits" );
     setSize( 160, 200 );
     
@@ -35,7 +36,7 @@ PanelCorrectionFits::PanelCorrectionFits()
     int x   =   5;
     int dx  =  90;
     float gris = 0.7;
-    vec4 c  = vec4(gris, gris, gris, 1.0);
+    vcf4 c  = vcf4(gris, gris, gris, 1.0);
 
 	float min=-0.01, max=0.01, step=0.02, ntour=20.0;
 
@@ -71,7 +72,7 @@ PanelCorrectionFits::PanelCorrectionFits()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCorrectionFits::setVisible(bool b)
 {
-    logf( (char*)"PanelCorrectionFits::setVisible(%s)", BOOL2STR(b) );
+    //logf( (char*)"PanelCorrectionFits::setVisible(%s)", BOOL2STR(b) );
 
     PanelWindow::setVisible(b);
     WindowsManager& wm = WindowsManager::getInstance();

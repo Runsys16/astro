@@ -743,7 +743,7 @@ void idleStatus()
 
 	if ( panelCourbe!= NULL && pCercleErr->get_pVal()==NULL )
 	{
-		float* pErr = panelCourbe->get_perr();
+		double* pErr = panelCourbe->get_perr();
 		logf( (char*)"err=%0.2f", *pErr );
 	    pCercleErr->set_pVal( pErr );
 	    pCercleErr->set_val( *pErr );

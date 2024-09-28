@@ -228,13 +228,13 @@ void PanelConsoleSerial::idleGL()
         if ( ad != ad_change )
         {
             ad = ad_change;
-            change_ad( ad );
+            change_ad_status( ad );
         }
 
         if ( dc != dc_change )
         {
             dc = dc_change;
-            change_dc( dc );
+            change_dc_status( dc );
         }
     }
 }

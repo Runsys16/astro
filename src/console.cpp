@@ -15,7 +15,7 @@ string tHelp[] =
 "    w \t: commande 'n' : stop la monture",
 "    P \t: Active/desactive l'affichage de la position (5 fois par seconde)",
 "      \t: ('p' arduino)",
-"    c \t: Efface la cosole",
+"    c \t: Efface la console",
 "    I \t: La monture attend les coordonnees de reference",
 "        via Stellarium Ctrl+1",
 "    B \t: Change la couleur du fond",

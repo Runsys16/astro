@@ -21,13 +21,14 @@ using namespace std;
 class PanelCapture : public PanelSimple
 {
 protected:
-    float               ech_geo;
-    float               ech_user;
-    float               dx;
-    float               dy;
+    double              ech_geo;
+    double              ech_user;
+    double              dx;
+    double              dy;
     bool                bIcone;
     bool                bHaveMove;
     bool                bInfoSouris;
+    bool				bAffGrille;
     
     int                 xm_old;
     int                 ym_old;
@@ -42,7 +43,6 @@ protected:
     PanelText*			pJ2000_1;
     PanelText*			pJ2000_2;
     
-    bool				bAffGrille;
     vector<vec2>		p1;
     vector<vec2>		p2;
     
@@ -67,6 +67,7 @@ public:
     virtual void        releaseLeft( int, int);
 
     virtual void        clickRight( int, int);
+    virtual void        motionRight( int, int);
     virtual void        releaseRight( int, int);
 
     virtual void        clickMiddle( int, int);
@@ -80,9 +81,9 @@ public:
     void                clip(int&, int&);
 
     void                setCent();
-    void                setEchelle(float f);
-    void                setCentX(float f);
-    void                setCentY(float f);
+    void                setEchelle(double f);
+    void                setCentX(double f);
+    void                setCentY(double f);
     
     int                 screen2texX( int );
     int                 screen2texY( int );
@@ -93,20 +94,24 @@ public:
     void                tex2screen( int&, int& );
     
     void                printObjet();
+    void				findGaiaDR3();
+    void				sendStellarium( int, int );
     
+	void             	setInfoSouris(bool);
+	void				iconize();
+	void				restaure(bool bGril, bool bbSour );
+
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
-inline float            getEchelle()                                    { return ech_user; }
-inline float            getCentX()                                      { return dx; }
-inline float            getCentY()                                      { return dy; }
+inline double           getEchelle()                                    { return ech_user; }
+inline double           getCentX()                                      { return dx; }
+inline double           getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
 inline void             setIcone(bool b)                                { bIcone = b; }
 inline bool             getIcone()                                      { return bIcone; }
 inline void             addP1P2(vec2 v, vec2 w)                         { p1.push_back(vec2(v)); p2.push_back(vec2(w)); }
 inline void             setAffGrille(bool b)                           	{ bAffGrille = b; }
 inline bool             getAffGrille()                           		{ return bAffGrille; }
-
 inline bool             getInfoSouris()                                 { return bInfoSouris; }
-	void             	setInfoSouris(bool);
 
 };
 

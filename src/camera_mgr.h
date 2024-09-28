@@ -72,10 +72,10 @@ public:
     void                        setColor(long);
 
     void                        tex2screen(int&,int&);
-    void                        tex2screen(float&,float&);
+    void                        tex2screen(double&,double&);
 
     void                        screen2tex(int&,int&);
-    void                        screen2tex(float&,float&);
+    void                        screen2tex(double&,double&);
     
     void                        start_threads();
     void                        add_catalogue(StarCatalog*);

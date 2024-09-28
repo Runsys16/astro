@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 #include <assert.h>
-#include "Mathlib.h"
+#include "MathlibD.h"
 
 #include "main.h"
 
@@ -32,6 +32,7 @@ public:
 
 	typedef std::map<std::string, sVar> dbMap;
 
+	void set(const std::string& name, double val);
 	void set(const std::string& name, float val);
 	void set(const std::string& name, int val);
 	void set(const std::string& name, bool val);

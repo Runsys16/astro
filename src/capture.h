@@ -19,10 +19,13 @@ class Capture : public PanelWindow
 protected:
     bool                        bNewBackground;
     bool                        bFirst;
-    bool                        bIcone;
+    bool                        bIconized;
     bool                        bFullScreen;
     bool                        bFits;
     bool						bAffInfoFits;
+    bool						bAfficheInfoSouris;
+    bool						bAfficheGrille;
+    bool						bAfficheCorrectionFits;
     
     vector<string>              filenames;
     string                      filename;
@@ -77,6 +80,11 @@ public :
     void                        afficheFits();
     void                        afficheInfoFits();
     void                        afficheInfoFits(bool);
+    void						iconize();
+	void						restaure(bool bInfo, bool bGrille, bool bSouris );
+    
+    
+    
     bool                        getAfficheInfoFits()						{ return bAffInfoFits; }
     
 inline rb_t *                   getRB()                                     { return &readBgr; }
@@ -94,8 +102,9 @@ inline string                   getBasename()                               { re
 inline string                   getDirname()                                { return dirname; }
 inline PanelCapture*            getPreview()                                { return panelPreview; }
 
-	   void                     setIcone(bool b);
-inline bool                     getIcone()                                  { return bIcone; }
+	   void                     setIconized(bool b);
+inline bool                     getIconezed()                               { return bIconized; }
+inline bool                     isIconized()                                { return bIconized; }
 
 inline void                     setFullScreen(bool b)                       { bFullScreen = b; }
 inline bool                     getFullScreen()                             { return bFullScreen; }

@@ -2,7 +2,7 @@
 #define STAR_CATALOG_H  1
 
 #include "main.h"
-#include "Mathlib.h"
+#include "MathlibD.h"
 
 #include <WindowsManager.h>
 #include <thread>

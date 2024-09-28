@@ -62,14 +62,14 @@ void Catalog::efface()
     logf( (char*)"Catalog::efface()" );
     log_tab(true);
 
+	logf( (char*)"Supression de %d etoiles", stars.size() );
+
 
     int n = stars.size();
     if ( n!= 0)
     {
         for ( int i=0; i<n; i++ )
         {
-            logf( (char*)"efface etoile" );
-
             delete stars[i];
         }
     }    

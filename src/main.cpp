@@ -11,7 +11,6 @@
 #include "camera.h"
 #include "camera_mgr.h"
 #include "connexion_mgr.h"
-#include "Mathlib.h"
 #include "timer.h"
 #include "pleiade.h"
 #include "panel_console_serial.h"
@@ -65,13 +64,12 @@ vector<string> t_sHelp1 =
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
-	"     j\t: Lance Stellarium",	
-	"     J\t: Affichage info fits",
+	"     J\t: Lance Stellarium",	
+	"     j\t: Affichage info fits",
 	"     k\t: Active/desactive le son",
 	"     K\t: Lance un carree de recherche",
 	"     l\t: List les ports /dev + les controles ",
 	"     L\t: List les variables",
-	"     n\t: Affiche/cache les images (F7)",
 	"     N\t: Mode nuit on/off",
 	"     o\t: Ouvre/Ferme la fenetre pleiades",
 	"     p\t: Pause de l'affichage de pleiades",
@@ -192,13 +190,13 @@ PanelText*          pFPS;
 
 Pleiade*            pPleiade;
 
-float               ac;
-float               dc;
+double               ac;
+double               dc;
 
 //Device_cam          camera      = Device_cam();
 
 char                background[]="frame-0.raw";
-float               prevTime    = -1.0f;
+double               prevTime    = -1.0f;
 
 int                 width  = 1600;
 int                 height = 900;
@@ -262,11 +260,11 @@ int                 _r[256];
 int                 _g[256];
 int                 _b[256];
 
-float               xSuivi;
-float               ySuivi;
-float               xSuiviSvg;
-float               ySuiviSvg;
-float               filtre      = 10.0;
+double               xSuivi;
+double               ySuivi;
+double               xSuiviSvg;
+double               ySuiviSvg;
+double               filtre      = 10.0;
 int                 iDisplayCourbe  = 0;
 bool                bDisplayCourbeX = true;
 bool                bDisplayCourbeY = true;
@@ -275,7 +273,7 @@ int                 iDisplayfft = 0;
 bool                bDisplayfftX = true;
 bool                bDisplayfftY = true;
 
-float               fTimeMili;
+double               fTimeMili;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
 //--------------------------------------------------------------------------------------------------------------------
@@ -287,7 +285,7 @@ int                 yCam;
 int                 dxCam;
 int                 dyCam;
 
-float               zoom;
+double               zoom;
 
 ivec2               mouse;
 
@@ -309,8 +307,8 @@ struct etoile       electre = { 3, 44, 52.5368818, 24, 6, 48.011217 };
 int                 xClick;
 int                 yClick;
 
-float               pas = 4000;
-float               cAD;
+double               pas = 4000;
+double               cAD;
 ivec2               calibreMove[2];
 vec2                vRef;
 vec3                vecAD[2];
@@ -320,14 +318,14 @@ mat3                mChange;
 vec3                vOri;
 vec3                vTr;
 bool                bCorrection = false;
-float               fTimeCorrection = 3.0;
-float               fTimeCpt = 0.0;
-float               fLimitCorrection = 80.0;
+double              fTimeCorrection = 3.0;
+double               fTimeCpt = 0.0;
+double              fLimitCorrection = 80.0;
 double              pas_sideral;
 
-float               fpos_ad = -1.0;
-float               fpos_dc = -1.0;
-//float               err = 2.0;
+double               fpos_ad = -1.0;
+double               fpos_dc = -1.0;
+//double               err = 2.0;
 //#define err         err
 //--------------------------------------------------------------------------------------------------------------------
 string              sTab;
@@ -341,7 +339,7 @@ string              sAlert;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float fTimer10s = 0.0;
+double fTimer10s = 0.0;
 bool bAsc = true;
 bool bDec = true;
 bool bSui = false;
@@ -555,18 +553,7 @@ void commande_asi_studio()
 void vizier_parse_line( Catalog* pVizier, string & line )
 {
     if ( line.size() < 294 )        return;
-    /*
-    logf( (char*)"----------------------------------" );
-    logf( (char*)"line size %d", line.size() );
-    logf( (char*)"%s", (char*)line.c_str() );
-    //logf( (char*)"%s", (char*)line.substr(133+14,7).c_str() );
-    */
-    /*
-    double fRA = stod( line.substr(0,15), 0 );
-    double fDE = stod( line.substr(22+2,15), 0 );
-    string name = line.substr(44+4, 19);
-    double fMag = stod( line.substr(133+14,7), 0 );
-    */
+
     double fRA = stod( line.substr(0,15), 0 );
     double fDE = stod( line.substr(16,15), 0 );
     string name = line.substr(34, 17);
@@ -575,15 +562,8 @@ void vizier_parse_line( Catalog* pVizier, string & line )
     StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
     pVizier->add(p);
     
-    logf( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (float)fRA, (float)fDE, (float)fMag );
+    logf( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
 
-	/*
-    if ( name == "  66714384141781760" )
-    {   
-        Camera_mgr::getInstance().setRefCatalog( fRA, fDE );
-        logf( (char*)"Ajout de la reference %0.2f",fMag );
-    }
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -591,24 +571,19 @@ void vizier_parse_line( Catalog* pVizier, string & line )
 void vizier_thread( Catalog* pVizier, string s )
 {
     logf( (char*)"main::vizier_thread()" );
+    log_tab(true);
     string find;
     
-    if ( s == "" )
-    {
-        //string find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" ngc4535";
-        //find = "find_gaia_dr2.py -r 10200 -m 1000 --phot_g_mean_mag=\"<8\" m45";
-        find = "find_gaia_dr3.py -r 10200 -m 2000 --Gmag=\"<8\" m45";
+    if ( s == "" )    {
+        find = "find_gaia_dr3.py -r 10200 -m 3000 --Gmag=\"<8\" m45";
     }
-    else
-    {
-        //find = "find_gaia_dr2.py -m 1000 --phot_g_mean_mag=\"<7\" -r 4000 " + s;
-        find = "find_gaia_dr3.py -m 2000 --Gmag=\"<16\" " + s;
+    else    {
+        find = "find_gaia_dr3.py -m 3000 --Gmag=\"<16\" " + s;
     }
     
     logf( (char*)"Lance la requete : %s", find.c_str() );
 
     string rep = "/home/rene/Documents/astronomie/logiciel/python/cds.cdsclient/cdsclient/";
-    //string rep = "/home/rene/Documents/astronomie/logiciel/python/cds-client/python-cdsclient/";
 
     char buf1[BUFSIZ]; //BUFSIZ est une constante connue du système
     FILE *ptr;
@@ -616,39 +591,31 @@ void vizier_thread( Catalog* pVizier, string s )
     bool bRead = false;
     bool bEntete = false;
  
-    if ((ptr = popen(cmd.c_str(), "r")) != NULL)
-    {
-        while (fgets(buf1, BUFSIZ, ptr) != NULL)
-        {
-            //(void) printf("%s", buf1);
+    if ((ptr = popen(cmd.c_str(), "r")) != NULL)    {
+    
+        while (fgets(buf1, BUFSIZ, ptr) != NULL)        {
             string s = string( buf1 );
-            if ( s.find( "-----------" ) == 0 )
-            {
+            if ( s.find( "-----------" ) == 0 )            {
                 bRead = !bRead;
                 bEntete = true;
                 continue;
             }
 
-            if ( s.find( "#END#" ) == 0 )
-            {
+            if ( s.find( "#END#" ) == 0 )            {
                 bRead = true;
                 bEntete = false;
                 continue;
             }
-           
-            if ( !bRead && bEntete  )
-            {
-                vizier_parse_line( pVizier, s );
-            } 
-            //logf ( (char*)"%s", s.c_str() );
+			if ( !bRead && bEntete  )			vizier_parse_line( pVizier, s );
         }
         pclose(ptr);
     }
-    else
-    {
+    else    {
         fprintf(stderr, "Echec de popen\n");
         exit(1);
     }
+    logf( (char*)"%d etoiles trouvees", pVizier->size() );
+    log_tab(false);
     logf( (char*)"main::vizier_thread()  FIN" );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -724,7 +691,7 @@ string get_basename( string s)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-unsigned int get_color( vec4 v )
+unsigned int get_color( vcf4 v )
 {
     unsigned int r = v.x *255.0;
     unsigned int g = v.y *255.0;
@@ -1043,47 +1010,47 @@ std::vector<string>& getExclude()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float pond2mag( float ponderation )
+double pond2mag( double ponderation )
 {
     return  -(log( ponderation ) / log(2.0)) + 17.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float hms2rad(struct hms& HMS)
+double hms2rad(struct hms& HMS)
 {
     return (HMS.h + HMS.m/60.0 + HMS.s/3600.0) / 12.0*M_PI;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float dms2rad(struct dms& DMS)
+double dms2rad(struct dms& DMS)
 {
     return (DMS.d + DMS.m/60.0 + DMS.s/3600.0) / 180.0*M_PI;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void rad2hms(struct hms& HMS, float r)
+void rad2hms(double r, struct hms& HMS)
 {
-    float sign = 1.0;
-    float hDouze = 0.0;
+    double sign = 1.0;
+    double hDouze = 0.0;
     if ( r<0.0 )
     {
         sign = -1.0;
         //r *=-1.0;
         hDouze = 24.0;
     }
-    float h = hDouze + (r / M_PI * 12.0);
+    double h = hDouze + (r / M_PI * 12.0);
     int H = h;
     HMS.h = H;
     
-    float m = (h-H) * 60.0;
+    double m = (h-H) * 60.0;
     //if ( h < 0.0 )  m *= -1.0;
     int M = m;
     HMS.m = M;
     
-    float s = (m-M) * 60.0;
+    double s = (m-M) * 60.0;
     HMS.s = s;
     
     //HMS.h *= sign;
@@ -1091,28 +1058,42 @@ void rad2hms(struct hms& HMS, float r)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void rad2dms(struct dms& DMS, float v)
+void rad2dms(double v, struct dms& DMS)
 {
-    float sign = 1.0;
+    double sign = 1.0;
     if ( v<0.0 )
     {
         sign = -1.0;
         v *=-1.0;
     }
 
-    float d = v / M_PI * 180.0;
+    double d = v / M_PI * 180.0;
     int D = d;
     DMS.d = D;
     
-    float m = (d-D) * 60.0;
+    double m = (d-D) * 60.0;
     //if ( d < 0.0 )  m *= -1.0;
     int M = m;
     DMS.m = M;
     
-    float s = (m-M) * 60.0;
+    double s = (m-M) * 60.0;
     DMS.s = s;
 
     DMS.d *= sign;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void deg2dms(double v, struct dms& DMS)
+{
+	rad2dms( DEG2RAD(v), DMS );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void deg2hms(double v, struct hms& HMS)
+{
+	rad2hms( DEG2RAD(v), HMS );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1143,12 +1124,12 @@ void updatePanelResultat()
     vec2* pv = Camera_mgr::getInstance().getSuivi();
     if ( pv != NULL )
     {
-        float dx = xSuivi - pv->x;
-        float dy = ySuivi - pv->y;
+        double dx = xSuivi - pv->x;
+        double dy = ySuivi - pv->y;
 
         vec3 w = vec3( xSuivi, ySuivi, 0.0);
         vec3 v = w - vec3( pv->x, pv->y, 0.0);
-        float l = v.length();
+        double l = v.length();
 
         if ( bCentrageSuivi )
             sprintf( sStr, "Centre\t(%0.2f, %0.2f)", xSuivi, ySuivi );
@@ -1168,8 +1149,8 @@ void updatePanelResultat()
         }
         pEcart->changeText(sStr);
         
-        float xx = pv->x + 40;
-        float yy = pv->y + 35;
+        double xx = pv->x + 40;
+        double yy = pv->y + 35;
         
         mgr.tex2screen(xx,yy);
 
@@ -1252,7 +1233,7 @@ void write_image(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void change_hertz(float hz)
+void change_hertz(double hz)
 {
     static char sHz[255];
     sprintf( sHz, "%.0fHz", hz);
@@ -1291,7 +1272,7 @@ void change_joy(int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void change_joy(float x, float y)
+void change_joy(double x, double y)
 {
     static char sJoyXY[255];
     sprintf( sJoyXY, "(%0.2f, %0.2f)", x, y );//, BOOL2STR(bSuivi) );
@@ -1302,16 +1283,16 @@ void change_joy(float x, float y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void change_ad(float ad)
+void change_ad_status(double ad)
 {
     VarManager& var = VarManager::getInstance();
     if ( fpos_ad != ad)
         var.set("fpos_ad", ad);
     fpos_ad = ad;
 
-    ad = DEG2RAD(ad);
+    //ad = DEG2RAD(ad);
     struct hms HMS;
-    rad2hms( HMS, ad);
+    deg2hms( ad, HMS);
     
     char    buff[255];
     sprintf( buff, "AD: %02dh %02dm %0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
@@ -1322,21 +1303,21 @@ void change_ad(float ad)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void change_dc(float dc)
+void change_dc_status(double dc)
 {
     VarManager& var = VarManager::getInstance();
     if ( fpos_dc != dc)
         var.set("fpos_dc", dc);
     fpos_dc == dc;
     
-    dc = DEG2RAD(dc);
+    //dc = DEG2RAD(dc);
     struct dms DMS;
-    rad2dms( DMS, dc);
+    deg2dms( dc, DMS);
     
     char    buff[255];
     char 	signe[2];
-    if ( dc <0.0 )		signe[0] = '-';
-    else				signe[0] = 0;
+    //if ( dc <0.0 )		signe[0] = '-';
+    //else				signe[0] = 0;
     sprintf( buff, "DC: %s%02d %02d\' %0.2f\"", signe, (int)DMS.d, (int)DMS.m, DMS.s );
     
     pDC->changeText( buff );
@@ -1422,7 +1403,7 @@ void charge_traces(void)
     }
     //------------- Lecture du fichier ------------------------------------
     string line;
-    float x, y;
+    double x, y;
     vec2 v;
     int n = -1;
     vector<vec2>* trace;
@@ -1551,8 +1532,8 @@ void getSuiviParameter(void)
     vCameraSize.y = 1080;
     vCameraSize = cam_mgr.get_vCameraSize();
 
-    rw = (float)vCameraSize.x/(float)panelCourbe->get_dxCam();
-    rh = (float)vCameraSize.y/(float)panelCourbe->get_dyCam();
+    rw = (double)vCameraSize.x/(double)panelCourbe->get_dxCam();
+    rh = (double)vCameraSize.y/(double)panelCourbe->get_dyCam();
 */
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1573,7 +1554,7 @@ static void idleGL(void)
     logf( (char*)"[%0.4f] IDLE GL ***", timer.getCurrentTime() );
     #endif
 
-	fTimeMili = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+	fTimeMili = (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
     char sFPS[] = "fps 0000";
     sprintf( sFPS,"fps %d", *Timer::getInstance().getvFPSCounter() );
     pFPS->changeText((char*)sFPS);
@@ -1683,7 +1664,7 @@ static void idleGL(void)
     //
     //-----------------------------------------------------------------------
 	
-    float elapsedTime = -1;
+    double elapsedTime = -1;
 	if ( prevTime < 0 )	{
 		prevTime = fTimeMili;
 	}
@@ -1731,7 +1712,7 @@ static void idleGL(void)
         vec2* pv = Camera_mgr::getInstance().getSuivi();
         if ( pv != NULL && bCorrection )
         {
-            vec3 res, v, w;  float l;
+            vec3 res, v, w;  double l;
 
             w = vec3( xSuivi, ySuivi, 0.0);
             v = w - vec3( pv->x, pv->y, 0.0);
@@ -1901,11 +1882,11 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	    {
 	        bAffCatalog = !bAffCatalog;
             VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
-	        logf( (char*)"Xref  : %0.2f", (float)Xref );
-	        logf( (char*)"Yref  : %0.2f", (float)Yref );
-	        logf( (char*)"ZrefX : %0.2f", (float)ZrefX );
-	        logf( (char*)"ZrefY : %0.2f", (float)ZrefY );
-	        logf( (char*)"Wref  : %0.2f", (float)Wref );
+	        logf( (char*)"Xref  : %0.2f", (double)Xref );
+	        logf( (char*)"Yref  : %0.2f", (double)Yref );
+	        logf( (char*)"ZrefX : %0.2f", (double)ZrefX );
+	        logf( (char*)"ZrefY : %0.2f", (double)ZrefY );
+	        logf( (char*)"Wref  : %0.2f", (double)Wref );
 	        logf( (char*)"bAffCataog : %s", BOOL2STR(bAffCatalog) );
 
             var.set( "bAffCatalog", bAffCatalog );
@@ -1913,11 +1894,11 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
             logf( (char*)"Nb Etoiles %d", vizier.size() );
             //vizier.list();
             /*
-            var.set( "Xref",  (float)Xref );
-            var.set( "Yref",  (float)Yref );
-            var.set( "ZrefX", (float)ZrefX );
-            var.set( "ZrefY", (float)ZrefY );
-            var.set( "Wref",  (float)Wref );
+            var.set( "Xref",  (double)Xref );
+            var.set( "Yref",  (double)Yref );
+            var.set( "ZrefX", (double)ZrefX );
+            var.set( "ZrefY", (double)ZrefY );
+            var.set( "Wref",  (double)Wref );
             */
 	        
 	    }
@@ -1926,76 +1907,76 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	case 'd':
 	    {
 	        Wref -= 0.25;
-            var.set( "Wref",  (float)Wref );
-	        //logf( (char*)"Wref : %0.2f", (float)Wref );
+            var.set( "Wref",  (double)Wref );
+	        //logf( (char*)"Wref : %0.2f", (double)Wref );
 	    }
 	    break;
 	case 'f':
 	    {
 	        Wref += 0.25;
-            var.set( "Wref",  (float)Wref );
-	        //logf( (char*)"Wref : %0.2f", (float)Wref );
+            var.set( "Wref",  (double)Wref );
+	        //logf( (char*)"Wref : %0.2f", (double)Wref );
 	    }
 	    break;
 	case 'a':
 	    {
 	        Xref -= 1.0;
-            var.set( "Xref",  (float)Xref );
-	        //logf( (char*)"Xref : %0.2f", (float)Xref );
+            var.set( "Xref",  (double)Xref );
+	        //logf( (char*)"Xref : %0.2f", (double)Xref );
 	    }
 	    break;
 	case 'z':
 	    {
 	        Xref += 1.0;
-            var.set( "Xref",  (float)Xref );
-	        //logf( (char*)"Xref : %0.2f", (float)Xref );
+            var.set( "Xref",  (double)Xref );
+	        //logf( (char*)"Xref : %0.2f", (double)Xref );
 	    }
 	    break;
 
 	case 'q':
 	    {
 	        Yref -= 1.0;
-            var.set( "Yref",  (float)Yref );
-	        //logf( (char*)"Yref : %0.2f", (float)Yref );
+            var.set( "Yref",  (double)Yref );
+	        //logf( (char*)"Yref : %0.2f", (double)Yref );
 	    }
 	    break;
 
 	case 's':
 	    {
 	        Yref += 1.0;
-            var.set( "Yref",  (float)Yref );
-	        //logf( (char*)"Yref : %0.2f", (float)Yref );
+            var.set( "Yref",  (double)Yref );
+	        //logf( (char*)"Yref : %0.2f", (double)Yref );
 	    }
 	    break;
 
 	case 'w':
 	    {
 	        ZrefX -= 1.0;
-            var.set( "ZrefX", (float)ZrefX );
-	        //logf( (char*)"Zref : %0.2f", (float)Zref );
+            var.set( "ZrefX", (double)ZrefX );
+	        //logf( (char*)"Zref : %0.2f", (double)Zref );
 	    }
 	    break;
 
 	case 'x':
 	    {
 	        ZrefX += 1.0;
-            var.set( "ZrefX", (float)ZrefX );
-	        //logf( (char*)"Zref : %0.2f", (float)Zref );
+            var.set( "ZrefX", (double)ZrefX );
+	        //logf( (char*)"Zref : %0.2f", (double)Zref );
 	    }
 	    break;
 	case 'c':
 	    {
 	        ZrefY -= 1.0;
-            var.set( "ZrefY", (float)ZrefY );
-	        //logf( (char*)"Zref : %0.2f", (float)Zref );
+            var.set( "ZrefY", (double)ZrefY );
+	        //logf( (char*)"Zref : %0.2f", (double)Zref );
 	    }
 	    break;
 
 	case 'v':
 	    {
 	        ZrefY += 1.0;
-            var.set( "ZrefY", (float)ZrefY );
-	        //logf( (char*)"Zref : %0.2f", (float)Zref );
+            var.set( "ZrefY", (double)ZrefY );
+	        //logf( (char*)"Zref : %0.2f", (double)Zref );
 	    }
 	    break;
     default:
@@ -2239,8 +2220,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
             {
-                float x   = pv->x;
-                float y   = pv->y;
+                double x   = pv->x;
+                double y   = pv->y;
 
                 //change_joy( xSuivi, ySuivi );
 
@@ -2274,8 +2255,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
             {
-                float x   = pv->x;
-                float y   = pv->y;
+                double x   = pv->x;
+                double y   = pv->y;
 
                 //change_joy( xSuivi, ySuivi );
 
@@ -2351,8 +2332,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
             {
-                float x   = pv->x;
-                float y   = pv->y;
+                double x   = pv->x;
+                double y   = pv->y;
 
                 //change_joy( xSuivi, ySuivi );
 
@@ -2392,8 +2373,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vec2* pv = Camera_mgr::getInstance().getSuivi();
             if ( pv != NULL )
             {
-                float x   = pv->x;
-                float y   = pv->y;
+                double x   = pv->x;
+                double y   = pv->y;
 
                 //change_joy( xSuivi, ySuivi );
 
@@ -2533,21 +2514,16 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         var.set( "bInverseCouleur", bInverseCouleur );
         }
         break;
-	case 'j':
+	case 'J':
 		{
-			/*
-    		fLimitCorrection *= 0.9f;
-            logf( (char*)"Key (j) : Diminue la limite de correction : %0.2f", fLimitCorrection );
-            var.set("fLimitCorrection", (float)fLimitCorrection);
-            */
             thread( &commande_stellarium).detach();
         }
 		break;
-	case 'J':
+	case 'j':
 		{
 			var.set("bAffFitsCorrection", !var.getb("bAffFitsCorrection") );
 			Capture* p = Captures::getInstance().getCurrentCapture();
-			if ( p && !p->getIcone() )	{
+			if ( p && !p->isIconized() )	{
 				p->onTop();
 			}
             //thread( &commande_asi_studio).detach();
@@ -2618,7 +2594,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             {
             case 'f':
                 {
-                float f = var.getf(p->first);
+                double f = var.getf(p->first);
                 logf( (char*)"%s -> %f", p->first.c_str(), f );
                 }
                 break;
@@ -2671,10 +2647,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'n':
         {
-        logf( (char*)"Key (n) : Affiche/cache les capture");
-        bAffIconeCapture = !bAffIconeCapture;
-        logf( (char*)"  bAffIconeCapture = %s", BOOL2STR(bAffIconeCapture) );
-        Captures::getInstance().switchAffIcones();
+	        logf( (char*)"Key (n) :Requete GAIA");
+        	Capture*  p = Captures::getInstance().getCurrentCapture();
+        	if ( p && p->isFits() )	{
+        		p->getPreview()->findGaiaDR3();
+        	}
         }
         break;
 
@@ -2933,8 +2910,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 xSuiviSvg = xSuivi;
                 ySuiviSvg = ySuivi;
 
-                xSuivi = (float)wm.getWidth()/2;
-                ySuivi = (float)wm.getHeight()/2;
+                xSuivi = (double)wm.getWidth()/2;
+                ySuivi = (double)wm.getHeight()/2;
 
                 Camera_mgr::getInstance().screen2tex(xSuivi, ySuivi);
             }
@@ -3588,11 +3565,11 @@ static void CreateStatus()	{
 	panelStatus->add( pDeplacement );
 
     pAD = new PanelText( (char*)"AD:",		            PanelText::NORMAL_FONT, 60, 2 );
-    change_ad( fpos_ad );
+    change_ad_status( fpos_ad );
 	panelStatus->add( pAD );
     
     pDC = new PanelText( (char*)"DC:",		            PanelText::NORMAL_FONT, 200, 2 );
-    change_dc( fpos_dc );
+    change_dc_status( fpos_dc );
 	panelStatus->add( pDC );
 
     pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 705, 2 );
@@ -4001,7 +3978,7 @@ void init_var()
     var.set("xSuivi", xSuivi);
     var.set("ySuivi", ySuivi);
 
-    if ( !var.existe("fLimitCorrection") )      var.set( "fLimitCorrection", (float)80.0);
+    if ( !var.existe("fLimitCorrection") )      var.set( "fLimitCorrection", (double)80.0);
     
     /*
     var.set("xPanelStdOut",  panelStdOut->getX() );
@@ -4224,7 +4201,7 @@ int main(int argc, char **argv)
     if ( var.getb("bNuit") )    panelStdOut->setColor( 0xffff0000 );
     else                        panelStdOut->setColor( COLOR_WHITE );
     
-    float gris = 0.2;
+    double gris = 0.2;
     glClearColor( gris, gris, gris,1.0);
     
     // Pre-Charge la texture pour eviter un bug

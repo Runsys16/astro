@@ -147,11 +147,9 @@ public:
 	float angle(void) { return (float)atan2(this->y,this->x); }
 	float angle(const vec2 &v) { return (float)atan2(v.y-this->y,v.x-this->x); }
 
-   	char sVec[40];
-    char*	to_st()
+    void to_str(char* s)
     {
-    	snprintf( (char*)sVec, sizeof(sVec), "(%f, %f)", x, t );
-    	return  sVec;
+    	sprintf( (char*)s,"(%f, %f)", x, y );
     }
 
 	union {
@@ -477,11 +475,9 @@ public:
 		mat[2] = x.z; mat[5] = y.z; mat[8] = z.z;
 	}
         */
-    char*	to_st()
+    void	to_str(char* s)
     {
-    	static char sMat[128];
-    	snprintf( (char*)sMat, sizeof(sMat), "(%f, %f, %f, %f)", mat[0], mat[1], mat[2], mat[3] );
-    	return  sMat;
+    	sprintf( (char*)s, "(%f, %f, %f, %f)", mat[0], mat[1], mat[2], mat[3] );
     }
 	float mat[4];
 };

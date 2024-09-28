@@ -45,7 +45,7 @@ PanelSpinEditText::PanelSpinEditText()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelSpinEditText::set_pVal( float*  p )
+void PanelSpinEditText::set_pVal( double*  p )
 {
 	pVal	= p;
 	val		= *pVal;
@@ -77,7 +77,7 @@ void PanelSpinEditText::set_pVal( float*  p )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelSpinEditText::set_val( float  p )
+void PanelSpinEditText::set_val( double  p )
 {
 	if ( pVal )		*pVal	= p;
 	val		= p;
@@ -109,7 +109,7 @@ void PanelSpinEditText::set_val( float  p )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelSpinEditText::set_enum( vector<float> t )
+void PanelSpinEditText::set_enum( vector<double> t )
 {
     t_val = t;
     nb = t.size();
@@ -122,7 +122,7 @@ void PanelSpinEditText::boule_pos( int xm, int ym )
     vec2 vm = vec2( xm, ym );
     vec2 v = vm - vCentre;
     v.y *= -1.0;
-    float norme = v.length();
+    double norme = v.length();
     
     angle = RAD2DEG( acos( v.y / norme ) );
     if ( v.x <0.0 )         angle = 360.0 - angle;
@@ -133,47 +133,72 @@ void PanelSpinEditText::boule_pos( int xm, int ym )
 
 }
 //--------------------------------------------------------------------------------------------------------------------
+// Calcul l'angle par rapport au centre
+// et la distance
+// Sauvegarde le vecteur position
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
+void PanelSpinEditText::computeRef( int xm, int ym )
 {
-    vec3 ptm = vec3( xm, ym, 0.0 );
-    vec3 ptc = vec3( vCentre.x, vCentre.y, 0.0 );
-    vec3 v  = ptm - ptc; 
+    vec3 ptm	= vec3( xm, ym, 0.0 );
+    vec3 ptc	= vec3( vCentre.x, vCentre.y, 0.0 );
+    
+   	vRef 		= ptm - ptc; 
 
-    //logf( (char*)"compute_pos_relatif()  l=%0.2f", v.length() ); 
-
-
+    vRef.normalize();
+}
+//--------------------------------------------------------------------------------------------------------------------
+// Calcul l'angle par rapport au centre
+// et la distance
+// Sauvegarde le vecteur position
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::computeAngle( int xm, int ym )
+{
+    vec3 ptm	= vec3( xm, ym, 0.0 );
+    vec3 ptc	= vec3( vCentre.x, vCentre.y, 0.0 );
+    vec3 v 		= ptm - ptc; 
+    vec3 r;
 
     if ( v.length() <= ZONE_MORTE )		{
 	    vRef = v;
     	vRef.normalize();
     	return;
 	}
+	
     boule_pos(xm, ym);
     
     v.normalize();
-    vec3 r;
-
     r.cross( vRef, v );
+    double norm = r.length();
     
-    float norm = r.length();
-    float angle = RAD2DEG(asin( norm ));
+    angle = RAD2DEG( asin(norm) );
 
     if ( r.z < 0.0 )    angle = -angle;
-    
-    //logf( (char*)"compute_pos_relatif()  (%0.2f, %0.2f, %0.2f)", r.x, r.y, r.z ); 
-    logf( (char*)"compute_pos_relatif()  angle=%0.2f", angle ); 
 
     vRef = v;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
+{
+//#define DEBUG
+	
+	computeAngle( xm, ym );
+	
+#ifdef DEBUG
+    logf( (char*)"compute_pos_relatif()  angle=%0.2f", angle ); 
+#endif
 
     //--------------------------------------
     if ( t_val.size() == 0 )
     {
         val_angle = (step) / (nb*360.0) * angle;
-        //val_angle = step * fmod( val_angle, step );     
+#ifdef DEBUG
         logf( (char*)"compute_pos_relatif()  angle=%0.2f val_angle=%0.8f", angle, val_angle ); 
         logf( (char*)"                       min=%0.8f max=%0.8f", min, max ); 
+#endif
         
         val += val_angle;
         clampVal();
@@ -246,11 +271,12 @@ void PanelSpinEditText::clickLeft( int xm, int ym )
     log_tab(true);
     logf( (char*)"delta old (%d, %d)", delta_x, delta_y );
 
+	// Affiche le cadran et efface le panel 
 	setVisible( false );
     pCadran->setVisible( true );
     pCadran->setCanMove(false);
 
-
+	// Calcul la position de du cadran
  	WindowsManager&     wm  = WindowsManager::getInstance();
 	int ws = wm.getWidth();
 	int hs = wm.getHeight();
@@ -277,17 +303,10 @@ void PanelSpinEditText::clickLeft( int xm, int ym )
     
     logf( (char*)"cadran (%d, %d)  boule (%d,%d)", pCadran->getX(), pCadran->getY(), pBoule->getX(), pBoule->getY() );
     
-    compute_pos_relatif( xm, ym );
+    computeRef( xm, ym );
     clampVal();
 
     wm.onTop(pCadran);
-    /*
-    if ( pVal!= NULL )
-    {          
-        val_angle = val = *pVal;
-    }
-    */
-    
     if ( click_left_cb != NULL )        (*click_left_cb)( xm, ym);
     
 
@@ -304,10 +323,6 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
     
     compute_pos_relatif( xm, ym );
     clampVal();
-    //logf( (char*)"  (%0.2f, %0.2f)", v.x, v.y );
-    //logf( (char*)"  angle = %0.2f", angle );
-    
-    //logf( (char*)"  val = %0.2f", val );
     
     char s[50];
     switch( nDecimal )
@@ -381,16 +396,16 @@ void PanelSpinEditText::updatePos()
     int dx2 = pCadran->getDX() / 2;
     int dy2 = pCadran->getDY() / 2;
 
-    vCentre = vec2( (float)(pCadran->getX() + dx2), (float)(pCadran->getY() + dy2) );
+    vCentre = vec2( (double)(pCadran->getX() + dx2), (double)(pCadran->getY() + dy2) );
     //pClick->setPosAndSize( 0, 0, 40, 15 );
     
     Panel::updatePos();
-    //vCentre = vec2( (float)(x_raw)+20, (float)(y_raw)+8 );
+    //vCentre = vec2( (double)(x_raw)+20, (double)(y_raw)+8 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelSpinEditText::idle(float f)
+void PanelSpinEditText::idle(double f)
 {
 	PanelEditText::idle(f);
     //log( (char*)"PanelSpinEditText::idle()" ); 

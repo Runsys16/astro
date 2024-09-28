@@ -17,7 +17,7 @@
 
 #include "main.h"
 
-extern float fTimeMili;
+extern double fTimeMili;
 #define VER_ARDUINO		"1.0.2"
 
 
@@ -41,7 +41,7 @@ SINGLETON_BEGIN( Serial )
         int             nbZero;
         
         bool            bPrintInfo;
-        float           fTimeOut;
+        double           fTimeOut;
         
         bool            bFree;
         

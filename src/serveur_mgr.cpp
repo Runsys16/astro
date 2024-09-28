@@ -85,11 +85,11 @@ void Serveur_mgr::traite_connexion_init()
 
 
         struct hms HMS;
-        rad2hms( HMS, ra );
+        rad2hms( ra, HMS );
         logf( (char*)"  AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
-        rad2dms( DMS, dc );
+        rad2dms( dc, DMS );
         logf( (char*)"  Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
@@ -224,11 +224,11 @@ void Serveur_mgr::traite_connexion_deplacement()
 
 
         struct hms HMS;
-        rad2hms( HMS, ra );
+        rad2hms( ra, HMS );
         logf( (char*)"  AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
-        rad2dms( DMS, dc );
+        rad2dms( dc, DMS );
         logf( (char*)"  DC : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
@@ -421,8 +421,13 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
     //--------------------------------------------------------
     if ( ad!=0.0 && dc!=0.0 )
     {
+    	struct hms HMS;
+    	struct dms DMS;
 		write_stellarium( (char*)buff );
-        logf( (char*)"Em Stellarium Ad=%0.8f Dc=%0.8f", fa, fd );
+        logf( (char*)"Em Stellarium\tAd=%0.8f  \tDc=%0.8f", fa, fd );
+        deg2hms( fa, HMS );
+        deg2dms( fd, DMS );
+        logf( (char*)"				\tAd=%0.0fh%0.0f\'%0.2f\"  \tDc=%0.0fd\%2.0f'%2.2f\"", HMS.h, HMS.m, HMS.s, DMS.d, DMS.m, DMS.s );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

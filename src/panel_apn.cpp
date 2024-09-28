@@ -31,7 +31,7 @@ PanelApn::PanelApn()
     int x   =   5;
     int dx  =  90;
     float gris = 0.7;
-    vec4 c  = vec4(gris, gris, gris, 1.0);
+    vcf4 c  = vcf4(gris, gris, gris, 1.0);
 	
 	add( new PanelText( (char*)"Temps (s)\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
     pTime = new PanelSpinEditText();
@@ -47,7 +47,7 @@ PanelApn::PanelApn()
     pIso = new PanelSpinEditText();
     pIso->set( 100, 3200, 100, 1 );
     pIso->set_delta( 20, 8 );
-    vector<float> t_iso{ 100, 200, 400, 800, 1600 };
+    vector<double> t_iso{ 100, 200, 400, 800, 1600 };
     pIso->set_enum( t_iso );
     pIso->changeText( "800" );
     pIso->setPos( x+dx, p*dy );

@@ -21,7 +21,7 @@
 #include "button_callback.h"
 
 #include "surveillance.h"
-#include "Mathlib.h"
+#include "MathlibD.h"
 #include "panel_courbe.h"
 //#include "catalog.h"
 
@@ -40,16 +40,16 @@ using namespace std;
 
 struct hms
 {
-    float   h;
-    float   m;
-    float   s;
+    double   h;
+    double   m;
+    double   s;
 };
 
 struct dms
 {
-    float   d;
-    float   m;
-    float   s;
+    double   d;
+    double   m;
+    double   s;
 };
 
 struct etoile
@@ -60,11 +60,11 @@ struct etoile
 
 struct sky_point
 {
-    float   xAverage;
-    float   yAverage;
-    float   ponderation;
-    float   x;
-    float   y;
+    double   xAverage;
+    double   yAverage;
+    double   ponderation;
+    double   x;
+    double   y;
     bool    found;
 };
 
@@ -101,10 +101,10 @@ typedef struct readBackground       rb_t;
     //extern vector<vec2>             t_vSauve;
     extern bool                     bModeManuel;
 
-    extern float                    xSuivi;
-    extern float                    ySuivi;
-    extern float                    xSuiviSvg;
-    extern float                    ySuiviSvg;
+    extern double                    xSuivi;
+    extern double                    ySuivi;
+    extern double                    xSuiviSvg;
+    extern double                    ySuiviSvg;
         
     extern int                      xClick;
     extern int                      yClick;
@@ -112,11 +112,11 @@ typedef struct readBackground       rb_t;
     extern vector<vector<vec2> * >  t_vTrace;
     extern bool                     bAffTrace;
     extern bool                     bRecTrace;
-    extern vec4                     colorTraces[];
+    extern vcf4                     colorTraces[];
 
     extern bool                     bInverseCouleur;
-    extern float                    fLimitCorrection;
-    extern float                    fTimeMili;
+    extern double					fLimitCorrection;
+    extern double                    fTimeMili;
     
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;
@@ -140,7 +140,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bDisplayCourbeX;
     extern bool                     bDisplayCourbeY;
 
-    extern float                    filtre;
+    extern double                    filtre;
 
     extern double                   Xref;
     extern double                   Yref;
@@ -150,11 +150,13 @@ typedef struct readBackground       rb_t;
     extern bool                     bAffCatalog;
     extern Catalog                  vizier;
     
-	extern float					hms2rad( struct hms& );
-	extern float					dms2rad( struct dms& );
+	extern double					hms2rad( struct hms& );
+	extern double					dms2rad( struct dms& );
 
-	extern void                		rad2hms( struct hms&, float );
-	extern void                		rad2dms( struct dms&, float );
+	extern void                		rad2hms( double, struct hms& );
+	extern void                		rad2dms( double, struct dms& );
+	extern void                		deg2hms( double, struct hms& );
+	extern void                		deg2dms( double, struct dms& );
 
 #endif
 
@@ -204,7 +206,7 @@ void                vizier_load_stars( Catalog*, string );
 
 void 				get_info_arduino();
 string              get_basename(string);
-unsigned int        get_color(vec4);
+unsigned int        get_color(vcf4);
 bool                fexists(const char *filename);
 bool                isPleiade();
 
@@ -234,11 +236,11 @@ int                 getWidth();
 int                 getHeight();
 
 vector<string>&     getExclude();
-float               hms2rad( struct hms& );
-float               dms2rad( struct dms& );
+double               hms2rad( struct hms& );
+double               dms2rad( struct dms& );
 
-void                rad2hms( struct hms&, float );
-void                rad2dms( struct dms&, float );
+void                rad2hms( struct hms&, double );
+void                rad2dms( struct dms&, double );
 
 void                glVecAD();
 void                glVecDC();
@@ -258,14 +260,14 @@ int                 getOffset( int x, int y, int width );
 void                screen2tex( int& x, int& y );
 void                tex2screen( int& x, int& y);
 
-float               getSkyPoint_colorR(int offset);
-float               getSkyPoint_colorG(int offset);
-float               getSkyPoint_colorB(int offset);
-float               getSkyPoint_colorL(int offset);
-void                updatePanelResultat(float x, float y, float mag);
+double               getSkyPoint_colorR(int offset);
+double               getSkyPoint_colorG(int offset);
+double               getSkyPoint_colorB(int offset);
+double               getSkyPoint_colorL(int offset);
+void                updatePanelResultat(double x, double y, double mag);
 void                getSkyPointLine(struct sky_point* point, int x, int y, int size);
-float               getLumMax(int offset, float max );
-float               getLum(int offset );
+double               getLumMax(int offset, double max );
+double               getLum(int offset );
 void                findSkyPoint(struct sky_point* point, int X, int Y, int size);
 void                rechercheSkyPoint( int x, int y);
 
@@ -282,11 +284,11 @@ static void         reshapeGL(int newWidth, int newHeight);
 void                reset_camera(void);
 void                write_image(void);
 
-void                change_hertz(float);
+void                change_hertz(double);
 void                change_arduino(bool);
 void                change_joy(int, int);
-void                change_ad(float);
-void                change_dc(float);
+void                change_ad_status(double);
+void                change_dc_status(double);
 void                compute_matrix();
 
 void                sauve(void);

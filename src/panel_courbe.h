@@ -15,7 +15,7 @@
  
 #include <WindowsManager.h>
 #include "main.h"
-#include "Mathlib.h"
+#include "MathlibD.h"
 #include "console.h"
 #include "var_mgr.h"
 #include "timer.h"
@@ -95,7 +95,7 @@ private:
     int                 ym_svg;
     
     int                 xStartAxe = 70.0;
-    float               err = 2.0;
+    double              err = 2.0;
 
     PanelText*          pXMax;
     PanelText*          pXMin;
@@ -120,7 +120,7 @@ private:
 
     PanelText*          pAffCourbe;
     PanelSpinEditText*  pFiltreVal;
-    float               fVal;
+    double              dVal;
     PanelCheckBox*      pCBAffCourbe;
     bool                bCBAffCourbe;
     
@@ -224,7 +224,7 @@ inline     int          get_yCam()                  { return yCam; }
 inline     int          get_dxCam()                 { return dxCam; }   
 inline     int          get_dyCam()                 { return dyCam; }   
 inline     float        get_err()                   { return err; }   
-inline     float*       get_perr()                  { return &err; }   
+inline     double*      get_perr()                  { return &err; }   
 inline     PanelText*   get_pXMax()                 { return pXMax; }
 inline     PanelText*   get_pXMin()                 { return pXMin; }
 inline     PanelText*   get_pYMax()                 { return pYMax; }

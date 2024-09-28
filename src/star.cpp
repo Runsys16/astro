@@ -6,7 +6,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Star::~Star()
 {
-    logf( (char*)"Destructeur Star()" );
+    //logf( (char*)"Destructeur Star()" );
     if (panelZoom != NULL)
     {
         //pView->sup( panelZoom );
@@ -243,11 +243,11 @@ void Star::computeMag()
         char sRA[64];
         
         struct dms DMS;
-        rad2dms( DMS, dc_rad );
+        rad2dms( dc_rad, DMS );
         snprintf( sDEC, sizeof(sDEC)-1, "DC=%02d-%02dm%0.2fs", (int)DMS.d, (int)DMS.m, DMS.s );
 
         struct hms HMS;
-        rad2hms( HMS, ra_rad );
+        rad2hms( ra_rad, HMS );
         snprintf( sRA,  sizeof(sRA)-1, "AD=%02dh%02dm%0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
 
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
@@ -260,8 +260,11 @@ void Star::computeMag()
 //--------------------------------------------------------------------------------------------------------------------
 float Star::computeRayon()
 {
+    double r = ( 30.0 - 1.5*(magnitude+8) ) * 0.45;
+	/*
     float r = (15.0 - magnitude)*1.5 - 8.0;
     if ( r<0.0 )    r = 0.0;
+    */
     return r;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -941,21 +944,21 @@ void Star::displayGL()
     if ( bZoom )      
     {
         glColor4f( 1.0,  1.0,  0.0, 1.0 );
-        glCarre( ech*(computeRayon() + 4 +10) );
+        glCarre( ech*(computeRayon() ) );
     }
     //
     // Carre de selection
     else if ( bSelect )      
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
-        glCarre( ech*(computeRayon() + 4 +10) );
+        glCarre( ech*(computeRayon()) );//+ 4 +10) );
     }
     //
     // Cercle de suivi
     if ( bSuivi )      
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
-        glCercle( 1.5*ech*(computeRayon() + 4 +10) );
+        glCercle( 1.5*ech*(computeRayon()) );// + 4 +10) );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -970,8 +973,8 @@ void Star::position(double ra, double dc)
     struct hms HMS;
     struct dms DMS;
 
-    rad2hms( HMS, ra );
-    rad2dms( DMS, dc );
+    rad2hms( ra, HMS );
+    rad2dms( dc, DMS );
 
     char s_ra[255];
     char s_de[255];

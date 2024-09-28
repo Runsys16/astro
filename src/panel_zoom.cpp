@@ -190,7 +190,7 @@ void PanelZoom::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelZoom::glCroix( float xx, float yy, float l, vec4 c )
+void PanelZoom::glCroix( float xx, float yy, float l, vcf4 c )
 {
     float x = getPosX() + xx + (float)getDX()/2;
     float y = getPosY() + yy + (float)getDY()/2;
@@ -249,11 +249,11 @@ void PanelZoom::displayGL()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
-    glCroix( 0, 0, 100, vec4( 1.0, 0.2, 0.2, 1.0 ) );
+    glCroix( 0, 0, 100, vcf4( 1.0, 0.2, 0.2, 1.0 ) );
 
     float x  = echelle * (xSuivi-vStar.x); 
     float y  = echelle * (ySuivi-vStar.y);
-    glCroix( x, y, 100, vec4( 0.2, 0.2, 0.8, 1.0 ) );
+    glCroix( x, y, 100, vcf4( 0.2, 0.2, 0.8, 1.0 ) );
     
 
 	glMatrixMode(GL_MODELVIEW);

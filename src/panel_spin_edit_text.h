@@ -10,15 +10,15 @@ typedef void (*motion_cb_t)(int,int);
 class PanelSpinEditText : public PanelEditText
 {
 protected:
-            float       min;
-            float       max;
-            float       step;
-            float       nb;
-            float       val_angle;
-            float       val;
-            float       angle;
+            double       min;
+            double       max;
+            double       step;
+            double       nb;
+            double       val_angle;
+            double       val;
+            double       angle;
             
-            float*      pVal;
+            double*      pVal;
             
             int         delta_x;
             int         delta_y;
@@ -32,7 +32,7 @@ protected:
        Panel*			pPrevParent;
        //Panel*			pClick;
        
-            vector<float>   t_val;
+            vector<double>   t_val;
             int         x_click;
             int         y_click;
             motion_cb_t cb_motion;
@@ -40,26 +40,27 @@ protected:
 public:
                         PanelSpinEditText();
                         
-			void        set_pVal(float*);
+			void        set_pVal(double*);
 inline      void        set_delta(int x, int y)     { delta_x = 0; delta_y = 0; }                        
-//inline      void        set_val(float f)            { val_angle = val = f; }                        
-			void        set_val(float f);//            { val_angle = val = f; }                        
-inline      void        set_min(float f)            { min = f; }                        
-inline      void        set_max(float f)            { max = f; }                        
-inline      void        set_step(float f)           { step = f; }                        
-inline      void        set_nb(float f)             { nb = f; }                        
+			void        set_val(double f);//            { val_angle = val = f; }                        
+inline      void        set_min(double f)            { min = f; }                        
+inline      void        set_max(double f)            { max = f; }                        
+inline      void        set_step(double f)           { step = f; }                        
+inline      void        set_nb(double f)             { nb = f; }                        
 inline      void        set_ndecimal(int n)         { nDecimal = n; }                        
-inline      void        set(float m, float M, float s, float n)
+inline      void        set(double m, double M, double s, double n)
 							                        { min = m; max = M; step = s; nb = n; }     
 
 inline 		void		setMotion( motion_cb_t cb)  { cb_motion = cb; }
-inline      float*      get_pVal()          		{ return pVal; }                        
+inline      double*     get_pVal()          		{ return pVal; }                        
 
 
-            void        set_enum(vector<float>);
+            void        set_enum(vector<double>);
                         
-            void        boule_pos(int, int);                   
-            void        compute_pos(int, int);                   
+            void        boule_pos(int, int);        
+
+			void		computeRef( int, int );
+			void		computeAngle( int, int );
             void        compute_pos_relatif(int, int);                   
                         
 			void		ajusteDelta( int, int );
@@ -73,7 +74,7 @@ inline      float*      get_pVal()          		{ return pVal; }
 	virtual void		releaseRight( int, int );
 
     virtual void		updatePos();
-    virtual void		idle(float);
+    virtual void		idle(double);
     virtual void		displayGL();
 
 };

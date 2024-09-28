@@ -26,7 +26,7 @@
 #include <WindowsManager.h>
 #include <thread>
 
-#include "Mathlib.h"
+#include "MathlibD.h"
 #include "main.h"
 #include "serial.h"
 #include "serveur_mgr.h"

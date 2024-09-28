@@ -55,11 +55,11 @@ protected:
         double						dMin;
         double						dMax;
         
-volatile double                      dCRVAL1;
-volatile double                      dCRVAL2;
+volatile double                     dCRVAL1;
+volatile double                     dCRVAL2;
 
-volatile double                      dCRPIX1;
-volatile double                      dCRPIX2;
+volatile double                     dCRPIX1;
+volatile double                     dCRPIX2;
         
         mat2						mAstroEchl;
         mat2						mAstroTrns;
@@ -70,8 +70,8 @@ volatile double                      dCRPIX2;
         double                      dCD2_1;
         double                      dCD2_2;
         
-volatile float                       dCDELT1;
-volatile float                       dCDELT2;
+volatile double                     dCDELT1;
+volatile double                     dCDELT2;
 
         double                      dPC1_1;
         double                      dPC1_2;
@@ -116,6 +116,8 @@ public :
         void                        afficheDatas();
 		void						afficheInfoFits();
 		void						afficheInfoFits(bool);
+		void						iconize();
+		void						restaure(bool); 	//bAffInfoFits,
 		
 inline  GLubyte*                    getPTR()                { return (bValid ?  readBgr.ptr.load() : NULL); };
 inline  int                         getW()                  { return (bValid ?  readBgr.w.load() : 0); };
@@ -127,8 +129,8 @@ inline  void 						setPanelCapture(PanelCapture* p) 			{ pPanelCapture = p; };
 inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionFits; }
 
         void                        getRB( struct readBackground* );
-        void						screen2J2000( vec2&, int, int );
-        void						J2000_2_screen( vec2&, vec2& );
+        void						screen_2_J2000( vec2, vec2& );
+        void						J2000_2_screen( vec2, vec2& );
 //        void						setView(Panel* p)		{ pPanelFits->setView(p); }
 
 inline	double                      getNAXIS1()				{ return nNAXISn[0]; }

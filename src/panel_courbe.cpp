@@ -6,18 +6,18 @@
 //
 //--------------------------------------------------------------------------------------------------------------------
 bool PanelCourbe::bDebug = false;
-vec4 color_Y     = vec4(1.0,1.0,0.0,1.0);
-vec4 color_X     = vec4(0.0,0.0,1.0,1.0);
-vec4 color_FFT1  = vec4(0.0,1.0,0.0,0.7);
-vec4 color_FFT0  = vec4(0.0,1.0,0.0,0.2);
-vec4 color_FFT_Y = vec4(1.0,1.0,0.5,1.0);
-vec4 color_FFT_X = vec4(0.5,0.5,1.0,1.0);
+vcf4 color_Y     = vcf4(1.0,1.0,0.0,1.0);
+vcf4 color_X     = vcf4(0.0,0.0,1.0,1.0);
+vcf4 color_FFT1  = vcf4(0.0,1.0,0.0,0.7);
+vcf4 color_FFT0  = vcf4(0.0,1.0,0.0,0.2);
+vcf4 color_FFT_Y = vcf4(1.0,1.0,0.5,1.0);
+vcf4 color_FFT_X = vcf4(0.5,0.5,1.0,1.0);
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 PanelCourbe::PanelCourbe()
 {
-    logf( (char*)"PanelCourbe::PanelCourbe() Constructeur" );
+    logf( (char*)" Constructeur  PanelCourbe::PanelCourbe()" );
     log_tab(true);
     
 	WindowsManager&     wm  = WindowsManager::getInstance();
@@ -65,17 +65,17 @@ PanelCourbe::PanelCourbe()
 
 
 
-    ech_w           = 1.0;
-    ech_h           = 1.0;
+    ech_w           	= 1.0;
+    ech_h           	= 1.0;
 
     bDisplayPt_old      = !bDisplayPt;
     bDisplayCourbeX_old = true;//Displayfft_old;
     bDisplayCourbeY_old = true;
-    bDisplayfftX_old = true;//Displayfft_old;
-    bDisplayfftY_old = true;
-    filtre_old      = -1;
+    bDisplayfftX_old	= true;//Displayfft_old;
+    bDisplayfftY_old	= true;
+    filtre_old			= -1;
     
-    fVal            = 256.0 / filtre;
+    dVal				= 256.0 / filtre;
 
     update_err();
 
@@ -112,7 +112,7 @@ PanelCourbe::PanelCourbe()
     setExtraString("PanelCourbe");
 
     log_tab(false);
-    logf( (char*)"PanelCourbe::PanelCourbe() Constructeur" );
+    logf( (char*)" Constructeur  PanelCourbe::PanelCourbe()     -----END-----" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -196,7 +196,7 @@ void PanelCourbe::init_panel()
     //  Valeur de l'edition dimension de la
     pFiltreVal->set( 1, 128, 128, 4 );
     //pFiltreVal->set_delta( 20, 8 );
-    pFiltreVal->set_pVal( &fVal );
+    pFiltreVal->set_pVal( &dVal );
 
     add( pFiltreVal );
     
@@ -313,6 +313,8 @@ void PanelCourbe::charge_guidage_1_0(ifstream& fichier, string line)
         d.v     = vec2(vec2(rx,ry) - vec2(ox, oy));
         d.t     = 0.0;
         d.type  = PanelCourbe::ABSOLU;
+
+	    //logf( (char*)"pt%s",d.v.to_st() );
 
         t_vCourbe.push_back( d );
 
@@ -570,20 +572,20 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
     VarManager& var = VarManager::getInstance();
 
     float gris = 0.3;
-    vec4 color, colorLimit, colorAxe;
+    vcf4 color, colorLimit, colorAxe;
     
     if ( var.getb("bNuit") )
     {
-        color       = vec4( gris, 0.0, 0.0, 1.0 );    
-        colorLimit  = vec4( 0.8, 0.0, 0.0, 1.0 );    
-        colorAxe    = vec4( 1.0, 0.0, 0.0, 1.0 );
+        color       = vcf4( gris, 0.0, 0.0, 1.0 );    
+        colorLimit  = vcf4( 0.8, 0.0, 0.0, 1.0 );    
+        colorAxe    = vcf4( 1.0, 0.0, 0.0, 1.0 );
     }
     else                            
     {
         //gris = 0.4;
-        color       = vec4( gris, gris, gris, 1.0 );
-        colorLimit  = vec4( 1.0, 0.0, 0.0, 1.0 );
-        colorAxe    = vec4( 1.0, 1.0, 1.0, 1.0 );
+        color       = vcf4( gris, gris, gris, 1.0 );
+        colorLimit  = vcf4( 1.0, 0.0, 0.0, 1.0 );
+        colorAxe    = vcf4( 1.0, 1.0, 1.0, 1.0 );
     }
     
     glBegin(GL_LINES);
@@ -781,6 +783,7 @@ void PanelCourbe::glCourbeCube( float* tab, int size, int pas, int xStart, int x
 void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdecal, int ydecal,
                             int y_zero, float offset, float a, float b, bool bPoints )
 {
+//#define DEBUG
     if ( size != 0  )
     {
         glBegin(GL_LINE_STRIP);
@@ -794,16 +797,32 @@ void PanelCourbe::glCourbe( float* tab, int size, int pas, int xStart, int xdeca
 
         for( int i=deb; i<fin; i++ )
         {
-            float y = tab[(n-i-1)*pas] - offset;
+        	float val = tab[(n-i-1)*pas];
+        	//float val = tab[n-i-1];
+        	//float val = t_vCourbe[(n-i-1)*pas].v.x;
+        	//float val = t_vCourbe[(n-i-1)].v.x;
+            float y = val - offset;
             y = (float)(b*(y) + y_zero);
+            #ifdef DEBUG
+            logf( (char*)"i=%d n=%d pas=%d y_zero=%d val =%0.2f", i, n, pas, y_zero, val );
             
+            logf( (char*)"      pt(--, %0.2f)", y );
+            #endif
             int x = (i-deb)*a + xStart;
+            //logf( (char*)"pt(%0.2f, %0.2f)", a, b );
+            #ifdef DEBUG
+            logf( (char*)"      pt(%d, %0.2f)", x, y );
+            #endif
             if ( x > getPosDX() )                           break;
 
             int Y = y - ydecal;
 
             x2Screen(x);
             y2Screen(Y);
+
+            #ifdef DEBUG
+            logf( (char*)"      af(%d, %d)", x, Y );
+            #endif
 
             glVertex2i( x, Y );
 
@@ -853,9 +872,10 @@ void PanelCourbe::glCourbes()
         if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
         else                            glColor4fv( color_X );
         
-       glCourbe(    tabx, t_vCourbe.size(), sizeof(data)/4, xStartAxe, decal_x, decal_y, getDY()/2, 0.0,
+       glCourbe(    tabx, t_vCourbe.size(), sizeof(data)/4, xStartAxe, decal_x, decal_y, getDY()/2, 0.0, 
                     courbe1*ech_w, delta_courbe1*ech_h, bDisplayPt );
     }
+    //logf( (char*)"sizeof(data)=%d, sizeof(float)=%d, sizeof(vec2)=%d", sizeof(data), sizeof(float), sizeof(vec2) );
     
     if ( bDisplayCourbeY )
     {
@@ -1132,7 +1152,7 @@ void PanelCourbe::updatePos()
     if ( bDisplayfftY )             pAffFFTY->setColor( (unsigned long)0xffffff00 );
     else                            pAffFFTY->setColor( (unsigned long)0xff808080 );
     //--------------------------------------------------------------    
-    filtre = (float)nb / fVal;
+    filtre = (float)nb / dVal;
     //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
     
     if ( filtre_old != filtre )
@@ -1144,7 +1164,7 @@ void PanelCourbe::updatePos()
         //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
     }
     //--------------------------------------------------------------    
-    //logf( (char*)"filtre %0.2f nb %d  fVal %0.2f)", filtre, nb, fVal );
+    //logf( (char*)"filtre %0.2f nb %d  dVal %0.2f)", filtre, nb, dVal );
 
     bDisplayPt_old = bDisplayPt;
 

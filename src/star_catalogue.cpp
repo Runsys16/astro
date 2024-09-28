@@ -20,15 +20,24 @@ StarCatalog::~StarCatalog()
 //--------------------------------------------------------------------------------------------------------------------
 StarCatalog::StarCatalog( double ra, double de, double mag, string n )
 {
+//#define COORD
     //logf( (char*)"Constructeur StarCatalog()" );
     fRA = ra;
     fDE = de;
     fMag = mag;
     name = string( n );
     
-    //sprintf((char*)p_sInfo, "%s %0.2f", (char*)name.c_str(), (float)mag);
-    sprintf((char*)p_sInfo, "m=%0.4f", (float)mag);
-    
+#ifdef COORD
+    struct hms HMS;
+    struct dms DMS;
+    deg2hms( ra, HMS );
+    deg2dms( de, DMS );
+    //sprintf((char*)p_sInfo, "m=%0.4f %2dh %2d' %2.2f\" %2d %2d' %2.2f\"", (float)mag, (int)HMS.h, (int)HMS.m, HMS.s, (int)DMS.d, (int)DMS.m,  DMS.s   );
+    sprintf((char*)p_sInfo, "m=%0.4f %2f %f", (float)mag, ra, de   );
+#else    
+    sprintf((char*)p_sInfo, "m=%0.4f", (float)mag );
+#endif
+
     pInfo       = new PanelText( (char*)p_sInfo,		PanelText::NORMAL_FONT );
     pInfo->setExtraString( "Star pInfo" );
     

@@ -15,7 +15,7 @@
 
 #include <linux/videodev2.h>
 
-#include "Mathlib.h"
+#include "MathlibD.h"
 #include <WindowsManager.h>
 
 #include "v4l2.h"

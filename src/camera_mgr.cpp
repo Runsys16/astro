@@ -513,7 +513,7 @@ void  Camera_mgr::tex2screen(int& x, int& y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void  Camera_mgr::tex2screen(float& x,float& y)
+void  Camera_mgr::tex2screen(double& x,double& y)
 {
     if (pCurrent == NULL)                   return;
     pCurrent->getPanelPreview()->tex2screen(x, y);
@@ -529,7 +529,7 @@ void  Camera_mgr::screen2tex(int& x,int& y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void  Camera_mgr::screen2tex(float& x,float& y)
+void  Camera_mgr::screen2tex(double& x,double& y)
 {
     if (pCurrent == NULL)                   return;
     pCurrent->getPanelPreview()->screen2tex(x, y);

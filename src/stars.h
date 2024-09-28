@@ -2,7 +2,7 @@
 #define STARS_H  1
 
 #include "main.h"
-#include "Mathlib.h"
+#include "MathlibD.h"
 #include "star.h"
 
 #include <WindowsManager.h>

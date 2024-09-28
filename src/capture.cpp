@@ -46,7 +46,7 @@ Capture::Capture()
     }
     basename = res[nb-1];
     
-    bIcone = false;
+    bIconized = false;
     bFullScreen = false;
 
     setExtraString( "Capture ..." );
@@ -69,7 +69,7 @@ Capture::Capture(string dirname, string name)
     dirname = dirname;
     old_dir = string( dirname );
     basename = name;
-    bIcone = false;
+    bIconized = false;
     bFullScreen = false;
 
     logf( (char*)"image : %s", filename.c_str() );
@@ -135,6 +135,7 @@ Capture::~Capture()
 
     sup( panelPreview );
 
+    //if ( isFits() )     delete fits;
 
     logf((char*)"Capture::~Capture() delete icons de fenetre" );
 	delete		pFermer;
@@ -247,7 +248,7 @@ void Capture::clickLeft(int xm, int ym)
 void Capture::releaseLeft(int xm, int ym)
 {
 
-    logf( (char*)"Capture::releaseLeft(...)" );
+    logf( (char*)"Capture::releaseLeft( %d, %d)", xm, ym );
     log_tab(true);
 
     if ( pFermer == pFermer->isMouseOver(xm, ym) )
@@ -260,7 +261,7 @@ void Capture::releaseLeft(int xm, int ym)
     if ( pMaximiser == pMaximiser->isMouseOver(xm, ym ) )
     {
         logf( (char*)"Capture::releaseLeft() Maximiser" );
-        if ( bIcone )
+        if ( bIconized )
         {
             Captures::getInstance().setCurrent(this);
             Captures::getInstance().onTop(this);
@@ -275,16 +276,17 @@ void Capture::releaseLeft(int xm, int ym)
     if ( pIconiser == pIconiser->isMouseOver(xm, ym ) )
     {
        logf( (char*)"Capture::releaseLeft() Iconiser" );
+       iconize();
        Captures::getInstance().rotate_capture_plus(true);
     }
 
     if ( bFits )	{
-		if ( !bIcone && bAffInfoFits )			fits->afficheInfoFits(true);
-		else									fits->afficheInfoFits(false);
+		if ( !bIconized && bAffInfoFits )			fits->afficheInfoFits(true);
+		else										fits->afficheInfoFits(false);
 	}
 
     log_tab(false);
-    logf( (char*)"Capture::releaseLeft(...)" );
+    logf( (char*)"Capture::releaseLeft(...)   ------END---------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -421,8 +423,8 @@ void Capture::resize(int w, int h )
     if ( filename.length() !=  0 )
     {
 	
-        float ratioX = (float)dx / (float)readBgr.w;
-        float ratioY = (float)dy / (float)readBgr.h;
+        double ratioX = (double)dx / (double)readBgr.w;
+        double ratioY = (double)dy / (double)readBgr.h;
         if  ( ratioX < ratioY ) 
         {
             dx = readBgr.w * ratioX;
@@ -447,7 +449,7 @@ void Capture::resize(int w, int h )
     //pMaximiser->setPos(dx-32*2, y-12);
 
     panelPreview->setPosAndSize( 0, 0, dx, dy );
-    //panelPreview->setEchelle( (float)readBgr.w / (float)dx );
+    //panelPreview->setEchelle( (double)readBgr.w / (double)dx );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -462,12 +464,12 @@ void Capture::resize(int x, int y, int w, int h )
 
     if ( filename.length() !=  0 )
     {
-        float ratioX = (float)dx / (float)readBgr.w;
-        float ratioY = (float)dy / (float)readBgr.h;
+        double ratioX = (double)dx / (double)readBgr.w;
+        double ratioY = (double)dy / (double)readBgr.h;
         if  ( ratioX < ratioY ) 
         {
-            dx = (float)readBgr.w * ratioX;
-            dy = (float)readBgr.h * ratioX;
+            dx = (double)readBgr.w * ratioX;
+            dy = (double)readBgr.h * ratioX;
 
             y += (h-dy)/2;
             //dx = readBgr.w * ratioX;
@@ -475,8 +477,8 @@ void Capture::resize(int x, int y, int w, int h )
         }
         else
         {
-            dx = (float)readBgr.w * ratioY;
-            dy = (float)readBgr.h * ratioY;
+            dx = (double)readBgr.w * ratioY;
+            dy = (double)readBgr.h * ratioY;
 
             x += (w-dx)/2;
         }
@@ -504,7 +506,7 @@ void Capture::fullscreen()
 
     //resize( 0, 0, dx, dy);
     setPosAndSize(0, 0, dx, dy);
-    bIcone = false;
+    bIconized = false;
     bFullScreen = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -581,8 +583,8 @@ void Capture::afficheInfoFits()
     if (bFits)
     {
     	bAffInfoFits = !bAffInfoFits;
-        if ( !bIcone && bAffInfoFits )			fits->afficheInfoFits(true);
-        else									fits->afficheInfoFits(false);
+        if ( !bIconized && bAffInfoFits )			fits->afficheInfoFits(true);
+        else										fits->afficheInfoFits(false);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -591,7 +593,7 @@ void Capture::afficheInfoFits()
 void Capture::afficheInfoFits(bool b)
 {
 	logf( (char*)"Capture::afficheInfoFits(%s)", BOOL2STR(b) );
-    if (bFits && !bIcone )
+    if (bFits && !bIconized )
     {
         fits->afficheInfoFits( b );
     }
@@ -599,22 +601,34 @@ void Capture::afficheInfoFits(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::setIcone(bool b)
+void Capture::iconize()
 {
-	bIcone = b;
-	panelPreview->setIcone(b);
-	
+	logf( (char*)"Capture::iconize()" );
+	bIconized = true;
+	bFullScreen = false;
+	panelPreview->iconize();
+
 	if ( bFits )	{
-		if ( bAffInfoFits )		{
-			fits->getPanelFits()->setVisible(true);
-			fits->getPanelCorrectionFits()->setVisible(true);
-			WindowsManager::getInstance().onTop(  fits->getPanelFits() );
-			WindowsManager::getInstance().onTop(  fits->getPanelCorrectionFits() );
-		}
-		else	{
-			fits->getPanelFits()->setVisible(false);
-			fits->getPanelCorrectionFits()->setVisible(false);
-		}
+
+		fits->getPanelFits()->setVisible(false);
+		fits->getPanelCorrectionFits()->setVisible(false);
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::restaure(bool bInfo, bool bGrille, bool bSouris )
+{
+	logf( (char*)"Capture::restaure(bInfo=%s, bGrille=%s, bSouris=%s)", BOOL2STR(bInfo), BOOL2STR(bGrille), BOOL2STR(bSouris) );
+	bIconized 				= false;
+    bAffInfoFits			= bInfo;
+    bAfficheInfoSouris		= bGrille;
+    bAfficheGrille			= bSouris;
+	
+	panelPreview->restaure( bGrille, bSouris );
+
+	if ( bFits )	{
+		fits->restaure( bAffInfoFits );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

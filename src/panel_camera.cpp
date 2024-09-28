@@ -2,12 +2,12 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-vec4                colorTraces[] = 
+vcf4                colorTraces[] = 
                         {
-                        vec4(1.0,0.0,0.0,1.0), vec4(0.0,1.0,0.0,1.0), vec4(0.0,0.0,1.0,1.0),
-                        vec4(1.0,1.0,0.0,1.0), vec4(1.0,0.0,1.0,1.0), vec4(0.0,1.0,1.0,1.0),
-                        vec4(0.5,0.0,0.0,1.0), vec4(0.0,0.5,0.0,1.0), vec4(0.0,0.0,0.5,1.0),
-                        vec4(0.5,0.5,0.0,1.0), vec4(0.5,0.0,0.5,1.0), vec4(0.0,0.5,0.5,1.0)
+                        vcf4(1.0,0.0,0.0,1.0), vcf4(0.0,1.0,0.0,1.0), vcf4(0.0,0.0,1.0,1.0),
+                        vcf4(1.0,1.0,0.0,1.0), vcf4(1.0,0.0,1.0,1.0), vcf4(0.0,1.0,1.0,1.0),
+                        vcf4(0.5,0.0,0.0,1.0), vcf4(0.0,0.5,0.0,1.0), vcf4(0.0,0.0,0.5,1.0),
+                        vcf4(0.5,0.5,0.0,1.0), vcf4(0.5,0.0,0.5,1.0), vcf4(0.0,0.5,0.5,1.0)
                         };
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -53,6 +53,8 @@ PanelCamera::PanelCamera()
 #include "camera_mgr.h"
 void PanelCamera::idle(float f)
 {
+    VarManager& var = VarManager::getInstance();
+
     int color = 0;
     if ( bNuit )        color = 0xFFFF0000;
     else                color = 0xFFFFFFFF;
@@ -117,7 +119,7 @@ void PanelCamera::idle(float f)
             if ( pInfo->getParent() == NULL )    this->add(pInfo);
 
             pInfo->setPos(x+10-getX(), y-30-getY());
-            pInfo->setVisible(true);
+            pInfo->setVisible( true );
 
             //logf( (char*)"%08X", (int)color );
             if ( bNuit )        color = 0xFFFF0000;
@@ -131,7 +133,7 @@ void PanelCamera::idle(float f)
         for ( int i=0; i<n; i++ )
         {
             PanelText* pInfo = vizier.get(i)->pInfo;
-            pInfo->setVisible(true);
+            pInfo->setVisible(false);
         }
     }    
     //----------------------------------------------
@@ -168,12 +170,12 @@ void PanelCamera::addStar(int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::setCentX(float f)
+void PanelCamera::setCentX(double f)
 {
     dx = f;
 
-    float fDX = (float)pReadBgr->w / echelle;
-    float fDY = (float)pReadBgr->h / echelle;
+    double fDX = (double)pReadBgr->w / echelle;
+    double fDY = (double)pReadBgr->h / echelle;
 
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
@@ -187,12 +189,12 @@ void PanelCamera::setCentX(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::setCentY(float f)
+void PanelCamera::setCentY(double f)
 {
     dy = f;
 
-    float fDX = (float)pReadBgr->w / echelle;
-    float fDY = (float)pReadBgr->h / echelle;
+    double fDX = (double)pReadBgr->w / echelle;
+    double fDY = (double)pReadBgr->h / echelle;
 
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
@@ -206,19 +208,19 @@ void PanelCamera::setCentY(float f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::setEchelle(float f)
+void PanelCamera::setEchelle(double f)
 {
     logf( (char*)"setEchelle(%0.2f)", f );
     echelle = f;
-    float fDX = (float)pReadBgr->w / echelle;
-    float fDY = (float)pReadBgr->h / echelle;
+    double fDX = (double)pReadBgr->w / echelle;
+    double fDY = (double)pReadBgr->h / echelle;
     
     int dxp = getParent()->getDX();
     int dyp = getParent()->getDY();
 
     if ( fDX < dxp )
     {
-        echelle = (float)pReadBgr->w/(float)dxp;
+        echelle = (double)pReadBgr->w/(double)dxp;
         fDX = dxp;
         fDY = dyp;
         logf( (char*)"Stop setEchelle(%0.2f)", echelle );
@@ -271,16 +273,16 @@ void PanelCamera::compute_echelle()
 	WindowsManager& wm = WindowsManager::getInstance();
     
     //      Dimension ecran
-    float wSc = (float)wm.getWidth();
-    float hSc = (float)wm.getHeight();
+    double wSc = (double)wm.getWidth();
+    double hSc = (double)wm.getHeight();
 
     //      Dimension texture
-    float wTex = (float)pReadBgr->w;
-    float hTex = (float)pReadBgr->h;
+    double wTex = (double)pReadBgr->w;
+    double hTex = (double)pReadBgr->h;
 
     //      Facteur d'echelle
-    float ew = wSc / wTex;
-    float eh = hSc / hTex;
+    double ew = wSc / wTex;
+    double eh = hSc / hTex;
     //ew = 1600.0/1920.0;
     //eh = 900.0/1080.0;
     echelle = ew<eh ? ew : eh;
@@ -295,21 +297,21 @@ void PanelCamera::tex2screen(vec2& v)
     
     compute_echelle();
 
-    v.x = echelle * v.x + (float)getX();    
-    v.y = echelle * v.y + (float)getY();    
+    v.x = echelle * v.x + (double)getX();    
+    v.y = echelle * v.y + (double)getY();    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::tex2screen(float& xx, float& yy)
+void PanelCamera::tex2screen(double& xx, double& yy)
 {
     if  ( panelCourbe==NULL )   return;
     if  ( pReadBgr==NULL )      return;
 
     compute_echelle();
 
-    xx = echelle * xx + (float)getX();    
-    yy = echelle * yy + (float)getY();    
+    xx = echelle * xx + (double)getX();    
+    yy = echelle * yy + (double)getY();    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -319,8 +321,8 @@ void PanelCamera::tex2screen(int& xx, int& yy)
     if  ( panelCourbe==NULL )   return;
     if  ( pReadBgr==NULL )      return;
 
-    float XX = xx;
-    float YY = yy;
+    double XX = xx;
+    double YY = yy;
     
     tex2screen(XX, YY);
 
@@ -330,15 +332,15 @@ void PanelCamera::tex2screen(int& xx, int& yy)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::screen2tex(float& xx, float& yy)
+void PanelCamera::screen2tex(double& xx, double& yy)
 {
     if  ( panelCourbe==NULL )   return;
     if  ( pReadBgr==NULL )      return;
 
     compute_echelle();
 
-    xx = (xx - (float)getX()) / echelle;    
-    yy = (yy - (float)getY()) / echelle;    
+    xx = (xx - (double)getX()) / echelle;    
+    yy = (yy - (double)getY()) / echelle;    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -348,8 +350,8 @@ void PanelCamera::screen2tex(int& xx, int& yy)
     if  ( panelCourbe==NULL )   return;
     if  ( pReadBgr==NULL )      return;
 
-    float XX = xx;
-    float YY = yy;
+    double XX = xx;
+    double YY = yy;
     
     screen2tex(XX, YY);
 
@@ -361,17 +363,17 @@ void PanelCamera::screen2tex(int& xx, int& yy)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::glCercle(int x, int y, int rayon)
 {
-    float step = 300.0/(float)rayon;
+    double step = 300.0/(double)rayon;
     if ( step < 1.0 )           step = 1.0;
     
     //logf ( (char*)" rayon %d   step %0.2f", rayon, step );
     
 	glBegin(GL_LINE_LOOP);
 
-        for( float i=0; i<=360.0; i+=step )
+        for( double i=0; i<=360.0; i+=step )
         {
-            float fx = (float)x+ (float)rayon*cos(DEG2RAD(i));
-            float fy = (float)y+ (float)rayon*sin(DEG2RAD(i));
+            double fx = (double)x+ (double)rayon*cos(DEG2RAD(i));
+            double fy = (double)y+ (double)rayon*sin(DEG2RAD(i));
             glVertex2i(fx,fy);
         }
         
@@ -455,7 +457,7 @@ void PanelCamera::glVecAD()
 {
     VarManager& var = VarManager::getInstance();
 
-    float gris = 0.0;
+    double gris = 0.0;
     if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
     else                            glColor4f( 1.0, gris, gris, 1.0 );
     
@@ -480,7 +482,7 @@ void PanelCamera::glVecDC()
 {
     VarManager& var = VarManager::getInstance();
 
-    float gris = 0.0;
+    double gris = 0.0;
     if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );
     else                            glColor4f( gris, 1.0, gris, 1.0 );
     
@@ -514,21 +516,21 @@ void PanelCamera::displaySuivi()
     tex2screen(vSuiviScr);
     
     //      Convertion des coordonnées
-    float gris = 0.8;
+    double gris = 0.8;
 
     //      DEBUG
     //logf( (char*)"Screen (%0.2f,%0.2f)  texture(%0.2f,%0.2f)", wSc, hSc, wTex, hTex );
     //logf( (char*)"     suivi (%0.2f,%0.2f) -> (%0.2f,%0.2f)", xSuivi, ySuivi, x, y );
-    vec4 color;
-    vec4 cBleu = vec4(0.5, 0.5, 1.0, 1.0);
+    vcf4 color;
+    vcf4 cBleu = vcf4(0.5, 0.5, 1.0, 1.0);
 
     //-----------------------------------------------------------------------------
     //      Affichage en mode nuit ?
     if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );
     else                glColor4f( 0.5,   0.4,  0.5, gris );
 
-    if ( bNuit )        color = vec4( 1.0,   0.0,  0.0, gris );
-    else                color = vec4( 0.5,   0.4,  0.5, gris );
+    if ( bNuit )        color = vcf4( 1.0,   0.0,  0.0, gris );
+    else                color = vcf4( 0.5,   0.4,  0.5, gris );
     
     glColor4fv( color );
     //----- Affichage de la croix   ----------------------------------------------
@@ -554,8 +556,8 @@ void PanelCamera::displaySuivi()
         vDiffText = vec2(0.0,0.0);
     }     
 
-    float l = vDiffText.length();
-    float f = fTime/fTimeClign;
+    double l = vDiffText.length();
+    double f = fTime/fTimeClign;
     bool bHorsLimite =  l>=fLimitCorrection;
     
     
@@ -622,7 +624,7 @@ void PanelCamera::displayCentre()
     int x = wm.getWidth();
     int y = wm.getHeight();
 
-    float gris = 0.3;
+    double gris = 0.3;
     if ( bNuit )        glColor4f( 1.0,   0.0,  0.0, gris );
     else                glColor4f( 0.0,   1.0,  0.0, gris );    
     
@@ -668,7 +670,7 @@ void PanelCamera::displayGL()
     //if ( pReadBgr != NULL )
      //   logf( (char*)"*** PanelCamera::displayGL()  %X", (long)pReadBgr->ptr );
 
-    float gris = 0.3;
+    double gris = 0.3;
     VarManager& var = VarManager::getInstance();
     //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
     //else                            glColor4f( gris, gris, gris, 0.2 );
@@ -676,17 +678,17 @@ void PanelCamera::displayGL()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
-    //float x = getParent()->getX();
-    //float y = getParent()->getY();
+    //double x = getParent()->getX();
+    //double y = getParent()->getY();
 
-    float x = getX();
-    float y = getY();
+    double x = getX();
+    double y = getY();
 
-    float X = -dx;
-    float Y = -dy;
+    double X = -dx;
+    double Y = -dy;
 
-    float dx = getDX()/2;
-    float dy = getDY()/2;
+    double dx = getDX()/2;
+    double dy = getDY()/2;
 
 
 
@@ -775,13 +777,13 @@ void PanelCamera::releaseLeft(int xm, int ym)
     if ( pReadBgr == NULL )     { logf( (char*)" return Pointeur NULL" ); return; }
     
     log_tab(true);
-    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), (float)pReadBgr->w.load() );
+    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), (double)pReadBgr->w.load() );
     
-    float e = (float)getDX() / (float)pReadBgr->w.load(); 
-    //float e = (float)getDX() / (float)1920.0; 
+    double e = (double)getDX() / (double)pReadBgr->w.load(); 
+    //double e = (double)getDX() / (double)1920.0; 
     
-    int xx = ((float)xm-(float)getX()) / e;
-    int yy = ((float)ym-(float)getY()) / e;
+    int xx = ((double)xm-(double)getX()) / e;
+    int yy = ((double)ym-(double)getY()) / e;
     
     stars.setView( this );
     stars.setRB( pReadBgr );
@@ -809,11 +811,11 @@ void PanelCamera::releaseMiddle(int xm, int ym)
         
     logf( (char*)"panelCamera->getDX()=%d pReadBgr->w=%0.2f", getDX(), pReadBgr->w.load() );
     
-    //float e = (float)getDX() / (float)pReadBgr->w; 
-    float e = (float)getDX() / (float)1920.0; 
+    //double e = (double)getDX() / (double)pReadBgr->w; 
+    double e = (double)getDX() / (double)1920.0; 
     
-    int xx = ((float)xm-(float)getX()) / e;
-    int yy = ((float)ym-(float)getY()) / e;
+    int xx = ((double)xm-(double)getX()) / e;
+    int yy = ((double)ym-(double)getY()) / e;
     
     stars.setView( this );
     stars.setRB( pReadBgr );

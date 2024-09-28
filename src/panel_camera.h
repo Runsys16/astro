@@ -17,17 +17,17 @@ class PanelCamera : public PanelWindow
 {
 
 protected:
-    float               echelle;
-    float               dx;
-    float               dy;
+    double               echelle;
+    double               dx;
+    double               dy;
     
     rb_t*               pReadBgr;
     
     Stars               stars;
-    float               fTime;
-    float               fSens;
-    float               fTimeClign;
-    float               fTime1;
+    double               fTime;
+    double               fSens;
+    double               fTimeClign;
+    double               fTime1;
     bool                bTime1;
     
     int                 x_old;
@@ -62,10 +62,10 @@ public:
     void                compute_echelle();
     void                tex2screen(vec2&);
     void                tex2screen(int&,int&);
-    void                tex2screen(float&,float&);
+    void                tex2screen(double&,double&);
 
     void                screen2tex(int&,int&);
-    void                screen2tex(float&,float&);
+    void                screen2tex(double&,double&);
 
     void                glCercle(int x, int y, int rayon);
     inline void         glCercle(vec2 v, int r)
@@ -86,9 +86,9 @@ public:
     bool                starExist(int, int);    
     void                addStar(int,int);
 
-    void                setEchelle(float f);
-    void                setCentX(float f);
-    void                setCentY(float f);
+    void                setEchelle(double f);
+    void                setCentX(double f);
+    void                setCentY(double f);
 
     void                setRB(rb_t* p);
     vec2*               getSuivi();
@@ -96,9 +96,9 @@ public:
     void                setRefCatalog(double _0, double _1);
 
    
-inline float            getEchelle()                                    { return echelle; }
-inline float            getCentX()                                      { return dx; }
-inline float            getCentY()                                      { return dy; }
+inline double            getEchelle()                                    { return echelle; }
+inline double            getCentX()                                      { return dx; }
+inline double            getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
 inline rb_t*            getRB()                                         { return pReadBgr; }
 inline int              getNbStars()                                    { return stars.size(); }

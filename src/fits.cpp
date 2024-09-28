@@ -40,7 +40,8 @@ Fits::Fits(string filename, PanelCapture* p)
     dMax = -999999999999.9;
 
 	//------------------------------------------------------------------------
-    VarManager& 	var	= VarManager::getInstance();
+    VarManager& 		var	= VarManager::getInstance();
+	WindowsManager&     wm  = WindowsManager::getInstance();
 
 
 
@@ -48,8 +49,11 @@ Fits::Fits(string filename, PanelCapture* p)
     pPanelCorrectionFits->setPos( 50, 50 );
     
     pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
-    pPanelCorrectionFits->getCDELT1()->set_pVal( (float*)&dCDELT1 );
-	if ( var.getb("bAffFitsCorrection") )		pPanelCorrectionFits->setVisible(false);
+    pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
+    pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
+    pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
+	pPanelCorrectionFits->setVisible( var.getb("bAffFitsCorrection") );
+    wm.add( pPanelCorrectionFits );
 
     pPanelFits = new PanelFits();
     pPanelFits->setPosAndSize( 10, 10, 580, 250 );
@@ -261,12 +265,15 @@ void Fits::sauveMatrice()
 	//mMat = mAstroTrns * mAstroEchl * mMoinsX ;// * sym0;
 	//mMat = mAstroEchl * mAstroTrns;// * sym0;
 
+	char STR[255];
     row r;
     r.key = "M_Trns";
-    r.value = mAstroTrns.to_st();
+    mAstroTrns.to_str(STR);
+    r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
     r.key = "M_Echl";
-    r.value = mAstroEchl.to_st();
+    mAstroEchl.to_str(STR);
+    r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 	
 	vec2 hg = vec2(0.0, 0.0);
@@ -274,16 +281,19 @@ void Fits::sauveMatrice()
 	vec2 v;
 
     r.key = "M_Res";
-    r.value = mMat.to_st();
+    mMat.to_str(STR);
+    r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 
 	v = mMat * hg;
     r.key = "HG";
-    r.value = v.to_st();
+    v.to_str(STR);
+    r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 	v = mMat * bd + vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
     r.key = "BD";
-    r.value = v.to_st();
+    v.to_str(STR);
+    r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 
 	//-----------------------------------------------------------------
@@ -683,18 +693,20 @@ void Fits::readCDELT( string key, string value )
     if ( key.find("CDELT1") == 0 )	{
             	dCDELT1  = getDouble( value );
 				pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
-				pPanelCorrectionFits->getCDELT1()->set_pVal( (float*)&dCDELT1 );
+				pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
 	}
     else    if ( key.find("CDELT2") == 0 )  {
     			dCDELT2  = getDouble( value );
 				pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
-				pPanelCorrectionFits->getCDELT2()->set_pVal( (float*)&dCDELT2 );
+				pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
 	}
     else	bOK = false;
     
     if ( bOK )	{
 		//mAstroEchl = mat2( dCDELT1, dCDELT2, dCDELT1, dCDELT2 );
-		logf( (char*)"Matrice de transformation : %s", mAstroEchl.to_st() );
+		char STR[255];
+		mAstroEchl.to_str(STR);
+		logf( (char*)"Coefficiens d\'echelle : %s", STR );
 	}
     
 }
@@ -712,7 +724,9 @@ void Fits::readCD( string key, string value )
     
     if ( bOK )	{
 		mAstroEchl = mat2( dCD1_1, dCD2_1, dCD1_2, dCD2_2 );
-		logf( (char*)"Matrice d'echelle: %s", mAstroEchl.to_st() );
+		char STR[255];
+		mAstroEchl.to_str(STR);
+		logf( (char*)"Matrice d'echelle: %s", STR );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -728,8 +742,10 @@ void Fits::readPC( string key, string value )
     else	bOK = false;
     
     if ( bOK )	{
+    	char STR[255];
 		mAstroTrns = mat2( dPC1_1, dPC2_1, dPC1_2, dPC2_2 );
-		logf( (char*)"Matrice de transformation : %s", mAstroTrns.to_st() );
+		mAstroTrns.to_str(STR);
+		logf( (char*)"Matrice de transformation : %s", STR );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -814,103 +830,131 @@ void Fits::afficheInfoFits(bool b)
 	if( pPanelFits != NULL )		
 	{
 		pPanelFits->setVisible( b );
-		if ( b )
+		if ( b )	{
 			WindowsManager::getInstance().onTop(pPanelFits);
 			WindowsManager::getInstance().onTop(pPanelCorrectionFits);
+		}
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::screen2J2000(vec2& r, int x, int y )
+void Fits::screen_2_J2000(vec2 s, vec2& j )
 {
 //#define DEBUG
-#ifdef DEBUG
-	logf( (char*)"Fits::screen2J2000( %s, x=%d, y=%d )", r.to_st(), x, y );
-	log_tab( true );
-#endif
+	#ifdef DEBUG
+		char STR[255];
+		r.to_str(STR);
+		logf( (char*)"Fits::screen2J2000( %s, x=%d, y=%d )", STR, x, y );
+		log_tab( true );
+	#endif
 
-	vec2 s = vec2(x, y);
-	s -= vec2( nNAXISn[0]/2, nNAXISn[1]/2 );
-#ifdef DEBUG
-	logf( (char*)"s=%s", s.to_st() );
-#endif
-	
-	mat2 m = mMat;
-	m.inverse();
-	r = m * s;
-#ifdef DEBUG
-	logf( (char*)"m.inverse*v: %s", r.to_st() );
-#endif
-	/*
-	vec2 w = mMat * s;
-	logf( (char*)"nMat*v: %s", w.to_st() );
-	*/
-
-	if ( dCDELT1 != -1.0 )
-	{
-		r.x *= dCDELT1;
-		r.y *= dCDELT2;
-	}
-#ifdef DEBUG
-	logf( (char*)"Coef deg/pix: %s", r.to_st() );
-#endif
-	/*
-	r+=vec2( nNAXISn[0]/2, nNAXISn[1]/2 );
-	logf( (char*)"Recentrage: %s", r.to_st() );
-	*/
-	r.y = -r.y;
-	r += vec2( dCRVAL1, dCRVAL2 );
-#ifdef DEBUG
-	logf( (char*)"valeur de retour %s", r.to_st() );
-	
-	log_tab( false );
-#endif
-	
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Fits::J2000_2_screen(vec2& r, vec2& s )
-{
-//#define DEBUG
-#ifdef DEBUG
-	logf( (char*)"Fits::J2000_2_screen( %s, %s )", r.to_st(), s.to_st() );
-	log_tab( true );
-#endif
 	vec2 crpix =  vec2( dCRPIX1, dCRPIX2 );
 	vec2 crval =  vec2( dCRVAL1, dCRVAL2 );
 	vec2 cdelt =  vec2( dCDELT1, dCDELT2 );
 
-	vec2 v = s;
-#ifdef DEBUG
-	logf( (char*)"v=%s", v.to_st() );
-#endif
+	s -= crpix;
+	s.x = - s.x;
 
-	v = s - crval;
-#ifdef DEBUG
-	logf( (char*)"%s = %s - %s", v.to_st(), s.to_st(), crval.to_st() );
-#endif
-
+	#ifdef DEBUG
+		r.to_str(STR);
+		logf( (char*)"s=%s", s. STR);
+	#endif
+	
 	mat2 m = mMat;
-	r = m * v;
-#ifdef DEBUG
-	logf( (char*)"%s = m * %s", r.to_st(), v.to_st() );
-#endif
+	//m.inverse();
+	j = m * s;
 
-	r.x = r.x / cdelt.x;
-	r.y = r.y / cdelt.y;
-#ifdef DEBUG
-	logf( (char*)"%s /= %s", r.to_st(), cdelt.to_st() );
-#endif
-	r.x = -r.x;
-	r += crpix;
-#ifdef DEBUG
-	logf( (char*)"valeur de retour %s", r.to_st() );
+	#ifdef DEBUG
+		r.to_st(STR);
+		logf( (char*)"Coef deg/pix: %s", STR );
+	#endif
+
+	j.x = j.x * cdelt.x;
+	j.y = j.y * cdelt.y;
+
+	#ifdef DEBUG
+		r.to_st(STR);
+		logf( (char*)"m.inverse*v: %s", STR );
+	#endif
+
+	j += crval;
+
+	#ifdef DEBUG
+		r.to_str(STR);
+		logf( (char*)"valeur de retour %s", STR );
+		
+		log_tab( false );
+	#endif
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::J2000_2_screen(vec2 j, vec2& s )
+{
+//#define DEBUG
+	#ifdef DEBUG
+		char str1[255];
+		char str2[255];
+		r.to_str(str1);
+		s.to_str(str2);
+
+		logf( (char*)"Fits::J2000_2_screen( %s, %s )", str1, str2 );
+		log_tab( true );
+	#endif
+
+	vec2 crpix =  vec2( dCRPIX1, dCRPIX2 );
+	vec2 crval =  vec2( dCRVAL1, dCRVAL2 );
+	vec2 cdelt =  vec2( dCDELT1, dCDELT2 );
+
+	#ifdef DEBUG
+		v.to_str(str1);
+		logf( (char*)"v=%s", str1 );
+	#endif
+
+	j -= crval;
+
+	#ifdef DEBUG
+		logf( (char*)"%s = %s - %s", v.to_st(), s.to_st(), crval.to_st() );
+	#endif
+
+	j.x = j.x / cdelt.x;
+	j.y = j.y / cdelt.y;
+
+	mat2 m = mMat.inverse();
+	s = m * j;
+
+	#ifdef DEBUG
+		logf( (char*)"%s = m * %s", r.to_st(), v.to_st() );
+	#endif
 	
-	log_tab( false );
-#endif
+	#ifdef DEBUG
+		logf( (char*)"%s /= %s", r.to_st(), cdelt.to_st() );
+	#endif
+
+	s.x = -s.x;
+	s += crpix;
 	
+	#ifdef DEBUG
+		logf( (char*)"valeur de retour %s", r.to_st() );
+		
+		log_tab( false );
+	#endif
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::iconize()
+{
+	pPanelFits->setVisible( false );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::restaure( bool bAffInfo )
+{
+	pPanelFits->setVisible( bAffInfo );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
