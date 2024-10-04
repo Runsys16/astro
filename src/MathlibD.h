@@ -65,6 +65,7 @@ inline double random(double min, double max) { return min + (max - min) * INV_RA
 inline int random(int max=RAND_MAX) { return rand()%(max+1); }
 
 class vec2;
+class vecf2;
 class vec3;
 class vec4;
 class vcf4;
@@ -84,7 +85,7 @@ class ivec4;
 class vec2 {
 public:
 	vec2(void) : x(0), y(0) { }
-	vec2(double _x,double _y) : x(_x), y(_y) { }
+	vec2(float _x,float _y) : x(_x), y(_y) { }
 	vec2(const double *_v) : x(_v[0]), y(_v[1]) { }
 	vec2(const vec2 &_v) : x(_v.x), y(_v.y) { }
 	vec2(const vec3 &_v);
@@ -152,7 +153,7 @@ public:
 
     void to_str(char* s)
     {
-    	sprintf( (char*)s,"(%f, %f)", x, y );
+    	sprintf( (char*)s,"(%lf, %lf)", x, y );
     }
 
 	union {
@@ -165,6 +166,98 @@ public:
 inline vec2 operator*(double fl, const vec2& v)	{ return vec2(v.x*fl, v.y*fl);}
 
 inline double Dot(const vec2& a, const vec2& b) { return(a.x*b.x+a.y*b.y); }
+
+
+
+
+/*****************************************************************************/
+/*                                                                           */
+/* vecf2                                                                     */
+/*                                                                           */
+/*****************************************************************************/
+
+class vecf2 {
+public:
+	vecf2(void) : x(0), y(0) { }
+	vecf2(float _x,float _y) : x(_x), y(_y) { }
+	vecf2(const float *_v) : x(_v[0]), y(_v[1]) { }
+	vecf2(const vecf2 &_v) : x(_v.x), y(_v.y) { }
+	vecf2(const vec3 &_v);
+	vecf2(const vec4 &_v);
+
+	int operator==(const vecf2 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON); }
+	int operator!=(const vecf2 &_v) { return !(*this == _v); }
+
+	vecf2 &operator=(float _f) { this->x=_f; this->y=_f; return (*this); }
+	const vecf2 operator*(float _f) const { return vecf2(this->x * _f,this->y * _f); }
+	const vecf2 operator/(float _f) const {
+		if(fabs(_f) < EPSILON) return *this;
+		_f = 1.0f / _f;
+		return (*this) * _f;
+	}
+	//const vecf2 operator*(const vecf2 &_v) const { return vecf2(this->x * _v.x,this->y  _v.y); }
+	const vecf2 operator+(const vecf2 &_v) const { return vecf2(this->x + _v.x,this->y + _v.y); }
+	const vecf2 operator-() const { return vecf2(-this->x,-this->y); }
+	const vecf2 operator-(const vecf2 &_v) const { return vecf2(this->x - _v.x,this->y - _v.y); }
+
+	vecf2 &operator*=(float _f) { return *this = *this * _f; }
+	vecf2 &operator/=(float _f) { return *this = *this / _f; }
+	vecf2 &operator+=(const vecf2 &_v) { return *this = *this + _v; }
+	vecf2 &operator-=(const vecf2 &_v) { return *this = *this - _v; }
+
+	float operator*(const vecf2 &_v) const { return this->x * _v.x + this->y * _v.y; }
+	float operator/(const vecf2 &_v) const { return this->x / _v.x + this->y / _v.y; }
+
+	operator float*() { return this->v; }
+	operator const float*() const { return this->v; }
+//	float &operator[](int _i) { return this->v[_i]; }
+//	const float &operator[](int _i) const { return this->v[_i]; }
+
+	void set(float _x,float _y) { this->x = _x; this->y = _y; }
+	void reset(void) { this->x = this->y = 0; }
+	float length(void) const { return sqrtf(this->x * this->x + this->y * this->y); }
+	float normalize(void) {
+		float inv,l = this->length();
+		if(l < EPSILON) return 0.0f;
+		inv = 1.0f / l;
+		this->x *= inv;
+		this->y *= inv;
+		return l;
+	}
+	float dot(const vecf2 &v) { return ((this->x*v.x) + (this->y*v.y)); } // Produit scalaire
+	bool compare(const vecf2 &_v,float epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi); }
+	// retourne les coordonnée du point le plus proche de *this sur la droite passant par vA et vB
+	vecf2 closestPointOnLine(const vecf2 &vA, const vecf2 &vB) { return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); }
+	// retourne les coordonnée du point le plus proche de *this sur le segment vA,vB
+	vecf2 closestPointOnSegment(const vecf2 &vA, const vecf2 &vB) {
+		float factor = this->projectionOnLine(vA, vB);
+		if (factor <= 0.0f) return vA;
+		if (factor >= 1.0f) return vB;
+		return (((vB-vA) * factor) + vA);
+	}
+	// retourne le facteur de la projection de *this sur la droite passant par vA et vB
+	float projectionOnLine(const vecf2 &vA, const vecf2 &vB) {
+		vecf2 v(vB - vA);
+		return v.dot(*this - vA) / v.dot(v);
+	}
+	// Fonction d'interpolation linéaire entre 2 vecteurs
+	vecf2 lerp(vecf2 &u, vecf2 &v, float factor) { return ((u * (1 - factor)) + (v * factor)); }
+	vecf2 lerp(vecf2 &u, vecf2 &v, vecf2& factor) { return (vecf2((u.x * (1 - factor.x)) + (v.x * factor.x), (u.y * (1 - factor.y)) + (v.y * factor.y))); }
+	float angle(void) { return (float)atan2(this->y,this->x); }
+	float angle(const vecf2 &v) { return (float)atan2(v.y-this->y,v.x-this->x); }
+
+    void to_str(char* s)
+    {
+    	sprintf( (char*)s,"(%lf, %lf)", x, y );
+    }
+
+	union {
+		struct {float x,y;};
+		struct {float s,t;};
+		float v[2];
+	};
+};
+
 
 /*****************************************************************************/
 /*                                                                           */
@@ -523,7 +616,7 @@ public:
         */
     void	to_str(char* s)
     {
-    	sprintf( (char*)s, "(%f, %f, %f, %f)", mat[0], mat[1], mat[2], mat[3] );
+    	sprintf( (char*)s, "(%lf, %lf, %lf, %lf)", mat[0], mat[1], mat[2], mat[3] );
     }
 	double mat[4];
 };

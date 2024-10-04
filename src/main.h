@@ -307,6 +307,7 @@ static void         rotateVisible();
 
 static void         glutKeyboardFunc(unsigned char key, int x, int y);
 static void         glutKeyboardFuncCtrl(unsigned char key, int x, int y);
+static void         glutKeyboardFuncAlt(unsigned char key, int x, int y);
 static void         glutKeyboardUpFunc(unsigned char key, int x, int y);
 static void         glutSpecialFunc(int key, int x, int y);
 static void         glutSpecialUpFunc(int key, int x, int y);

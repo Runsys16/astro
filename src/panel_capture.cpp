@@ -11,6 +11,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 {
+	dTelescopeAD = 0.0;
+	dTelescopeDC = 0.0;
     ech_geo     = 1.0;
     ech_user    = 1.0;
     dx          = 0.0;
@@ -25,7 +27,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 	bAffGrille	= false;
     stars.setView( this );
     
-    pCoord = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, 20, 10 );
+    pCoord = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 20, 10 );
     this->add( pCoord );
     pJ2000_1 = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, 20, 10 );
     this->add( pJ2000_1 );
@@ -35,6 +37,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pVizier = NULL;
     
     setExtraString( "PanelViewCapture" );
+    setParentCliping( true );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -43,86 +46,6 @@ PanelCapture::~PanelCapture()
 {
     stars.setRB( NULL );
     stars.deleteAllStars();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-// xx, yy coordonnée écran du pointeur de souris
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::passiveMotionFunc(int xm, int ym)
-{
-	if ( !bInfoSouris || bIcone ) 			{ return; }
-	
-	static char coord[80];
-	//logf( (char*)"PanelCapture::passiveMotionFunc( %d, %d )", xm, yy );
-	log_tab(true);
-
-	// Coordonne fenetre 
-	long x = Screen2x(xm);
-	long y = Screen2y(ym);
-	
-	// coordonnées image	
-	double X = (double)x/(ech_user*ech_geo);
-	double Y = (double)y/(ech_user*ech_geo);
-	
-	long XX = X;
-	long YY = Y;
-
-	
-	// Recuperation des infos image largueur hauteur et pointeur sur RGBRGBRGBRGBRGBRGB
-	int w = pReadBgr->w;
-	int h = pReadBgr->h;
-	GLubyte*	ptr = pReadBgr->ptr;
-	GLubyte		r, g, b;
-	
-	// Calculde l'offset dans le buffer
-	long idx = 3 * (w * YY + XX);
-	
-	// Recuperation de la couleur du pixel
-	r = ptr[ idx + 0 ];
-	g = ptr[ idx + 1 ];
-	b = ptr[ idx + 2 ];
-	
-	// Affichage du resultat	
-	snprintf( (char*)coord, sizeof(coord), "rvb = (%d, %d, %d)", (unsigned)r, (unsigned)g, (unsigned)b );
-	pCoord->changeText( (char*)coord );
-
-	vec2 vJ2000;
-	if ( pCapture->isFits() )	{
-		vec2 sc = vec2( XX, YY ); 
-		pCapture->getFits()->screen_2_J2000( sc, vJ2000 );
-		
-		struct dms DMS;
-		struct hms HMS;
-		deg2hms( vJ2000.x, HMS );
-		deg2dms( vJ2000.y, DMS );
-		
-		
-#ifdef DEG_MS
-		snprintf( (char*)coord, sizeof(coord), "%ld %ld \tAD:%02.0fh %02.0f' %02.2f\"", XX, YY, HMS.h, HMS.m, HMS.s );
-#else
-		snprintf( (char*)coord, sizeof(coord), "%ld %ld \t%f", XX, YY, vJ2000.x );
-#endif
-		pJ2000_1->changeText( (char*)coord );
-		pJ2000_1->setChangeText(true);
-		pJ2000_1->setPos( x+15, y+30);
-
-#ifdef DEG_MS
-		snprintf( (char*)coord, sizeof(coord), "\t\tDE:%2.0fd %02.0f' %02.0f\"", DMS.d, DMS.m, DMS.s );
-#else
-		snprintf( (char*)coord, sizeof(coord), "\t\t%f", vJ2000.y );
-#endif
-		pJ2000_2->changeText( (char*)coord );
-		pJ2000_2->setChangeText(true);
-		pJ2000_2->setPos( x+15, y+45);
-	}
-	// Mise a jour du panelText
-	// ans la position de la souris
-	// Force la fabrication de la chaine de caractere
-	pCoord->setPos( x+15, y+15);
-	pCoord->setChangeText(true);
-	
-	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -146,106 +69,6 @@ void PanelCapture::findAllStars()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setCent()
-{
-    double fDX = (double)pReadBgr->w * ech_geo;
-    double fDY = (double)pReadBgr->h * ech_geo;
-    
-    double fw = (double)pReadBgr->w;
-    double fh = (double)pReadBgr->h;
-
-    int dxp = getParent()->getDX();
-    int dyp = getParent()->getDY();
-    
-    int deltax = ((fw/2.0 ) - ech_user * (fw/2.0 - dx )) * ech_geo;
-    int deltay = ((fh/2.0 ) - ech_user * (fh/2.0 - dy )) * ech_geo;
-    
-    if ( deltax > 0 )           deltax = 0;
-    if ( deltay > 0 )           deltay = 0;
-    
-    int maxX  = -(fDX*ech_user - dxp);
-    int maxY  = -(fDY*ech_user - dyp);
-    
-    if ( deltax < maxX )        deltax = maxX;
-    if ( deltay < maxY )        deltay = maxY;
-
-    //setPos( deltax, deltay );
-    Panel* p = getParent();
-    if ( p!= NULL )
-    {
-        //logf( (char*)"delta : %d", p->getPosY() );
-        stars.set_delta( deltax + p->getPosX(), deltay + p->getPosY() );
-    }
-    
-    /*
-    if ( Captures::getInstance().isCurrent(pCapture) )
-    {
-		logf( (char*)"PanelCapture::setCent()" );
-		log_tab(true);
-
-		logf( (char*)"(fDX,fDY):\t(%0.2f,%0.2f)", fDX, fDY );
-		logf( (char*)"(fw,fh):\t(%0.2f,%0.2f)", fw, fh );
-		logf( (char*)"(dxp,dyp):\t(%d,%d)", dxp, dyp );
-		logf( (char*)"(deltax,deltay):\t(%0.2f,%0.2f)", deltax, deltay );
-		
-		log_tab(false);
-	}
-	*/
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setCentX(double f)
-{
-    dx = f;
-    setCent();
-    return;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setCentY(double f)
-{
-    dy = f;
-    setCent();
-    return;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setEchelle(double f)
-{
-    if ( f == 0.0 )     
-    {
-        logf( (char*)"PanelCapture::setEchelle(%0.2f)", f );
-        return;
-    }
-    if ( pReadBgr == NULL )         return;
-    
-    double fDX = (double)pReadBgr->w * ech_geo;
-    double fDY = (double)pReadBgr->h * ech_geo;
-    
-    int dxp = getParent()->getDX();
-    int dyp = getParent()->getDY();
-
-    if ( fDX*f < dxp || fDY*f < dyp )
-    {
-        logf( (char*)"Stop setEchelle(%0.2f)", ech_user );
-        return;
-    }
-
-    ech_user = f;
-    
-    
-    setSize( fDX*ech_user, fDY*ech_user );
-    setCent();
-    logf( (char*)"PanelCapture::setEchelle() ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
-    logf( (char*)"  setSize(%0.2f, %0.2f)", fDX, fDY );
-    
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::update_stars()
 {
     if  ( pReadBgr==NULL )      logf( (char*)"PanelCapture::update()   pointeur RB NULL" );
@@ -257,8 +80,9 @@ void PanelCapture::update_stars()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::updatePosLigne()
+void PanelCapture::updateEchelle()
 {
+    computeEchelle();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -271,6 +95,9 @@ void PanelCapture::updatePos()
         PanelSimple::updatePos();
         return;
     }
+    
+    //dx = getPosX();
+    //dy = getPosY();
 
     double coef0 = (double)pReadBgr->w / getParent()->getDX();// * ech_user;
     double coef1 = (double)pReadBgr->h / getParent()->getDY();// * ech_user;
@@ -282,7 +109,8 @@ void PanelCapture::updatePos()
     {
         logf( (char*)"PanelCapture::updatePos() Changement d'echelle" );
         logf( (char*)"  %s", pCapture!=NULL? (char*)pCapture->getBasename().c_str() : (char*)"" );
-        logf( (char*)"  ech_geo=%0.2f ech_user=%0.2f", coef, ech_user );
+        logf( (char*)"  ech_geo=%0.2lf ech_user=%0.2lf", coef, ech_user );
+        logf( (char*)"  alphaAD=%0.2lf alphaED=%0.2lf", dAngleAD, dAngleDE );
         ech_geo = coef;
     }
     
@@ -293,6 +121,7 @@ void PanelCapture::updatePos()
     setSize( fDX*ech_user, fDY*ech_user );
     setCent();
 
+    PanelSimple::updatePos();
 
     if ( pVizier != NULL )
     {
@@ -318,23 +147,44 @@ void PanelCapture::updatePos()
             vEch *= ech;	vEch.y += 12; 
             p->setPos( v.x+vEch.x, v.y-vEch.y );
             p->updatePos();
+            p->setAlpha(0.0);
+            //p->setAlpha(45.0);
 
 		    VarManager& var = VarManager::getInstance();
-			if ( !pCapture->isIconized() && var.getb( "bAffCatalog"))		
+			if ( !pCapture->isIconized() && var.getb( "bAffCatalog"))	{
 	            p->setVisible(true);
-	        else
+	        }
+	        else	{
 	            p->setVisible(false);
+	        }
         }
     }    
 
     //stars.update_stars(getParent()->getX(), getParent()->getY(), this, NULL );
 
-    PanelSimple::updatePos();
-
-    if ( coef != ech_geo )
-    {
+    if ( coef != ech_geo )    {
         stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
     }
+    
+	if ( bAffGrille && !bIcone )	{
+		setEchelleVisible(true);
+	    updateEchelle();
+	}
+	else	{
+		setEchelleVisible(false);
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::glCroix( int x,  int y,  int dx,  int dy )
+{
+	glBegin(GL_LINES);
+
+	    glVertex2i(x, y-dy);         glVertex2i(x, y+dy);
+	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
+
+    glEnd();        
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -360,6 +210,29 @@ void PanelCapture::glCercle(int x, int y, int rayon)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::displayTelescope()
+{
+	unsigned color_old = getColor();
+	unsigned r = 0xFFFF00FF;
+
+	vec2 	vTelescopeJ2000 = vec2( dTelescopeAD, dTelescopeDC );
+	vec2 	vTelescopeScreen;
+	vec2 	d 				= vec2( getX(), getY() );
+	vec2	v;
+	double 	ech 			= ech_user * ech_geo;
+
+	pCapture->getFits()->J2000_2_screen( vTelescopeJ2000, vTelescopeScreen );
+	v = ech * vTelescopeScreen + d;
+
+	glColor4f( COLOR_A(r), COLOR_R(r), COLOR_G(r), COLOR_B(r) );
+    glCercle( v.x, v.y, 15 );
+    glCroix( v.x, v.y, 20, 20 );
+	glColor4f( COLOR_A(color_old), COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old) );
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::displayCatalog()
 {
 	//logf( (char*)"PanelCapture::displayCatalog() %d etoiles", vizier.size() );
@@ -373,13 +246,13 @@ void PanelCapture::displayCatalog()
 	Fits*	pFits	= pCapture->getFits();
 	vec2 	d 		= vec2( getX(), getY() );
 	double 	ech 	= ech_user * ech_geo;
+	vec2 v, w;
 	
 	if ( pFits == NULL ) 					return;
 	//-------------------------------------------------------------------
 
 	glBegin(GL_LINES);
 
-	vec2 v, w;
 	glColor4f( COLOR_A(r), COLOR_R(r), COLOR_G(r), COLOR_B(r) );
 
     int n = pVizier->size();
@@ -419,14 +292,14 @@ void PanelCapture::displayCatalog()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::displayEchelle()
+void PanelCapture::displayAxe()
 {
 	// Sauvegarde de l'ancienne couleur
 	unsigned color_old = getColor();
 	unsigned c  = 0xFFFF00FF;
-	unsigned r  = 0xFF0000FF;
+	unsigned b  = 0xFF0000FF;
 	unsigned vv = 0x00FF00FF;
-	unsigned b  = 0x0000FFFF;
+	unsigned r  = 0x0000FFFF;
 
 	//logf( (char*)"Old Color=%0lX", color_old );
 	//logf( (char*)"New Color=%0lX", c );
@@ -478,11 +351,14 @@ void PanelCapture::displayGL()
 
 	if ( !pCapture->isIconized() )	{
 		if ( pCapture->isFits() )	{
-			if ( bAffGrille )									displayEchelle();
+			if ( bAffGrille )									displayAxe();
 
 			if ( var.getb( "bAffCatalog") && (pVizier) )		displayCatalog();
 		}
 	}	
+	
+	if ( 0<xTelescope && xTelescope<getDX() && 0<yTelescope && yTelescope<getDY()  )					displayTelescope();
+
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 }
@@ -548,20 +424,23 @@ void PanelCapture::wheelUp(int xm, int ym)
     double max_y = (ech*(double)pReadBgr->h) - p->getDY();
 
     setPos( -X1, -Y1 );
+    dx = -X1;
+    dy = -Y1;
     
     stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
     
+    /*
     logf( (char*)"XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
     logf( (char*)"Mouse (%0.2f, %0.2f)  (%0.2f, %0.2f)", (double)xm, (double)ym, XM, YM );
     logf( (char*)"MAX   (%0.2f, %0.2f)", max_x, max_y );
     logf( (char*)"ech   (%0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, (int)pReadBgr->w, (int)pReadBgr->h );
     logf( (char*)"win   (%0.2f, %0.2f) (%0.2f, %0.2f)", (double)getX(), (double)getY(), (double)p->getDX(), (double)p->getDY() );
     printObjet();
-
+	*/
     log_tab(false);
     
-    passiveMotionFunc( xm, ym );
     updatePos();
+    passiveMotionFunc( xm, ym );
     stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
     pCapture->updatePosIcones();
 }
@@ -605,6 +484,8 @@ void PanelCapture::wheelDown(int xm, int ym)
     
     clip( x1, y1 );
     setPos( -x1, -y1 );
+    dx = -x1;
+    dy = -y1;
     
     stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
     /*
@@ -612,13 +493,96 @@ void PanelCapture::wheelDown(int xm, int ym)
     logf( (char*)"Mouse (%0.2f, %0.2f)  (%0.2f, %0.2f)", (double)xm, (double)ym, XM, YM );
     logf( (char*)"MAX   (%0.2f, %0.2f)", max_x, max_y );
     logf( (char*)"ech   (%0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, (int)pReadBgr->w, (int)pReadBgr->h );
-    logf( (char*)"win   (%0.2f, %0.2f) (%0.2f, %0.2f)", (double)getX(), (double)getY(), (double)p->getDX(), (double)p->getDY() );
+    logf( (char*)"win   (%0.2f, %0.2f) (%0.2f, %0.2f)", (d        VarManager& var= VarManager::getInstance();
+ouble)getX(), (double)getY(), (double)p->getDX(), (double)p->getDY() );
     printObjet();
     */
     //log_tab(false);
+    updatePos();    
     passiveMotionFunc( xm, ym );
-    updatePos();    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
+    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
     pCapture->updatePosIcones();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// xx, yy coordonnée écran du pointeur de souris
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::passiveMotionFunc(int xm, int ym)
+{
+	if ( !bInfoSouris || bIcone ) 			{ return; }
+	
+	static char coord[80];
+	//logf( (char*)"PanelCapture::passiveMotionFunc( %d, %d )", xm, yy );
+	log_tab(true);
+
+	// Coordonne fenetre 
+	long x = Screen2x(xm);
+	long y = Screen2y(ym);
+	
+	// coordonnées image	
+	double X = (double)x/(ech_user*ech_geo);
+	double Y = (double)y/(ech_user*ech_geo);
+	
+	long XX = X;
+	long YY = Y;
+
+	
+	// Recuperation des infos image largueur hauteur et pointeur sur RGBRGBRGBRGBRGBRGB
+	int w = pReadBgr->w;
+	int h = pReadBgr->h;
+	GLubyte*	ptr = pReadBgr->ptr;
+	GLubyte		r, g, b;
+	
+	// Calculde l'offset dans le buffer
+	long idx = 3 * (w * YY + XX);
+	
+	// Recuperation de la couleur du pixel
+	r = ptr[ idx + 0 ];
+	g = ptr[ idx + 1 ];
+	b = ptr[ idx + 2 ];
+	
+	// Affichage du resultat	
+	snprintf( (char*)coord, sizeof(coord), "rvb = (%d, %d, %d)", (unsigned)r, (unsigned)g, (unsigned)b );
+	pCoord->changeText( (char*)coord );
+
+	vec2 vJ2000;
+	
+	if ( pCapture->isFits() )	{
+		vec2 sc = vec2( XX, YY ); 
+		pCapture->getFits()->screen_2_J2000( sc, vJ2000 );
+		
+		struct dms DMS;
+		struct hms HMS;
+		deg2hms( vJ2000.x, HMS );
+		deg2dms( vJ2000.y, DMS );
+		
+		
+#ifdef DEG_MS
+		snprintf( (char*)coord, sizeof(coord), "%ld %ld \tAD:%02.0fh %02.0f' %02.2f\"", XX, YY, HMS.h, HMS.m, HMS.s );
+#else
+		snprintf( (char*)coord, sizeof(coord), "%ld %ld \t%f", XX, YY, vJ2000.x );
+#endif
+		pJ2000_1->changeText( (char*)coord );
+		pJ2000_1->setChangeText(true);
+		pJ2000_1->setPos( x+15, y+30);
+
+#ifdef DEG_MS
+		snprintf( (char*)coord, sizeof(coord), "\t\tDE:%2.0fd %02.0f' %02.2f\"", DMS.d, DMS.m, DMS.s );
+#else
+		snprintf( (char*)coord, sizeof(coord), "\t\t%f", vJ2000.y );
+#endif
+		pJ2000_2->changeText( (char*)coord );
+		pJ2000_2->setChangeText(true);
+		pJ2000_2->setPos( x+15, y+45);
+	}
+	// Mise a jour du panelText
+	// ans la position de la souris
+	// Force la fabrication de la chaine de caractere
+	pCoord->setPos( x+15, y+15);
+	pCoord->setChangeText(true);
+	
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -740,6 +704,8 @@ void PanelCapture::motionMiddle(int xm, int ym)
 
     clip(x1, y1);
     setPos( -x1, -y1 );
+    dx = -x1;
+    dy = -y1;
     double e = (double)getDX() / (double)pReadBgr->w; 
     
     //logf( (char*)"XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
@@ -764,11 +730,13 @@ void PanelCapture::motionMiddle(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::releaseMiddle(int xm, int ym)
 {
+	motionMiddle( xm, ym);
     xm_old = -1;
     ym_old = -1;
     logf( (char*)"PanelCapture::releaseMiddle(%d,%d) ...", xm, ym );
     log_tab(true);
-    logf( (char*)"ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
+    logf( (char*)"ech_geo=%0.2f ech_user=%0.2lf dx=%0.2lf dy=%0.2lf", ech_geo, ech_user, dx, dy );
+
 
     if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); log_tab(false); return; }
     
@@ -778,8 +746,8 @@ void PanelCapture::releaseMiddle(int xm, int ym)
     int xx = ((double)xm-(double)getX()) / e;
     int yy = ((double)ym-(double)getY()) / e;
     
-    logf( (char*)"echelle%0.2f", e );
-    logf( (char*)"Pos (%0.2f, %0.2f)", (double)getX(), (double)getY()  );
+    logf( (char*)"echelle%0.2lf", e );
+    logf( (char*)"Pos (%0.2lf, %0.2lf)", (double)getX(), (double)getY()  );
     
     if ( !bHaveMove )
     {
@@ -799,20 +767,122 @@ void PanelCapture::releaseMiddle(int xm, int ym)
 		sendStellarium( xm, ym );
     }
     log_tab(false);
+
+    computeEchelle();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::setCent()
+{
+    double fDX = (double)pReadBgr->w * ech_geo;
+    double fDY = (double)pReadBgr->h * ech_geo;
+    
+    double fw = (double)pReadBgr->w;
+    double fh = (double)pReadBgr->h;
+
+    int dxp = getParent()->getDX();
+    int dyp = getParent()->getDY();
+    
+    int deltax = ((fw/2.0 ) - ech_user * (fw/2.0 - dx )) * ech_geo;
+    int deltay = ((fh/2.0 ) - ech_user * (fh/2.0 - dy )) * ech_geo;
+    
+    if ( deltax > 0 )           deltax = 0;
+    if ( deltay > 0 )           deltay = 0;
+    
+    int maxX  = -(fDX*ech_user - dxp);
+    int maxY  = -(fDY*ech_user - dyp);
+    
+    if ( deltax < maxX )        deltax = maxX;
+    if ( deltay < maxY )        deltay = maxY;
+
+    //setPos( deltax, deltay );
+    Panel* p = getParent();
+    if ( p!= NULL )
+    {
+        //logf( (char*)"delta : %d", p->getPosY() );
+        stars.set_delta( deltax + p->getPosX(), deltay + p->getPosY() );
+    }
+    
+    /*
+    if ( Captures::getInstance().isCurrent(pCapture) )
+    {
+		logf( (char*)"PanelCapture::setCent()" );
+		log_tab(true);
+
+		logf( (char*)"(fDX,fDY):\t(%0.2f,%0.2f)", fDX, fDY );
+		logf( (char*)"(fw,fh):\t(%0.2f,%0.2f)", fw, fh );
+		logf( (char*)"(dxp,dyp):\t(%d,%d)", dxp, dyp );
+		logf( (char*)"(deltax,deltay):\t(%0.2f,%0.2f)", deltax, deltay );
+		
+		log_tab(false);
+	}
+	*/
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::setEchelle(double f)
+{
+    if ( f == 0.0 )     
+    {
+        logf( (char*)"PanelCapture::setEchelle(%0.2f)", f );
+        return;
+    }
+    if ( pReadBgr == NULL )         return;
+    
+    double fDX = (double)pReadBgr->w * ech_geo;
+    double fDY = (double)pReadBgr->h * ech_geo;
+    
+    int dxp = getParent()->getDX();
+    int dyp = getParent()->getDY();
+
+    if ( fDX*f < dxp || fDY*f < dyp )
+    {
+        logf( (char*)"Stop setEchelle(%0.2lf)", ech_user );
+        return;
+    }
+
+    ech_user = f;
+    
+    
+    setSize( fDX*ech_user, fDY*ech_user );
+    setCent();
+    logf( (char*)"PanelCapture::setEchelle() ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
+    logf( (char*)"  setSize(%0.2lf, %0.2lf)", fDX, fDY );
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::setCentX(double f)
+{
+    dx = f;
+    setCent();
+    return;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::setCentY(double f)
+{
+    dy = f;
+    setCent();
+    return;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::screen2texX( int x )
 {
-    return (double)x / ( ech_geo*ech_user) + dx;
+    return (double)( x-dx) / (ech_user * ech_geo);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::screen2texY( int y )
 {
-    return (double)y / (ech_geo*ech_user) + dy;
+    return (double)( y-dy) / (ech_user * ech_geo);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -825,16 +895,24 @@ void PanelCapture::screen2tex(int& x, int& y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::screen2tex(vec2& v)
+{
+	v.x = screen2texX(v.x);
+	v.y = screen2texY(v.y);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::tex2screenX( int x )
 {
-    return (double)( x-dx) * ech_user * ech_geo;
+    return (double)x * ( ech_geo*ech_user) + dx;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::tex2screenY( int y )
 {
-    return (double)( y-dy) * ech_user * ech_geo;
+    return (double)y * (ech_geo*ech_user) + dy;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -847,14 +925,22 @@ void PanelCapture::tex2screen(int& x, int& y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::tex2screen(vec2& v)
+{
+	v.x = tex2screenX(v.x);
+	v.y = tex2screenY(v.y);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::printObjet()
 {
     logf( (char*)"PanelCapture::printObjet()" );
     log_tab(true);
     logf( (char*)"this->pos (%d, %d)", getPosX(), getPosY() );
     logf( (char*)"this->dim %d x %d", getDX(), getDY() );
-    logf( (char*)"this->ech_geo=%0.2f",  ech_geo );
-    logf( (char*)"this->ech_user=%0.2f", ech_user );
+    logf( (char*)"this->ech_geo=%0.2lf",  ech_geo );
+    logf( (char*)"this->ech_user=%0.2lf", ech_user );
     if ( pReadBgr == NULL )    {
         logf( (char*)"pReadBgr = NULL" );
     } else {
@@ -935,11 +1021,24 @@ void PanelCapture::sendStellarium( int xm, int ym)
 		static char coord[80];
 		snprintf( (char*)coord, sizeof(coord), "(%0.6f, %0.6f)", vJ2000.x, vJ2000.y );
 		log( (char*)coord );	
-		Serveur_mgr::getInstance().write_stellarium( (double)vJ2000.x, (double)vJ2000.y );
 		
 		
-		change_ad_status( vJ2000.x );
-		change_dc_status( vJ2000.y );
+        VarManager& var= VarManager::getInstance();
+        if ( var.getb("bModeManuel") )  {
+            char cmd[255];
+            double AD = vJ2000.x >180.0 ? -360.0 + vJ2000.x : vJ2000.x;
+            
+            sprintf( cmd, "A%lf;D%lf", AD, (vJ2000.y) );
+            logf( (char*)"  Envoi arduino : %s", cmd );
+            Serial::getInstance().write_string(cmd);
+        }
+        else    {
+    		Serveur_mgr::getInstance().write_stellarium( (double)vJ2000.x, (double)vJ2000.y );
+        }
+
+		//change_ad_status( vJ2000.x );
+		//change_dc_status( vJ2000.y );
+		
 		/*
 		snprintf( (char*)coord, sizeof(coord), "screen (%f, %f)", screen.x, screen.y );
 		log( (char*)coord );	
@@ -969,6 +1068,7 @@ void PanelCapture::setInfoSouris(bool b)
 		pCoord->setVisible(true);
 		pJ2000_1->setVisible(true);
 		pJ2000_2->setVisible(true);
+		setEchelleVisible(true);
 
 		int xx = WindowsManager::getInstance().getMouseX();
 		int yy = WindowsManager::getInstance().getMouseY();
@@ -984,6 +1084,7 @@ void PanelCapture::setInfoSouris(bool b)
 		pCoord->setVisible(false);
 		pJ2000_1->setVisible(false);
 		pJ2000_2->setVisible(false);
+		setEchelleVisible(false);
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -994,15 +1095,236 @@ void PanelCapture::iconize()
 	bAffGrille = false;
 	bInfoSouris = false;
 	setInfoSouris( false );
+	bIcone = true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::restaure(bool bGril, bool bbSour )
 {
+	logf( (char*)"PanelCapture::restaure()" );
+	
+	bIcone = false;
 	bAffGrille = bGril;
 	bInfoSouris = bbSour;
 	setInfoSouris( bbSour );
+	setPos(dx, dy);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::change_ad( double ad )
+{
+	//logf( (char *)"PanelCapture::change_ad(%lf)", ad );
+	dTelescopeAD = ad<0.0 ? 360.0+ad : ad ;
+	
+	vec2 vTelescopeJ2000  = vec2( dTelescopeAD, dTelescopeDC );
+	vec2 vTelescopeScreen;
+	
+	
+	vec2 	d 				= vec2( getX(), getY() );
+	double 	ech 			= ech_user * ech_geo;
+	vec2	v;
+
+	pCapture->getFits()->J2000_2_screen( vTelescopeJ2000, vTelescopeScreen );
+	v = (ech * vTelescopeScreen );
+	xTelescope = v.x;
+
+	char STRJ[50];
+	char STRV[50];
+	vTelescopeJ2000.to_str(STRJ);
+	v.to_str(STRV);
+
+	logf( (char*)"PanelCapture::change_ad()  J2000%s vScreen%s  ech=%lf", STRJ, STRV, ech );
+	logf( (char*)" change_ad %s",BOOL2STR( 0<v.x && v.x<getDX()) );
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::change_dc( double dc )
+{
+	//logf( (char *)"PanelCapture::change_dc(%lf)", dc );
+	dTelescopeDC = dc;
+	
+	vec2 vTelescopeJ2000  = vec2( dTelescopeAD, dTelescopeDC );
+	vec2 vTelescopeScreen;
+	
+	vec2 	d 				= vec2( getX(), getY() );
+	vec2	v;
+	double 	ech 			= ech_user * ech_geo;
+
+	pCapture->getFits()->J2000_2_screen( vTelescopeJ2000, vTelescopeScreen );
+	v = vTelescopeScreen * ech;
+	yTelescope = v.y;
+
+	char STRJ[50];
+	char STRV[50];
+	vTelescopeJ2000.to_str(STRJ);
+	v.to_str(STRV);
+
+	logf( (char*)"PanelCapture::change_ad()  J2000%s vScreen%s  ech=%lf", STRJ, STRV, ech );
+	logf( (char*)" change_dc %s", BOOL2STR( 0<v.x && v.x<getDX())  );
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::setEchelleVisible( bool b )
+{
+	for( int i=0; i<pTextEch.size(); i++ )		pTextEch[i]->setVisible(b);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeIntersectionHau(vec2& V, vec2 p1, vec2 p2 )                         
+{
+    vec2 	vDelta	= vec2( getPosX(), getPosY() );
+	    	
+	vec2 pt1 = p1;			tex2screen(pt1);
+	vec2 pt2 = p2;			tex2screen(pt2);
+	vec2 v = (pt2 - pt1);
+
+	double c = -pt1.y/v.y;
+	double X = c*v.x + pt1.x;
+	
+	V = vec2( X, 0.0 );
+	V = V - vDelta;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeIntersectionBas(vec2& V, vec2 p1, vec2 p2 )                         
+{
+    double  ech 	= ech_geo * ech_user;
+    vec2 	vDelta	= vec2( getPosX(), getPosY() );
+	    	
+	vec2 pt1 = p1;			tex2screen(pt1);
+	vec2 pt2 = p2;			tex2screen(pt2);
+	vec2 v = (pt2 - pt1);
+
+	double c = ((double)getDY()-pt1.y)/v.y;
+	double X = c*v.x + pt1.x;
+	
+	V = vec2( X, (double)getDY() );
+	V = V - vDelta;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeIntersectionGau(vec2& V, vec2 p1, vec2 p2 )                         
+{
+    vec2 	vDelta	= vec2( getPosX(), getPosY() );
+	    	
+	vec2 pt1 = p1;			tex2screen(pt1);
+	vec2 pt2 = p2;			tex2screen(pt2);
+	vec2 v = (pt2 - pt1);
+
+	double c = -pt1.x/v.x;
+	double Y = c*v.y + pt1.y;
+	
+	V = vec2( 0.0, Y );
+	V = V - vDelta;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeEchelle()                         
+{
+    vec2 	vDelta	= vec2( getPosX(), getPosY() );
+    double  ech 	= ech_geo * ech_user;
+	    	
+	for ( int i=0; i<p1.size(); i+=2 )	{
+		vec2 V;
+		if ( dAngleAD > 45.0 )				computeIntersectionHau( V, p1[i], p2[i] );
+		else								computeIntersectionGau( V, p1[i], p2[i] );
+		
+		pTextEch[i]->setPos( V.x, V.y);
+	}
+
+
+	for ( int i=1; i<p1.size(); i+=2 )	{
+		vec2 V;
+		if ( dAngleAD>45.0  )						computeIntersectionGau( V, p1[i], p2[i] );
+		else										computeIntersectionHau( V, p1[i], p2[i] );
+
+		pTextEch[i]->setPos( V.x, V.y );
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::addP1P2(vec2 v, vec2 w)                         
+{
+	p1.push_back(vec2(v));
+	p2.push_back(vec2(w)); 
+
+    double angle;
+    vec2 V0, V1;
+    V0 = w-v;
+    V0.normalize();
+    angle = acos(V0.x);
+    angle = RAD2DEG(angle);
+	if ( V0.y<0.0 )			angle *= -1.0;
+
+	char str[40];    
+    PanelText * p;
+    vec2 pt, vJ2000;
+    
+    p = new PanelText( (char*)str, PanelText::NORMAL_FONT, 0, 0); 
+
+
+   	if ( (p1.size()%2) != 0 )	{
+	    if ( angle >90.0 )          angle = -180.0 + angle;
+	    dAngleAD = angle;
+	    p->setAlpha( (float)dAngleAD );
+	    p->setColor( 0xFF0000FF );
+
+   		pt = v;
+		pCapture->getFits()->screen_2_J2000( pt, vJ2000 );
+		struct hms HMS;
+		deg2hms( vJ2000.x, HMS );
+		#ifdef DEG_MS
+		snprintf( (char*)str, sizeof(str), "A.D.:%02.0lfh %02.0lf' %02.2lf\"", HMS.h, HMS.m, HMS.s );
+		#else
+		snprintf( (char*)str, sizeof(str), "A.D.:%lf alpha:%lf", vJ2000.x, angle);
+		#endif
+		//if ( dAngleAD < 45.0 )	p->setAlign( PanelText::RIGHT );
+
+	}
+	else	{
+	    angle = dAngleAD + 90.0;
+	    if ( angle >90.0 )          angle = -180.0 + angle;
+	    dAngleDE = angle;
+	    p->setAlpha( (float)dAngleDE );
+
+	    p->setColor( 0xFFFF0000 );
+   		pt = v;
+		pCapture->getFits()->screen_2_J2000( pt, vJ2000 );
+		struct dms DMS;
+		deg2dms( vJ2000.y, DMS );
+		#ifdef DEG_MS
+		snprintf( (char*)str, sizeof(str), "Dec:%02.0lfd %02.0lf' %02.2lf\"", DMS.d, DMS.m, DMS.s );
+		#else
+		snprintf( (char*)str, sizeof(str), "Dec:%lf alpha:%lf", vJ2000.y, angle );
+		#endif
+
+	    //if ( angle >90.0 )          angle = -180.0 + angle;
+    }
+    
+    char STR0[40];
+    char STR1[40];
+    v.to_str(STR0);
+    w.to_str(STR1);
+    logf( (char*)"Angle = %lf v%s w%s", angle, STR0, STR1 );
+
+    p->setPos( w.x, w.y );
+    p->updatePos();
+
+    
+    
+    if ( p->getParent() == NULL )	    add(p);
+	pTextEch.push_back( p ); 
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

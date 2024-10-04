@@ -74,9 +74,11 @@ void Serveur_mgr::traite_connexion_init()
         }
 
         logf( (char*)"  nb octet lu : %d", n);
-
+		//-------------------------------------------------
+		// recuperation des infos
         struct stellarium ss;
         decode( ss, buffer );
+		//-------------------------------------------------
 
         double ra = com2rad(ss.ra);
         double dc = com2rad(ss.dc);
@@ -179,7 +181,7 @@ void Serveur_mgr::thread_listen_init()
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
 		logf( (char*)"Serveur_mgr::thread_listen_init() connexion SOCKET 2" );
-		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
+		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_ref, some_addr, (int)adresse.sin_port );
 
 		traite_connexion_init();
 	}
@@ -250,47 +252,52 @@ void Serveur_mgr::thread_listen_deplacement()
 {
     logf( (char*)"Serveur_mgr::thread_listen_deplacement()");
     
-	struct sockaddr_in adresse;
-	socklen_t          longueur;
+	struct sockaddr_in 	adresse;		memset(& adresse, 0, sizeof(struct sockaddr));
+	socklen_t          	longueur;
+	adresse.sin_family = AF_INET;
+    int option = 1;
+    int enable = 1;
 
 
 	if ((sock_1 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
+        //close(sock_1);
+        goto sortie_deplacement;
 		exit(EXIT_FAILURE);
 	}
 	
-    int enable = 1;
     if (setsockopt(sock_1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
         perror("setsockopt(SO_REUSEADDR) failed");
+        //close(sock_1);
+        goto sortie_deplacement;
 		exit(EXIT_FAILURE);
     }
 
-
-    memset(& adresse, 0, sizeof(struct sockaddr));
-	adresse.sin_family = AF_INET;
-	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
 	adresse.sin_port = htons(10001);
 	
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
 	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
 		logf( (char*) "[ERREUR] bind (sock_1)");
-		sock_1 = -1;
+        //close(sock_1);
+        goto sortie_deplacement;
 		return;
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
 	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
 		logf( (char*) "[ERREUR] getsockname (sock_1)");
+        //close(sock_1);
+        goto sortie_deplacement;
 		return;
 	}
 
-    int option = 1;
     if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
 		logf( (char*) "[ERREUR] setsockopt (sock_1)");
-        close(sock_1);
+        //close(sock_1);
+        goto sortie_deplacement;
 		return;
     }
 
@@ -316,6 +323,8 @@ void Serveur_mgr::thread_listen_deplacement()
 		
 		
 	}
+
+sortie_deplacement:
     logf( (char*)"Fermeture de sock_1 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_1);
 	sock_1 = -1;
@@ -333,12 +342,14 @@ void Serveur_mgr::start_deplacement()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::write_stellarium(char* s)
 {
+//#define LOG
     if ( sock_stellarium != -1 )
     {
         write( sock_stellarium, s, 24 );
-        
-        char trame[24*4+80];
-        char t[24*4+80];
+
+        #ifdef LOG
+        char trame[24*4+80]  = "";
+        char t[24*4+80] = "";
         
         trame[0] = 0;
         
@@ -346,8 +357,10 @@ void Serveur_mgr::write_stellarium(char* s)
         	strcpy( t, trame );
         	unsigned char c = s[i];
         	snprintf( (char*)trame, sizeof(trame), "%s %02X", t, c );
+        
         }
         logf( (char*)"Envoid a stellarium  %s", trame );
+        #endif
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -364,7 +377,6 @@ void Serveur_mgr::write_stellarium(char* s)
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::write_stellarium(double ad, double dc)
 {
-
     unsigned char buff[24];
     memset( buff, 0, 24);
     //--------------------------------------------------------
@@ -421,13 +433,17 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
     //--------------------------------------------------------
     if ( ad!=0.0 && dc!=0.0 )
     {
+		write_stellarium( (char*)buff );
+
+        #ifdef LOG
     	struct hms HMS;
     	struct dms DMS;
-		write_stellarium( (char*)buff );
+		
         logf( (char*)"Em Stellarium\tAd=%0.8f  \tDc=%0.8f", fa, fd );
         deg2hms( fa, HMS );
         deg2dms( fd, DMS );
         logf( (char*)"				\tAd=%0.0fh%0.0f\'%0.2f\"  \tDc=%0.0fd\%2.0f'%2.2f\"", HMS.h, HMS.m, HMS.s, DMS.d, DMS.m, DMS.s );
+    	#endif
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

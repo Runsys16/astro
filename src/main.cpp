@@ -1285,9 +1285,12 @@ void change_joy(double x, double y)
 //--------------------------------------------------------------------------------------------------------------------
 void change_ad_status(double ad)
 {
+    if ( fpos_ad == ad)			return;
+
+	Captures::getInstance().change_ad( ad );
     VarManager& var = VarManager::getInstance();
-    if ( fpos_ad != ad)
-        var.set("fpos_ad", ad);
+
+	var.set("fpos_ad", ad);
     fpos_ad = ad;
 
     //ad = DEG2RAD(ad);
@@ -1298,16 +1301,18 @@ void change_ad_status(double ad)
     sprintf( buff, "AD: %02dh %02dm %0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
     
     pAD->changeText( buff );
-
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void change_dc_status(double dc)
 {
+    if ( fpos_dc == dc)					return;
+
+	Captures::getInstance().change_dc( dc );
     VarManager& var = VarManager::getInstance();
-    if ( fpos_dc != dc)
-        var.set("fpos_dc", dc);
+
+    var.set("fpos_dc", dc);
     fpos_dc == dc;
     
     //dc = DEG2RAD(dc);
@@ -1426,7 +1431,7 @@ void charge_traces(void)
         }
         trace = t_vTrace[n];
 
-        sscanf( line.c_str(), "( %f , %f )", &x, &y );
+        sscanf( line.c_str(), "( %lf , %lf )", &x, &y );
         //logf ( (char*)" v(%f,%f)", x, y );
         v.x = x;
         v.y = y;
@@ -1507,7 +1512,7 @@ void suivi(void)
         return;
     
 
-    vec2*       pV = Camera_mgr::getInstance().getSuivi();
+    vec2*      	pV = Camera_mgr::getInstance().getSuivi();
     
     if ( bSuivi && pV != NULL )
     {
@@ -1863,21 +1868,62 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 		    //deleteStars();
         }
 		break;
-    // touche tab
-	case 9:
-		//WindowsManager::getInstance().swapVisible();
+	// CTRL D
+    case 4:
 		{
-		    /*
-            logf( (char*)"-------------- Touche CTRL+TAB" );
-    	    logf( (char*)"Key (TAB) : ByeBye !!" );
-	        Camera* pCurrent = cam_mgr.getCurrent();
-	        cam_mgr.active();
-
-            getSuiviParameter();
-            */
+	    logf( (char*)"Key (ctrl+d) : Efface les etoiles !!" );
+        Captures& cap = Captures::getInstance();
+        if ( cap.isMouseOverCapture(x, y)  )
+        {
+            cap.deleteAllStars();
         }
-		break;
+        else
+        {
+            if ( Camera_mgr::getInstance().getCurrent() != NULL )
+    		    Camera_mgr::getInstance().deleteAllStars();
+        }
+        }
+        break;
+	// CTRL F
+    case 6:
+		{
+            logf( (char*)"Key (ctrl+f) : FullScreen" );
+            Captures::getInstance().fullscreen();
+        }
+        break;
+	// CTRL P
+    case 16:
+		{
+	    logf( (char*)"Key (ctrl+p) : Noop" );
+        }
+        break;
+	// CTRL q
+	case 17:
+	    {
+	    logf( (char*)"Key (ctrl+Q) : ByeBye !!" );
+	    quit();
+	    }
+        break;
 
+    default:
+		{
+		    cout << "Default..." << endl;
+		    logf( (char*)"glutKeyboardFuncCtrl  key=%c", (char)key );
+        }
+        break;
+    }		
+    //logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
+{
+    WindowsManager&     wm      = WindowsManager::getInstance(); 
+    Camera_mgr&         cam_mgr = Camera_mgr::getInstance();
+	
+	switch(key){ 
+	
 	case 'e':
 	    {
 	        bAffCatalog = !bAffCatalog;
@@ -1982,7 +2028,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
     default:
 		{
 		    cout << "Default..." << endl;
-		    logf( (char*)"glutKeyboardFuncCtrl  key=%c", (char)key );
+		    logf( (char*)"glutKeyboardFuncAlt  key=%c", (char)key );
         }
         break;
     }		
@@ -2067,6 +2113,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	if (modifier == GLUT_ACTIVE_ALT)
 	{
         //logf( (char*)" Touche ALT %c", key );
+        glutKeyboardFuncAlt(key,  x,  y);
+        return;
+	}
+    else
+	if (modifier == GLUT_ACTIVE_CTRL)
+	{
+        //logf( (char*)" Touche ALT %c", key );
         glutKeyboardFuncCtrl(key,  x,  y);
         return;
 	}
@@ -2076,86 +2129,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	
 	switch(key){ 
 	
-	// CTRL q
-	case 17:
-	    {
-	    logf( (char*)"Key (ctrl+Q) : ByeBye !!" );
-	    quit();
-	    }
-        break;
-
-	// touche escape
-	case 27:
-	    {
-	    logf( (char*)"Key (ESC) : ByeBye !!" );
-	    alertBox( "Confirmez l'arret de la monture 'ESC'" );
-	    bArretUrgence = true;
-	    }
-        break;
-	// CTRL D
-    case 4:
-		{
-	    logf( (char*)"Key (ctrl+d) : Efface les etoiles !!" );
-        Captures& cap = Captures::getInstance();
-        if ( cap.isMouseOverCapture(x, y)  )
-        {
-            cap.deleteAllStars();
-        }
-        else
-        {
-            if ( Camera_mgr::getInstance().getCurrent() != NULL )
-    		    Camera_mgr::getInstance().deleteAllStars();
-        }
-        }
-        break;
-	// CTRL P
-    case 16:
-		{
-	    logf( (char*)"Key (ctrl+p) : Noop" );
-        }
-        break;
-	// CTRL F
-    case 6:
-		{
-            logf( (char*)"Key (ctrl+f) : FullScreen" );
-            Captures::getInstance().fullscreen();
-        }
-        break;
 	// CTRL I
     // touche tab
 	case 9:
 		//WindowsManager::getInstance().swapVisible();
-		{
-		
-        //logf( (char*)"Key (TAB) : Image suivante/(shift)precedente" );
-    	if (modifier == GLUT_ACTIVE_CTRL)
-    	{
-            logf( (char*)"Key (ctrl+TAB) : Camera suivante" );
-	        Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
-	        cam_mgr.active();
-
-            getSuiviParameter();
-            break;
-    	}
-    	else if (modifier == GLUT_ACTIVE_SHIFT)
-    	{
-            logf( (char*)"Key (Shift+TAB) : Image precedente" );
-            //Captures::getInstance().showIcones();
-	        Captures::getInstance().rotate_capture_moins(false);
-            break;
-    	}
-    	else if (modifier == GLUT_ACTIVE_ALT)
-    	{
-            logf( (char*)"-------------- Touche ALT+TAB" );
-            break;
-    	}
-    	else
     	{
 
             logf( (char*)"Key (TAB) : Image suivante" );
             Captures::getInstance().rotate_capture_plus(false);
-        }
-                
         }
 		break;
 	// CTRL J  LF
@@ -2180,6 +2161,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             log( (char*)"NormalScreen !!!" );
 		}
     	break;
+	// touche escape
+	case 27:
+	    {
+	    logf( (char*)"Key (ESC) : ARRET D'URGENCE !!" );
+	    alertBox( "Confirmez l'arret de la monture 'ESC'" );
+	    bArretUrgence = true;
+	    }
+        break;
+
     case 178:
     	{
             //Captures::getInstance().showIcones();
@@ -4096,9 +4086,9 @@ void charge_var()
 //--------------------------------------------------------------------------------------------------------------------
 void exit_handler()
 {
-    cout <<"exit_handler()"<< endl;
     //BluetoothManager::getInstance().disconnect();
     Serveur_mgr::getInstance().close_all();
+    cout <<"exit_handler()"<< endl;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

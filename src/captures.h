@@ -47,11 +47,18 @@ public:
     void                        switchAffIcones();
     
     void                        setColor(long);
+    
+    void						setMode();
+    void						afficheInfoFits();
+    void						afficheInfoFits(int);
+	void						onTop();
+	
+	void						change_ad( double );
+	void						change_dc( double );
+
+
     vector<Capture*>&           get_captures()          { return captures; }
 	Capture*					getCurrentCapture()		{ return current_capture==-1 ? NULL : captures[current_capture]; }
-    
-    void						afficheInfoFits();
-	void						onTop();
 inline bool						isCurrent(Capture*p)	{ return p == captures[current_capture]; }
 private:
     vector<Capture*>            captures;

@@ -130,8 +130,9 @@ void Catalog::charge()
         fichier >> output;
         fichier >> output;
         if (fichier.eof())      break;
+        
         string val = string(output);
-        log( (char*)val.c_str() );
+        //log( (char*)val.c_str() );
         double fRA = stof(val.c_str());
 
         fichier >> output;
@@ -150,7 +151,7 @@ void Catalog::charge()
         
         StarCatalog* p = new StarCatalog(fRA, fDE, fMag, name);
         
-        logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );
+        //logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );
         stars.push_back(p);
 
         if ( name.find("65221487868870784") == 0 )

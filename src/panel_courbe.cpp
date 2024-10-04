@@ -274,7 +274,7 @@ void PanelCourbe::charge_guidage_1_1(ifstream& fichier)
         vOrigine.y = oy;
         
         data d;
-        d.v     = vec2(rx,ry);
+        d.v     = vecf2(rx,ry);
         d.t     = t;
         d.type  = PanelCourbe::ABSOLU;
 
@@ -310,7 +310,8 @@ void PanelCourbe::charge_guidage_1_0(ifstream& fichier, string line)
         vOrigine.y = oy;
 
         data d;
-        d.v     = vec2(vec2(rx,ry) - vec2(ox, oy));
+        //d.v     = vecf2( vecf2(rx,ry) - vecf2(ox, oy));
+        d.v     = vecf2( rx-ox, ry-oy);
         d.t     = 0.0;
         d.type  = PanelCourbe::ABSOLU;
 
@@ -469,11 +470,12 @@ void PanelCourbe::sauve_guidage()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::idle_guidage(vec2  v)
+void PanelCourbe::idle_guidage(vec2  vv)
 {
     if ( t_vCourbe.size()>200000)      t_vCourbe.clear();
 
-    vec2 o = vec2(xSuivi, ySuivi);
+    vecf2 o = vecf2(xSuivi, ySuivi);
+    vecf2 v = vecf2(vv.x, vv.y );
     ajoute( v-o );
 
     if ( t_vSauve.size() >= 20 ) {
@@ -494,13 +496,13 @@ void PanelCourbe::reset_guidage()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCourbe::ajoute(vec2 v)
+void PanelCourbe::ajoute(vecf2 v)
 {
     if ( isPleiade() )      v.x /=14.0;
     v /= 4.0;
     
     data d;
-    d.v     = vec2(v);
+    d.v     = vecf2(v);
     d.t     = Timer::getInstance().getCurrentTime();
     d.type  = PanelCourbe::ABSOLU;
 
@@ -875,7 +877,7 @@ void PanelCourbe::glCourbes()
        glCourbe(    tabx, t_vCourbe.size(), sizeof(data)/4, xStartAxe, decal_x, decal_y, getDY()/2, 0.0, 
                     courbe1*ech_w, delta_courbe1*ech_h, bDisplayPt );
     }
-    //logf( (char*)"sizeof(data)=%d, sizeof(float)=%d, sizeof(vec2)=%d", sizeof(data), sizeof(float), sizeof(vec2) );
+    //logf( (char*)"sizeof(data)=%d, sizeof(float)=%d, sizeof(vecf2)=%d", sizeof(data), sizeof(float), sizeof(vecf2) );
     
     if ( bDisplayCourbeY )
     {

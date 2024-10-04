@@ -17,7 +17,7 @@ string old_dir = "";
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture()
 {
-    logf((char*)"Constructeur Capture() -----------" );
+    logf((char*)"Constructeur Capture() -----------%d", __LINE__ );
     log_tab(true);
     
     logf((char*)"old_dir : %s", (char*)old_dir.c_str() );
@@ -62,7 +62,7 @@ Capture::Capture()
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture(string dirname, string name)
 {
-    logf((char*)"Constructeur Capture(dirname, %s) -----------", (char*)name.c_str() );
+    logf((char*)"Constructeur Capture(dirname, %s) -----------%d", (char*)name.c_str(), __LINE__ );
     log_tab(true);
     
     filename = dirname + name;
@@ -87,7 +87,7 @@ Capture::Capture(string dirname, string name)
 //--------------------------------------------------------------------------------------------------------------------
 Capture::Capture(string f )
 {
-    logf((char*)"Constructeur Capture(%s) -----------", (char*)f.c_str() );
+    logf((char*)"Constructeur Capture(%s) -----------%d", (char*)f.c_str(), __LINE__ );
     log_tab(true);
     
     filename = f;
@@ -405,6 +405,7 @@ void Capture::create_preview()	{
 
     
     create_icones();
+    panelPreview->onBottom();
 
 
     log_tab(false);
@@ -502,10 +503,21 @@ void Capture::fullscreen()
 {
     int dx = WindowsManager::getInstance().getWidth();
     int dy = WindowsManager::getInstance().getHeight();
-    logf((char*)"Capture::fullscreen()  dx=%d dy=%d", dx, dy);
+    logf((char*)"Capture::fullscreen()  dx=%d dy=%d", dx, dy );
 
-    //resize( 0, 0, dx, dy);
+    logf((char*)" preview  dx=%d dy=%d", panelPreview->getDX(), panelPreview->getDY() );
     setPosAndSize(0, 0, dx, dy);
+    updatePos();
+    logf((char*)" preview  dx=%d dy=%d", panelPreview->getDX(), panelPreview->getDY() );
+    
+    int X=0, Y=0;
+    if ( panelPreview->getDX() > dx ) {
+    	X = (panelPreview->getDX() - dx ) / 2;
+    }
+    if ( panelPreview->getDY() > dy ) {
+    	Y = (panelPreview->getDY() - dy ) / 2;
+    }
+	panelPreview->setPos(-X, -Y);
     bIconized = false;
     bFullScreen = true;
 }
@@ -604,6 +616,11 @@ void Capture::afficheInfoFits(bool b)
 void Capture::iconize()
 {
 	logf( (char*)"Capture::iconize()" );
+
+    VarManager& 	var	= VarManager::getInstance();
+	if ( var.getb("bShowIcones")	)			setVisible( true );
+	else										setVisible( false );
+
 	bIconized = true;
 	bFullScreen = false;
 	panelPreview->iconize();

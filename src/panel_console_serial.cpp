@@ -197,8 +197,7 @@ void PanelConsoleSerial::writeln(char* str)
         if ( ad_change!=0.0 && dc_change!=0.0 )
         {
             Serveur_mgr::getInstance().write_stellarium( (char*)buff );
-            logf( (char*)"Em Stellarium Ad=%0.8f Dc=%0.8f", ad_change, dc_change );
-			//logf( (char*)"    -> %s",  (char*)buff );
+            //logf( (char*)"Em Stellarium Ad=%0.8f Dc=%0.8f", ad_change, dc_change );
         }
         return;
     }

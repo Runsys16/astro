@@ -92,7 +92,7 @@ public :
         void						intersectionB( vec2&, vec2&, vec2& );
         void						intersectionG( vec2&, vec2&, vec2& );
         void						intersectionD( vec2&, vec2&, vec2& );
-        float                       computeEchelle(vec2);
+        double                      computeEchelle(vec2);
         void                        sauveMatrice();
         void                        chargeHDU(int);
         void						read_RGB_8(  float&, uint8_t* );
@@ -131,7 +131,6 @@ inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionF
         void                        getRB( struct readBackground* );
         void						screen_2_J2000( vec2, vec2& );
         void						J2000_2_screen( vec2, vec2& );
-//        void						setView(Panel* p)		{ pPanelFits->setView(p); }
 
 inline	double                      getNAXIS1()				{ return nNAXISn[0]; }
 inline	double                      getNAXIS2()				{ return nNAXISn[1]; }
@@ -141,7 +140,6 @@ inline	double                      getCRPIX1()				{ return dCRPIX1; }
 inline	double                      getCRPIX2()				{ return dCRPIX2; }
 inline	double                      getCDELT1()				{ return dCDELT1; }
 inline	double                      getCDELT2()				{ return dCDELT2; }
-//		mat2	                    getMatrix()				{ return nMat; }
 
 };
 //--------------------------------------------------------------------------------------------------------------------

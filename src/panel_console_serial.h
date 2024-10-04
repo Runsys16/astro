@@ -35,10 +35,10 @@ protected:
     PanelConsole*                   pc;
     Console*                        cb;
     bool                            bVisible;
-    float                           ad;
-    float                           dc;
-    float                           ad_change;
-    float                           dc_change;
+    double                          ad;
+    double                          dc;
+    double                          ad_change;
+    double                          dc_change;
 
 public :
     PanelConsoleSerial();

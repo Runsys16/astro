@@ -45,7 +45,7 @@ public:
     enum TYPE { RELATIF, ABSOLU };
     
     typedef struct {
-        vec2                v;
+        vecf2                v;
         TYPE                type;
         float               t;
     } data;
@@ -177,7 +177,7 @@ static bool             bDebug;
 
     void                idle_guidage(vec2);
     void                reset_guidage();
-    void                ajoute(vec2 v);
+    void                ajoute(vecf2 v);
 
     void                update_err();
     void                glCarre( int, int, int, int );

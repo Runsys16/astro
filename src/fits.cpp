@@ -248,7 +248,7 @@ void Fits::intersectionD( vec2&r, vec2& c, vec2& d )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float Fits::computeEchelle(vec2 v)
+double Fits::computeEchelle(vec2 v)
 {
 	mat2 mInv = mMat.inverse();
 	vec2 w = mInv * v;
@@ -318,6 +318,10 @@ void Fits::sauveMatrice()
 	pp1N = mMat * p1N;				pp2N = mMat * p2N;
 	pp1N += c;						pp2N += c;
 	
+	vec2 vN = pp2N - pp1N;
+	vN.normalize();
+	pPanelCapture->setVecteurAD( vN );
+	
 	intersectionH( 	vHaut,   pp1N, pp2N );
 	pPanelCapture->addP1P2( vHaut, vHaut + 2.0*(pp1N-vHaut) );
 
@@ -326,6 +330,10 @@ void Fits::sauveMatrice()
 	pp1E = mMat * p1E;				pp2E = mMat * p2E;
 	pp1E += c;						pp2E += c;
 
+	vec2 vE = pp2E - pp1E;
+	vE.normalize();
+	pPanelCapture->setVecteurDE( vE );
+	
 	intersectionG( 	vGauche,   pp1E, pp2E );
 	pPanelCapture->addP1P2( vGauche, vGauche + 2.0*(pp1E-vGauche) );
 
@@ -337,10 +345,10 @@ void Fits::sauveMatrice()
 	vec2 vStart1E = pp1E;
 	vec2 vStart2E = pp2E;
 	
-	float echN = computeEchelle( vec2(0.0, dCRVAL1) );
-	float echE = computeEchelle( vec2(dCRVAL2, 0.0) );
+	double echN = computeEchelle( vec2(0.0, dCRVAL1) );
+	double echE = computeEchelle( vec2(dCRVAL2, 0.0) );
 	
-	logf( (char*)"l-Nord = %0.4f l-Est = %0.4f", echN, echE );
+	logf( (char*)"l-Nord = %0.4lf l-Est = %0.4lf", echN, echE );
 	
 	for( float f=-10.0; f <(10.0); f+=1.0 )	{
 		//-----------------------------------------------------------------
@@ -896,10 +904,10 @@ void Fits::J2000_2_screen(vec2 j, vec2& s )
 	#ifdef DEBUG
 		char str1[255];
 		char str2[255];
-		r.to_str(str1);
+		j.to_str(str1);
 		s.to_str(str2);
 
-		logf( (char*)"Fits::J2000_2_screen( %s, %s )", str1, str2 );
+		logf( (char*)"Fits::J2000_2_screen( j%s, s%s )", str1, str2 );
 		log_tab( true );
 	#endif
 
@@ -907,40 +915,39 @@ void Fits::J2000_2_screen(vec2 j, vec2& s )
 	vec2 crval =  vec2( dCRVAL1, dCRVAL2 );
 	vec2 cdelt =  vec2( dCDELT1, dCDELT2 );
 
-	#ifdef DEBUG
-		v.to_str(str1);
-		logf( (char*)"v=%s", str1 );
-	#endif
-
 	j -= crval;
 
 	#ifdef DEBUG
-		logf( (char*)"%s = %s - %s", v.to_st(), s.to_st(), crval.to_st() );
+		j.to_str(str1); crval.to_str(str2);
+		logf( (char*)"j%s crval%s", str1, str2 );
 	#endif
 
 	j.x = j.x / cdelt.x;
 	j.y = j.y / cdelt.y;
 
+	#ifdef DEBUG
+		j.to_str(str1); cdelt.to_str(str2);
+		logf( (char*)"j%s cdelt%s", str1, str2 );
+	#endif
+	
 	mat2 m = mMat.inverse();
 	s = m * j;
 
 	#ifdef DEBUG
-		logf( (char*)"%s = m * %s", r.to_st(), v.to_st() );
+		s.to_str(str1);
+		logf( (char*)"s%s", str1 );
 	#endif
 	
-	#ifdef DEBUG
-		logf( (char*)"%s /= %s", r.to_st(), cdelt.to_st() );
-	#endif
-
 	s.x = -s.x;
 	s += crpix;
 	
 	#ifdef DEBUG
-		logf( (char*)"valeur de retour %s", r.to_st() );
+		s.to_str(str1);
+		logf( (char*)"valeur de retour s%s", str1 );
 		
 		log_tab( false );
 	#endif
-	
+#undef DEBUG
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -13,11 +13,16 @@ Captures::Captures()
     log_tab( true );
     current_capture = -1;
 
-    charge2();
 
     VarManager&         var = VarManager::getInstance();
-    
+    mode =0;
     if( var.existe("bShowIcones") )         bShowIcones = var.getb( "bShowIcones" );
+    if( var.existe("mode") )				mode = var.geti( "mode" );
+    else									var.set( "mode", 0 );
+    mode %= 4;
+
+    charge2();
+    
     bFullPreview 		= false;
     bShowPreview 		= false;
     bIcones  			= true;
@@ -26,11 +31,12 @@ Captures::Captures()
 	bAfficheGrille 		= false;
 
     sCurrentDir = "";
+    afficheInfoFits( mode );
     resize_all();
 
 //    rotate_capture_plus(true);
     log_tab( false );
-    logf((char*)"Constructeur Captures() -----------FIN" );
+    logf((char*)"Constructeur Captures() -----FIN---- %d", mode );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -734,18 +740,8 @@ void Captures::setColor(long c)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Captures::afficheInfoFits()
+void Captures::setMode()
 {
-	mode = ++mode % 4;
-	logf( (char*)"Captures::afficheInfoFits()  mode = %d", mode );
-	switch( mode)	{
-	case 0 : bAfficheGrille = false; bAfficheInfoFits = false; bAfficheInfoSouris = false; break;
-	case 1 : bAfficheGrille = true;  bAfficheInfoFits = false; bAfficheInfoSouris = false;  break;
-	case 2 : bAfficheGrille = true;  bAfficheInfoFits = false; bAfficheInfoSouris = true;  break;
-	case 3 : bAfficheGrille = true;  bAfficheInfoFits = true;  bAfficheInfoSouris = true; break;
-	}
-
-	
     for(int i=0; i<captures.size(); i++)
     {
     	Capture*	pCapture = captures[i];    	
@@ -757,10 +753,35 @@ void Captures::afficheInfoFits()
         	pCapture->afficheInfoFits( bAfficheInfoFits );
         }
         
-        
         if ( i == current_capture )			pCapture->onTop();
-        
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::afficheInfoFits()
+{
+	mode = ++mode % 4;
+	logf( (char*)"Captures::afficheInfoFits()" );
+	afficheInfoFits( mode );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::afficheInfoFits(int n)
+{
+	logf( (char*)"Captures::afficheInfoFits(%d)", n );
+    VarManager::getInstance().set( "mode", n );
+
+
+	switch( n)	{
+	case 0 : bAfficheGrille = false; bAfficheInfoFits = false; bAfficheInfoSouris = false; break;
+	case 1 : bAfficheGrille = true;  bAfficheInfoFits = false; bAfficheInfoSouris = false;  break;
+	case 2 : bAfficheGrille = true;  bAfficheInfoFits = false; bAfficheInfoSouris = true;  break;
+	case 3 : bAfficheGrille = true;  bAfficheInfoFits = true;  bAfficheInfoSouris = true; break;
+	}
+
+	setMode();	
 }
 /*
 //--------------------------------------------------------------------------------------------------------------------
@@ -789,6 +810,26 @@ void Captures::onTop()
     		WindowsManager::getInstance().onTop( pCapture->getFits()->getPanelFits() );
 			WindowsManager::getInstance().onTop( pCapture->getFits()->getPanelCorrectionFits());      	
     	}
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::change_ad( double ad )
+{
+	if ( current_capture != -1 && captures[current_capture]->isFits() )
+	{
+		captures[current_capture]->getPreview()->change_ad( ad );
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::change_dc( double dc )
+{
+	if ( current_capture != -1 && captures[current_capture]->isFits() )
+	{
+		captures[current_capture]->getPreview()->change_dc( dc );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
