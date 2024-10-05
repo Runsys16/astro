@@ -2136,7 +2136,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	{
 
             logf( (char*)"Key (TAB) : Image suivante" );
+            log_tab(true);
             Captures::getInstance().rotate_capture_plus(false);
+            log_tab(true);
         }
 		break;
 	// CTRL J  LF
@@ -2184,7 +2186,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 45:
     	{
             logf( (char*)"Key (-) : Image icones" );
+            log_tab(true);
             Captures::getInstance().rotate_capture_moins(true);
+            log_tab(false);
     	}
 	    break;
     
@@ -2193,7 +2197,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	{
            // Captures::getInstance().showIcones();
             logf( (char*)"Key (126) : Image precedente" );
+            log_tab(true);
 	        Captures::getInstance().rotate_capture_moins(true);
+            log_tab(false);
     	}
 	    break;
     

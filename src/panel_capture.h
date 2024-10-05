@@ -25,6 +25,7 @@ protected:
 	double				dTelescopeDC;
 	int					xTelescope;
 	int					yTelescope;
+	double				ech;
     double              ech_geo;
     double              ech_user;
     double              dx;
@@ -62,6 +63,7 @@ public:
     
     virtual void		update_stars();
     		void		updateEchelle();
+    		void		updateEchelleGeo();
     virtual void		updatePos();
 
 			void		glCroix( int,  int,  int,  int );

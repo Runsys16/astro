@@ -11,6 +11,19 @@ Captures::Captures()
 {
     logf((char*)"Constructeur Captures() -----------" );
     log_tab( true );
+
+	init();
+
+    log_tab( false );
+    logf((char*)"Constructeur Captures() -----FIN---- %d", mode );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::init()
+{
+    logf((char*)"Captures::init() -----------" );
+    log_tab( true );
     current_capture = -1;
 
 
@@ -30,13 +43,17 @@ Captures::Captures()
 	bAfficheInfoFits 	= false;
 	bAfficheGrille 		= false;
 
+    dxIcon				= width  / 8;
+    dyIcon				= height / 6;
+
+
     sCurrentDir = "";
     afficheInfoFits( mode );
     resize_all();
 
 //    rotate_capture_plus(true);
     log_tab( false );
-    logf((char*)"Constructeur Captures() -----FIN---- %d", mode );
+    logf((char*)" Captures::init() -----FIN---- %d", mode );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -60,7 +77,7 @@ void Captures::charge_image( string dirname, string filename )
     logf( (char*)"    %s",(char*)filename.c_str() );
     log_tab( true );
 
-    if ( current_capture != -1 )    captures[current_capture]->iconize();   
+    //if ( current_capture != -1 )    captures[current_capture]->iconize();   
     
     sCurrentDir = string( dirname ); 
 
@@ -106,7 +123,7 @@ void Captures::rotate_capture_moins(bool b)
     if ( b != bIcones )
     {
         bIcones = b;
-        if ( b )		captures[current_capture]->iconize();
+        if ( b )		captures[current_capture]->iconize( dxIcon, dyIcon );
     }
     else
     {
@@ -154,7 +171,7 @@ void Captures::rotate_capture_plus(bool b)
     if ( b != bIcones )
     {
         bIcones = b;
-        if ( b )		captures[current_capture]->iconize();
+        if ( b )		captures[current_capture]->iconize( dxIcon, dyIcon );
     }
     else
     {
@@ -198,6 +215,7 @@ void Captures::resize_icone( Capture* p, int dx, int y, int dxi, int dyi )
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::resize_normal(Capture* p, int dx, int dy)
 {
+    logf( (char*)"Captures::resize_normal()" );
     p->resize(10,10,dx-20,dy-20);
     p->restaure( bAfficheInfoFits, bAfficheGrille, bAfficheInfoSouris );
 }
@@ -206,7 +224,7 @@ void Captures::resize_normal(Capture* p, int dx, int dy)
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::resize_all()
 {
-    logf( (char*)"Captures::resize_all()    ------------" );
+    logf( (char*)"Captures::resize_all()    ------------ curr=%d", current_capture );
     log_tab(true);    
     //if ( captures.size() == 0 )             return;
     
@@ -225,15 +243,12 @@ void Captures::resize_all()
     
     
     //--------------------------------------------------
-    // Calcul les dimensions 
+    // Calcul les dimensions pour l'icone
     //--------------------------------------------------
-    int dx, dy, dxi, dyi;
+    int dx, dy;// dxi, dyi;
     float ratio = (float)width/(float)height;
     
-    dxi = width / 8;
-    dyi = height  / 6;
-
-    dx = width - dxi;
+    dx = width - dxIcon;
     dy = height; 
 
     int DY;
@@ -247,8 +262,8 @@ void Captures::resize_all()
     //if ( m<=0 )      { log_tab(false); return; }
     if ( m<=0 )      { goto fin_return; }
 
-    if ( m>1 )      DY = (height-20-dyi) / (m-1);    
-    else            DY = (height-20-dyi) / (m);    
+    if ( m>1 )      DY = (height-20-dyIcon) / (m-1);    
+    else            DY = (height-20-dyIcon) / (m);    
 
     //--------------------------------------------------
     // Affiche l'image choisie
@@ -260,7 +275,6 @@ void Captures::resize_all()
         p->show();
 	    p->restaure( bAfficheInfoFits, bAfficheGrille, bAfficheInfoSouris );
         p->onTop();
-        p->setFullScreen(bFullPreview);
         
         if 		( bFullPreview )            p->fullscreen();
         else if ( !bIcones )				resize_normal( p, dx, dy);
@@ -281,13 +295,14 @@ void Captures::resize_all()
     for (int i=0; i<n; i++)
     {
         Capture* p = captures[i];
+        logf( (char*)"Traitement n=%d:%s", i, BOOL2STR(p->isIconized()) );
         
         if ( i!=current_capture || bIcones )
         {
-        	p->iconize();
+        	p->iconize( dxIcon, dyIcon );
             if ( !bShowIcones )		p->hide();
 
-            resize_icone( p, dx, y, dxi, dyi );
+            resize_icone( p, dx, y, dxIcon, dyIcon );
 
             y += DY;
         }        
@@ -613,7 +628,7 @@ void Captures::charge(void)
         string filename = line;
         captures.push_back( new Capture(filename) );
         current_capture = captures.size() - 1;
-        captures[current_capture]->iconize();
+        //captures[current_capture]->iconize();
         captures[current_capture]->setFullScreen(false);
         
         //logf( (char*)"charge : %s", (char*)filename.c_str() );
@@ -645,7 +660,7 @@ void Captures::charge2(void)
 
             captures.push_back( new Capture(filename) );
             current_capture = captures.size() - 1;
-            captures[current_capture]->iconize();
+            //captures[current_capture]->iconize();
             captures[current_capture]->setFullScreen(false);
             //var.set( name, filename );
         }

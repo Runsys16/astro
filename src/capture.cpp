@@ -276,7 +276,7 @@ void Capture::releaseLeft(int xm, int ym)
     if ( pIconiser == pIconiser->isMouseOver(xm, ym ) )
     {
        logf( (char*)"Capture::releaseLeft() Iconiser" );
-       iconize();
+       iconize( getDX(), getDY());
        Captures::getInstance().rotate_capture_plus(true);
     }
 
@@ -449,7 +449,8 @@ void Capture::resize(int w, int h )
     setPosAndSize( x, y, dx, dy );
     //pMaximiser->setPos(dx-32*2, y-12);
 
-    panelPreview->setPosAndSize( 0, 0, dx, dy );
+    //panelPreview->setPosAndSize( 0, 0, dx, dy );
+    panelPreview->setSize( dx, dy );
     //panelPreview->setEchelle( (double)readBgr.w / (double)dx );
     
 }
@@ -492,9 +493,8 @@ void Capture::resize(int x, int y, int w, int h )
     }
     
     setPosAndSize( x, y, dx, dy );
-    //pMaximiser->setPos( dx-(32*2), y-12 );
-    panelPreview->setPosAndSize( 0, 0, dx, dy );
-    
+    //panelPreview->setPosAndSize( 0, 0, dx, dy );
+    panelPreview->setSize( dx, dy );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -517,7 +517,7 @@ void Capture::fullscreen()
     if ( panelPreview->getDY() > dy ) {
     	Y = (panelPreview->getDY() - dy ) / 2;
     }
-	panelPreview->setPos(-X, -Y);
+	//panelPreview->setPos(-X, -Y);
     bIconized = false;
     bFullScreen = true;
 }
@@ -613,9 +613,10 @@ void Capture::afficheInfoFits(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::iconize()
+void Capture::iconize( int dxIcon, int dyIcon)
 {
 	logf( (char*)"Capture::iconize()" );
+	log_tab(true);
 
     VarManager& 	var	= VarManager::getInstance();
 	if ( var.getb("bShowIcones")	)			setVisible( true );
@@ -623,13 +624,25 @@ void Capture::iconize()
 
 	bIconized = true;
 	bFullScreen = false;
+
+
+	/*
+	Captures& captures = Captures::getInstance();
+
+	int dxIcon = captures.getDXIcon();
+	int dyIcon = captures.getDYIcon();
+	*/
+	setSize( dxIcon, dyIcon );
+	
 	panelPreview->iconize();
+
 
 	if ( bFits )	{
 
 		fits->getPanelFits()->setVisible(false);
 		fits->getPanelCorrectionFits()->setVisible(false);
 	}
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

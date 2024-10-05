@@ -53,6 +53,7 @@ inline      void        set(double m, double M, double s, double n)
 
 inline 		void		setMotion( motion_cb_t cb)  { cb_motion = cb; }
 inline      double*     get_pVal()          		{ return pVal; }                        
+inline      double		get_val()	          		{ return val; }                        
 
 
             void        set_enum(vector<double>);

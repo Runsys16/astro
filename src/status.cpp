@@ -533,10 +533,8 @@ void click_left_cercle_asserv( int xm, int ym )
 void release_left_cercle_asserv( int xm, int ym ) 
 {
     logf((char*)"release_left_cercle_asserv( %d, %d)", xm, ym );
-    //pCercleAsserv->setPosAndSize( 200, 0, 180, 20 );
-    //int x =     pCercleAsserv->getX();
-    //int y =     pCercleAsserv->getY();
-    //pCercleAsserv->setPos( xAsserv, yAsserv );
+    //logf((char*)"val = %lf",  fLimitCorrection );
+    var.set( "fLimitCorrection", fLimitCorrection );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -556,6 +554,9 @@ void release_left_cercle_err( int xm, int ym )
 {
     logf((char*)"release_left_cercle_err( %d, %d)", xm, ym );
     //pCercleErr->setPos( xAsserv, yAsserv );
+	double* pErr = panelCourbe->get_perr();
+	logf( (char*)"err=%0.2f", *pErr );
+    var.set( "err", *pErr );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -746,7 +747,6 @@ void idleStatus()
 		double* pErr = panelCourbe->get_perr();
 		logf( (char*)"err=%0.2f", *pErr );
 	    pCercleErr->set_pVal( pErr );
-	    pCercleErr->set_val( *pErr );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

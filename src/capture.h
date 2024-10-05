@@ -80,7 +80,7 @@ public :
     void                        afficheFits();
     void                        afficheInfoFits();
     void                        afficheInfoFits(bool);
-    void						iconize();
+    void						iconize(int, int);
 	void						restaure(bool bInfo, bool bGrille, bool bSouris );
     
     

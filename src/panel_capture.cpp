@@ -87,6 +87,50 @@ void PanelCapture::updateEchelle()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::updateEchelleGeo()
+{
+    double coef;
+    double coef0 = (double)pReadBgr->w / getParent()->getDX();// * ech_user;
+    double coef1 = (double)pReadBgr->h / getParent()->getDY();// * ech_user;
+    //logf( (char*)"  DX %d", pCapture->getDX() );
+    //double coef0 = (double)pReadBgr->w / pCapture->getDX();// * ech_user;
+    //double coef1 = (double)pReadBgr->h / pCapture->getDY();// * ech_user;
+    if ( coef0 > coef1 )        coef = 1.0/coef1;
+    else                        coef = 1.0/coef0;
+    
+    if ( coef != ech_geo )
+    {
+        logf( (char*)"PanelCapture::updatePos() Changement d'echelle" );
+        logf( (char*)"  %s", pCapture!=NULL? (char*)pCapture->getBasename().c_str() : (char*)"" );
+        logf( (char*)"  ech_geo=%0.2lf ech_user=%0.2lf", coef, ech_user );
+        logf( (char*)"  alphaAD=%0.2lf alphaED=%0.2lf", dAngleAD, dAngleDE );
+        
+        ech = ech_user * ech_geo;
+        dx /= ech;
+        dy /= ech;
+
+        ech_geo = coef;
+
+        ech = ech_user * ech_geo;
+
+        dx *= ech;
+        dy *= ech;
+        
+        setPos(dx, dy);
+		setSize( (double)pReadBgr->w * ech, (double)pReadBgr->h * ech );
+        
+        logf( (char*)" dx=%0.2lf dy=%0.2lf", dx, dy );
+    }
+
+    if ( coef != ech_geo )    {
+        stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
+    }
+    
+    ech = ech_user * ech_geo;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::updatePos()
 {
     //PanelSimple::updatePos();
@@ -95,7 +139,7 @@ void PanelCapture::updatePos()
         PanelSimple::updatePos();
         return;
     }
-    
+	/*    
     //dx = getPosX();
     //dy = getPosY();
 
@@ -114,11 +158,18 @@ void PanelCapture::updatePos()
         ech_geo = coef;
     }
     
-    //setEchelle(coef);
-    double fDX = (double)pReadBgr->w * ech_geo;
-    double fDY = (double)pReadBgr->h * ech_geo;
+	*/
+    
+	
+	updateEchelleGeo();
+    //setEchelle(ech_geo*ech_user);
 
-    setSize( fDX*ech_user, fDY*ech_user );
+    double fDX = (double)pReadBgr->w;// * ech_geo;
+    double fDY = (double)pReadBgr->h;// * ech_geo;
+
+
+    //setSize( fDX*ech_user, fDY*ech_user );
+    setSize( fDX*ech, fDY*ech );
     setCent();
 
     PanelSimple::updatePos();
@@ -162,10 +213,6 @@ void PanelCapture::updatePos()
 
     //stars.update_stars(getParent()->getX(), getParent()->getY(), this, NULL );
 
-    if ( coef != ech_geo )    {
-        stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
-    }
-    
 	if ( bAffGrille && !bIcone )	{
 		setEchelleVisible(true);
 	    updateEchelle();
@@ -875,14 +922,16 @@ void PanelCapture::setCentY(double f)
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::screen2texX( int x )
 {
-    return (double)( x-dx) / (ech_user * ech_geo);
+	double X = x - pCapture->getX();
+    return ( (double)X-dx) / (ech);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 int PanelCapture::screen2texY( int y )
 {
-    return (double)( y-dy) / (ech_user * ech_geo);
+	double Y = y - pCapture->getY();
+    return ( (double)Y-dy) / (ech);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1092,10 +1141,17 @@ void PanelCapture::setInfoSouris(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::iconize()
 {
+	logf( (char*)"PanelCapture::iconize()" );
 	bAffGrille = false;
 	bInfoSouris = false;
 	setInfoSouris( false );
 	bIcone = true;
+	
+	//updateEchelleGeo();
+	
+	logf( (char*)" setPos(%lfd, %lf)", (dx), (dy) );
+	logf( (char*)" ech_geo=%lf, ech_user=%lf)", ech_geo, ech_user );
+	setPos( dx, dy );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1108,7 +1164,7 @@ void PanelCapture::restaure(bool bGril, bool bbSour )
 	bAffGrille = bGril;
 	bInfoSouris = bbSour;
 	setInfoSouris( bbSour );
-	setPos(dx, dy);
+	//setPos(dx, dy);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
