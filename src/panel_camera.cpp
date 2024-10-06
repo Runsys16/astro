@@ -653,9 +653,6 @@ void PanelCamera::displayVizier()
             double x = vizier.get(i)->getXScreen();
             double y = vizier.get(i)->getYScreen();
             
-		    //logf( (char*)" get (%0.8f, %0.8f)", x, y );;
-			//vizier.get(i)->pInfo->setPos(x+10-getX(), y-80);
-
             double r = (12.0 - vizier.get(i)->fMag ) * 1.8;
             glCercle( x, y, r );
         }
@@ -666,20 +663,12 @@ void PanelCamera::displayVizier()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displayGL()
 {
-    //logf( (char*)"*** PanelCamera::displayGL() ***" );
-    //if ( pReadBgr != NULL )
-     //   logf( (char*)"*** PanelCamera::displayGL()  %X", (long)pReadBgr->ptr );
 
     double gris = 0.3;
     VarManager& var = VarManager::getInstance();
-    //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
-    //else                            glColor4f( gris, gris, gris, 0.2 );
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-
-    //double x = getParent()->getX();
-    //double y = getParent()->getY();
 
     double x = getX();
     double y = getY();

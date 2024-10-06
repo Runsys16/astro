@@ -75,8 +75,14 @@ void PanelFits::displayGL()
 	if ( !visible )			return;
     VarManager&         var = VarManager::getInstance();
 
-    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 1.0 );
-    else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
+    if ( bNuit )		{
+    	setColor( COLOR32(255, 255, 0, 0) );
+    	pScroll->setColor( COLOR32(255, 255, 0, 0) );
+    }
+    else	{
+    	setColor( COLOR32(255, 255, 255, 255) );    
+    	pScroll->setColor( COLOR32(255, 255, 255, 255) );
+    }
 
     PanelWindow::displayGL();
 }

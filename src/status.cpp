@@ -717,17 +717,17 @@ void idleStatus()
     else                    pSuivi->setColor(COLOR_GREY);
 
     */
-	if (bMouseDeplace)              pDeplacement->setColor(COLOR_WHITE);
-    else                            pDeplacement->setColor(COLOR_GREY);
+	if (bMouseDeplace)              				pDeplacement->setColor(COLOR_WHITE);
+    else                            				pDeplacement->setColor(COLOR_GREY);
 
-    if (bCorrection)                pAsservi->setColor(COLOR_WHITE);
-    else                            pAsservi->setColor(COLOR_GREY);
+    if (bCorrection)                				pAsservi->setColor(COLOR_WHITE);
+    else                            				pAsservi->setColor(COLOR_GREY);
 
     if ( Serial::getInstance().isConnect() )        pArduino->setColor(COLOR_WHITE);
     else                                            pArduino->setColor(COLOR_GREY);
 
-    if ( bSuivi )                   pSuivi->setColor(COLOR_WHITE);
-    else                            pSuivi->setColor(COLOR_GREY);
+    if ( bSuivi )                   				pSuivi->setColor(COLOR_WHITE);
+    else                            				pSuivi->setColor(COLOR_GREY);
     
     if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
 
@@ -752,6 +752,18 @@ void idleStatus()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void status_nuit(unsigned long color )
+{
+	pCercleAsserv->setColor( color );
+	pCercleErr->setColor( color );
+
+	pFlecheHaut->setColor( color );
+	pFlecheBas->setColor( color );
+
+	pUrgentUp->setColor( color );
+	pUrgentDown->setColor( color );
+
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

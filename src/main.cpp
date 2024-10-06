@@ -3301,6 +3301,7 @@ static void glutPassiveMotionFunc(int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void status_nuit( unsigned long );
 void setColor()	
 {
     logf( (char*)"main::setColor()" );
@@ -3320,6 +3321,7 @@ void setColor()
     Camera_mgr::getInstance().setColor(color);
     FileBrowser::getInstance().setColor(color);
     PanelConsoleSerial::getInstance().setColor(color);
+    status_nuit(color);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

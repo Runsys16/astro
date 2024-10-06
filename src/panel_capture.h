@@ -44,6 +44,7 @@ protected:
     Catalog*            pVizier;
     Capture*            pCapture;
     
+    PanelSimple*		pTelescope;
     PanelSimple*		pFondCoord;
     PanelText*			pCoord;
     PanelText*			pJ2000_1;
