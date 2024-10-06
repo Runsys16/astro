@@ -68,8 +68,8 @@ public:
     void                displayGL();
     
     void                setZoom(bool);
-    
     void                position(double, double);
+    void				setVisible(bool);
     
     inline void         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
     inline void         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
@@ -151,6 +151,7 @@ private:
     bool                bSelect;
     bool                bSuivi;
     bool                bZoom;
+    bool				bVisible;
     
     PanelZoom*          panelZoom;
     PanelSimple*        pView;

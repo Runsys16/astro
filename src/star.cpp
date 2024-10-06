@@ -926,6 +926,7 @@ void Star::displayGL()
 {
     //logf( (char*)"Star::displayGL()" );
     //glCroix(20,20);
+    if ( !bVisible )				return;
 
     if ( bNuit )        glColor4f( 0.3,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
@@ -984,6 +985,15 @@ void Star::position(double ra, double dc)
     logf( (char*)"  de = %s", s_de );
     
     vizier_load_stars( string(s_ra) + string(s_de), RAD2DEG(ra), RAD2DEG(dc) );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::setVisible( bool b )
+{
+	bVisible = b;
+	pInfo->setVisible( b );
+	//panelZoom->setVisible( b );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

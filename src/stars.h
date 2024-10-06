@@ -36,6 +36,8 @@ public:
 
     void                    update_stars(int, int, PanelSimple*, rb_t*);
     void                    update_stars(int, int, PanelSimple*, rb_t*, float ech_usr);
+    
+    void					updateScreenPos(int, int, double);
     void                    idle();
     void                    displayGL();
     
@@ -49,10 +51,11 @@ public:
 
     int                     getSuiviScreenX();
     int                     getSuiviScreenY();
+	void					setVisible(bool);
 
 inline int                  size(void)                  { return v_tStars.size(); }    
+inline bool					getVisible()				{ return bVisible; }
 
-           
 private:
     vector<Star*>           v_tStars;
     rb_t*                   RB;
@@ -63,7 +66,7 @@ private:
     int                     dy;
     
     float                   ech;
-
+	bool					bVisible;
 };
 
 

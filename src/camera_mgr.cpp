@@ -452,6 +452,7 @@ void Camera_mgr::findAllStars()
     pCurrent->getPanelPreview()->getStars()->setView( pCurrent->getPanelPreview() );
     pCurrent->getPanelPreview()->getStars()->setRB( pCurrent->getRB() );
     pCurrent->getPanelPreview()->getStars()->findAllStars();
+    pCurrent->getPanelPreview()->getStars()->setVisible(true);
 
     /*
     char t[] = "00000000000";  

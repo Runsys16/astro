@@ -44,6 +44,7 @@ protected:
     Catalog*            pVizier;
     Capture*            pCapture;
     
+    PanelSimple*		pFondCoord;
     PanelText*			pCoord;
     PanelText*			pJ2000_1;
     PanelText*			pJ2000_2;
@@ -72,6 +73,8 @@ public:
     		void		displayCatalog();
     		void		displayAxe();
     virtual void		displayGL();
+
+    virtual void		idle(float);
 
     virtual void        wheelUp( int, int);
     virtual void        wheelDown( int, int);

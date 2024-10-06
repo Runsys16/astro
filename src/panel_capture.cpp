@@ -27,12 +27,22 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 	bAffGrille	= false;
     stars.setView( this );
     
+    pFondCoord = new PanelSimple();
+    pFondCoord->setBackground( (char*)"images/background.tga" );
+    pFondCoord->setSize( 200,50 );
+    this->add( pFondCoord );
+    
     pCoord = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 20, 10 );
-    this->add( pCoord );
     pJ2000_1 = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, 20, 10 );
-    this->add( pJ2000_1 );
     pJ2000_2 = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, 20, 10 );
+	/*
+    this->add( pCoord );
+    this->add( pJ2000_1 );
     this->add( pJ2000_2 );
+	*/    
+    pFondCoord->add( pCoord );
+    pFondCoord->add( pJ2000_1 );
+    pFondCoord->add( pJ2000_2 );
     
     pVizier = NULL;
     
@@ -74,7 +84,7 @@ void PanelCapture::update_stars()
     if  ( pReadBgr==NULL )      logf( (char*)"PanelCapture::update()   pointeur RB NULL" );
 
     //Panel* pParent = getParent();
-    stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_user );
+    //stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_user );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -123,7 +133,7 @@ void PanelCapture::updateEchelleGeo()
     }
 
     if ( coef != ech_geo )    {
-        stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
+        //stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
     }
     
     ech = ech_user * ech_geo;
@@ -193,6 +203,9 @@ void PanelCapture::updatePos()
 			v = ech * v;
             //v -= d;
             PanelText * p = pVizier->get(i)->getInfo();
+            if ( bNuit )        p->setColor( COLOR32(255, 255, 0, 0) );
+            else                p->setColor(  COLOR32(255, 255, 178, 0) );
+
             if ( p->getParent() == NULL )    this->add(p);
             vec2 vEch = vec2( 6.0, 6.0 );
             vEch *= ech;	vEch.y += 12; 
@@ -300,7 +313,7 @@ void PanelCapture::displayCatalog()
 
 	glBegin(GL_LINES);
 
-	glColor4f( COLOR_A(r), COLOR_R(r), COLOR_G(r), COLOR_B(r) );
+	//glColor4f( COLOR_A(r), COLOR_R(r), COLOR_G(r), COLOR_B(r) );
 
     int n = pVizier->size();
     if ( n!= 0)
@@ -392,9 +405,12 @@ void PanelCapture::displayGL()
     
     PanelSimple::displayGL();
 
+    if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
+    else                glColor4f( gris, gris, gris, 0.2 );    
+    
     stars.setView( this );
     //stars.setRB( pReadBgr );
-    stars.displayGL();
+    if ( !bIcone )					stars.displayGL();
 
 	if ( !pCapture->isIconized() )	{
 		if ( pCapture->isFits() )	{
@@ -408,6 +424,23 @@ void PanelCapture::displayGL()
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::idle(float f)
+{
+    //VarManager& var = VarManager::getInstance();
+    //----------------------------------------------
+	if ( !bIcone  )	{
+		stars.setVisible(true);
+		stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
+	}	
+	else	{
+		stars.setVisible(false);
+	}    
+	stars.idle();
+    PanelSimple::idle(f);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -474,22 +507,15 @@ void PanelCapture::wheelUp(int xm, int ym)
     dx = -X1;
     dy = -Y1;
     
-    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
-    
-    /*
-    logf( (char*)"XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
-    logf( (char*)"Mouse (%0.2f, %0.2f)  (%0.2f, %0.2f)", (double)xm, (double)ym, XM, YM );
-    logf( (char*)"MAX   (%0.2f, %0.2f)", max_x, max_y );
-    logf( (char*)"ech   (%0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, (int)pReadBgr->w, (int)pReadBgr->h );
-    logf( (char*)"win   (%0.2f, %0.2f) (%0.2f, %0.2f)", (double)getX(), (double)getY(), (double)p->getDX(), (double)p->getDY() );
-    printObjet();
-	*/
+    //stars.update_stars( getX(), getY(), this, pReadBgr, ech );
+
     log_tab(false);
     
     updatePos();
     passiveMotionFunc( xm, ym );
-    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
     pCapture->updatePosIcones();
+
+    stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -534,21 +560,14 @@ void PanelCapture::wheelDown(int xm, int ym)
     dx = -x1;
     dy = -y1;
     
-    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
-    /*
-    logf( (char*)"XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
-    logf( (char*)"Mouse (%0.2f, %0.2f)  (%0.2f, %0.2f)", (double)xm, (double)ym, XM, YM );
-    logf( (char*)"MAX   (%0.2f, %0.2f)", max_x, max_y );
-    logf( (char*)"ech   (%0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, (int)pReadBgr->w, (int)pReadBgr->h );
-    logf( (char*)"win   (%0.2f, %0.2f) (%0.2f, %0.2f)", (d        VarManager& var= VarManager::getInstance();
-ouble)getX(), (double)getY(), (double)p->getDX(), (double)p->getDY() );
-    printObjet();
-    */
+    //stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
+
     //log_tab(false);
     updatePos();    
     passiveMotionFunc( xm, ym );
-    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
     pCapture->updatePosIcones();
+
+    stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -612,7 +631,8 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 #endif
 		pJ2000_1->changeText( (char*)coord );
 		pJ2000_1->setChangeText(true);
-		pJ2000_1->setPos( x+15, y+30);
+		//pJ2000_1->setPos( x+15, y+30);
+		pJ2000_1->setPos( 5, 17);
 
 #ifdef DEG_MS
 		snprintf( (char*)coord, sizeof(coord), "\t\tDE:%2.0fd %02.0f' %02.2f\"", DMS.d, DMS.m, DMS.s );
@@ -621,12 +641,15 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 #endif
 		pJ2000_2->changeText( (char*)coord );
 		pJ2000_2->setChangeText(true);
-		pJ2000_2->setPos( x+15, y+45);
+		pJ2000_2->setPos( 5, 32);
 	}
 	// Mise a jour du panelText
 	// ans la position de la souris
 	// Force la fabrication de la chaine de caractere
-	pCoord->setPos( x+15, y+15);
+	pFondCoord->setPos( x+15, y+15);
+	pFondCoord->onTop();
+
+	pCoord->setPos( 5, 2);
 	pCoord->setChangeText(true);
 	
 	log_tab(false);
@@ -685,7 +708,8 @@ void PanelCapture::motionRight(int xm, int ym)
 {
     logf( (char*)"PanelCapture::motionRight(%d,%d) ...", xm, ym );
 	PanelSimple::motionRight( xm, ym );
-    updatePos();    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
+    updatePos();    
+    //stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -755,21 +779,13 @@ void PanelCapture::motionMiddle(int xm, int ym)
     dy = -y1;
     double e = (double)getDX() / (double)pReadBgr->w; 
     
-    //logf( (char*)"XY    (%0.2f, %0.2f)  (%0.2f, %0.2f)", X0, Y0, X1, Y1 );
-    //logf( (char*)"Mouse (%0.2f, %0.2f) ", (double)xm, (double)ym );
-    //logf( (char*)"MAX   (%0.2f, %0.2f)", max_x, max_y );
-    //logf( (char*)"ech   (%0.2f, %0.2f, %0.2f) bgr(%d, %d)", ech_geo, ech_user, e, (int)pReadBgr->w, (int)pReadBgr->h );
-    //logf( (char*)"win   (%0.2f, %0.2f)", (double)p->getDX(), (double)p->getDY() );
-    //logf( (char*)"Pos   (%0.2f, %0.2f)", (double)getPosX(), (double)getPosY() );
-    //stars.set_delta( deltaX, deltaY );
-    
     xm_old = xm;
     ym_old = ym;
     
     bHaveMove = true;
  
  
-    stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
+    //stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
     //log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1114,9 +1130,11 @@ void PanelCapture::setInfoSouris(bool b)
 	bInfoSouris = b; 
 	
 	if (b) 	{
+		pFondCoord->setVisible(true);
 		pCoord->setVisible(true);
 		pJ2000_1->setVisible(true);
 		pJ2000_2->setVisible(true);
+		stars.setVisible(true);
 		setEchelleVisible(true);
 
 		int xx = WindowsManager::getInstance().getMouseX();
@@ -1125,15 +1143,17 @@ void PanelCapture::setInfoSouris(bool b)
 		int x = Screen2x(xx);
 		int y = Screen2y(yy);
 		
-		pCoord->setPos( x+15, y+15);
+		pCoord->setPos( 5, 2);
 		pCoord->updatePos();
 	}
 	else
 	{	
+		pFondCoord->setVisible(false);
 		pCoord->setVisible(false);
 		pJ2000_1->setVisible(false);
 		pJ2000_2->setVisible(false);
 		setEchelleVisible(false);
+		stars.setVisible(false);
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

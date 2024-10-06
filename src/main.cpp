@@ -1908,11 +1908,11 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
     default:
 		{
 		    cout << "Default..." << endl;
-		    logf( (char*)"glutKeyboardFuncCtrl  key=%c", (char)key );
+		    logf( (char*)"glutKeyboardFuncCtrl  key= '%c'", (char)key );
+		    logf( (char*)"glutKeyboardFuncCtrl  key= %00X", (int)key );
         }
         break;
     }		
-    //logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2032,7 +2032,6 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
         }
         break;
     }		
-    //logf( (char*)"glutKeyboardFuncCtrl  key=%d", (int)key );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2138,7 +2137,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             logf( (char*)"Key (TAB) : Image suivante" );
             log_tab(true);
             Captures::getInstance().rotate_capture_plus(false);
-            log_tab(true);
+            log_tab(false);
         }
 		break;
 	// CTRL J  LF
