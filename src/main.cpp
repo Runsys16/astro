@@ -32,8 +32,8 @@
 #define SIZEPT  20
 //#define DEBUG 1
 //#define IDLEGL
-#define COLOR_GREY      0xFF404040
-#define COLOR_WHITE      0xFFFFFFFF
+#define COLOR_GREY			0x404040FF
+#define COLOR_WHITE			0xFFFFFFFF
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -236,6 +236,7 @@ bool                bMouseDeplace		= false;
 bool                bMouseDeplaceVers	= false;
 bool                bFileBrowser		= false;
 bool                bStellarium			= false;
+bool                bArduino			= false;
 bool                bPleiade			= false;
 bool                bSauve				= false;
 bool                bOneFrame			= false;
@@ -361,6 +362,7 @@ double Wref  = -1.0;
 bool   bAffCatalog = true;
 Catalog vizier = Catalog();
 
+int iGlutModifier = 0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -698,7 +700,7 @@ unsigned int get_color( vcf4 v )
     unsigned int b = v.z *255.0;
     unsigned int a = v.w *255.0;
 
-    return a<<24 | r<<16 | g<<8 | b;
+    return r<<24 | g<<16 | b<<8 | a;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1245,7 +1247,9 @@ void change_hertz(double hz)
 //--------------------------------------------------------------------------------------------------------------------
 void change_arduino(bool b)
 {
-    logf( (char*)"Change Arduin %s", (char*)BOOL2STR(b) );
+    logf( (char*)"Change Arduino %s", (char*)BOOL2STR(b) );
+    
+    bArduino = b;
 
     //if ( b )    pArduino->changeText((char*)"Arduino");
     //else        pArduino->changeText((char*)"----");
@@ -2074,7 +2078,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
-	int modifier = glutGetModifiers();
+	iGlutModifier = glutGetModifiers();
 	
     bFileBrowser = FileBrowser::getInstance().getVisible();
     Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
@@ -2109,14 +2113,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         if ( cam_mgr.getCurrent()->keyboard(key) )      return;
     }
     else
-	if (modifier == GLUT_ACTIVE_ALT)
+	if (iGlutModifier == GLUT_ACTIVE_ALT)
 	{
         //logf( (char*)" Touche ALT %c", key );
         glutKeyboardFuncAlt(key,  x,  y);
         return;
 	}
     else
-	if (modifier == GLUT_ACTIVE_CTRL)
+	if (iGlutModifier == GLUT_ACTIVE_CTRL)
 	{
         //logf( (char*)" Touche ALT %c", key );
         glutKeyboardFuncCtrl(key,  x,  y);
@@ -3159,6 +3163,8 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
     //logf( (char*)"main::glutMouseFunc()");
+   	iGlutModifier = glutGetModifiers();
+
     log_tab(true);
     
     mouse.x = x;
@@ -3282,6 +3288,7 @@ endglutMouseFunc:
 static void glutMotionFunc(int x, int y)	{	
     mouse.x = x;
     mouse.y = y;
+   	iGlutModifier = glutGetModifiers();
 	WindowsManager::getInstance().motionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
     onTop();
@@ -3294,6 +3301,7 @@ static void glutMotionFunc(int x, int y)	{
 static void glutPassiveMotionFunc(int x, int y)	{
     mouse.x = x;
     mouse.y = y;
+   	iGlutModifier = glutGetModifiers();
 	WindowsManager::getInstance().passiveMotionFunc(x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
     onTop();
@@ -3306,8 +3314,8 @@ void setColor()
 {
     logf( (char*)"main::setColor()" );
 
-    unsigned long color;
-    if (bNuit)                  color = 0xFFFF0000;
+    uint32_t color;
+    if (bNuit)                  color = 0xFF0000FF;
     else                        color = COLOR_WHITE;
 
     PanelConsoleSerial::getInstance().getConsole()->setColor(color);
@@ -4195,7 +4203,7 @@ int main(int argc, char **argv)
     init_var();
     var.setSauve();
     
-    if ( var.getb("bNuit") )    panelStdOut->setColor( 0xffff0000 );
+    if ( var.getb("bNuit") )    panelStdOut->setColor( 0xff0000ff );
     else                        panelStdOut->setColor( COLOR_WHITE );
     
     double gris = 0.2;

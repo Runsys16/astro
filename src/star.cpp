@@ -65,7 +65,7 @@ void Star::init(int xx, int yy)
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
     pInfo->setExtraString( "Star pInfo" );
     unsigned long color;
-    if (bNuit)                  color = 0xFFFF0000;
+    if (bNuit)                  color = 0xFF0000FF;
     else                        color = 0xFFFFFFFF;
 
     pInfo->setColor(color);

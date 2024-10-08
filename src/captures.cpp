@@ -834,7 +834,10 @@ void Captures::change_ad( double ad )
 {
 	if ( current_capture != -1 && captures[current_capture]->isFits() )
 	{
-		captures[current_capture]->getPreview()->change_ad( ad );
+		for(int i=0; i<captures.size(); i++)
+		{
+			captures[i]->getPreview()->change_ad( ad );
+		}
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -844,7 +847,10 @@ void Captures::change_dc( double dc )
 {
 	if ( current_capture != -1 && captures[current_capture]->isFits() )
 	{
-		captures[current_capture]->getPreview()->change_dc( dc );
+		for(int i=0; i<captures.size(); i++)
+		{
+			captures[i]->getPreview()->change_dc( dc );
+		}
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

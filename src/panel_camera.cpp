@@ -56,7 +56,7 @@ void PanelCamera::idle(float f)
     VarManager& var = VarManager::getInstance();
 
     int color = 0;
-    if ( bNuit )        color = 0xFFFF0000;
+    if ( bNuit )        color = 0xFF0000FF;
     else                color = 0xFFFFFFFF;
 
     stars.set_delta( getPosX(), getPosY() );
@@ -122,8 +122,8 @@ void PanelCamera::idle(float f)
             pInfo->setVisible( true );
 
             //logf( (char*)"%08X", (int)color );
-            if ( bNuit )        color = 0xFFFF0000;
-            else                color = 0xCCFFB200;
+            if ( bNuit )        color = 0xFF0000FF;
+            else                color = 0xFFB200CC;
             pInfo->setColor(color);
         }
     }    

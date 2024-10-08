@@ -191,7 +191,7 @@ void Camera::CreateControl()	{
     
     int dx = 200;
     int dy = 150;
-    int x = wsc - dx - 20;
+    int x = 20;
     int y = 20;
 
     panelControl->setPosAndSize( x, y, dx, dy);
@@ -277,7 +277,8 @@ void Camera::resizeControl(int width, int height)	{
     dx = 200;
     dy = 192;
     
-    int x = width - dx - 20;
+    //int x = width - dx - 20;
+    int x = 20;
 
     int nb = Camera_mgr::getInstance().getNum(this);
     int y = 10+nb * (20+dy);

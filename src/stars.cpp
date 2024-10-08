@@ -652,11 +652,11 @@ void Stars::idle()
     int color = 0;
     if ( bNuit )        
     {
-        color = 0xFFFF0000;
+        color = 0xFF0000FF;
     }
     else                //glColor4f( 1.0, 0.7, 0.0, 0.8 );
     {
-        color = 0xFF00FF00;
+        color = 0x00FF00FF;
     }
 
     int nb = v_tStars.size();

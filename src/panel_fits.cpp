@@ -76,8 +76,8 @@ void PanelFits::displayGL()
     VarManager&         var = VarManager::getInstance();
 
     if ( bNuit )		{
-    	setColor( COLOR32(255, 255, 0, 0) );
-    	pScroll->setColor( COLOR32(255, 255, 0, 0) );
+    	setColor( COLOR32(255, 0, 0, 255) );
+    	pScroll->setColor( COLOR32(255, 0, 0, 255) );
     }
     else	{
     	setColor( COLOR32(255, 255, 255, 255) );    

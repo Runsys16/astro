@@ -70,7 +70,7 @@ void set_asservissement(void)
     //pAsservi->changeText((char*)"Asservissemnent");
 
     if (bCorrection)            pAsservi->setColor(0xFFFFFFFF);
-    else                        pAsservi->setColor(0XFF404040);
+    else                        pAsservi->setColor(0X404040FF);
    
     pButtonAsserv->setVal(bCorrection);
     
@@ -665,7 +665,7 @@ void idleStatus()
     {
        bStellarium = false;
        //pStellarium->changeText( (char*)"----" );
-       pStellarium->setColor(0xFF404040);
+       pStellarium->setColor(0x404040FF);
     }
     
     if ( pas_sideral != oldPas )

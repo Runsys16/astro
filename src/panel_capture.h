@@ -21,15 +21,17 @@ using namespace std;
 class PanelCapture : public PanelSimple
 {
 protected:
-	double				dTelescopeAD;
-	double				dTelescopeDC;
-	int					xTelescope;
-	int					yTelescope;
+	vec2				vTelescopeScreen;
+	vec2				vTelescopeTex;
+	vec2				vTelescopeJ2000;
+	vec2				vTelescopePanel;
+
 	double				ech;
     double              ech_geo;
     double              ech_user;
     double              dx;
     double              dy;
+
     bool                bIcone;
     bool                bHaveMove;
     bool                bInfoSouris;
@@ -57,7 +59,7 @@ protected:
     vec2				vDE;
     double				dAngleAD;
     double				dAngleDE;
-    
+    double				dTimeAnim;
 public:
     PanelCapture( rb_t *, Capture* );
     ~PanelCapture();    
@@ -68,6 +70,7 @@ public:
     		void		updateEchelleGeo();
     virtual void		updatePos();
 
+    		void		glCercleAnimation(int, int, int, int, int);
 			void		glCroix( int,  int,  int,  int );
     		void		glCercle(int, int, int);
     		void		displayTelescope();
@@ -102,17 +105,28 @@ public:
     void                setEchelle(double f);
     void                setCentX(double f);
     void                setCentY(double f);
-    
+/*    
     int                 screen2texX( int );
     int                 screen2texY( int );
     void                screen2tex( int&, int& );
+*/
     void                screen2tex( vec2& );
+/*
+    void                screen2tex( vec2, vec2& );
 
     int                 tex2screenX( int );
     int                 tex2screenY( int );
     void                tex2screen( int&, int& );
+*/
     void                tex2screen( vec2& );
-    
+/*
+    void                tex2screen( vec2, vec2& );
+*/
+    void                tex2panel( vec2& );
+    void                panel2tex( vec2& );
+    void                screen2panel( vec2& );
+    void                panel2screen( vec2& );
+
     void                printObjet();
     void				findGaiaDR3();
     void				sendStellarium( int, int );

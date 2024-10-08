@@ -166,7 +166,7 @@ void PanelCourbe::init_panel()
     pCBAffPt  = init_check_box( x, y++*dy );
     pCBAffPt->setListener( &bDisplayPt );
     if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
-    else                            pAffPt->setColor( (unsigned long)0xff808080 );
+    else                            pAffPt->setColor( (unsigned long)0x808080ff );
 
     pAffCourbe    = init_text( x, y*dy, (char*)"On" );
     y++;
@@ -1020,7 +1020,7 @@ void PanelCourbe::displayGL(void)
     else                            glColor4f( 1.0, 1.0, 1.0, 1.0 );
 
     unsigned int color; 
-    if ( var.getb("bNuit") )        color = 0xffff0000;
+    if ( var.getb("bNuit") )        color = 0xff0000ff;
     else                            color = 0xffffffff;
     
     pFiltreVal->setColor( color );
@@ -1114,11 +1114,11 @@ void PanelCourbe::updatePos()
         var.set( "bDisplayCourbeY", bDisplayCourbeY );
     }
     //--------------------------------------------------------------    
-    if ( bDisplayCourbeX  )                 pCourbeX->setColor( (unsigned long)0xff0808ff );
-    else                                    pCourbeX->setColor( (unsigned long)0xff808080 );
+    if ( bDisplayCourbeX  )                 pCourbeX->setColor( (unsigned long)0x0808ffff );
+    else                                    pCourbeX->setColor( (unsigned long)0x808080ff );
 
-    if ( bDisplayCourbeY )                  pCourbeY->setColor( (unsigned long)0xffffff00 );
-    else                                    pCourbeY->setColor( (unsigned long)0xff808080 );
+    if ( bDisplayCourbeY )                  pCourbeY->setColor( (unsigned long)0xffff00ff );
+    else                                    pCourbeY->setColor( (unsigned long)0x808080ff );
 
     //--------------------------------------------------------------    
     if ( bDisplayfftX != bDisplayfftX_old )  {
@@ -1143,16 +1143,16 @@ void PanelCourbe::updatePos()
     //--------------------------------------------------------------    
     if ( bDisplayPt != bDisplayPt_old )  {
         if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
-        else                            pAffPt->setColor( (unsigned long)0xff808080 );
+        else                            pAffPt->setColor( (unsigned long)0x808080ff );
         //pCBAffFFTY->setVal( bDisplayfftY );
         var.set( "bDisplayPt", bDisplayPt );
     }
     //--------------------------------------------------------------    
-    if ( bDisplayfftX  )            pAffFFTX->setColor( (unsigned long)0xff0808ff );
-    else                            pAffFFTX->setColor( (unsigned long)0xff808080 );
+    if ( bDisplayfftX  )            pAffFFTX->setColor( (unsigned long)0x0808ffff );
+    else                            pAffFFTX->setColor( (unsigned long)0x808080ff );
 
-    if ( bDisplayfftY )             pAffFFTY->setColor( (unsigned long)0xffffff00 );
-    else                            pAffFFTY->setColor( (unsigned long)0xff808080 );
+    if ( bDisplayfftY )             pAffFFTY->setColor( (unsigned long)0xffff00ff );
+    else                            pAffFFTY->setColor( (unsigned long)0x808080ff );
     //--------------------------------------------------------------    
     filtre = (float)nb / dVal;
     //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );

@@ -28,11 +28,11 @@
 
 #define BOOL2STR(b) b?(char*)"true":(char*)"false"
 
-#define COLOR_A(CCC)	            ((CCC&0xff000000)>>24)
-#define COLOR_R(CCC)	            ((CCC&0x00ff0000)>>16)
-#define COLOR_G(CCC)	            ((CCC&0x0000ff00)>>8)
-#define COLOR_B(CCC)	            ((CCC&0x000000ff))
-#define COLOR32(AA, RR, GG, BB)	    ((AA<<24)|(RR<<16)|(GG<<8)|(BB))
+#define COLOR_R(CCC)	            ((CCC&0xff000000)>>24)
+#define COLOR_G(CCC)	            ((CCC&0x00ff0000)>>16)
+#define COLOR_B(CCC)	            ((CCC&0x0000ff00)>>8)
+#define COLOR_A(CCC)	            ((CCC&0x000000ff))
+#define COLOR32(RR, GG, BB, AA)	    ((RR<<24)|(GG<<16)|(BB<<8)|(AA))
 
 class Catalog;
 
@@ -159,6 +159,8 @@ typedef struct readBackground       rb_t;
 	extern void                		deg2hms( double, struct hms& );
 	extern void                		deg2dms( double, struct dms& );
 
+	extern bool						bArduino;
+	extern int						iGlutModifier;
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------

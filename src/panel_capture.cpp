@@ -6,19 +6,21 @@
 #else
 #endif
 //--------------------------------------------------------------------------------------------------------------------
+#define TIMEANIM 1.5
+//--------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 {
-	dTelescopeAD = 0.0;
-	dTelescopeDC = 0.0;
+	vTelescopeJ2000 = vec2(0.0, 0.0);
     ech_geo     = 1.0;
     ech_user    = 1.0;
     dx          = 0.0;
     dy          = 0.0;
     xm_old      = -1;
     ym_old      = -1;
+    dTimeAnim	= 0.0;
     
     pReadBgr    = pReadBgr;
     pCapture    = pc;
@@ -35,6 +37,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pTelescope = new PanelSimple();
     pTelescope->setBackground( (char*)"images/telescope.png" );
     pTelescope->setSize( 45,64 );
+    pTelescope->setFantome( true );
     this->add( pTelescope );
     
     pCoord = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 20, 10 );
@@ -174,15 +177,16 @@ void PanelCapture::updatePos()
 
             w.x = pVizier->get(i)->getRA();
             w.y = pVizier->get(i)->getDE();
-			pFits->J2000_2_screen( w, v );
+			pFits->J2000_2_tex( w, v );
 			
 			v = ech * v;
             //v -= d;
             PanelText * p = pVizier->get(i)->getInfo();
-            if ( bNuit )        p->setColor( COLOR32(255, 255, 0, 0) );
-            else                p->setColor(  COLOR32(255, 255, 178, 0) );
+            if ( bNuit )        p->setColor(  COLOR32(255,   0, 0, 255) );
+            else                p->setColor(  COLOR32(255, 178, 0, 255) );
 
             if ( p->getParent() == NULL )    this->add(p);
+            
             vec2 vEch = vec2( 6.0, 6.0 );
             vEch *= ech;	vEch.y += 12; 
             p->setPos( v.x+vEch.x, v.y-vEch.y );
@@ -209,13 +213,77 @@ void PanelCapture::updatePos()
 	else	{
 		setEchelleVisible(false);
 	}
+
+	pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
+
+	vTelescopeScreen	= vTelescopeTex;
+	vTelescopePanel		= vTelescopeTex;
+
+	tex2screen( vTelescopeScreen );
+	tex2panel( vTelescopePanel );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::glCercleAnimation( int X,  int Y,  int rayon, int pp, int mm )
+{
+	glBegin(GL_LINE_SMOOTH);
+
+	    glVertex2i(x, y-dy);         glVertex2i(x, y+dy);
+	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
+
+    double step = 80.0/(double)rayon;
+    if ( step < 1.0 )           step = 1.0;
+    
+    //logf ( (char*)" rayon %d   step %0.2f", rayon, step );
+    double alpha = 90.0/TIMEANIM*dTimeAnim;
+
+	double x0, y0, x1, y1, r, i;
+	glBegin(GL_LINES);
+		i = alpha;
+		r = rayon + pp;
+        x0 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y0 = (double)Y+ (double)r*sin(DEG2RAD(i));
+		r = rayon + mm;
+        x1 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y1 = (double)Y+ (double)r*sin(DEG2RAD(i));
+        glVertex2i(x0, y0);         glVertex2i(x1, y1);
+        
+		i = alpha + 90.0;
+		r = rayon + pp;
+        x0 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y0 = (double)Y+ (double)r*sin(DEG2RAD(i));
+		r = rayon + mm;
+        x1 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y1 = (double)Y+ (double)r*sin(DEG2RAD(i));
+        glVertex2i(x0, y0);         glVertex2i(x1, y1);
+        
+		i = alpha + 180.0;
+		r = rayon + pp;
+        x0 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y0 = (double)Y+ (double)r*sin(DEG2RAD(i));
+		r = rayon + mm;
+        x1 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y1 = (double)Y+ (double)r*sin(DEG2RAD(i));
+        glVertex2i(x0, y0);         glVertex2i(x1, y1);
+        
+		i = alpha + 270.0;
+		r = rayon + pp;
+        x0 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y0 = (double)Y+ (double)r*sin(DEG2RAD(i));
+		r = rayon + mm;
+        x1 = (double)X+ (double)r*cos(DEG2RAD(i));
+        y1 = (double)Y+ (double)r*sin(DEG2RAD(i));
+        glVertex2i(x0, y0);         glVertex2i(x1, y1);
+        
+    glEnd();        
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::glCroix( int x,  int y,  int dx,  int dy )
 {
-	glBegin(GL_LINES);
+	glBegin(GL_LINE_SMOOTH);
 
 	    glVertex2i(x, y-dy);         glVertex2i(x, y+dy);
 	    glVertex2i(x-dx, y);         glVertex2i(x+dx, y);
@@ -227,7 +295,7 @@ void PanelCapture::glCroix( int x,  int y,  int dx,  int dy )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::glCercle(int x, int y, int rayon)
 {
-    double step = 300.0/(double)rayon;
+    double step = 80.0/(double)rayon;
     if ( step < 1.0 )           step = 1.0;
     
     //logf ( (char*)" rayon %d   step %0.2f", rayon, step );
@@ -249,34 +317,40 @@ void PanelCapture::glCercle(int x, int y, int rayon)
 void PanelCapture::displayTelescope()
 {
 	unsigned color_old = getColor();
-	unsigned j = 0xFFFFFF00;
+	unsigned jaune = 0xFFFF00FF;
 
-	vec2 	vTelescopeJ2000 = vec2( dTelescopeAD, dTelescopeDC );
-	vec2 	vTelescopeScreen;
-	vec2 	d 				= vec2( getX(), getY() );
-	vec2	v;
-	double 	ech 			= ech_user * ech_geo;
+	/*
+	pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
 
-	pCapture->getFits()->J2000_2_screen( vTelescopeJ2000, vTelescopeScreen );
-	v = ech * vTelescopeScreen + d;
+	vTelescopeScreen	= vTelescopeTex;
+	vTelescopePanel		= vTelescopeTex;
 
+	tex2screen( vTelescopeScreen );
+	tex2panel( vTelescopePanel );
+
+	*/
+	vec2	v = vTelescopeScreen;// + vec2(getX(), getY());
+	//-------------------------------------
+	//   Couleur Nuit ?
     if ( bNuit )		{
-		pTelescope->setColor( COLOR32(255, 255, 0, 0) );
+		pTelescope->setColor( COLOR32(255, 0, 0, 255) );
 		glColor4f( 255, 0, 0, 255 );
     }
     else	{
-		pTelescope->setColor( j );
-		glColor4f( COLOR_R(j), COLOR_G(j), COLOR_B(j), COLOR_A(j) );
+		pTelescope->setColor( jaune );
+		glColor4f( COLOR_R(jaune), COLOR_G(jaune), COLOR_B(jaune), COLOR_A(jaune) );
     }
+	//-------------------------------------
+    // Affichage
+    glCercleAnimation( v.x, v.y, 15, 3, -10 );
     glCercle( v.x, v.y, 15 );
-    glCroix( v.x, v.y, 20, 20 );
-	glColor4f( COLOR_A(color_old), COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old) );
+    glCercle( v.x, v.y, 10 );
+    //glCroix( v.x, v.y, 20, 20 );
 	
-	
-	pCapture->getFits()->J2000_2_screen( vTelescopeJ2000, vTelescopeScreen );
-	vTelescopeScreen *= ech;
-	pTelescope->setPos( vTelescopeScreen.x+20, vTelescopeScreen.y+20);
+	pTelescope->setPos( vTelescopePanel.x+10, vTelescopePanel.y+10);
 	pTelescope->onTop();
+
+	glColor4f( COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old), COLOR_A(color_old) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -286,9 +360,7 @@ void PanelCapture::displayCatalog()
 	//logf( (char*)"PanelCapture::displayCatalog() %d etoiles", vizier.size() );
 	// Sauvegarde de l'ancienne couleur
 	unsigned color_old = getColor();
-	unsigned c  = 0xFFFF00FF;
 	unsigned r  = 0xFF0000FF;
-	unsigned vv = 0x00FF00FF;
 	unsigned b  = 0x0000FFFF;
 
 	Fits*	pFits	= pCapture->getFits();
@@ -302,7 +374,7 @@ void PanelCapture::displayCatalog()
 	glBegin(GL_LINES);
 
 	//glColor4f( COLOR_A(r), COLOR_R(r), COLOR_G(r), COLOR_B(r) );
-
+    
     int n = pVizier->size();
     if ( n!= 0)
     {
@@ -317,7 +389,7 @@ void PanelCapture::displayCatalog()
             w.y = pVizier->get(i)->getDE();
 
 			//v = m * w;
-			pFits->J2000_2_screen( w, v );
+			pFits->J2000_2_tex( w, v );
 			//p->setPos( w.x, w.y );
             
 			v = ech * v + d;
@@ -331,14 +403,14 @@ void PanelCapture::displayCatalog()
 			p->setPos( v.x+15, w.y+15 );
 			p->updatePos();
 
-            if ( bNuit )        p->setColor( COLOR32(255, 255, 0, 0) );
-            else                p->setColor(  COLOR32(255, 255, 178, 0) );
+            if ( bNuit )        p->setColor( COLOR32(255,   0, 0, 255) );
+            else                p->setColor( COLOR32(255, 178, 0, 255) );
         }
     }    
-
+    
     glEnd();
 	// retour a l'ancienne couleur
-	glColor4f( COLOR_A(color_old), COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old) );
+	glColor4f( COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old), COLOR_A(color_old) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -347,10 +419,9 @@ void PanelCapture::displayAxe()
 {
 	// Sauvegarde de l'ancienne couleur
 	unsigned color_old = getColor();
-	unsigned c  = 0xFFFF00FF;
-	unsigned r  = 0xFF0000FF;
-	unsigned vv = 0x00FF00FF;
-	unsigned b  = 0x0000FFFF;
+	unsigned R  = 0xFF0000FF;
+	unsigned r  = 0xFF000060;
+	unsigned b  = 0x0000FF60;
 
 	//logf( (char*)"Old Color=%0lX", color_old );
 	//logf( (char*)"New Color=%0lX", c );
@@ -362,13 +433,13 @@ void PanelCapture::displayAxe()
 
 	vec2 v, w;
 
-	if (bNuit)		glColor4f( COLOR_A(r), COLOR_R(r), COLOR_G(r), COLOR_B(r) );
+	if (bNuit)		glColor4ub( COLOR_R(R), COLOR_G(R), COLOR_B(R), COLOR_A(R) );
 
 	for( int i=0; i<p1.size(); i++ )
 	{
 		if (!bNuit )	{
-			if ( (i%2) == 1)    glColor4f( COLOR_A(r), COLOR_R(r), COLOR_G(r), COLOR_B(r) );
-			else			    glColor4f( COLOR_A(b), COLOR_R(b), COLOR_G(b), COLOR_B(b) );
+			if ( (i%2) == 1)    glColor4ub( COLOR_R(r), COLOR_G(r), COLOR_B(r), COLOR_A(r) );
+			else			    glColor4ub( COLOR_R(b), COLOR_G(b), COLOR_B(b), COLOR_A(b) );
 		}
 		v = ech * p1[i] + d;
 		w = ech * p2[i] + d;
@@ -380,7 +451,7 @@ void PanelCapture::displayAxe()
 
     glEnd();
 	// retour a l'ancienne couleur
-	glColor4f( COLOR_A(color_old), COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old) );
+	glColor4f( COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old), COLOR_A(color_old) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -389,7 +460,10 @@ void PanelCapture::displayGL()
 {
     double gris = 0.3;
     VarManager& var = VarManager::getInstance();
-
+    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
@@ -399,10 +473,10 @@ void PanelCapture::displayGL()
     */
     
     if ( bNuit )		{
-    	setColorBgr( COLOR32(255, 255, 0, 0) );
-    	pCoord->setColor( COLOR32(255, 255, 0, 0) );
-    	pJ2000_1->setColor( COLOR32(255, 255, 0, 0) );
-    	pJ2000_2->setColor( COLOR32(255, 255, 0, 0) );
+    	setColorBgr( COLOR32(255, 0, 0, 255) );
+    	pCoord->setColor( COLOR32(255, 0, 0, 255) );
+    	pJ2000_1->setColor( COLOR32(255, 0, 0, 255) );
+    	pJ2000_2->setColor( COLOR32(255, 0, 0, 255) );
     }
     else	{
     	setColorBgr( COLOR32(255, 255, 255, 255) );    
@@ -430,7 +504,7 @@ void PanelCapture::displayGL()
 		}
 	}	
 	
-	if ( 0<xTelescope && xTelescope<getDX() && 0<yTelescope && yTelescope<getDY()  )	
+	if ( 0<vTelescopeScreen.x && vTelescopeScreen.x<getDX() && 0<vTelescopeScreen.y && vTelescopeScreen.y<getDY()  )	
 	{
 		pTelescope->setVisible(true);
 		displayTelescope();
@@ -449,15 +523,31 @@ void PanelCapture::idle(float f)
 {
     //VarManager& var = VarManager::getInstance();
     //----------------------------------------------
+    dTimeAnim += f;
+	if ( dTimeAnim>TIMEANIM )			dTimeAnim -= TIMEANIM;
+    
 	if ( !bIcone  )	{
 		stars.setVisible(true);
 		stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
+		stars.idle();
 	}	
 	else	{
 		stars.setVisible(false);
 	}    
-	stars.idle();
+    
     PanelSimple::idle(f);
+
+	if ( pCapture->isFits() )
+	{
+		Fits*	pFits	= pCapture->getFits();
+		
+		pFits->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
+		vTelescopeScreen = vTelescopeTex;
+		tex2screen( vTelescopeScreen );
+		
+		if ( bNuit )		pFits->getPanelCorrectionFits()->setColor(0xFF0000FF);
+		else				pFits->getPanelCorrectionFits()->setColor(0xFFFFFFFF);
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -499,9 +589,8 @@ void PanelCapture::clip(int& xm, int& ym)	{
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::wheelUp(int xm, int ym)
 {
-    logf( (char*)"PanelCapture::wheelUp(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
+    logf( (char*)"PanelCapture::wheelUp(%d,%d) ...", xm, ym );
     log_tab(true);
-    //Captures::getInstance().glutSpecialFunc(104, xm, ym);
     
     double k = 1.1;
     ech_user *= k;
@@ -533,15 +622,25 @@ void PanelCapture::wheelUp(int xm, int ym)
     pCapture->updatePosIcones();
 
     stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
+	/*
+	{
+		pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
+		vTelescopePanel		= vTelescopeTex;
+		tex2panel( vTelescopePanel );	
+
+		pTelescope->setPos( vTelescopePanel.x+10, vTelescopePanel.y+10);
+		pTelescope->onTop();
+	}
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::wheelDown(int xm, int ym)
 {
-    logf( (char*)"PanelCapture::wheelDown(%d,%d) ... 2tex(%d,%d)", xm, ym, screen2texX(xm), screen2texY(ym) );
+    logf( (char*)"PanelCapture::wheelDown(%d,%d) ...", xm, ym );
     //log_tab(true);
-    //Captures::getInstance().glutSpecialFunc(105, xm, ym);
+
     double k = 0.9;
     ech_user *= k;
     if (ech_user<=1.0)           ech_user = 1.0;
@@ -633,7 +732,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	
 	if ( pCapture->isFits() )	{
 		vec2 sc = vec2( XX, YY ); 
-		pCapture->getFits()->screen_2_J2000( sc, vJ2000 );
+		pCapture->getFits()->tex_2_J2000( sc, vJ2000 );
 		
 		struct dms DMS;
 		struct hms HMS;
@@ -689,26 +788,33 @@ void PanelCapture::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) ...", xm, ym );
 
-    double e = (double)getDX() / (double)pReadBgr->w; 
-    
-    int xx = ((double)xm-(double)getX()) / e;
-    int yy = ((double)ym-(double)getY()) / e;
-
-
-    // Si en plein ecran on ajoute une etoile
-        
-    if ( !pCapture->isIconized()     )
-    {
-        //stars.setView( (PanelSimple*)this->getParent() );
-        stars.setView( this );
-        stars.setRB( pReadBgr );
-        if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
-            stars.selectLeft(xx, yy);
+    logf( (char*)"releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
+    if ( pCapture->isFits() && iGlutModifier == GLUT_ACTIVE_CTRL)    {
+		sendStellarium( xm, ym );
     }
     else
-    {            
-        captureOnTop(pCapture);
-    }
+    {
+		double e = (double)getDX() / (double)pReadBgr->w; 
+		
+		int xx = ((double)xm-(double)getX()) / e;
+		int yy = ((double)ym-(double)getY()) / e;
+
+
+		// Si en plein ecran on ajoute une etoile
+		    
+		if ( !pCapture->isIconized()     )
+		{
+		    //stars.setView( (PanelSimple*)this->getParent() );
+		    stars.setView( this );
+		    stars.setRB( pReadBgr );
+		    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
+		        stars.selectLeft(xx, yy);
+		}
+		else
+		{            
+		    captureOnTop(pCapture);
+		}
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -842,10 +948,7 @@ void PanelCapture::releaseMiddle(int xm, int ym)
             stars.selectStar(xx, yy);
     }
     bHaveMove = false;
-    
-    if ( pCapture->isFits() )    {
-		sendStellarium( xm, ym );
-    }
+	
     log_tab(false);
 
     computeEchelle();
@@ -876,7 +979,6 @@ void PanelCapture::setCent()
     if ( deltax < maxX )        deltax = maxX;
     if ( deltay < maxY )        deltay = maxY;
 
-    //setPos( deltax, deltay );
     Panel* p = getParent();
     if ( p!= NULL )
     {
@@ -884,20 +986,6 @@ void PanelCapture::setCent()
         stars.set_delta( deltax + p->getPosX(), deltay + p->getPosY() );
     }
     
-    /*
-    if ( Captures::getInstance().isCurrent(pCapture) )
-    {
-		logf( (char*)"PanelCapture::setCent()" );
-		log_tab(true);
-
-		logf( (char*)"(fDX,fDY):\t(%0.2f,%0.2f)", fDX, fDY );
-		logf( (char*)"(fw,fh):\t(%0.2f,%0.2f)", fw, fh );
-		logf( (char*)"(dxp,dyp):\t(%d,%d)", dxp, dyp );
-		logf( (char*)"(deltax,deltay):\t(%0.2f,%0.2f)", deltax, deltay );
-		
-		log_tab(false);
-	}
-	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -932,6 +1020,7 @@ void PanelCapture::setEchelle(double f)
     logf( (char*)"  setSize(%0.2lf, %0.2lf)", fDX, fDY );
     
 }
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -953,64 +1042,48 @@ void PanelCapture::setCentY(double f)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int PanelCapture::screen2texX( int x )
-{
-	double X = x - pCapture->getX();
-    return ( (double)X-dx) / (ech);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-int PanelCapture::screen2texY( int y )
-{
-	double Y = y - pCapture->getY();
-    return ( (double)Y-dy) / (ech);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::screen2tex(int& x, int& y)
-{
-    x = screen2texX(x);
-    y = screen2texY(y);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::screen2tex(vec2& v)
 {
-	v.x = screen2texX(v.x);
-	v.y = screen2texY(v.y);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-int PanelCapture::tex2screenX( int x )
-{
-    return (double)x * ( ech_geo*ech_user) + dx;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-int PanelCapture::tex2screenY( int y )
-{
-    return (double)y * (ech_geo*ech_user) + dy;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::tex2screen(int& x, int& y)
-{
-    x = tex2screenX(x);
-    y = tex2screenY(y);
+	vec2 delta   = vec2(getPosX(), getPosY());
+	v = ( v - delta ) / ech;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::tex2screen(vec2& v)
 {
-	v.x = tex2screenX(v.x);
-	v.y = tex2screenY(v.y);
+	vec2 delta = vec2(getX(), getY());
+	v = (v * ech) + delta ;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::tex2panel(vec2& v)
+{
+	v = (ech * v);// + vec2( getX(), getY() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::panel2tex(vec2& v)
+{
+	v = v / ech;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::panel2screen(vec2& v)
+{
+	vec2 vParent = vec2(pCapture->getX(), pCapture->getY());
+	v = (v-vec2(getPosX(),getPosY())) / ech   + vParent;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::screen2panel(vec2& v)
+{
+	vec2 vParent = vec2(pCapture->getX(), pCapture->getY());
+	v = (v - vParent)*ech + vec2(getPosX(),getPosY()) ;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1092,7 +1165,7 @@ void PanelCapture::sendStellarium( int xm, int ym)
 		// Recuperation des infos image largueur hauteur et pointeur sur RGBRGBRGBRGBRGBRGB
 		vec2 vJ2000;
 		vec2 screen = vec2( XX, YY );
-		pCapture->getFits()->screen_2_J2000( screen, vJ2000 );
+		pCapture->getFits()->tex_2_J2000( screen, vJ2000 );
 		
 		struct dms DMS;
 		struct hms HMS;
@@ -1106,16 +1179,26 @@ void PanelCapture::sendStellarium( int xm, int ym)
 		
 		
         VarManager& var= VarManager::getInstance();
+        char cmd[255];
+        double AD = vJ2000.x >180.0 ? -360.0 + vJ2000.x : vJ2000.x;
+
         if ( var.getb("bModeManuel") )  {
-            char cmd[255];
-            double AD = vJ2000.x >180.0 ? -360.0 + vJ2000.x : vJ2000.x;
-            
             sprintf( cmd, "A%lf;D%lf", AD, (vJ2000.y) );
             logf( (char*)"  Envoi arduino : %s", cmd );
             Serial::getInstance().write_string(cmd);
         }
         else    {
-    		Serveur_mgr::getInstance().write_stellarium( (double)vJ2000.x, (double)vJ2000.y );
+        	if ( bArduino )	{
+		        sprintf( cmd, "ia%lf;id%lf", AD, (vJ2000.y) );
+		        logf( (char*)"  Envoi arduino : %s", cmd );
+	            Serial::getInstance().write_string(cmd);
+        	}
+        	else	{
+				Serveur_mgr::getInstance().write_stellarium( (double)vJ2000.x, (double)vJ2000.y );
+		        logf( (char*)"  Envoi stellarium : %lf, %lf", vJ2000.x, vJ2000.y );
+				change_ad_status( vJ2000.x );
+				change_dc_status( vJ2000.y );
+			}
         }
 
 		//change_ad_status( vJ2000.x );
@@ -1127,13 +1210,13 @@ void PanelCapture::sendStellarium( int xm, int ym)
 		
 		mat2 m = pCapture->getFits()->getMatrix();
 		vJ2000 = m * screen;
-		//pCapture->getFits()->screen_2_J2000( screen, vJ2000 );
+		//pCapture->getFits()->tex_2_J2000( screen, vJ2000 );
 		snprintf( (char*)coord, sizeof(coord), "to J2000(%f, %f)", vJ2000.x, vJ2000.y );
 		log( (char*)coord );	
 
 		mat2 n = m.inverse();
 		screen = n * vJ2000;
-		//pCapture->getFits()->J2000_2_screen( vJ2000, screen );
+		//pCapture->getFits()->J2000_2_tex( vJ2000, screen );
 		snprintf( (char*)coord, sizeof(coord), "to screen (%0.6f, %0.6f)", screen.x, screen.y );
 		log( (char*)coord );	
 		*/
@@ -1199,6 +1282,7 @@ void PanelCapture::restaure(bool bGril, bool bbSour )
 {
 	logf( (char*)"PanelCapture::restaure()" );
 	
+	dTimeAnim = 0.0;
 	bIcone = false;
 	bAffGrille = bGril;
 	bInfoSouris = bbSour;
@@ -1210,28 +1294,20 @@ void PanelCapture::restaure(bool bGril, bool bbSour )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::change_ad( double ad )
 {
+	if ( !pCapture->isFits() )			return;
+
 	//logf( (char *)"PanelCapture::change_ad(%lf)", ad );
-	dTelescopeAD = ad<0.0 ? 360.0+ad : ad ;
+	vTelescopeJ2000.x = ad<0.0 ? 360.0+ad : ad ;
 	
-	vec2 vTelescopeJ2000  = vec2( dTelescopeAD, dTelescopeDC );
-	vec2 vTelescopeScreen;
-	
-	
-	vec2 	d 				= vec2( getX(), getY() );
-	double 	ech 			= ech_user * ech_geo;
-	vec2	v;
+	pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
+	vTelescopeScreen = vTelescopeTex;
+	tex2screen( vTelescopeScreen );
 
-	pCapture->getFits()->J2000_2_screen( vTelescopeJ2000, vTelescopeScreen );
-	v = (ech * vTelescopeScreen );
-	xTelescope = v.x;
-
-	char STRJ[50];
-	char STRV[50];
-	vTelescopeJ2000.to_str(STRJ);
-	v.to_str(STRV);
-
-	logf( (char*)"PanelCapture::change_ad()  J2000%s vScreen%s  ech=%lf", STRJ, STRV, ech );
-	logf( (char*)" change_ad %s",BOOL2STR( 0<v.x && v.x<getDX()) );
+	logf( (char*)"PanelCapture::change_ad()  ech=%lf", ech );
+	logf( (char*)"     J2000           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
+	logf( (char*)"     Tex             (%lf, %lf)", vTelescopeTex.x, vTelescopeTex.y );
+	logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
+	//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
 	
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1239,27 +1315,19 @@ void PanelCapture::change_ad( double ad )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::change_dc( double dc )
 {
+	if ( !pCapture->isFits() )			return;
 	//logf( (char *)"PanelCapture::change_dc(%lf)", dc );
-	dTelescopeDC = dc;
-	
-	vec2 vTelescopeJ2000  = vec2( dTelescopeAD, dTelescopeDC );
-	vec2 vTelescopeScreen;
-	
-	vec2 	d 				= vec2( getX(), getY() );
-	vec2	v;
-	double 	ech 			= ech_user * ech_geo;
+	vTelescopeJ2000.y = dc;
+		
+	pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
+	vTelescopeScreen = vTelescopeTex;
+	tex2screen( vTelescopeScreen );
 
-	pCapture->getFits()->J2000_2_screen( vTelescopeJ2000, vTelescopeScreen );
-	v = vTelescopeScreen * ech;
-	yTelescope = v.y;
-
-	char STRJ[50];
-	char STRV[50];
-	vTelescopeJ2000.to_str(STRJ);
-	v.to_str(STRV);
-
-	logf( (char*)"PanelCapture::change_ad()  J2000%s vScreen%s  ech=%lf", STRJ, STRV, ech );
-	logf( (char*)" change_dc %s", BOOL2STR( 0<v.x && v.x<getDX())  );
+	logf( (char*)"PanelCapture::change_dc()  ech=%lf", ech );
+	logf( (char*)"     J2000           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
+	logf( (char*)"     Tex             (%lf, %lf)", vTelescopeTex.x, vTelescopeTex.y );
+	logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
+	//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
 	
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1336,8 +1404,8 @@ void PanelCapture::computeEchelle()
 		
 		pTextEch[i]->setPos( V.x, V.y);
 		
-		if ( bNuit )			pTextEch[i]->setColor( COLOR32(255, 255, 0, 0) );
-		else					pTextEch[i]->setColor( COLOR32(255,   0, 0, 255) );
+		if ( bNuit )			pTextEch[i]->setColor( COLOR32(255, 0, 0, 255) );
+		else					pTextEch[i]->setColor( COLOR32(0, 0, 255, 255) );
 	}
 
 
@@ -1347,8 +1415,8 @@ void PanelCapture::computeEchelle()
 		else										computeIntersectionHau( V, p1[i], p2[i] );
 
 		pTextEch[i]->setPos( V.x, V.y );
-		if ( bNuit )			pTextEch[i]->setColor( COLOR32(255, 255, 0, 0) );
-		else					pTextEch[i]->setColor( COLOR32(255, 255, 0, 0) );
+		if ( bNuit )			pTextEch[i]->setColor( COLOR32(255, 0, 0, 255) );
+		else					pTextEch[i]->setColor( COLOR32(255, 0, 0, 255) );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1381,7 +1449,7 @@ void PanelCapture::addP1P2(vec2 v, vec2 w)
 	    p->setColor( 0xFF0000FF );
 
    		pt = v;
-		pCapture->getFits()->screen_2_J2000( pt, vJ2000 );
+		pCapture->getFits()->tex_2_J2000( pt, vJ2000 );
 		struct hms HMS;
 		deg2hms( vJ2000.x, HMS );
 
@@ -1399,7 +1467,7 @@ void PanelCapture::addP1P2(vec2 v, vec2 w)
 
 	    p->setColor( 0xFFFF0000 );
    		pt = v;
-		pCapture->getFits()->screen_2_J2000( pt, vJ2000 );
+		pCapture->getFits()->tex_2_J2000( pt, vJ2000 );
 		struct dms DMS;
 		deg2dms( vJ2000.y, DMS );
 

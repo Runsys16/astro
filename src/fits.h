@@ -129,8 +129,8 @@ inline  void 						setPanelCapture(PanelCapture* p) 			{ pPanelCapture = p; };
 inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionFits; }
 
         void                        getRB( struct readBackground* );
-        void						screen_2_J2000( vec2, vec2& );
-        void						J2000_2_screen( vec2, vec2& );
+        void						tex_2_J2000( vec2, vec2& );
+        void						J2000_2_tex( vec2, vec2& );
 
 inline	double                      getNAXIS1()				{ return nNAXISn[0]; }
 inline	double                      getNAXIS2()				{ return nNAXISn[1]; }
