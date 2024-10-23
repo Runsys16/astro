@@ -56,7 +56,7 @@ void PanelFits::add_key_value(string k, string v )
 	
 	i+=1;
 	int ii = i;
-	if ( i>=30 )		 ii = 30;
+	//if ( i>=30 )		 ii = 30;
 	
 	this->setSize( DX, ii*14 );
 	pScroll->setSize( DX, ii*14 );

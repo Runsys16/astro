@@ -7,6 +7,14 @@
 
 typedef void (*motion_cb_t)(int,int);
 
+
+class ChangeValue
+{
+public:
+	
+        virtual void changeValueDouble( double val, void *p )			{};
+};
+
 class PanelSpinEditText : public PanelEditText
 {
 protected:
@@ -30,30 +38,34 @@ protected:
        PanelSimple*     pCadran;
        PanelSimple*     pBoule;
        Panel*			pPrevParent;
+       ChangeValue*     pChangeValue;
        //Panel*			pClick;
        
             vector<double>   t_val;
             int         x_click;
             int         y_click;
             motion_cb_t cb_motion;
-            
+
+			void*		pID;            
 public:
                         PanelSpinEditText();
                         
 			void        set_pVal(double*);
-inline      void        set_delta(int x, int y)     { delta_x = 0; delta_y = 0; }                        
+inline      void        set_delta(int x, int y)     	{ delta_x = 0; delta_y = 0; }                        
 			void        set_val(double f);//            { val_angle = val = f; }                        
-inline      void        set_min(double f)            { min = f; }                        
-inline      void        set_max(double f)            { max = f; }                        
-inline      void        set_step(double f)           { step = f; }                        
-inline      void        set_nb(double f)             { nb = f; }                        
-inline      void        set_ndecimal(int n)         { nDecimal = n; }                        
+inline      void        set_min(double f)           	{ min = f; }                        
+inline      void        set_max(double f)               { max = f; }                        
+inline      void        set_step(double f)              { step = f; }                        
+inline      void        set_nb(double f)                { nb = f; }                        
+inline      void        set_ndecimal(int n)             { nDecimal = n; }                        
 inline      void        set(double m, double M, double s, double n)
-							                        { min = m; max = M; step = s; nb = n; }     
+							                            { min = m; max = M; step = s; nb = n; }     
 
-inline 		void		setMotion( motion_cb_t cb)  { cb_motion = cb; }
-inline      double*     get_pVal()          		{ return pVal; }                        
-inline      double		get_val()	          		{ return val; }                        
+inline 		void		setMotion( motion_cb_t cb)      { cb_motion = cb; }
+inline      double*     get_pVal()          		    { return pVal; }                        
+inline      double		get_val()	          		    { return val; }
+inline      void        setChangeValue(ChangeValue* p)	{ pChangeValue = p; }
+inline      void        setID( void* p)					{ pID = p; }
 
 
             void        set_enum(vector<double>);

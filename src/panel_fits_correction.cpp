@@ -27,7 +27,7 @@ PanelCorrectionFits::PanelCorrectionFits()
     VarManager&         var = VarManager::getInstance();
 
     setExtraString( "PanelCorrectionFits" );
-    setSize( 160, 200 );
+    setSize( 235, 35 );
     
  	setBackground((char*)"images/background.tga");
 
@@ -48,10 +48,10 @@ PanelCorrectionFits::PanelCorrectionFits()
 	add( new PanelText( (char*)"Asc. droite\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
 	add( pCDELT1plus );
     pCDELT1plus->set( min, max, step, ntour );
-    pCDELT1plus->set_ndecimal(6);
+    pCDELT1plus->set_ndecimal(14);
     pCDELT1plus->set_delta( 20, 8 );
     pCDELT1plus->setPos( x+dx, p*dy );
-    pCDELT1plus->setSize( 160-dx, dy );
+    pCDELT1plus->setSize( 230-dx, dy );
     pCDELT1plus->setExtraString( "pCDELT1plus" );
     p++;
 
@@ -59,10 +59,10 @@ PanelCorrectionFits::PanelCorrectionFits()
 	add( new PanelText( (char*)"Declinaison\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
 	add( pCDELT2plus );
     pCDELT2plus->set( min, max, step, ntour );
-    pCDELT2plus->set_ndecimal(6);
+    pCDELT2plus->set_ndecimal(14);
     pCDELT2plus->set_delta( 20, 8 );
     pCDELT2plus->setPos( x+dx, p*dy );
-    pCDELT2plus->setSize( 160-dx, dy );
+    pCDELT2plus->setSize( 230-dx, dy );
     pCDELT2plus->setExtraString( "pCDELT2plus" );
     p++;
 

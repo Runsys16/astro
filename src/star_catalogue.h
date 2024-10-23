@@ -26,6 +26,8 @@ public :
         StarCatalog( double, double, double, string );
         ~StarCatalog();
         
+        void			affiche_position();
+        
 inline  void            setXScreen(double d)    { fXScreen = d;}
 inline  void            setYScreen(double d)    { fYScreen = d;}
 inline  double          getXScreen()            {return fXScreen;}

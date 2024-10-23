@@ -93,6 +93,7 @@ public :
         void						intersectionG( vec2&, vec2&, vec2& );
         void						intersectionD( vec2&, vec2&, vec2& );
         double                      computeEchelle(vec2);
+        void                        normalizeEchelleMatrice();
         void                        sauveMatrice();
         void                        chargeHDU(int);
         void						read_RGB_8(  float&, uint8_t* );

@@ -63,10 +63,11 @@ void PanelCamera::idle(float f)
     
     Camera_mgr& cam_mgr = Camera_mgr::getInstance();
     Camera* cam = cam_mgr.getCurrent();
-    cam->getpCamFilename()->setColor(color);
-    cam->getPanelNbStars()->setColor(color);
-    cam->getPanelName()->setColor(color);
-
+    if ( cam != NULL )  {
+        cam->getpCamFilename()->setColor(color);
+        cam->getPanelNbStars()->setColor(color);
+        cam->getPanelName()->setColor(color);
+    }
     //pCamFilename
     
     fTime += fSens * f;
@@ -137,8 +138,14 @@ void PanelCamera::idle(float f)
         }
     }    
     //----------------------------------------------
-    
-    stars.idle();
+	if ( bAffStar   )	{
+		stars.setVisible(bAffStar);
+		stars.idle();
+	}	
+	else	{
+		stars.setVisible(false);
+	}    
+   
     PanelWindow::idle(f);
 }
 //--------------------------------------------------------------------------------------------------------------------

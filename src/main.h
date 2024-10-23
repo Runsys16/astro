@@ -66,11 +66,12 @@ struct sky_point
     double   ponderation;
     double   x;
     double   y;
-    bool    found;
+    bool     found;
 };
 
 struct readBackground
 {
+    atomic<bool>            bReadError;
     atomic<unsigned int>    w;
     atomic<unsigned int>    h;
     atomic<unsigned int>    d;
@@ -149,6 +150,7 @@ typedef struct readBackground       rb_t;
     extern double                   ZrefY;
     extern double                   Wref;
     extern bool                     bAffCatalog;
+    extern bool                     bAffStar;
     extern Catalog                  vizier;
     
 	extern double					hms2rad( struct hms& );

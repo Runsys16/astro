@@ -5,6 +5,7 @@
 #include "stars.h"
 #include "timer.h"
 #include "panel_camera.h"
+#include "panel_spin_edit_text.h"
 
 #include <WindowsManager.h>
 #include <thread>
@@ -18,7 +19,7 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Camera : public Device_cam
+class Camera : public Device_cam , public ChangeValue 
 {
 protected:
     PanelWindow *               panelControl;
@@ -51,6 +52,8 @@ virtual    ~Camera();
     Camera();
     Camera(int, int);
     
+virtual void 					changeValueDouble( double val, void *p );
+
     void                        init();
     
     int                         addControl();

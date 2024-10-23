@@ -17,13 +17,21 @@ PanelSpinEditText::PanelSpinEditText()
     pBoule->setBackground((char*)"images/boule.tga");
     pBoule->setPosAndSize( 55, 55, 20, 20 );
 
+	PanelSimple* pEditScissor;
+	pEditScissor = new PanelSimple();
+    pEditScissor->setBackground((char*)"images/black.png");
+	pEditScissor->setPos( 100-30, 100-8 );
+	pEditScissor->setSize( 65, 20 );
 	pEditCopy = new PanelEditText();
 	pEditCopy->setPos( 100-20, 100-8 );
+	pEditCopy->setPos( 1, 1 );
 	pEditCopy->hideCursor();
 	
  	WindowsManager&     wm  = WindowsManager::getInstance();
     pCadran->add( pBoule );
-    pCadran->add( pEditCopy );
+    pEditScissor->add( pEditCopy );
+	pEditScissor->setScissor( true );
+    pCadran->add( pEditScissor );
     wm.add( pCadran );
     
 
@@ -34,6 +42,8 @@ PanelSpinEditText::PanelSpinEditText()
     pVal = NULL;
     cb_motion = NULL;
     hideCursor();
+    
+    pChangeValue = NULL;
     /*
     pClick = new Panel();
     pClick->setPosAndSize(10,10,10,10);
@@ -66,6 +76,9 @@ void PanelSpinEditText::set_pVal( double*  p )
         case 6:
             sprintf( s, "%0.6f", val );
             break;
+        case 14:
+            sprintf( s, "%0.14f", val );
+            break;
         default:
             sprintf( s, "%0.0f", val );
             break;
@@ -97,6 +110,9 @@ void PanelSpinEditText::set_val( double  p )
             break;
         case 6:
             sprintf( s, "%0.6f", val );
+            break;
+        case 14:
+            sprintf( s, "%0.14f", val );
             break;
         default:
             sprintf( s, "%0.0f", val );
@@ -214,7 +230,8 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
     }    
     //--------------------------------------
     //logf( (char*)"compute_pos_relatif()  angle=%0.2f norm=%0.2f val=%0.2f", val_angle, norm, val ); 
-    if ( pVal!= NULL )          *pVal = val;
+    if ( pVal!= NULL )          	*pVal = val;
+    if ( pChangeValue )				pChangeValue->changeValueDouble( val, pID );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -339,6 +356,9 @@ void PanelSpinEditText::motionLeft( int xm, int ym )
         case 6:
             sprintf( s, "%0.6f", val );
             break;
+        case 14:
+            sprintf( s, "%0.14f", val );
+            break;
         default:
             sprintf( s, "%0.0f", val );
             break;
@@ -365,6 +385,7 @@ void PanelSpinEditText::releaseLeft( int xm, int ym )
     clampVal();
     
     if ( pVal!= NULL )          		*pVal = val;
+    if ( pChangeValue )					pChangeValue->changeValueDouble( val, pID );
     if ( release_left_cb != NULL )		(*release_left_cb)( xm, ym);
 }
 //--------------------------------------------------------------------------------------------------------------------

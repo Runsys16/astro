@@ -71,6 +71,8 @@ public:
     void                position(double, double);
     void				setVisible(bool);
     
+    void				affiche_position(bool);
+    
     inline void         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
     inline void         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
     inline void         getSuivi(vec2& v)                               { v.x=xSuivi; v.y=ySuivi; }
@@ -97,12 +99,12 @@ public:
     inline PanelText*   getInfo()                                       { return pInfo; }
     inline void         select()                                        { bSelect = !bSelect; }
     
-    inline bool         haveCoord()                                     { return ra_rad != 9999.0; }
-    inline double       getRA()                                         { return ra_rad; }
-    inline double       getDC()                                         { return dc_rad; }
+    inline bool         haveCoord()                                     { return ad != 9999.0; }
+    inline double       getAD()                                         { return ad; }
+    inline double       getDE()                                         { return de; }
 
-    inline void         setRA(double d)                                 { ra_rad = d; }
-    inline void         setDC(double d)                                 { dc_rad = d; }
+    inline void         setAD(double d)                                 { ad = d; }
+    inline void         setDE(double d)                                 { de = d; }
 
     inline int          getNotFound()                                   { return nbNotFound; }
     inline void         resetNotFound()                                 { nbNotFound = 0; }
@@ -141,8 +143,8 @@ private:
     float               limitLum;
     float               ech_x;
     float               ech_y;
-    double              ra_rad;
-    double              dc_rad;
+    double              ad;
+    double              de;
     
 
     PanelText *         pInfo;

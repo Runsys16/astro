@@ -1,6 +1,9 @@
 #include "stars.h"
 #include <malloc.h>
-
+//--------------------------------------------------------------------------------------------------------------------
+//#define AFF_CONTRUCTEUR
+#ifdef AFF_CONTRUCTEUR
+#endif
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -29,29 +32,44 @@ Star::~Star()
 //--------------------------------------------------------------------------------------------------------------------
 Star::Star()
 {
+#ifdef AFF_CONTRUCTEUR
     logf( (char*)"Constructeur Star::Star() ------------------" );
+#endif
+    
     log_tab(true);
     init( -1, -1 );
     log_tab(false);
+    
+#ifdef AFF_CONTRUCTEUR
     logf( (char*)"Constructeur Star::Star() ------------------" );
+#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Star::Star(int X, int Y)
 {
+#ifdef AFF_CONTRUCTEUR
     logf( (char*)"Constructeur Star(%d,%d)", X, Y );
+#endif
+
     log_tab(true);
     init( X, Y );
     log_tab(false);
+    
+#ifdef AFF_CONTRUCTEUR
     logf( (char*)"Constructeur Star(%d,%d)", X, Y );
+#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Star::init(int xx, int yy)
 {
+#ifdef AFF_CONTRUCTEUR
     logf( (char*)"Star::init(%d,%d)", xx, yy );
+#endif
+
     x           = xx;
     y           = yy;
     ech_x       = 1.0;
@@ -74,8 +92,8 @@ void Star::init(int xx, int yy)
     RB          = NULL;
     pView       = NULL;
     
-    ra_rad      = 9999.0;
-    dc_rad      = 9999.0;
+    ad			= 9999.0;
+    de			= 9999.0;
     nbNotFound  = 0;
     
     dx_screen   = 0.0;
@@ -215,6 +233,7 @@ void Star::tex2screen( int& x, int& y )
 //--------------------------------------------------------------------------------------------------------------------
 void Star::computeMag()
 {
+	//log ( (char*)"Star::computeMag()" );
     double x0=2.77, y0=17995.92;
     double x1=4.24, y1=7085.42;
     //double x1=6.79, y1=389.9;
@@ -243,14 +262,14 @@ void Star::computeMag()
         char sRA[64];
         
         struct dms DMS;
-        rad2dms( dc_rad, DMS );
-        snprintf( sDEC, sizeof(sDEC)-1, "DC=%02d-%02dm%0.2fs", (int)DMS.d, (int)DMS.m, DMS.s );
+        deg2dms( de, DMS );
+        snprintf( sDEC, sizeof(sDEC)-1, "DC=%02dd %02d\' %0.2f\"", (int)DMS.d, (int)DMS.m, DMS.s );
 
         struct hms HMS;
-        rad2hms( ra_rad, HMS );
-        snprintf( sRA,  sizeof(sRA)-1, "AD=%02dh%02dm%0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
+        deg2hms( ad, HMS );
+        snprintf( sRA,  sizeof(sRA)-1, "AD=%02dh %02d\' %0.2f\"", (int)HMS.h, (int)HMS.m, HMS.s );
 
-        snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
+        snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
     }
 
     pInfo->changeText( p_sInfo );
@@ -937,7 +956,7 @@ void Star::displayGL()
 
     //
     // demi-croix et cercle d'etoile
-    glMark(ech_x*40, ech_y*40);
+    glMark(ech_x*20, ech_y*20);
     glCercle( ech*(computeRayon() + 4) );
     
     //
@@ -968,8 +987,8 @@ void Star::displayGL()
 void Star::position(double ra, double dc)
 {
     logf( (char*)"Star::position(%0.8f,%0.8lf)", RAD2DEG(ra), RAD2DEG(dc) );
-    ra_rad = ra;
-    dc_rad = dc;
+    ad = ra;
+    de = dc;
     
     struct hms HMS;
     struct dms DMS;
@@ -994,6 +1013,33 @@ void Star::setVisible( bool b )
 	bVisible = b;
 	pInfo->setVisible( b );
 	//panelZoom->setVisible( b );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::affiche_position( bool b )
+{
+	//log ( (char*)"Star::affiche_position()" );
+    if ( b && haveCoord() )
+    {
+        char sDEC[64];
+        char sRA[64];
+        
+        struct dms DMS;
+        deg2dms( de, DMS );
+        snprintf( sDEC, sizeof(sDEC)-1, "DE=%02dd %02d\' %0.2f\"", (int)DMS.d, (int)DMS.m, DMS.s );
+
+        struct hms HMS;
+        deg2hms( ad, HMS );
+        snprintf( sRA,  sizeof(sRA)-1, "AD=%02dh %02d\' %0.2f\"", (int)HMS.h, (int)HMS.m, HMS.s );
+
+        snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
+    }
+    else {
+        snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
+    }
+
+    pInfo->changeText( p_sInfo );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

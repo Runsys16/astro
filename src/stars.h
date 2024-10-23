@@ -53,8 +53,11 @@ public:
     int                     getSuiviScreenY();
 	void					setVisible(bool);
 
-inline int                  size(void)                  { return v_tStars.size(); }    
+	void					affiche_position();
+
 inline bool					getVisible()				{ return bVisible; }
+inline Star*				get(int i)					{ return v_tStars[i]; }
+inline int					size()						{ return v_tStars.size(); }
 
 private:
     vector<Star*>           v_tStars;
@@ -67,6 +70,7 @@ private:
     
     float                   ech;
 	bool					bVisible;
+	bool					bAffPosition;
 };
 
 

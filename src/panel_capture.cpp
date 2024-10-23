@@ -27,6 +27,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     bIcone      = false;
 	bInfoSouris = false;
 	bAffGrille	= false;
+	bAffCatalogPosition = false;
     stars.setView( this );
     
     pFondCoord = new PanelSimple();
@@ -79,6 +80,10 @@ void PanelCapture::deleteAllStars()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::findAllStars()
 {
+	if ( stars.size() != 0 )				{
+		stars.affiche_position();
+		return;
+	}
     stars.setView( this );
     stars.setRB( pReadBgr );
     stars.findAllStars();
@@ -96,7 +101,7 @@ void PanelCapture::update_stars()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::updateEchelle()
 {
-    computeEchelle();
+    computeRepere();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -112,10 +117,11 @@ void PanelCapture::updateEchelleGeo()
     
     if ( coef != ech_geo )
     {
-        logf( (char*)"PanelCapture::updatePos() Changement d'echelle" );
-        logf( (char*)"  %s", pCapture!=NULL? (char*)pCapture->getBasename().c_str() : (char*)"" );
-        logf( (char*)"  ech_geo=%0.2lf ech_user=%0.2lf", coef, ech_user );
-        logf( (char*)"  alphaAD=%0.2lf alphaED=%0.2lf", dAngleAD, dAngleDE );
+        logf( (char*)"PanelCapture::updateEchelleGeo() Changement d'echelle" );
+        log_tab(true);
+        logf( (char*)"%s", pCapture!=NULL? (char*)pCapture->getBasename().c_str() : (char*)"" );
+        logf( (char*)"ech_geo=%0.2lf ech_user=%0.2lf", coef, ech_user );
+        logf( (char*)"alphaAD=%0.2lf alphaED=%0.2lf", dAngleAD, dAngleDE );
         
         ech = ech_user * ech_geo;
         dx /= ech;
@@ -131,7 +137,9 @@ void PanelCapture::updateEchelleGeo()
         setPos(dx, dy);
 		setSize( (double)pReadBgr->w * ech, (double)pReadBgr->h * ech );
         
-        logf( (char*)" dx=%0.2lf dy=%0.2lf", dx, dy );
+        logf( (char*)"dx=%0.2lf dy=%0.2lf", dx, dy );
+        log_tab(false);
+		log( (char*)"---" );
     }
 
     if ( coef != ech_geo )    {
@@ -214,13 +222,14 @@ void PanelCapture::updatePos()
 		setEchelleVisible(false);
 	}
 
-	pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
+	if ( pCapture->isFits() )	{
+		pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
 
-	vTelescopeScreen	= vTelescopeTex;
-	vTelescopePanel		= vTelescopeTex;
+		vTelescopePanel = vTelescopeScreen	= vTelescopeTex;
 
-	tex2screen( vTelescopeScreen );
-	tex2panel( vTelescopePanel );
+		tex2screen( vTelescopeScreen );
+		tex2panel( vTelescopePanel );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -419,9 +428,9 @@ void PanelCapture::displayAxe()
 {
 	// Sauvegarde de l'ancienne couleur
 	unsigned color_old = getColor();
-	unsigned R  = 0xFF0000FF;
-	unsigned r  = 0xFF000060;
-	unsigned b  = 0x0000FF60;
+	unsigned R  = 0xFF000080;
+	unsigned r  = 0xFF000080;
+	unsigned b  = 0x0000FF80;
 
 	//logf( (char*)"Old Color=%0lX", color_old );
 	//logf( (char*)"New Color=%0lX", c );
@@ -512,7 +521,12 @@ void PanelCapture::displayGL()
 	else
 		pTelescope->setVisible(false);
 	
-
+	// Affichage de debogage
+	/*
+	if ( bAffStar && !bIcone )		{
+		logf( (char*)"(X, Y)=(%d, %d)  (x_raw, y_raw)=(%d, %d )", getPosX(), getPosY(), getX(), getY() );
+	}
+	*/
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 }
@@ -526,8 +540,8 @@ void PanelCapture::idle(float f)
     dTimeAnim += f;
 	if ( dTimeAnim>TIMEANIM )			dTimeAnim -= TIMEANIM;
     
-	if ( !bIcone  )	{
-		stars.setVisible(true);
+	if ( !bIcone   )	{
+		stars.setVisible(bAffStar);
 		stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
 		stars.idle();
 	}	
@@ -542,11 +556,32 @@ void PanelCapture::idle(float f)
 		Fits*	pFits	= pCapture->getFits();
 		
 		pFits->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
-		vTelescopeScreen = vTelescopeTex;
+		vTelescopePanel =vTelescopeScreen = vTelescopeTex;
 		tex2screen( vTelescopeScreen );
+		tex2panel( vTelescopePanel );
 		
 		if ( bNuit )		pFits->getPanelCorrectionFits()->setColor(0xFF0000FF);
 		else				pFits->getPanelCorrectionFits()->setColor(0xFFFFFFFF);
+
+		if ( !bIcone && stars.size() != 0 )	{
+
+			for( int i; i<stars.size(); i++ )	{
+				Star* pStar = stars.get(i);
+
+				if ( pStar->haveCoord() )	continue;
+				//logf( (char*)"assignation coordonneees %d", i );
+
+				vec2 vScreen = vec2( pStar->getXScreen(), pStar->getYScreen() );
+				vec2 vTex = vScreen;
+				screen2tex( vTex );
+
+				vec2 vJ2000;
+				pFits->tex_2_J2000( vTex, vJ2000 );
+
+				pStar->setAD( vJ2000.x );
+				pStar->setDE( vJ2000.y );
+			}
+		}
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -696,7 +731,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	
 	static char coord[80];
 	//logf( (char*)"PanelCapture::passiveMotionFunc( %d, %d )", xm, yy );
-	log_tab(true);
+	//log_tab(true);
 
 	// Coordonne fenetre 
 	long x = Screen2x(xm);
@@ -709,7 +744,6 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	long XX = X;
 	long YY = Y;
 
-	
 	// Recuperation des infos image largueur hauteur et pointeur sur RGBRGBRGBRGBRGBRGB
 	int w = pReadBgr->w;
 	int h = pReadBgr->h;
@@ -728,11 +762,15 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	snprintf( (char*)coord, sizeof(coord), "rvb = (%d, %d, %d)", (unsigned)r, (unsigned)g, (unsigned)b );
 	pCoord->changeText( (char*)coord );
 
-	vec2 vJ2000;
 	
 	if ( pCapture->isFits() )	{
-		vec2 sc = vec2( XX, YY ); 
-		pCapture->getFits()->tex_2_J2000( sc, vJ2000 );
+    	vec2 vJ2000;
+		vec2 vTex = vec2( xm, ym ); 
+		screen2tex( vTex );
+		pCapture->getFits()->tex_2_J2000( vTex, vJ2000 );
+		
+		//vec2 sc = vec2( XX, YY ); 
+		//pCapture->getFits()->tex_2_J2000( sc, vJ2000 );
 		
 		struct dms DMS;
 		struct hms HMS;
@@ -747,7 +785,6 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 #endif
 		pJ2000_1->changeText( (char*)coord );
 		pJ2000_1->setChangeText(true);
-		//pJ2000_1->setPos( x+15, y+30);
 		pJ2000_1->setPos( 5, 17);
 
 #ifdef DEG_MS
@@ -760,7 +797,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 		pJ2000_2->setPos( 5, 32);
 	}
 	// Mise a jour du panelText
-	// ans la position de la souris
+	// dans la position de la souris
 	// Force la fabrication de la chaine de caractere
 	pFondCoord->setPos( x+15, y+15);
 	pFondCoord->onTop();
@@ -768,7 +805,8 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	pCoord->setPos( 5, 2);
 	pCoord->setChangeText(true);
 	
-	log_tab(false);
+	//log_tab(false);
+	//log( (char*)"---" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -779,16 +817,15 @@ void PanelCapture::clickLeft(int xm, int ym)
     if ( pCapture->isIconized() )
 	    Captures::getInstance().setCurrent( pCapture );
 
-    Panel::clickLeft(xm,ym);
+    //Panel::clickLeft(xm,ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::releaseLeft(int xm, int ym)
 {
-    logf( (char*)"PanelCapture::releaseLeft(%d,%d) ...", xm, ym );
+    logf( (char*)"PanelCapture::releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
 
-    logf( (char*)"releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
     if ( pCapture->isFits() && iGlutModifier == GLUT_ACTIVE_CTRL)    {
 		sendStellarium( xm, ym );
     }
@@ -821,6 +858,7 @@ void PanelCapture::releaseLeft(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::clickRight(int xm, int ym)
 {
+    logf( (char*)"PanelCapture::clickRight(%d,%d) ...", xm, ym );
     Captures::getInstance().setCurrent( pCapture );
     PanelSimple::clickRight(xm,ym);
 }
@@ -829,7 +867,7 @@ void PanelCapture::clickRight(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::motionRight(int xm, int ym)
 {
-    logf( (char*)"PanelCapture::motionRight(%d,%d) ...", xm, ym );
+    //logf( (char*)"PanelCapture::motionRight(%d,%d) ...", xm, ym );
 	PanelSimple::motionRight( xm, ym );
     updatePos();    
     //stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
@@ -942,16 +980,17 @@ void PanelCapture::releaseMiddle(int xm, int ym)
         if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
         {
             stars.selectStar(xx, yy);
-            logf( (char*)"releaseMiddle(%d,%d) selects star...", xm, ym );
+            logf( (char*)"selects star" );
         }
         else
             stars.selectStar(xx, yy);
     }
     bHaveMove = false;
 	
-    log_tab(false);
+    computeRepere();
 
-    computeEchelle();
+    log_tab(false);
+	log( (char*)"---" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1044,8 +1083,8 @@ void PanelCapture::setCentY(double f)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::screen2tex(vec2& v)
 {
-	vec2 delta   = vec2(getPosX(), getPosY());
-	v = ( v - delta ) / ech;
+	vec2 delta   = vec2(getX(), getY());
+	v = ( v - delta  ) / ech;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1053,14 +1092,14 @@ void PanelCapture::screen2tex(vec2& v)
 void PanelCapture::tex2screen(vec2& v)
 {
 	vec2 delta = vec2(getX(), getY());
-	v = (v * ech) + delta ;
+	v = (v * ech) + delta;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::tex2panel(vec2& v)
 {
-	v = (ech * v);// + vec2( getX(), getY() );
+	v = (ech * v);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1074,16 +1113,16 @@ void PanelCapture::panel2tex(vec2& v)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::panel2screen(vec2& v)
 {
-	vec2 vParent = vec2(pCapture->getX(), pCapture->getY());
-	v = (v-vec2(getPosX(),getPosY())) / ech   + vParent;
+	vec2 delta = vec2(getX(), getY());
+	v = v + delta;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::screen2panel(vec2& v)
 {
-	vec2 vParent = vec2(pCapture->getX(), pCapture->getY());
-	v = (v - vParent)*ech + vec2(getPosX(),getPosY()) ;
+	vec2 delta = vec2(getX(), getY());
+	v = v - delta;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1096,6 +1135,7 @@ void PanelCapture::printObjet()
     logf( (char*)"this->dim %d x %d", getDX(), getDY() );
     logf( (char*)"this->ech_geo=%0.2lf",  ech_geo );
     logf( (char*)"this->ech_user=%0.2lf", ech_user );
+    logf( (char*)"this->ech=%0.2lf", ech );
     if ( pReadBgr == NULL )    {
         logf( (char*)"pReadBgr = NULL" );
     } else {
@@ -1103,7 +1143,16 @@ void PanelCapture::printObjet()
         logf( (char*)"this->pReadBgr->h %d", pReadBgr->h.load() );
         logf( (char*)"this->pReadBgr->d %d", pReadBgr->d.load() );
     }
+    logf( (char*)"this->vAD=(%.2lf, %.2lf)", vAD.x, vAD.y );
+    logf( (char*)"this->vDE=(%.2lf, %.2lf)", vDE.x, vDE.y );
+    logf( (char*)"this->dAngleAD=%0.2lf", dAngleAD );
+    logf( (char*)"this->dAngleDE=%0.2lf", dAngleDE );
+
+	if ( pVizier )
+	    logf( (char*)"this->pVizier=%d", pVizier->size() );
+    logf( (char*)"this->stars=%d", stars.size() );
     log_tab(false);
+	log( (char*)"---" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1113,7 +1162,13 @@ void PanelCapture::findGaiaDR3()
     logf( (char*)"PanelCapture::findGaiaDR3()" );
 
 	if ( pVizier )	{
-	    //logf( (char*)"|  Efface le catalog" );
+		if ( !bAffCatalogPosition )	{
+			bAffCatalogPosition = true;
+			pVizier->affiche_position();
+			return;
+		}
+
+		bAffCatalogPosition = false;
 		pVizier->efface();
 		delete pVizier;
 		pVizier = NULL;
@@ -1151,21 +1206,10 @@ void PanelCapture::sendStellarium( int xm, int ym)
 {
     logf( (char*)"PanelCapture::sendStellarium()" );
 
-		long x = Screen2x(xm);
-		long y = Screen2y(ym);
-		
-		// coordonnées image	
-		double X = (double)x/(ech_user*ech_geo);
-		double Y = (double)y/(ech_user*ech_geo);
-		
-		long XX = X;
-		long YY = Y;
-
-		
-		// Recuperation des infos image largueur hauteur et pointeur sur RGBRGBRGBRGBRGBRGB
 		vec2 vJ2000;
-		vec2 screen = vec2( XX, YY );
-		pCapture->getFits()->tex_2_J2000( screen, vJ2000 );
+		vec2 vTex = vec2( xm, ym );
+		screen2tex( vTex );
+		pCapture->getFits()->tex_2_J2000( vTex, vJ2000 );
 		
 		struct dms DMS;
 		struct hms HMS;
@@ -1300,15 +1344,18 @@ void PanelCapture::change_ad( double ad )
 	vTelescopeJ2000.x = ad<0.0 ? 360.0+ad : ad ;
 	
 	pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
-	vTelescopeScreen = vTelescopeTex;
+	vTelescopePanel  = vTelescopeScreen = vTelescopeTex;
 	tex2screen( vTelescopeScreen );
+	tex2panel( vTelescopePanel );
 
-	logf( (char*)"PanelCapture::change_ad()  ech=%lf", ech );
-	logf( (char*)"     J2000           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
-	logf( (char*)"     Tex             (%lf, %lf)", vTelescopeTex.x, vTelescopeTex.y );
-	logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
-	//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
-	
+	if ( Captures::getInstance().isCurrent( pCapture ) )
+	{
+		logf( (char*)"PanelCapture::change_ad()  ech=%lf", ech );
+		logf( (char*)"     J2000           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
+		logf( (char*)"     Tex             (%lf, %lf)", vTelescopeTex.x, vTelescopeTex.y );
+		logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
+		//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
+	}	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1320,15 +1367,18 @@ void PanelCapture::change_dc( double dc )
 	vTelescopeJ2000.y = dc;
 		
 	pCapture->getFits()->J2000_2_tex( vTelescopeJ2000, vTelescopeTex );
-	vTelescopeScreen = vTelescopeTex;
+	vTelescopePanel  = vTelescopeScreen = vTelescopeTex;
 	tex2screen( vTelescopeScreen );
+	tex2panel( vTelescopePanel );
 
-	logf( (char*)"PanelCapture::change_dc()  ech=%lf", ech );
-	logf( (char*)"     J2000           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
-	logf( (char*)"     Tex             (%lf, %lf)", vTelescopeTex.x, vTelescopeTex.y );
-	logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
-	//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
-	
+	if ( Captures::getInstance().isCurrent( pCapture ) )
+	{
+		logf( (char*)"PanelCapture::change_dc()  ech=%lf", ech );
+		logf( (char*)"     J2000           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
+		logf( (char*)"     Tex             (%lf, %lf)", vTelescopeTex.x, vTelescopeTex.y );
+		logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
+		//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
+	}	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1342,57 +1392,114 @@ void PanelCapture::setEchelleVisible( bool b )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::computeIntersectionHau(vec2& V, vec2 p1, vec2 p2 )                         
 {
-    vec2 	vDelta	= vec2( getPosX(), getPosY() );
+    //vec2 	vDelta	= vec2( getPosX(), getPosY() );
+    double 	dPosY = -getPosY();
 	    	
-	vec2 pt1 = p1;			tex2screen(pt1);
-	vec2 pt2 = p2;			tex2screen(pt2);
+	vec2 pt1 = p1;			tex2panel(pt1);
+	vec2 pt2 = p2;			tex2panel(pt2);
 	vec2 v = (pt2 - pt1);
 
-	double c = -pt1.y/v.y;
+	double c = (dPosY-pt1.y)/v.y;
 	double X = c*v.x + pt1.x;
 	
-	V = vec2( X, 0.0 );
-	V = V - vDelta;
+	V = vec2( X, dPosY );
+	V = V * ech;// - vDelta;
+	panel2tex(V);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::computeIntersectionBas(vec2& V, vec2 p1, vec2 p2 )                         
 {
-    double  ech 	= ech_geo * ech_user;
-    vec2 	vDelta	= vec2( getPosX(), getPosY() );
+    double 	dPosY = -getPosY() + getDY()/ech;
 	    	
-	vec2 pt1 = p1;			tex2screen(pt1);
-	vec2 pt2 = p2;			tex2screen(pt2);
+	vec2 pt1 = p1;			tex2panel(pt1);
+	vec2 pt2 = p2;			tex2panel(pt2);
 	vec2 v = (pt2 - pt1);
 
-	double c = ((double)getDY()-pt1.y)/v.y;
+	double c = (dPosY-pt1.y)/v.y;
 	double X = c*v.x + pt1.x;
 	
-	V = vec2( X, (double)getDY() );
-	V = V - vDelta;
+	V = vec2( X, dPosY );
+	V = V * ech;
+	panel2tex(V);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::computeIntersectionGau(vec2& V, vec2 p1, vec2 p2 )                         
 {
-    vec2 	vDelta	= vec2( getPosX(), getPosY() );
+    double 	dPosX = -getPosX();
 	    	
-	vec2 pt1 = p1;			tex2screen(pt1);
-	vec2 pt2 = p2;			tex2screen(pt2);
+	vec2 pt1 = p1;			tex2panel(pt1);
+	vec2 pt2 = p2;			tex2panel(pt2);
 	vec2 v = (pt2 - pt1);
 
-	double c = -pt1.x/v.x;
+	double c = (dPosX-pt1.x)/v.x;
 	double Y = c*v.y + pt1.y;
 	
-	V = vec2( 0.0, Y );
-	V = V - vDelta;
+	V = vec2( dPosX, Y );
+	V = V * ech;// - vDelta;
+	panel2tex(V);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::computeEchelle()                         
+void PanelCapture::computeEchAD_00( int idx, vec2 v )
+{
+	char		str[40];    
+	pTextEch[idx]->setPos( v.x, v.y);
+
+	vec2 pt = v;
+	panel2tex(pt);
+	vec2 vJ2000;
+	pCapture->getFits()->tex_2_J2000( pt, vJ2000 );
+	struct hms HMS;
+	deg2hms( vJ2000.x, HMS );
+
+		#ifdef DEG_MS
+		snprintf( (char*)str, sizeof(str), "A.D.:%02.0lfh %02.0lf' %02.2lf\"", HMS.h, HMS.m, HMS.s );
+		#else
+		snprintf( (char*)str, sizeof(str), "A.D.:%lf alpha:%lf", vJ2000.x, angle);
+		#endif
+
+	//logf( (char*)"computeEchAD : (%.2lf, %.2lf) %s", pt.x, pt.y, (char*)str );	
+	pTextEch[idx]->changeText( (char*)str ); 
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeEchDE_00( int idx, vec2 v )
+{
+	char		str[40];    
+	pTextEch[idx]->setPos( v.x, v.y);
+
+	vec2 pt = v;
+	panel2tex(pt);
+	vec2 vJ2000;
+	pCapture->getFits()->tex_2_J2000( pt, vJ2000 );
+	struct dms DMS;
+	//if ( vJ2000.y >180.0
+	deg2dms( vJ2000.y, DMS );
+
+		#ifdef DEG_MS
+		snprintf( (char*)str, sizeof(str), "Dec:%02.0lf° %02.0lf' %02.2lf\"", DMS.d, DMS.m, DMS.s );
+		#else
+		snprintf( (char*)str, sizeof(str), "Dec:%lf alpha:%lf", vJ2000.y, angle );
+		#endif
+
+	//logf( (char*)"computeEchAD : (%.2lf, %.2lf) %s", pt.x, pt.y, (char*)str );	
+	pTextEch[idx]->changeText( (char*)str ); 
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// 1deg / 3600 = 0,000277778
+// 1h   / 3600 = 0,004166667
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeRepere_00()                         
 {
     vec2 	vDelta	= vec2( getPosX(), getPosY() );
     double  ech 	= ech_geo * ech_user;
@@ -1402,80 +1509,198 @@ void PanelCapture::computeEchelle()
 		if ( dAngleAD > 45.0 )				computeIntersectionHau( V, p1[i], p2[i] );
 		else								computeIntersectionGau( V, p1[i], p2[i] );
 		
-		pTextEch[i]->setPos( V.x, V.y);
-		
-		if ( bNuit )			pTextEch[i]->setColor( COLOR32(255, 0, 0, 255) );
-		else					pTextEch[i]->setColor( COLOR32(0, 0, 255, 255) );
+		computeEchAD_00( i, V );
+
+		if ( bNuit )						pTextEch[i]->setColor( COLOR32(255, 0, 0, 128) );
+		else								pTextEch[i]->setColor( COLOR32(0, 0, 255, 255) );
 	}
 
 
 	for ( int i=1; i<p1.size(); i+=2 )	{
 		vec2 V;
-		if ( dAngleAD>45.0  )						computeIntersectionGau( V, p1[i], p2[i] );
-		else										computeIntersectionHau( V, p1[i], p2[i] );
+		if ( dAngleAD>45.0  )				computeIntersectionGau( V, p1[i], p2[i] );
+		else								computeIntersectionHau( V, p1[i], p2[i] );
 
-		pTextEch[i]->setPos( V.x, V.y );
-		if ( bNuit )			pTextEch[i]->setColor( COLOR32(255, 0, 0, 255) );
-		else					pTextEch[i]->setColor( COLOR32(255, 0, 0, 255) );
+		if ( dAngleDE > 0.0 )   {
+		    double size = pTextEch[i]->getTextLenght();
+		    V += size * -vAD;
+		}
+
+		computeEchDE_00( i, V );
+		
+		if ( bNuit )						pTextEch[i]->setColor( COLOR32(255,   0,   0, 255) );
+		else								pTextEch[i]->setColor( 0xFF0000FF );
 	}
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeRepereAxe_01(int n)
+{
+	//log( (char*)" Calcul du repere" );
+	int nb = p1.size();
+	vec2 P1 = vec2( p1[n] );
+	vec2 P2 = vec2( p2[n] );
+	vec2 v = P2-P1;
+	double a;
+
+	for ( int i=n; i<nb; i+=2 )	{
+		vec2 v1 = vec2( i*80.0 - getPosX(),   40.0 - getPosY() );
+		v1 /= ech;
+		vec2 v2;
+
+		v2.y = getDY() - 40.0 - getPosY();
+		v2.y /= ech;
+		a = v.y / (v2.y-v1.y);
+		v2.x =  ( v.x + a*v1.x ) / a;
+
+		if ( v2.x<(-getPosX()/ech) )	{
+			v2.x = 40.0 - getPosX();
+			v2.x /= ech;
+			a    =  v.x / (v2.x-v1.x);
+			v2.y =  (v.y + a*v1.y) / a;
+		}
+		else if ( v2.x>(getDX()-40.0-getPosX())/ech )	{
+			v2.x = getDX()  - 40.0 - getPosX();
+			v2.x /= ech;
+			a    =  v.x / (v2.x-v1.x);
+			v2.y =  (v.y + a*v1.y) / a;
+		}
+
+		p1[i] = v1;
+		p2[i] = v2;
+	}		
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeRepere_01()
+{
+	computeRepereAxe_01(0);
+	computeRepereAxe_01(1);
+}
+//--------------------------------------------------------------------------------------------------------------------
+// 1deg / 3600 = 0,000277778
+// 1h   / 3600 = 0,004166667
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeRepere_02()
+{
+	//log( (char*)" Calcul du repere" );
+	
+	double sec = 0.000277778;
+	//double sec = 0,004166667;
+		
+	vec2 vAD_tex, v, v0, v1;
+	v = vec2( getDY(), 0.0);
+
+	screen2tex(v);
+	
+	pCapture->getFits()->tex_2_J2000( v, vAD_tex );
+
+	logf( (char*)"----------------------------------------------------" );
+	logf( (char*)"      v(%0.4lf, %0.4lf) ech=%lf", v.x, v.y, ech );
+	logf( (char*)"     v1(%0.4lf, %0.4lf) ech=%lf", v1.x, v1.y, ech );
+	logf( (char*)"vAD_tex(%.8lf, %.8lf)", vAD_tex.x, vAD_tex.y );
+	//pCapture->getFits()->J2000_2_tex( vAD_tex, v );
+	logf( (char*)"  mod v = %.8lf   0.000277778", fmod(vAD_tex.y, 0.004166667) );
+	logf( (char*)"  div v = %.8lf   0.000277778", fdiv(vAD_tex.y, 0.004166667) );
+	double _floor = floor(fdiv(vAD_tex.y, (double)0.004166667));
+	logf( (char*)"floor v = %.8lf   0.000277778", _floor );
+	double val = _floor * 0.004166667;
+	logf( (char*)"    val = %.8lf   0.000277778", val );
+
+	//struct hms HMS;
+	struct dms DMS;
+
+	//deg2hms( val, HMS );
+	deg2dms( val, DMS );
+
+	//logf( (char*)"  AD:%02.0lfh %02.0lf' %02.2lf\"", HMS.h, HMS.m, HMS.s );
+	logf( (char*)"  DE:%02.0lf° %02.0lf' %02.2lf\"", DMS.d, DMS.m, DMS.s );
+
+
+	computeRepere_00();
+	
+		
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::computeRepere()                         
+{
+	if ( ! pCapture->isFits() )			return;
+	computeRepere_02();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::addP1P2(vec2 v, vec2 w)                         
 {
+	//-----------------------------------------------------------
 	p1.push_back(vec2(v));
 	p2.push_back(vec2(w)); 
-
-    double angle;
-    vec2 V0, V1;
+	//-----------------------------------------------------------
+    double 		angle;
+    vec2		V0, V1;
+    vec2		pt, vJ2000;
+	char		str[40];    
+    PanelText*	pInfo;
+	//-----------------------------------------------------------
     V0 = w-v;
     V0.normalize();
     angle = acos(V0.x);
     angle = RAD2DEG(angle);
 	if ( V0.y<0.0 )			angle *= -1.0;
 
-	char str[40];    
-    PanelText * p;
-    vec2 pt, vJ2000;
     
-    p = new PanelText( (char*)str, PanelText::NORMAL_FONT, 0, 0); 
+    pInfo = new PanelText( (char*)str, PanelText::NORMAL_FONT, 0, 0); 
 
 
-   	if ( (p1.size()%2) != 0 )	{
+   	if ( (p1.size()%2) == 0 )	{
 	    if ( angle >90.0 )          angle = -180.0 + angle;
 	    dAngleAD = angle;
-	    p->setAlpha( (float)dAngleAD );
-	    p->setColor( 0xFF0000FF );
+	    pInfo->setAlpha( (float)dAngleAD );
+	    pInfo->setColor( 0xFF0000FF );
 
    		pt = v;
+   		//panel2tex(pt);
 		pCapture->getFits()->tex_2_J2000( pt, vJ2000 );
 		struct hms HMS;
 		deg2hms( vJ2000.x, HMS );
+
+		logf( (char*)"pt(%.2lf, %.2lf) => A.D.:%02.0lfh %02.0lf' %02.2lf\"", pt.x, pt.y, HMS.h, HMS.m, HMS.s );
 
 		#ifdef DEG_MS
 		snprintf( (char*)str, sizeof(str), "A.D.:%02.0lfh %02.0lf' %02.2lf\"", HMS.h, HMS.m, HMS.s );
 		#else
 		snprintf( (char*)str, sizeof(str), "A.D.:%lf alpha:%lf", vJ2000.x, angle);
 		#endif
+		if ( p1.size() <3 )	{
+			vAD = w-v;
+			vAD.normalize();
+		}
 	}
 	else	{
 	    angle = dAngleAD + 90.0;
 	    if ( angle >90.0 )          angle = -180.0 + angle;
 	    dAngleDE = angle;
-	    p->setAlpha( (float)dAngleDE );
-
-	    p->setColor( 0xFFFF0000 );
+	    pInfo->setAlpha( (float)dAngleDE );
+	    pInfo->setColor( 0x0000FFFF );
    		pt = v;
 		pCapture->getFits()->tex_2_J2000( pt, vJ2000 );
 		struct dms DMS;
 		deg2dms( vJ2000.y, DMS );
 
 		#ifdef DEG_MS
-		snprintf( (char*)str, sizeof(str), "Dec:%02.0lfd %02.0lf' %02.2lf\"", DMS.d, DMS.m, DMS.s );
+		snprintf( (char*)str, sizeof(str), "Dec:%02.0lf° %02.0lf' %02.2lf\"", DMS.d, DMS.m, DMS.s );
 		#else
 		snprintf( (char*)str, sizeof(str), "Dec:%lf alpha:%lf", vJ2000.y, angle );
 		#endif
+		if ( p1.size() <3 )	{
+			vDE = w-v;
+			vDE.normalize();
+		}
     }
     
     char STR0[40];
@@ -1484,13 +1709,13 @@ void PanelCapture::addP1P2(vec2 v, vec2 w)
     w.to_str(STR1);
     logf( (char*)"Angle = %lf v%s w%s", angle, STR0, STR1 );
 
-    p->setPos( w.x, w.y );
-    p->updatePos();
+    pInfo->setPos( w.x, w.y );
+    pInfo->updatePos();
 
     
     
-    if ( p->getParent() == NULL )	    add(p);
-	pTextEch.push_back( p ); 
+    if ( pInfo->getParent() == NULL )	    add(pInfo);
+	pTextEch.push_back( pInfo ); 
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

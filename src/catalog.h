@@ -31,6 +31,7 @@ public:
     void                            sauve();
     void                            charge();
     void                            list();
+    void							affiche_position();
     
 inline int                          size()                      { return stars.size(); }
 inline StarCatalog*                 get(int i)                  { return stars[i]; }

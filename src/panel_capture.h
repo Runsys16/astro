@@ -10,6 +10,7 @@
 #include "var_mgr.h"
 #include "stars.h"
 #include "catalog.h"
+#include "stars.h"
 
 
 class Capture;
@@ -36,6 +37,7 @@ protected:
     bool                bHaveMove;
     bool                bInfoSouris;
     bool				bAffGrille;
+    bool				bAffCatalogPosition;
     
     int                 xm_old;
     int                 ym_old;
@@ -97,7 +99,6 @@ public:
 
     void                findAllStars();
     void                deleteAllStars();
-    //bool                starExist(int, int);    
     void                addStar(int,int);
     void                clip(int&, int&);
 
@@ -105,23 +106,9 @@ public:
     void                setEchelle(double f);
     void                setCentX(double f);
     void                setCentY(double f);
-/*    
-    int                 screen2texX( int );
-    int                 screen2texY( int );
-    void                screen2tex( int&, int& );
-*/
-    void                screen2tex( vec2& );
-/*
-    void                screen2tex( vec2, vec2& );
 
-    int                 tex2screenX( int );
-    int                 tex2screenY( int );
-    void                tex2screen( int&, int& );
-*/
+    void                screen2tex( vec2& );
     void                tex2screen( vec2& );
-/*
-    void                tex2screen( vec2, vec2& );
-*/
     void                tex2panel( vec2& );
     void                panel2tex( vec2& );
     void                screen2panel( vec2& );
@@ -142,7 +129,13 @@ public:
 	void				computeIntersectionHau(vec2&, vec2, vec2);
 	void				computeIntersectionBas(vec2&, vec2, vec2);
 	void				computeIntersectionGau(vec2&, vec2, vec2);
-	void				computeEchelle();
+	void				computeEchAD_00(int, vec2);
+	void				computeEchDE_00(int, vec2);
+	void				computeRepere_00();
+	void				computeRepereAxe_01(int);
+	void				computeRepere_01();
+	void				computeRepere_02();
+	void				computeRepere();
 	void             	addP1P2(vec2 , vec2);
 
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
@@ -157,6 +150,7 @@ inline bool             getAffGrille()                           		{ return bAff
 inline bool             getInfoSouris()                                 { return bInfoSouris; }
 inline void             setVecteurAD(vec2 v)                            { vAD = v; }
 inline void             setVecteurDE(vec2 v)                            { vDE = v; }
+inline Catalog*			getCatalog()									{ return pVizier; }
 
 };
 

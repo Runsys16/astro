@@ -46,7 +46,7 @@ Fits::Fits(string filename, PanelCapture* p)
 
 
     pPanelCorrectionFits = new PanelCorrectionFits();
-    pPanelCorrectionFits->setPos( 50, 50 );
+    pPanelCorrectionFits->setPos( 150, 150 );
     
     pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
     pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
@@ -258,8 +258,32 @@ double Fits::computeEchelle(vec2 v)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Fits::normalizeEchelleMatrice()
+{
+	if ( dCDELT1==1.0 && dCDELT2==1.0)	{
+		dCDELT1 /= 1000.0;
+		dCDELT2 /= 1000.0;
+
+		pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
+		pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
+		pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
+		pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
+		
+		dPC1_1 *= 1000.0;
+		dPC1_2 *= 1000.0;
+		dPC2_1 *= 1000.0;
+		dPC2_2 *= 1000.0;
+		
+		mAstroEchl *= 1000.0;
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Fits::sauveMatrice()
 {	
+	normalizeEchelleMatrice();
+	
 	mat2 mMoinsX = mat2( -1.0, 0.0, 0.0, -1.0 );
 	mMat = mMoinsX * mAstroEchl * mAstroTrns;// * sym0;
 	//mMat = mAstroTrns * mAstroEchl * mMoinsX ;// * sym0;
@@ -323,7 +347,7 @@ void Fits::sauveMatrice()
 	pPanelCapture->setVecteurAD( vN );
 	
 	intersectionH( 	vHaut,   pp1N, pp2N );
-	pPanelCapture->addP1P2( vHaut, vHaut + 2.0*(pp1N-vHaut) );
+	//pPanelCapture->addP1P2( vHaut, vHaut + 2.0*(pp1N-vHaut) );
 
 	//-----------------------------------------------------------------
 	p1E = vec2( 00, 00 );			p2E = vec2( -50, 00 );
@@ -335,7 +359,7 @@ void Fits::sauveMatrice()
 	pPanelCapture->setVecteurDE( vE );
 	
 	intersectionG( 	vGauche,   pp1E, pp2E );
-	pPanelCapture->addP1P2( vGauche, vGauche + 2.0*(pp1E-vGauche) );
+	//pPanelCapture->addP1P2( vGauche, vGauche + 2.0*(pp1E-vGauche) );
 
 
 	vec2 vNord = pp2N - pp1N;
@@ -729,12 +753,13 @@ void Fits::readCD( string key, string value )
     else    if ( key.find("CD2_1") == 0 )           dCD2_1  = getDouble( value );
     else    if ( key.find("CD2_2") == 0 )           dCD2_2  = getDouble( value );
     else	bOK = false;
-    
     if ( bOK )	{
 		mAstroEchl = mat2( dCD1_1, dCD2_1, dCD1_2, dCD2_2 );
 		char STR[255];
 		mAstroEchl.to_str(STR);
+	/*    
 		logf( (char*)"Matrice d'echelle: %s", STR );
+	*/
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -748,12 +773,14 @@ void Fits::readPC( string key, string value )
     else    if ( key.find("PC2_1") == 0 )           dPC2_1  = getDouble( value );
     else    if ( key.find("PC2_2") == 0 )           dPC2_2  = getDouble( value );
     else	bOK = false;
-    
+
     if ( bOK )	{
     	char STR[255];
 		mAstroTrns = mat2( dPC1_1, dPC2_1, dPC1_2, dPC2_2 );
 		mAstroTrns.to_str(STR);
+	/*    
 		logf( (char*)"Matrice de transformation : %s", STR );
+	*/
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

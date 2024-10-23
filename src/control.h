@@ -50,7 +50,9 @@ public:
     inline int      getValue()                          { return value; }
     inline int      getId()                             { return id; }
     inline string&  getName()                           { return name; }
-    
+    inline int      getMin()                            { return min; }
+    inline int      getMax()                            { return max; }
+    inline int      getStep()                           { return step; }
     
 };
 

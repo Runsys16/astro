@@ -79,14 +79,14 @@ void Control::setValue(int v)
     if ( v >= min && v <= max)
     {
         value = v;
-        logf( (char*)"Control::setValue(%d)  OK", v );
+        //logf( (char*)"Control::setValue(%d)  OK", v );
         int r = dev->change_value(id, v);
         if ( r<0 )      logf( (char*)"[erreur] change_value" );
         printValue();
     }
     else
     {
-        logf( (char*)"Control::setValue(%d)  valeur hors limite (%d, %d)", v, min, max );
+        //logf( (char*)"Control::setValue(%d)  valeur hors limite (%d, %d)", v, min, max );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ void Control::setValue(int v)
 //--------------------------------------------------------------------------------------------------------------------
 void Control::printValue()
 {
-    //printf( "%s %d\n", name.c_str(), value);
+    //logf( (char*)"Control::printValue() : %s %d", name.c_str(), value);
     if (pt)     {
         char text[] = "00000000";
         sprintf( text, "%d", value ); 
@@ -102,7 +102,7 @@ void Control::printValue()
     }
     else
     {
-        logf( (char*)"[Erreur} Control::printValue()" );
+        //logf( (char*)"[Erreur} Control::printValue()" );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -664,6 +664,67 @@ void Capture::restaure(bool bInfo, bool bGrille, bool bSouris )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Capture::export_stars()
+{
+    Stars*            pStars = panelPreview->getStars();
+    if ( pStars == NULL || pStars->size() == 0 )	{
+    	log( (char*)"[ERREUR] Etoiles non chargees" );
+    	return;
+    }
+    
+	string filenameSauve( "/home/rene/.astropilot/export/export_stars.csv" );
+    std::ofstream fichier;
+    
+    fichier.open(filenameSauve, std::ios_base::out);
+
+    if ( !fichier ) 
+    {
+        logf( (char*)"[ERROR]impossible d'ouvrir : '%s'", (char*)filenameSauve.c_str() );
+    }
+
+    fichier << "Asc. Droite;Déclinaison;Magnitude" << "\n";
+
+    for(int i=0; i<pStars->size(); i++)
+    {
+    	Star* pStar = pStars->get(i);
+        fichier << "" << pStar->getAD() << "; " <<  pStar->getDE() << "; "<<  pStar->getMagnitude() << "\n";;
+    }
+
+    fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::export_vizier()
+{
+    Catalog*            pVizier = panelPreview->getCatalog();
+    if ( pVizier == NULL )	{
+    	log( (char*)"[ERREUR] Etoiles Vizier non chargees" );
+    	return;
+    }
+    
+	string filenameSauve( "/home/rene/.astropilot/export/export_vizier.csv" );
+    std::ofstream fichier;
+    
+    fichier.open(filenameSauve, std::ios_base::out);
+
+    if ( !fichier )     {
+        logf( (char*)"[ERROR]impossible d'ouvrir : '%s'", (char*)filenameSauve.c_str() );
+    }
+
+    fichier << "Asc. Droite;Déclinaison;Magnitude" << "\n";
+
+    for(int i=0; i<pVizier->size(); i++)
+    {
+    	StarCatalog* pStar = pVizier->get(i);
+        fichier << "" << pStar->fRA << "; " <<  pStar->fDE << "; "<<  pStar->fMag << "\n";;
+    }
+
+    fichier.close();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 /*
 uint8_t* laplacien (uint8_t* image, int width, int height, int nb_iter) {
  

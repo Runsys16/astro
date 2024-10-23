@@ -44,16 +44,18 @@ vector<string> t_sHelp1 =
 	"     h\t: Enregistre une image de la camera courante",
 	"     A\t: enregistre les parametres de la camera",
 	"     a\t: rappelle les parametres de la camera",
+	"     l\t: Liste les controles",
     "" ,    
-	"\t  Brightness\t\tB/b" ,
-	"\t  Contrast\t\tC/c" ,
-	"\t  Saturation\t\tS/s" ,
-	"\t  Hue\t\t\tH/h" ,
-	"\t  Gamma\t\tG/g" ,
-	"\t  Sharpness\t\tZ/z" ,
-	"\t  Exposure\t\tE/e" ,
+	"\t  Brightness\t\t\tB/b" ,
+	"\t  Contrast\t\t\tC/c" ,
+	"\t  Saturation\t\t\tS/s" ,
+	"\t  Hue\t\t\t\tH/h" ,
+	"\t  Gamma\t\t\tG/g" ,
+	"\t  Sharpness\t\t\tZ/z" ,
+	"\t  Exposure\t\t\tE/e" ,
 	"\t  Exposure auto\t\tD/d" ,
-	"\t  White balance\tW/w" ,
+	"\t  White balance\t\tW/w" ,
+	"\t  White balance auto\tX/x" ,
 	"",
 	"---- MODE NORMAL ----",
 	"ctrl+TAB\t: camera suivante" ,
@@ -133,6 +135,7 @@ vector<string> t_sHelp2 =
 	"",
 	"---- Vizier ----",
 	" Alt+e\t: Affiche catalog"   ,
+	" Alt+r\t: Affiche les etoiles"   ,
 	"   d/f\t: Rotation"   ,
 	"   a/z\t: Translation X"   ,
 	"   q/s\t: Translation Y"   ,
@@ -148,7 +151,7 @@ VarManager& var = VarManager::getInstance();
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-string              currentDirectory = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2019-06-30/";
+string              currentDirectory = "/home/rene/Documents/astronomie/logiciel/script/images/";
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -359,16 +362,18 @@ double Yref  = -1.0;
 double ZrefX = -1.0;
 double ZrefY = -1.0;
 double Wref  = -1.0;
-bool   bAffCatalog = true;
+//--------------------------------------------------------------------------------------------------------------------
+bool   bAffCatalog	= true;
+bool   bAffStar		= true;
 Catalog vizier = Catalog();
 
 int iGlutModifier = 0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-string workDirCaptures = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame/";
+string workDirCaptures = "/home/rene/Documents/astronomie/logiciel/script/images/";
 string workDirSauveCourbe = "/home/rene/.astropilot/";
-string workDirFileBrowser = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/";
+string workDirFileBrowser = "/home/rene/Documents/astronomie/logiciel/script/images/";
 string filenameSauve = "/home/rene/.astropilot/sauvegarde.txt";
 string workDirFits = "/home/rene/Documents/astronomie/fits/";
 //--------------------------------------------------------------------------------------------------------------------
@@ -580,7 +585,7 @@ void vizier_thread( Catalog* pVizier, string s )
         find = "find_gaia_dr3.py -r 10200 -m 3000 --Gmag=\"<8\" m45";
     }
     else    {
-        find = "find_gaia_dr3.py -m 3000 --Gmag=\"<16\" " + s;
+        find = "find_gaia_dr3.py -m 6000 --Gmag=\"<16\" " + s;
     }
     
     logf( (char*)"Lance la requete : %s", find.c_str() );
@@ -797,18 +802,20 @@ void CallbackFileBrowser::callback( bool bb, int ii, char* str)
 {
     FileBrowser& fb = FileBrowser::getInstance();
     
-    logf( (char*)"CallbackFileBrowser::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+    logf( (char*)"CallbackFileBrowser::callback( %s, %d, \"%s\" )", BOOL2STR(bb), ii, (char*)str );
+    log_tab(true);
     if ( bb )     
     {
         string f = fb.getFilename();
         string d = fb.getWorkingDir();
-        logf( (char*)"  charge capture %s%s", (char*)d.c_str(), (char*)f.c_str() );
+        logf( (char*)"charge image %s%s", (char*)d.c_str(), (char*)f.c_str() );
         charge_image( d, f );
     }
     workDirFileBrowser = fb.getWorkingDir();
     VarManager& var = VarManager::getInstance();
     var.set( "DirFileBrowser", workDirFileBrowser );
     fb.setFocus();
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1302,7 +1309,7 @@ void change_ad_status(double ad)
     deg2hms( ad, HMS);
     
     char    buff[255];
-    sprintf( buff, "AD: %02dh %02dm %0.2fs", (int)HMS.h, (int)HMS.m, HMS.s );
+    sprintf( buff, "AD: %02dh %02dm %0.2lfs", (int)HMS.h, (int)HMS.m, HMS.s );
     
     pAD->changeText( buff );
 }
@@ -1325,9 +1332,10 @@ void change_dc_status(double dc)
     
     char    buff[255];
     char 	signe[2];
-    //if ( dc <0.0 )		signe[0] = '-';
-    //else				signe[0] = 0;
-    sprintf( buff, "DC: %s%02d %02d\' %0.2f\"", signe, (int)DMS.d, (int)DMS.m, DMS.s );
+    if ( dc <0.0 )		signe[0] = '-';
+    else				signe[0] = 0;
+    
+    sprintf( buff, "DC: %s%02d %02d\' %0.2lf\"", signe, (int)DMS.d, (int)DMS.m, DMS.s );
     
     pDC->changeText( buff );
 
@@ -1864,6 +1872,8 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
     WindowsManager&     wm      = WindowsManager::getInstance(); 
     Camera_mgr&         cam_mgr = Camera_mgr::getInstance();
 	
+    bool bShift = (iGlutModifier & GLUT_ACTIVE_SHIFT ) ? true : false;
+
 	switch(key){ 
 	
     // CTRL A
@@ -1886,6 +1896,28 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
             if ( Camera_mgr::getInstance().getCurrent() != NULL )
     		    Camera_mgr::getInstance().deleteAllStars();
         }
+        }
+        break;
+	// CTRL E
+    case 5:
+		{
+			if ( bShift )	{
+				logf( (char*)"Key (ctrl+Shift+e) : Exporte Vizier" );
+				Capture* p = Captures::getInstance().getCurrentCapture();
+				if ( p != NULL )	{
+					logf( (char*)" Export %s", p->getBasename().c_str() );
+					p->export_vizier();
+				}
+			}
+			else	{
+				logf( (char*)"Key (ctrl+e) : Exporte etoiles" );
+				Capture* p = Captures::getInstance().getCurrentCapture();
+				if ( p != NULL )	{
+					logf( (char*)" Export %s", p->getBasename().c_str() );
+					p->export_stars();
+				}
+			}
+            //Captures::getInstance().fullscreen();
         }
         break;
 	// CTRL F
@@ -1925,6 +1957,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 {
     WindowsManager&     wm      = WindowsManager::getInstance(); 
     Camera_mgr&         cam_mgr = Camera_mgr::getInstance();
+
+    bool bShift = (iGlutModifier & GLUT_ACTIVE_SHIFT ) ? true : false;
 	
 	switch(key){ 
 	
@@ -1932,25 +1966,25 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	    {
 	        bAffCatalog = !bAffCatalog;
             VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
+            /*
 	        logf( (char*)"Xref  : %0.2f", (double)Xref );
 	        logf( (char*)"Yref  : %0.2f", (double)Yref );
 	        logf( (char*)"ZrefX : %0.2f", (double)ZrefX );
 	        logf( (char*)"ZrefY : %0.2f", (double)ZrefY );
 	        logf( (char*)"Wref  : %0.2f", (double)Wref );
-	        logf( (char*)"bAffCataog : %s", BOOL2STR(bAffCatalog) );
-
+	        */
+	        logf( (char*)"Affiche oui/non le catalogue Vizier : %s", BOOL2STR(bAffCatalog) );
             var.set( "bAffCatalog", bAffCatalog );
             
-            logf( (char*)"Nb Etoiles %d", vizier.size() );
-            //vizier.list();
-            /*
-            var.set( "Xref",  (double)Xref );
-            var.set( "Yref",  (double)Yref );
-            var.set( "ZrefX", (double)ZrefX );
-            var.set( "ZrefY", (double)ZrefY );
-            var.set( "Wref",  (double)Wref );
-            */
 	        
+	    }
+	    break;
+	
+	case 'r':
+	    {
+	        bAffStar = !bAffStar;
+            VarManager::getInstance().set("bAffStar", bAffStar);;
+	        logf( (char*)"Affiche oui/non etoiles : %s", BOOL2STR(bAffStar) );
 	    }
 	    break;
 	
@@ -2079,7 +2113,20 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
 	iGlutModifier = glutGetModifiers();
-	
+
+/*	
+#define BINARY(i)    \
+    (((i) & 0x80ll) ? '1' : '0'), \
+    (((i) & 0x40ll) ? '1' : '0'), \
+    (((i) & 0x20ll) ? '1' : '0'), \
+    (((i) & 0x10ll) ? '1' : '0'), \
+    (((i) & 0x08ll) ? '1' : '0'), \
+    (((i) & 0x04ll) ? '1' : '0'), \
+    (((i) & 0x02ll) ? '1' : '0'), \
+    (((i) & 0x01ll) ? '1' : '0')	
+
+	if ( iGlutModifier != 0 )		logf( (char*)"iGlutModifier=%c%c%c%c%c%c%c%c", BINARY(iGlutModifier) );
+*/	
     bFileBrowser = FileBrowser::getInstance().getVisible();
     Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
     
@@ -2113,14 +2160,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         if ( cam_mgr.getCurrent()->keyboard(key) )      return;
     }
     else
-	if (iGlutModifier == GLUT_ACTIVE_ALT)
+	if (iGlutModifier & GLUT_ACTIVE_ALT)
 	{
         //logf( (char*)" Touche ALT %c", key );
         glutKeyboardFuncAlt(key,  x,  y);
         return;
 	}
     else
-	if (iGlutModifier == GLUT_ACTIVE_CTRL)
+	if (iGlutModifier & GLUT_ACTIVE_CTRL)
 	{
         //logf( (char*)" Touche ALT %c", key );
         glutKeyboardFuncCtrl(key,  x,  y);
@@ -3162,11 +3209,12 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
-    //logf( (char*)"main::glutMouseFunc()");
    	iGlutModifier = glutGetModifiers();
 
+	/*
+    logf( (char*)"main::glutMouseFunc( button=%d, state=%d,  (%d, %d) )", button, state, x, y );
     log_tab(true);
-    
+    */
     mouse.x = x;
     mouse.y = y;
 
@@ -3279,8 +3327,9 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     onTop();
 
 endglutMouseFunc:
-    log_tab(false);
+    //log_tab(false);
     //logf( (char*)"main::glutMouseFunc()");
+    return;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -4092,6 +4141,8 @@ void charge_var()
     if ( var.existe("ZrefY"))               ZrefY           = var.getf("ZrefY");
     if ( var.existe("Wref"))                Wref            = var.getf("Wref");
     if ( var.existe("bAffCatalog"))         bAffCatalog     = var.getb("bAffCatalog");
+    if ( var.existe("bAffStar"))         	bAffStar	    = var.getb("bAffStar");
+    else													{ var.set("bAffStar", true); }
    	if ( !var.existe("bVerboseArduino") )   var.set("bVerboseArduino", false);
     if ( !var.existe("bAffFitsCorrection")) var.set("bAffFitsCorrection", true );
    

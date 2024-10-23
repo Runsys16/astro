@@ -10,6 +10,7 @@
 #include "panel_capture.h"
 #include "fits.h"
 #include "var_mgr.h"
+#include "catalog.h"
 
 
 using namespace std;
@@ -82,10 +83,11 @@ public :
     void                        afficheInfoFits(bool);
     void						iconize(int, int);
 	void						restaure(bool bInfo, bool bGrille, bool bSouris );
-    
-    
-    
     bool                        getAfficheInfoFits()						{ return bAffInfoFits; }
+
+	void						export_stars();
+	void						export_vizier();
+
     
 inline rb_t *                   getRB()                                     { return &readBgr; }
 

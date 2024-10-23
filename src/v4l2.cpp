@@ -12,6 +12,7 @@
 
 
 long memory = 0;
+bool bReadError = false;
 
 struct v4l2_queryctrl queryctrl;
 struct v4l2_querymenu querymenu;
@@ -48,7 +49,7 @@ Device_cam::Device_cam()
     bHaveNew        = false;
     
     name ="";
-    filenameRec = "/home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/frame";
+    filenameRec = "/home/rene/Documents/astronomie/logiciel/script/images/frame";
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -78,12 +79,12 @@ bool Device_cam::isDevice( int u )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::getIOName()
+bool Device_cam::getIOCapability()
 {
     if (fd == -1)
     {
         name = "";
-        return;
+        return false;
     }
 
     struct v4l2_capability cap;
@@ -93,6 +94,7 @@ void Device_cam::getIOName()
     {
         perror("cam_info: Can't get capabilities");
         name = "";
+        return false;
     } else {
         //logf("Name:\t\t '%s'", (char*)cap.card);
         string s = (char*)cap.card;
@@ -100,8 +102,16 @@ void Device_cam::getIOName()
         if ( n>0 )      s[n] = 0;
         //logf("n = %d", n );
         name = string(s);
-        logf( (char*)"************* Name: '%s' ***********************\n", name.c_str() );
+        logf( (char*)"Device_cam::getIOName() Name: '%s'", name.c_str() );
+        if ( cap.device_caps&V4L2_CAP_VIDEO_CAPTURE )	{
+	        logf( (char*)"  cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
+	    }
+        else	{
+	        logf( (char*)"[Error] V4L2_CAP_VIDEO_CAPTURE  : cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
+	        return false;
+        }
     }
+    return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1106,7 +1116,7 @@ int Device_cam::open_device()
         return(EXIT_FAILURE);
     }
     
-    sprintf(strErr, "Open '%s'", dev_name.c_str());
+    logf( (char*)"Device_cam::open_device() ... '%s'", dev_name.c_str());
     
     return 0;
 }
@@ -1249,7 +1259,7 @@ void jpeg_saver_error_exit (j_common_ptr cinfo)
 
     //(*cinfo->err->output_message) (cinfo);
     logf((char*)"Error Handler  %d images decode", nbJPG);
-
+    bReadError = true;
     longjmp(myerr->setjmp_buffer, 1);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1274,6 +1284,7 @@ void Device_cam::decompressJpeg() {
     readBgr.w   = -1;
     readBgr.h   = -1;
     readBgr.d   = -1;
+    readBgr.bReadError = bReadError = false;
 
 	//logf((char*)"wBmp=%d hBmp=%d", wBmp, hBmp);
 
@@ -1366,6 +1377,7 @@ void Device_cam::decompressJpeg() {
 	jpeg_finish_decompress(&cinfo);
 	jpeg_destroy_decompress(&cinfo);
 
+    readBgr.bReadError = bReadError;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

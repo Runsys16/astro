@@ -85,7 +85,7 @@ void Captures::charge_image( string dirname, string filename )
     sauve();
     current_capture = captures.size() - 1;
     resize_all();
-    //onTop( captures[current_capture] );
+    //captures[current_capture]->restaure(true, true, true );
 
     log_tab( false );
     logf( (char*)"Captures::charge_image() ...END..." );
@@ -456,7 +456,7 @@ void Captures::ajoute()
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::ajoute(string filename)
 {
-    logf( (char*)"Captures::ajoute()" );
+    logf( (char*)"Captures::ajoute(\"%s\")", filename.c_str() );
     captures.push_back( new Capture(filename) );
     sauve();
     current_capture = captures.size() - 1;

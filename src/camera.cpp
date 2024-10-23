@@ -23,13 +23,15 @@ Camera::~Camera()
 
     //panelPreview->deleteBackground();
 
-    vm.sup( panelPreview );
-    vm.sup( panelControl );
-    vm.sup( panelControl );
+	if ( panelPreview != NULL )	{
+		vm.sup( panelPreview );
+	    delete panelPreview;
+    }
     
-    delete panelPreview;
-    delete panelControl;
-    
+	if ( panelControl != NULL )	{
+		vm.sup( panelControl );
+		delete panelControl;
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -79,7 +81,8 @@ void Camera::init()
     nb_images   = 0;
     sSauveDir = "/home/rene/.astropilot/";
     
-    start_thread();
+	panelPreview = NULL;
+	panelControl = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -135,6 +138,14 @@ int Camera::addControl()	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Camera::changeValueDouble( double val, void *p )	{
+	//logf( (char*)"changeValueDouble %lf", val );
+	Control* pControl = (Control*)p;
+	pControl->setValue( (int)val );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
     logf( (char*)"Ajout de '%s'", str );
 
@@ -144,8 +155,23 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
     p->add( pt );
 
     Control* pControl = getControl(str);
+    
     if (pControl)       {
         pControl->setPanelText(pt);
+        PanelSpinEditText* pSET = new PanelSpinEditText();
+        double min = pControl->getMin();
+        double max = pControl->getMax();
+        double step = pControl->getStep();
+        pSET->set( min, max, max-min, 1 );
+        pSET->set_ndecimal(0);
+        pSET->set_delta( 20, 8 );
+        pSET->setPos( x+150, y );
+        pSET->setSize( 90, 14 );
+        pSET->setExtraString( "Control" );
+        pSET->setChangeValue( this );
+        pSET->setID( pControl );
+        pSET->set_val( pControl->getValue() );
+        p->add(pSET);
         char text[] = "0000000000000000";
         sprintf( text, "%d", pControl->getValue()); 
         pt->changeText(text);
@@ -166,6 +192,22 @@ void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int i
         char text[] = "0000000000000000";
         sprintf( text, "%d", pControl->getValue()); 
         pt->changeText(text);
+
+
+        PanelSpinEditText* pSET = new PanelSpinEditText();
+        double min = pControl->getMin();
+        double max = pControl->getMax();
+        double step = pControl->getStep();
+        pSET->set( min, max, max-min, 1 );
+        pSET->set_ndecimal(0);
+        pSET->set_delta( 20, 8 );
+        pSET->setPos( x+150, y );
+        pSET->setSize( 90, 14 );
+        pSET->setExtraString( "Control" );
+        pSET->setChangeValue( this );
+        pSET->setID( pControl );
+        pSET->set_val( pControl->getValue() );
+        p->add(pSET);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -530,11 +572,12 @@ bool Camera::keyboard(char key)
         if (pControl)       pControl->moins();
         break;
     case 'D':
-        pControl = getControl("Exposure ,Auto");
+        pControl = getControl("Exposure, Auto");
         if (pControl)       pControl->plus();
+        else                log( (char*)"Control NULL" );
         break;
     case 'd':    
-        pControl = getControl("Exposure ,Auto");
+        pControl = getControl("Exposure, Auto");
         if (pControl)       pControl->moins();
         break;
     case 'B':
@@ -591,6 +634,14 @@ bool Camera::keyboard(char key)
         break;
     case 'w':
         pControl = getControl(0x0098091A);
+        if (pControl)       pControl->moins();
+        break;
+    case 'X':
+        pControl = getControl(0x0098090C);
+        if (pControl)       pControl->plus();
+        break;
+    case 'x':
+        pControl = getControl(0x0098090C);
         if (pControl)       pControl->moins();
         break;
     case 'l':  // '-'

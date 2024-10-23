@@ -12,6 +12,7 @@ Stars::Stars()
     RB       = NULL;
     pView    = NULL;
     pNbStars = NULL;
+	bAffPosition = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -53,7 +54,7 @@ void Stars::add(Star * p)
     }
 
     log_tab(false);
-    logf( (char*)"Stars::add(Star *)" );
+	log( (char*)"---" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -77,7 +78,7 @@ void Stars::sup(Star * p)
             delete p;
 
             log_tab(false);
-            logf( (char*)"Stars::Sup Star()" );
+			log( (char*)"---" );
             return;
         }
     }
@@ -86,7 +87,7 @@ void Stars::sup(Star * p)
     sprintf( t, "%d", (int)v_tStars.size() );
     pNbStars->changeText( t );
     log_tab(false);
-    logf( (char*)"Stars::Sup Star()" );
+	log( (char*)"---" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -118,7 +119,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
         logf( (char*)"Etoile existe deja ..." );
 
         log_tab(false);
-        logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
+		log( (char*)"---" );
         return NULL;
     }
 
@@ -130,7 +131,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
         logf( (char*)"Pas d'Etoile ..." );
 
         log_tab(false);
-        logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
+		log( (char*)"---" );
         return NULL;
     }
     
@@ -143,7 +144,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
         logf( (char*)"Etoile existe deja ..." );
 
         log_tab(false);
-        logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
+		log( (char*)"---" );
         return NULL;
     }
 
@@ -169,7 +170,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     pNbStars->changeText( t );
     
     log_tab(false);
-    logf( (char*)"Stars::addStar(%d, %d, %d, %d, %0.2f)", xm, ym, dx_screen, dy_screen, e);
+	log( (char*)"---" );
     return pp;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -269,8 +270,8 @@ void Stars::findAllStars()
                     
                     v_tStars.push_back( pp );
 
-                    logf( (char*)" Add etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), x_find, y_find, pp->getMagnitude() );
-                    logf( (char*)"      (%d,%d) e=%0.2f", dx_view, dy_view, ech );
+                    //logf( (char*)" Add etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), x_find, y_find, pp->getMagnitude() );
+                    //logf( (char*)"      (%d,%d) e=%0.2f", dx_view, dy_view, ech );
 
                     
                 }
@@ -496,6 +497,8 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
         logf( (char*)"Stars::update()  --- DEB ---" );
     #endif
     
+    if ( rb==NULL || rb->bReadError )        return;// = false;
+
     int nb = v_tStars.size();
     if (nb == 0)        return;
 
@@ -770,6 +773,19 @@ void Stars::setVisible( bool b )
     for( int i=0; i<nb; i++ )
     {
         v_tStars[i]->setVisible(b);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::affiche_position()
+{
+	bAffPosition = !bAffPosition;
+	
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        v_tStars[i]->affiche_position(bAffPosition);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

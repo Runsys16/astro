@@ -46,16 +46,20 @@ void Camera_mgr::add( string sdev_name )
     
     pCamera->setDevName( newString );
     pCamera->open_device();
-    pCamera->getIOName();
+    if ( !pCamera->getIOCapability() ) {
+    	delete pCamera;
+    	return;
+    }
+    
     pCamera->init_device();
     pCamera->capability_list();
     pCamera->start_capturing();
-    //pCamera->addControl();
 
     pCamera->CreatePreview();
     pCamera->CreateControl();
 
     pCameras.push_back( pCamera );
+    pCamera->start_thread();
     
     active();
     onBottom();
