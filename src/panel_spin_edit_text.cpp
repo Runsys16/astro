@@ -203,10 +203,6 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
 	
 	computeAngle( xm, ym );
 	
-#ifdef DEBUG
-    logf( (char*)"compute_pos_relatif()  angle=%0.2f", angle ); 
-#endif
-
     //--------------------------------------
     if ( t_val.size() == 0 )
     {
@@ -222,6 +218,9 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
     //--------------------------------------
     else
     {
+#ifdef DEBUG
+	    logf( (char*)"compute_pos_relatif()  angle=%0.2f", angle ); 
+#endif
         val_angle += nb / 360.0 * angle;
         if ( val_angle <  0.0 )         val_angle = 0.0;
         if ( val_angle >= (nb-1 ))      val_angle = nb-1;
@@ -232,6 +231,7 @@ void PanelSpinEditText::compute_pos_relatif( int xm, int ym )
     //logf( (char*)"compute_pos_relatif()  angle=%0.2f norm=%0.2f val=%0.2f", val_angle, norm, val ); 
     if ( pVal!= NULL )          	*pVal = val;
     if ( pChangeValue )				pChangeValue->changeValueDouble( val, pID );
+#undef DEBUG
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

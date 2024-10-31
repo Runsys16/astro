@@ -219,14 +219,21 @@ void PanelZoom::displayGL()
     VarManager&     var = VarManager::getInstance();
     WindowsManager& wm  = WindowsManager::getInstance();
 
-    float gris = 1.0;
-    if ( bNuit )        setColor( 0xffff0000 );//glColor4f( gris,  0.0,  0.0, 1.0 );
-    else                setColor( 0xffffffff );//glColor4f( gris,  0.0,  0.0, 1.0 );
+    if ( bNuit )		{
+    	pFond->setColorBgr( COLOR32(255, 0, 0, 255) );
+    	setColor( COLOR32(255, 0, 0, 255) );
+    	glColor4f( 1.0,  0.0,  0.0, 1.0 );
+    }
+    else	{
+    	pFond->setColorBgr( COLOR32(255, 255, 255, 255) );    
+    	setColor( COLOR32(255, 255, 255, 255) );    
+    	glColor4f( 1.0,  1.0,  1.0, 1.0 );
+    }
+    
 
+    PanelWindow::displayGL();
 
-    PanelSimple::displayGL();
-
-	displayGLBordure();
+	//displayGLBordure();
 
 
 	int scx, scy, scdx, scdy;
@@ -259,7 +266,7 @@ void PanelZoom::displayGL()
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
-    glDisable( GL_SCISSOR_TEST );
+    //glDisable( GL_SCISSOR_TEST );
 
 }
 //--------------------------------------------------------------------------------------------------------------------

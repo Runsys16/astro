@@ -22,9 +22,11 @@
 #include <iostream>
 #include <vector> //Ne pas oublier !
 
+//#define JMESSAGE
 #include <syslog.h>
 #include <setjmp.h>
 #include <jpeglib.h>
+#include <jerror.h>
 #include <atomic>
 
 using namespace std;

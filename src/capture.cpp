@@ -327,6 +327,10 @@ void Capture::create_preview()	{
     logf((char*)"Capture::CreatePreview -------------" );
     log_tab(true);
     
+
+	loadSkin( RED );
+	setBorderSize(2);
+
     //create_icones();
     logf((char*)"fichier = %s", (char*)filename.c_str() );
     

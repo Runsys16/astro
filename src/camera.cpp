@@ -123,6 +123,24 @@ int Camera::addControl()	{
     name = "Power Line";
     if ( isControl(name ) )
         createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Pan";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Backlight";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Auto Exposure";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Exposure Time";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Tilt";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Zoom";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
     //createControlID(     panelControl, xt, yt + n++*dyt, (char*)"" );
     createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance (auto)", 0x0098090C );
     createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance", 0x0098091A );
@@ -162,6 +180,8 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
         double min = pControl->getMin();
         double max = pControl->getMax();
         double step = pControl->getStep();
+        //pSET->set( min, max, max-min, (int)(max-min/2000)+1 );
+        
         pSET->set( min, max, max-min, 1 );
         pSET->set_ndecimal(0);
         pSET->set_delta( 20, 8 );
@@ -224,7 +244,7 @@ void Camera::CreateControl()	{
 
     panelControl = new PanelWindow();
     panelControl->setDisplayGL(displayGLnuit_cb);
-    panelControl->setExtraString("PanelConrol Cam");
+    panelControl->setExtraString( getDevName() );
     
 	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
@@ -273,8 +293,9 @@ void Camera::CreatePreview()	{
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	//panelPreview = new PanelSimple();
-	panelPreview = new PanelCamera();
+	panelPreview = new PanelCamera(this);
     panelPreview->setExtraString( "PanelCamera View");
+    panelPreview->setExtraString( getName() );
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();

@@ -138,10 +138,12 @@ void Device_cam::enumerate_menu(__u32 id)
 //--------------------------------------------------------------------------------------------------------------------
 void Device_cam::capability_list( void )    {
     if (fd == -1)       return;
+    
+    logf((char*)"Device_cam::capability_list()");
+    log_tab(true);
 
     memset(&queryctrl, 0, sizeof(queryctrl));
 
-    logf((char*)"--- List de control ---");
     
     queryctrl.id = V4L2_CTRL_FLAG_NEXT_CTRL;
     while (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
@@ -163,6 +165,7 @@ void Device_cam::capability_list( void )    {
         //exit(EXIT_FAILURE);
     }
 
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1189,7 +1192,7 @@ void Device_cam::change_value_abs(int V4L2_CID, int v)
 int Device_cam::change_value(int id, int value)
 {
     if (fd == -1)       return -1;
-
+	logf( (char*)"Device_cam::change_value(%d, %d)", id, value );
 
     //struct v4l2_queryctrl   queryctrl;
     struct v4l2_control     control;
@@ -1267,7 +1270,11 @@ void jpeg_saver_error_exit (j_common_ptr cinfo)
 //--------------------------------------------------------------------------------------------------------------------
 struct jpeg_error_mgr * my_jpeg_std_error(struct jpeg_error_mgr * jerr)
 {
-    //printf( "Error handler my_jpeg_std_error()..%d\n", jerr->msg_code);
+	if ( jerr->msg_code != JTRC_EOI )	{
+		logf( (char*)"Error handler my_jpeg_std_error()..code:%d", jerr->msg_code);
+		logf( (char*)"  voir /usr/inlcude/jerror.h  JTRC_EOI = %d", JTRC_EOI);
+		bReadError = true;
+	}
     return jpeg_std_error(jerr);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1319,7 +1326,6 @@ void Device_cam::decompressJpeg() {
 
 
 	jpeg_create_decompress(&cinfo);
-
 	jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);
 
 	//logf((char*)"jpg_size=%d", jpg_size);

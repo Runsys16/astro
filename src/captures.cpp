@@ -260,7 +260,10 @@ void Captures::resize_all()
     if ( bShowPreview )      m--;
 
     //if ( m<=0 )      { log_tab(false); return; }
-    if ( m<=0 )      { goto fin_return; }
+    if ( m<=0 )      { 
+		log_tab(false);    
+		logf( (char*)"Captures::resize_all() ---------END--------" );
+    }
 
     if ( m>1 )      DY = (height-20-dyIcon) / (m-1);    
     else            DY = (height-20-dyIcon) / (m);    
@@ -292,23 +295,31 @@ void Captures::resize_all()
     //--------------------------------------------------
     // Affiche les autres en icones
     //--------------------------------------------------
+    int ny = height / dyIcon;
+	
+
     for (int i=0; i<n; i++)
     {
         Capture* p = captures[i];
-        logf( (char*)"Traitement n=%d:%s", i, BOOL2STR(p->isIconized()) );
         
         if ( i!=current_capture || bIcones )
         {
         	p->iconize( dxIcon, dyIcon );
             if ( !bShowIcones )		p->hide();
 
-            resize_icone( p, dx, y, dxIcon, dyIcon );
+			
+			y = i % ny;
+		    dx = width - dxIcon * (i/ny+1);
+			
+            resize_icone( p, dx, y*dyIcon, dxIcon, dyIcon );
+	        logf( (char*)"Traitement dx=%d: i/ny=%d y=%d", dx, i/ny, y );
 
-            y += DY;
+            //y += DY;
         }        
+        else
+	        logf( (char*)"Traitement n=%d: ny=%d %s", i, ny, BOOL2STR(p->isIconized()) );
     } 
 
-fin_return:
     log_tab(false);    
     logf( (char*)"Captures::resize_all() ---------END--------" );
 }
@@ -576,7 +587,10 @@ void Captures::sauve(void)
     
     while( true )
     {
-        string key = "FileCapture" + to_string(no++);
+    	char buf[80];
+    	snprintf( (char*)buf, sizeof(buf), "FileCapture%03d", no++ );
+        string key = buf;
+        //string key = "FileCapture" + to_string(no++);
         if ( var.existe( key ) )
         {
             logf( (char*)"Suppression de la var[\"%s\"]", key.c_str() );
@@ -592,7 +606,10 @@ void Captures::sauve(void)
 
     for(int i=0; i<captures.size(); i++)
     {
-        string key = "FileCapture" + to_string(i);
+    	char buf[80];
+    	snprintf( (char*)buf, sizeof(buf), "FileCapture%03d", i );
+        string key = buf;
+        
         var.set( key, captures[i]->getFilename() );
         logf( (char*)"Creation de var[\"%s\"]", key.c_str() );// captures[i]->getFilename().c_str() );
     }
@@ -653,7 +670,10 @@ void Captures::charge2(void)
     
     while( true )
     {
-        string key = "FileCapture" + to_string(no++);
+    	char buf[80];
+    	snprintf( (char*)buf, sizeof(buf), "FileCapture%03d", no++ );
+        string key = buf;
+
         if ( var.existe( key ) )
         {
             string filename = *var.gets( key );;
@@ -668,6 +688,7 @@ void Captures::charge2(void)
         {
             break;
         }
+        //break;
     }
     
 	log_tab( false );            

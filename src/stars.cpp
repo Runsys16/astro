@@ -399,7 +399,7 @@ void Stars::suivi(rb_t* p)
     }
  
     nb = t.size();   
-    logf( (char*)" Erase NB %d ", nb );
+    //logf( (char*)" Erase NB %d ", nb );
     
     for (int i=0; i<nb; i++ )
     {
@@ -665,6 +665,8 @@ void Stars::idle()
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
     {
+	    //v_tStars[i]->updatePos( pView->getX(), pView->getY() );
+
         v_tStars[i]->setVisible( bVisible );
         v_tStars[i]->getInfo()->setColor(color);
     }

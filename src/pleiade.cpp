@@ -40,7 +40,7 @@ Pleiade::Pleiade()
 
     //bFreePtr = true;
     bStartThread = false;
-    bExitThread = true;
+    bExitThread = false;
     start_thread();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -100,6 +100,7 @@ void Pleiade::charge_background()
         if ( bExitThread.load() )	break;
     }
 
+	bStartThread = false;
 #ifdef DEBUG
     logf( (char*)"[WARNING] [thread Pleiade::charge_background()] Fin du thread Pleiade::charge_background" );
 #endif

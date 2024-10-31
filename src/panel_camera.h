@@ -11,23 +11,29 @@
 #include "catalog.h"
 #include <WindowsManager.h>
 
+class Camera;
+class Camera_mgr;
+
 using namespace std;
+
 
 class PanelCamera : public PanelWindow
 {
 
 protected:
-    double               echelle;
-    double               dx;
-    double               dy;
+    double              echelle;
+    double				ech_user;
+    double				ech_geo;
+    double              dx;
+    double              dy;
     
-    rb_t*               pReadBgr;
+    rb_t*				pReadBgr;
     
     Stars               stars;
-    double               fTime;
-    double               fSens;
-    double               fTimeClign;
-    double               fTime1;
+    double              fTime;
+    double              fSens;
+    double              fTimeClign;
+    double              fTime1;
     bool                bTime1;
     
     int                 x_old;
@@ -40,11 +46,13 @@ protected:
     int                 fRefCatalogDecalX;
     int                 fRefCatalogDecalY;
     ivec2				vDeplaceDepuis;
+    
+    Camera*				pCamera;
 
     //vector<StarCatalog*>      catalog;
 
 public:
-    PanelCamera();
+    PanelCamera(Camera*);
 
     virtual void		idle(float);
     virtual void		update_stars();
@@ -56,7 +64,7 @@ public:
     virtual void        releaseLeft( int, int);
     virtual void        releaseMiddle( int, int);
 
-    virtual void        wheelUp( int, int)                              {;};
+    virtual void        wheelUp( int, int);//                              {;};
     virtual void        wheelDown( int, int)                            {;};
 
     void                compute_echelle();

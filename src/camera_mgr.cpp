@@ -135,8 +135,8 @@ void Camera_mgr::sup( string name )
 
     pCurrent = NULL;
 
-    active();
-    onBottom();
+    //active();
+    //onBottom();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -281,7 +281,7 @@ void  Camera_mgr::reOrder()
         if ( pCameras[i] != pCurrent )
         {
             WindowsManager::getInstance().onBottom( pCameras[i]->getPanelPreview() );
-            pCameras[i]->getPanelPreview()->setPos( a*100, a*100 );
+            pCameras[i]->getPanelPreview()->setPos( a*00+10, a*200+10 );
         }
         else
             a--;

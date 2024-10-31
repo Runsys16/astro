@@ -1630,7 +1630,7 @@ void PanelCapture::computeRepere_02()
 void PanelCapture::computeRepere()                         
 {
 	if ( ! pCapture->isFits() )			return;
-	computeRepere_02();
+	computeRepere_00();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

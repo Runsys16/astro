@@ -30,8 +30,8 @@ protected:
 
     int                         xCam, yCam, dxCam, dyCam;
     
-    std::atomic<bool>           bCharging;
     thread                      thread_chargement;
+    atomic<bool>				bCharging;
     atomic<bool>                bStartThread;
     atomic<bool>                bExitThread;
     
@@ -41,6 +41,8 @@ protected:
 
     ivec2                       vCameraSize;
     string                      sSauveDir;
+    
+    bool						bOnScreen;
 
     //Stars                       stars;
     
@@ -101,6 +103,7 @@ virtual void 					changeValueDouble( double val, void *p );
 
 inline bool                     getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }
 inline PanelCamera *            getPanelPreview()                   { return panelPreview; }
+inline PanelWindow *            getPanelControl()                   { return panelControl; }
 inline float                    getHertz()                          { return hz; }
 inline PanelText *              getPanelName()                      { return pPanelName; }
 inline PanelText *              getpCamFilename()                   { return pCamFilename; }
@@ -109,6 +112,9 @@ inline int                      getNbStars()                        { return pan
 
 inline void                     add_catalogue(StarCatalog* p)       { panelPreview->add_catalogue(p); }
 inline void                     setRefCatalog(double _0, double _1) { panelPreview->setRefCatalog(_0, _1); }
+
+inline	bool					getOnScreen()						{ return bOnScreen;}
+inline	void					setOnScreen(bool b)					{ bOnScreen = b;}
 
 };
 

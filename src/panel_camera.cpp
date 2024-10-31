@@ -13,10 +13,11 @@ vcf4                colorTraces[] =
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-PanelCamera::PanelCamera()
+PanelCamera::PanelCamera(Camera* p)
 {
     VarManager& var = VarManager::getInstance();
 
+	pCamera				= p;
     echelle         	= 1.0;
     dx              	= 0.0;
     dy              	= 0.0;
@@ -32,7 +33,7 @@ PanelCamera::PanelCamera()
 	fRefCatalogDecalY	= 0.0;
 
     setExtraString( "panelCamera" );
-    
+	
     if ( var.existe("bAffCatalog") )         bAffCatalog  = var.getb( "bAffCatalog");
     
     if (        Xref == -1.0 
@@ -55,6 +56,16 @@ void PanelCamera::idle(float f)
 {
     VarManager& var = VarManager::getInstance();
 
+	Camera* pCurrentCamera = Camera_mgr::getInstance().getCurrent();
+	bool bIsCurrentCamera;
+	
+	if ( pCurrentCamera != NULL ) {
+		bIsCurrentCamera  = this == pCurrentCamera->getPanelPreview();
+	}
+	else
+		bIsCurrentCamera = false;
+	
+ 
     int color = 0;
     if ( bNuit )        color = 0xFF0000FF;
     else                color = 0xFFFFFFFF;
@@ -91,56 +102,62 @@ void PanelCamera::idle(float f)
     //                 Vizier
     //----------------------------------------------
     int n = vizier.size();
-    //logf( (char*)" vizier.size() = %d, %s", n, BOOL2STR(bAffCatalog) );;
-    if ( bAffCatalog && n!=0 )
+
+    if ( bIsCurrentCamera )
     {
-        for ( int i=0; i<n; i++ )
-        {
+		if ( bAffCatalog && n!=0 )
+		{
+		    for ( int i=0; i<n; i++ )
+		    {
 
-            double xx = (vizier.get(i)->fRA - fRefCatalogX );
-            double yy = (vizier.get(i)->fDE - fRefCatalogY );
+		        double xx = (vizier.get(i)->fRA - fRefCatalogX );
+		        double yy = (vizier.get(i)->fDE - fRefCatalogY );
 
-            vec3 v = vec3( xx, yy, 1.0 );
-            mat3 m;
-            m.rotate( vec3(0.0,0.0,1.0), Wref );
-            vec3 w = m * v;
-            
-            double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
-            double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
+		        vec3 v = vec3( xx, yy, 1.0 );
+		        mat3 m;
+		        m.rotate( vec3(0.0,0.0,1.0), Wref );
+		        vec3 w = m * v;
+		        
+		        double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
+		        double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
 
-    	    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalX, ZrefY );;
-    	    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalX, ZrefY );;
-    	    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalY, fRefCatalogDecalY );;
-            
-            vizier.get(i)->setXScreen(x);
-            vizier.get(i)->setYScreen(y);
-    
-        
-            PanelText* pInfo = vizier.get(i)->pInfo;
-            if ( pInfo->getParent() == NULL )    this->add(pInfo);
+			    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalX, ZrefY );;
+			    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalX, ZrefY );;
+			    //logf( (char*)" set (%0.8f, %0.8f)", fRefCatalogDecalY, fRefCatalogDecalY );;
+		        
+		        vizier.get(i)->setXScreen(x);
+		        vizier.get(i)->setYScreen(y);
+		
+		    
+		        PanelText* pInfo = vizier.get(i)->pInfo;
+		        if ( pInfo->getParent() == NULL )    this->add(pInfo);
 
-            pInfo->setPos(x+10-getX(), y-30-getY());
-            pInfo->setVisible( true );
+		        pInfo->setPos(x+10-getX(), y-30-getY());
+		        pInfo->setVisible( true );
 
-            //logf( (char*)"%08X", (int)color );
-            if ( bNuit )        color = 0xFF0000FF;
-            else                color = 0xFFB200CC;
-            pInfo->setColor(color);
-        }
-    }    
-    else
-    if ( n!= 0)
-    {
-        for ( int i=0; i<n; i++ )
-        {
-            PanelText* pInfo = vizier.get(i)->pInfo;
-            pInfo->setVisible(false);
-        }
-    }    
+		        //logf( (char*)"%08X", (int)color );
+		        if ( bNuit )        color = 0xFF0000FF;
+		        else                color = 0xFFB200CC;
+		        pInfo->setColor(color);
+		        pInfo->setVisible( bIsCurrentCamera );
+		    }
+		}    
+		else
+		if ( n!= 0)
+		{
+		    for ( int i=0; i<n; i++ )
+		    {
+		        PanelText* pInfo = vizier.get(i)->pInfo;
+		        pInfo->setVisible(false);
+		    }
+		}    
+	}
     //----------------------------------------------
 	if ( bAffStar   )	{
-		stars.setVisible(bAffStar);
+		stars.setVisible(bAffStar && bIsCurrentCamera );
 		stars.idle();
+		if ( pReadBgr!=NULL)		stars.suivi(pReadBgr);
+		//log( (char*)"Stars::Idle()" );
 	}	
 	else	{
 		stars.setVisible(false);
@@ -677,68 +694,69 @@ void PanelCamera::displayGL()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
-    double x = getX();
-    double y = getY();
-
-    double X = -dx;
-    double Y = -dy;
-
-    double dx = getDX()/2;
-    double dy = getDY()/2;
-
-
-
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( gris, gris, gris, 0.2 );    
     
     PanelWindow::displayGL();
 
-
-
     if ( bNuit )        glColor4f( gris,  0.0,  0.0, 1.0 );
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
 
-    stars.displayGL();
     
-    if ( bAffCentre )           displayCentre();
-    if ( bAffSuivi )            displaySuivi();
-    if ( bAffCatalog )          displayVizier();
-    if ( bAffTrace )            displayGLTrace();
-    if ( bAfficheVec)           { glVecAD(); glVecDC(); }
-
-    if ( bModeManuel )
+	Camera* pCurrentCamera = Camera_mgr::getInstance().getCurrent();
+	bool bIsCurrentCamera;
+	
+	if ( pCurrentCamera != NULL ) {
+		bIsCurrentCamera  = this == pCurrentCamera->getPanelPreview();
+	}
+	else
+		bIsCurrentCamera = false;
+	
+    if ( bIsCurrentCamera )
     {
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
-	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
-	    
-	    int x = xClick;
-	    int y = yClick;
-
-	    tex2screen(x,y);
-
-		vDeplaceDepuis.x = x;
-		vDeplaceDepuis.y = y;
 		
-	    glCroix(x, y, 50, 50);
-        glCercle(x, y, 25);
-    }
-
-    if ( bMouseDeplaceVers )
-    {
-        if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
-	    else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
-	    
-	    int x = mouse.x;
-	    int y = mouse.y;
-
-		glBegin(GL_LINES);
-		    glVertex2i(x,y);                glVertex2i(vDeplaceDepuis.x, vDeplaceDepuis.y);
-		glEnd();        
-
-	    glCroix(x, y, 50, 50);
-        //glCercle(x, y, 25);
-    }
+		stars.displayGL();
     
+		if ( bAffCentre )           displayCentre();
+		if ( bAffSuivi )            displaySuivi();
+		if ( bAffCatalog )          displayVizier();
+		if ( bAffTrace )            displayGLTrace();
+		if ( bAfficheVec)           { glVecAD(); glVecDC(); }
+
+		if ( bModeManuel )
+		{
+		    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
+			else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
+			
+			int x = xClick;
+			int y = yClick;
+
+			tex2screen(x,y);
+
+			vDeplaceDepuis.x = x;
+			vDeplaceDepuis.y = y;
+			
+			glCroix(x, y, 50, 50);
+		    glCercle(x, y, 25);
+		}
+
+		if ( bMouseDeplaceVers )
+		{
+		    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );
+			else                            glColor4f( 0.0, 1.0, 0.0, 0.2 );
+			
+			int x = mouse.x;
+			int y = mouse.y;
+
+			glBegin(GL_LINES);
+				glVertex2i(x,y);                glVertex2i(vDeplaceDepuis.x, vDeplaceDepuis.y);
+			glEnd();        
+
+			glCroix(x, y, 50, 50);
+		    //glCercle(x, y, 25);
+		}
+		
+    }
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
@@ -763,6 +781,47 @@ void PanelCamera::updatePos()
     y_old = getY();
     dx_old = getDX();
     dy_old = getDY();
+    
+    stars.update_stars( getX(), getY(), this, pReadBgr, echelle );
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::wheelUp(int xm, int ym)
+{
+	logf( (char*)"PanelCamera::wheelUp(%d,%d) :%d", xm, ym, __LINE__ );
+    log_tab(true);
+    
+    double k = 1.1;
+    ech_user *= k;
+    
+    Panel* p = getParent();
+
+    double XM =  ( xm- getX() );
+    double X0 = -( getPosX() ); 
+    double X1 = k*X0 + (k-1)*XM;
+    
+    double YM =  ( ym- getY() );
+    double Y0 = -( getPosY() ); 
+    double Y1 = k*Y0 + (k-1)*YM;
+    
+    double ech = ech_user * ech_geo;
+    double max_x = (ech*(double)pReadBgr->w) - getDX();
+    double max_y = (ech*(double)pReadBgr->h) - getDY();
+    echelle = ech;
+
+    setPos( -X1, -Y1 );
+    dx = -X1;
+    dy = -Y1;
+    
+    //stars.update_stars( getX(), getY(), this, pReadBgr, ech );
+
+    log_tab(false);
+    
+    updatePos();
+
+    stars.updateScreenPos( dx+getX(), dy, ech);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
