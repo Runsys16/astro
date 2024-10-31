@@ -1,5 +1,0 @@
-#!/bin/bash
-edition src/*.cpp
-edition src/*.h
-edition Makefile ./ed ~/programmes/lulubella.txt README.md c0 c1 c2 c3 g G p1 p2 r R
-
