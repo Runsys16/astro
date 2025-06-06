@@ -16,6 +16,7 @@
 #include <bluetooth/rfcomm.h>
 
 
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include <thread>
 

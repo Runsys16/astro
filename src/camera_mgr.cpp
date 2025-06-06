@@ -1,4 +1,5 @@
 #include "camera_mgr.h"
+#include "pleiade.h"
 
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -121,9 +122,12 @@ void Camera_mgr::addImages( Camera* p )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::sup( string name )
 {
-    logf((char*)"Camera_mgr::sup() -------------" );
+    logf((char*)"Camera_mgr::sup( \"%s\" ) curent = \"%s\"", name.c_str(), pCurrent->getDevName() );
 
     Camera* pCamera = getCamera( name );
+
+	if( pCurrent == pCamera )		pCurrent = NULL;
+
     if ( pCamera )
     {   
         logf((char*)"  Camera_mgr::sup() %s", pCamera->getDevName() );
@@ -133,7 +137,6 @@ void Camera_mgr::sup( string name )
         delete pCamera;
     }
 
-    pCurrent = NULL;
 
     //active();
     //onBottom();
@@ -143,7 +146,9 @@ void Camera_mgr::sup( string name )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::sup( Camera * p )
 {
-    logf((char*)"Camera_mgr::sup() -------------" );
+	if ( p == NULL )			return;
+    logf((char*)"Camera_mgr::sup(%s)", p->getDevName() );
+	if ( pCameras.size() == 0 )	return;
 
 
     for( int i=0; i<pCameras.size(); i++ )
@@ -157,7 +162,7 @@ void Camera_mgr::sup( Camera * p )
         }
     }
 
-    pCurrent = NULL;
+	if( pCurrent == p )		pCurrent = NULL;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -195,7 +200,7 @@ void Camera_mgr::resize(int width, int height)
         if ( pCameras[i] == pCurrent )
             pCameras[i]->fullSizePreview( width, height );
         else
-            pCameras[i]->resizePreview( width, height );
+            pCameras[i]->iconSizePreview( width, height );
     }
     
     reOrder();
@@ -254,7 +259,7 @@ void Camera_mgr::active()
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
 
-    if ( pCurrent != NULL )         pCurrent->resizePreview( w, h );
+    if ( pCurrent != NULL )         pCurrent->iconSizePreview( w, h );
 
     nActive++;
     int n = pCameras.size();
@@ -493,7 +498,12 @@ void Camera_mgr::position(double ra, double dc)
     
     if ( getRB() != NULL )
     {
-        pCurrent->getPanelPreview()->getStars()->position(ra, dc);
+    	if ( typeid(Pleiade) == typeid(*pCurrent) )	{
+    		logf( (char*)"Camera_mgr::position() pCurrent = objet<pleiade>" );
+    	}
+    	else {
+	        pCurrent->getPanelPreview()->getStars()->position(ra, dc);
+	   	}
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

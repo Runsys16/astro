@@ -56,7 +56,7 @@ Fits::Fits(string filename, PanelCapture* p)
     wm.add( pPanelCorrectionFits );
 
     pPanelFits = new PanelFits();
-    pPanelFits->setPosAndSize( 10, 10, 580, 250 );
+    pPanelFits->setPosAndSize( 10, 10, 695, 250 );
     pPanelFits->setVisible( false );
 
 	//------------------------------------------------------------------------
@@ -164,6 +164,11 @@ void Fits::chargeHDU(int n)
         else if ( v.find("ASILive") != -1 )
     	{ 
     		log( (char*)"Image ASI" ); 
+    		bFlip = false; 
+    	}
+        else if ( v.find("oacapture") != -1 )
+    	{ 
+    		log( (char*)"Image oacapture" ); 
     		bFlip = false; 
     	}
         
@@ -755,9 +760,9 @@ void Fits::readCD( string key, string value )
     else	bOK = false;
     if ( bOK )	{
 		mAstroEchl = mat2( dCD1_1, dCD2_1, dCD1_2, dCD2_2 );
+	/*    
 		char STR[255];
 		mAstroEchl.to_str(STR);
-	/*    
 		logf( (char*)"Matrice d'echelle: %s", STR );
 	*/
 	}
@@ -775,10 +780,10 @@ void Fits::readPC( string key, string value )
     else	bOK = false;
 
     if ( bOK )	{
-    	char STR[255];
 		mAstroTrns = mat2( dPC1_1, dPC2_1, dPC1_2, dPC2_2 );
-		mAstroTrns.to_str(STR);
 	/*    
+    	char STR[255];
+		mAstroTrns.to_str(STR);
 		logf( (char*)"Matrice de transformation : %s", STR );
 	*/
 	}

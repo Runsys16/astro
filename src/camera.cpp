@@ -141,9 +141,15 @@ int Camera::addControl()	{
     name = "Zoom";
     if ( isControl(name ) )
         createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "White";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
+    name = "Temperature";
+    if ( isControl(name ) )
+        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
     //createControlID(     panelControl, xt, yt + n++*dyt, (char*)"" );
-    createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance (auto)", 0x0098090C );
-    createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance", 0x0098091A );
+    //createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance (auto)", 0x0098090C );
+    //createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance", 0x0098091A );
 
     int dy = ++n*dyt;
     panelControl->setSize( 200, dy);
@@ -165,7 +171,7 @@ void Camera::changeValueDouble( double val, void *p )	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
-    logf( (char*)"Ajout de '%s'", str );
+    //logf( (char*)"Ajout de '%s'", str );
 
 	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
 
@@ -195,13 +201,14 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
         char text[] = "0000000000000000";
         sprintf( text, "%d", pControl->getValue()); 
         pt->changeText(text);
+
+	    logf( (char*)"Ajout de '%s'  %.2f>%.2f  / %.2f", str, (float)min, (float)max, (float)step );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id)	{   
-    logf( (char*)"Ajout de '%s'", str );
 	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
     PanelText* pt = new PanelText( (char*)"     ", PanelText::NORMAL_FONT, x + 150, y );
     p->add( pt );
@@ -228,6 +235,8 @@ void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int i
         pSET->setID( pControl );
         pSET->set_val( pControl->getValue() );
         p->add(pSET);
+
+	    logf( (char*)"Ajout de '%s'  %.2f>%.2f  / %.2f", str, (float)min, (float)max, (float)step );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -245,7 +254,9 @@ void Camera::CreateControl()	{
     panelControl = new PanelWindow();
     panelControl->setDisplayGL(displayGLnuit_cb);
     panelControl->setExtraString( getDevName() );
-    
+    panelControl->loadSkinPath( "images/astro" );
+	panelControl->setBorderSize(16);
+
 	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
@@ -287,7 +298,7 @@ void Camera::start_thread()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreatePreview()	{
-    logf((char*)"Camera::CreatePreview ------------- %s", getName() );
+    logf((char*)"Camera::CreatePreview ------------- %s", getName().c_str() );
     log_tab(true);
 
 	WindowsManager& wm = WindowsManager::getInstance();
@@ -295,12 +306,12 @@ void Camera::CreatePreview()	{
 	//panelPreview = new PanelSimple();
 	panelPreview = new PanelCamera(this);
     panelPreview->setExtraString( "PanelCamera View");
-    panelPreview->setExtraString( getName() );
+    panelPreview->setExtraString( getName().c_str() );
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
     logf((char*)"wsc=%d hsc=%d", wsc, hsc);
-	resizePreview(wsc, hsc);
+	iconSizePreview(wsc, hsc);
 	//panelPreview->setBackground( (char*)"frame-0.raw");
 	
 	//pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
@@ -312,8 +323,8 @@ void Camera::CreatePreview()	{
 	panelPreview->getStars()->setPanelNbStars( pNbStars );
 	
 	
-	//string pStr = getName();
-	pPanelName = new PanelText( (char*)getName(),	PanelText::LARGE_FONT, 0, 10 );
+	//string pStr = getName().c_str();
+	pPanelName = new PanelText( (char*)getName().c_str(),	PanelText::LARGE_FONT, 0, 10 );
 	pPanelName->setAlign( PanelText::CENTER );
 	panelPreview->add( pPanelName );
 	
@@ -321,18 +332,18 @@ void Camera::CreatePreview()	{
 	//panelPreview->setCanMove(false);
  	wm.add( panelPreview );
 
-    logf((char*)"    name    %s ", getName() );
+    logf((char*)"    name    %s ", getName().c_str() );
     logf((char*)"    devname %s ", getDevName() );
     logf((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
 
     log_tab(false);
-    logf((char*)"Camera::CreatePreview ------------- %s", getName() );
+    logf((char*)"Camera::CreatePreview ------------- %s", getName().c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizeControl(int width, int height)	{
-    logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName() );
+    logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName().c_str() );
     int dx = panelControl->getDX();
     int dy = panelControl->getDY();
     
@@ -371,8 +382,8 @@ void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::resizePreview(int width, int height)	{
-    logf((char*) "Camera::resizePreview(%d, %d) %s", width, height, getName() );
+void Camera::iconSizePreview(int width, int height)	{
+    logf((char*) "Camera::iconSizePreview(%d, %d) %s", width, height, (char*)getDevName() );
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	int wsc = width;
@@ -428,7 +439,7 @@ void Camera::resizePreview(int width, int height)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::fullSizePreview(int width, int height)	{
-    logf((char*) "Camera::fullSizePreview(%d, %d) %s ", width, height, getName() );
+    logf((char*) "Camera::fullSizePreview(%d, %d) %s ", width, height, (char*)getName().c_str() );
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	int wsc = width;
@@ -494,7 +505,7 @@ void charge_camera()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::threadExtractImg()
 {
-    logf((char*)"[THREAD] Camera::threadExtractImg() start %s", (char*)getName());
+    logf((char*)"[THREAD] Camera::threadExtractImg() start %s", (char*)getName().c_str());
 
     while( true )
     {
@@ -508,7 +519,7 @@ void Camera::threadExtractImg()
         
         if ( bExitThread )  break;
     }
-    logf((char*)"[THREAD] Camera::threadExtractImg()  stop %s", (char*)getName());
+    logf((char*)"[THREAD] Camera::threadExtractImg()  stop %s", (char*)getName().c_str());
     bStartThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -541,7 +552,7 @@ void Camera::change_background(void)
              
             panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
             panelPreview->setRB( &readBgr);
-            //logf((char*)" %s : %ld", getName(), getBuffer() );
+            //logf((char*)" %s : %ld", getName().c_str(), getBuffer() );
             //if (bSuivi)    suivi();
         }
         catch(std::exception const& e)
@@ -564,7 +575,7 @@ void Camera::change_background(void)
                 previousTime = t;
                 nb_images = 0;
             }
-            //logf((char*)"Camera::change_background()   Hz=%.0f %s", hz, getName() );
+            //logf((char*)"Camera::change_background()   Hz=%.0f %s", hz, getName().c_str() );
         }
         else
             previousTime = t;
@@ -778,6 +789,15 @@ int Camera::get_dyCam()
 ivec2 Camera::get_vCameraSize()
 {
     return vCameraSize;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::recentreSuivi()
+{
+    if ( panelPreview!=NULL )		panelPreview->recentreSuivi();
+    else
+    	logf( (char*)"Pas de panel preview !!");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

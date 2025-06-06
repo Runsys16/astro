@@ -6,7 +6,7 @@
 
 #include "main.h"
 #include "var_mgr.h"
-#include "panel_spin_edit_text.h"
+//#include "panel_spin_edit_text.h"
 #include <WindowsManager.h>
 
 using namespace std;

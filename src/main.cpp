@@ -14,7 +14,7 @@
 #include "timer.h"
 #include "pleiade.h"
 #include "panel_console_serial.h"
-#include "panel_spin_edit_text.h"
+//#include "panel_spin_edit_text.h"
 #include "serveur_mgr.h"
 #include "capture.h"
 #include "var_mgr.h"
@@ -39,6 +39,66 @@
 //--------------------------------------------------------------------------------------------------------------------
 vector<string> t_sHelp1 =
 {
+	"---- TOUCHE DE FONCTION ----",
+	"    F1\t: Help",
+	"    F2\t: Panneau de controle de la camera",
+	"    F3\t: Panneau de suivi",
+	"    F4\t: Courbe de suivi",
+	"    F5\t: Console de log",
+	"    F6\t: Console arduino",
+	"    F7\t: Affiche/Cache les images",
+	"    F8\t: Prends une photo avec le pentax",
+	"   F10\t: Mode DEBUG WindowManager",
+	"   F11\t: Charge la prochaine image",
+	"   F12\t: Efface la derniere image", 
+	"    CR\t: Plein Ecran",
+	"",
+	"---- MODE NORMAL ----",
+	"ctrl+TAB\t: camera suivante" ,
+	"TAB\t: Change l'affichage des fichiers" ,
+	"     b\t: Affiche les informations des fichiers fits",
+	"     B\t: Arduino bavard",
+	"Ctrl+o\t: Ouvrir un fichier image",
+	"     F\t: Active/Desactive la simu",
+	"     i\t: Prend une photo sur le PENTAX",
+	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
+	"     J\t: Lance Stellarium",	
+	"     j\t: Affichage info fits",
+	"     k\t: Active/desactive le son",
+	"     K\t: Lance un carree de recherche",
+	"     l\t: List les ports /dev + les controles ",
+	"     L\t: List les variables",
+	"     N\t: Mode nuit on/off",
+	"     n\t: Interroge Vizier",
+	"     o\t: Ouvre/Ferme la fenetre pleiades",
+	"     p\t: Pause de l'affichage de pleiades",
+	"     P\t: Image suivante",
+	"     q\t: Lance un script python",
+	"      \t: Lance VIZIER",
+	"     Q\t: Mise en station via polaris",
+//	"     r\t: Test alert BOX",
+	"     W\t: Surveille un repertoire",
+	"     -\t: Toutes les images sont affichees en icones",
+	" alt+b\t: Suivi au centre de l'ecran",
+};
+vector<string> t_sHelp2 = 
+{
+	"---- TRANSFORM MATRIX ----",
+	"   a/A\t: Vecteur en ascension droite",
+	"   d/D\t: Vecteur en declinaison",
+	"     m\t: Deplacement à la souris",
+	"     M\t: Calcul la matrice de transformation",
+	"     O\t: Mode souris / mode suivi",
+	"     y\t: Affiche les vecteurs",
+	"",
+	"---- TRACES ----",
+	"     C\t: Lance/arrete l\'enregistrement de trace",
+	"     c\t: Nouvelle trace",
+	"     e\t: Affiche les traces (ctrl+tab)",
+	"     E\t: Supprime la derniere trace",
+	"     z\t: Charge les traces",
+	"     Z\t: Sauve les traces",
+	"",
 	"---- CAMERA ----",
 	"     H\t: Change le nom d une image de la camera",
 	"     h\t: Enregistre une image de la camera courante",
@@ -56,65 +116,9 @@ vector<string> t_sHelp1 =
 	"\t  Exposure auto\t\tD/d" ,
 	"\t  White balance\t\tW/w" ,
 	"\t  White balance auto\tX/x" ,
-	"",
-	"---- MODE NORMAL ----",
-	"ctrl+TAB\t: camera suivante" ,
-	"TAB\t: Change l'affichage des fichiers" ,
-	"     b\t: Affiche les informations des fichiers fits",
-	"     B\t: Arduino bavard",
-	"ctrl+o\t: Ouvrir un fichier image",
-	"     F\t: Active/Desactive la simu",
-	"     i\t: Prend une photo sur le PENTAX",
-	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
-	"     J\t: Lance Stellarium",	
-	"     j\t: Affichage info fits",
-	"     k\t: Active/desactive le son",
-	"     K\t: Lance un carree de recherche",
-	"     l\t: List les ports /dev + les controles ",
-	"     L\t: List les variables",
-	"     N\t: Mode nuit on/off",
-	"     o\t: Ouvre/Ferme la fenetre pleiades",
-	"     p\t: Pause de l'affichage de pleiades",
-	"     P\t: Image suivante",
-	"     q\t: Lance un script python",
-	"      \t: Lance VIZIER",
-	"     Q\t: Mise en station via polaris",
-//	"     r\t: Test alert BOX",
-	"     W\t: Surveille un repertoire",
-	"     -\t: Toutes les images sont affichees en icones",
-	"",
-	"---- TRANSFORM MATRIX ----",
-	"   a/A\t: Vecteur en ascension droite",
-	"   d/D\t: Vecteur en declinaison",
-	"     m\t: Deplacement à la souris",
-	"     M\t: Calcul la matrice de transformation",
-	"     O\t: Mode souris / mode suivi",
-	"     y\t: Affiche les vecteurs",
-	"",
-	"---- TRACES ----",
-	"     C\t: Lance/arrete l\'enregistrement de trace",
-	"     c\t: Nouvelle trace",
-	"     e\t: Affiche les traces (ctrl+tab)",
-	"     E\t: Supprime la derniere trace",
-	"     z\t: Charge les traces",
-	"     Z\t: Sauve les traces"
 };
-vector<string> t_sHelp2 = 
+vector<string> t_sHelp3 = 
 {
-	"---- TOUCHE DE FONCTION ----",
-	"    F1\t: Help",
-	"    F2\t: Panneau de controle de la camera",
-	"    F3\t: Panneau de suivi",
-	"    F4\t: Courbe de suivi",
-	"    F5\t: Console de log",
-	"    F6\t: Console arduino",
-	"    F7\t: Affiche/Cache les images",
-	"    F8\t: Prends une photo avec le pentax",
-	"   F10\t: Mode DEBUG WindowManager",
-	"   F11\t: Charge la prochaine image",
-	"   F12\t: Efface la derniere image", 
-	"    CR\t: Plein Ecran", 
-	"",
 	"---- SUIVI ----",
 	"ctrl+D\t: Efface toutes les etoiles",
 	"     s\t: Recherche toutes les etoiles",
@@ -142,7 +146,7 @@ vector<string> t_sHelp2 =
 	"   w/x\t: Zoom X"   ,
 	"   c/v\t: Zoom Y"   ,
 	"",
-	"ctrl+q\t: --- SORTIE DU LOGICIEL ---" 
+	"ctrl+q\t: --- SORTIE DU LOGICIEL ---",
 };
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -157,6 +161,7 @@ string              currentDirectory = "/home/rene/Documents/astronomie/logiciel
 //--------------------------------------------------------------------------------------------------------------------
 //PanelConsole *      pConsoleSerial;
 PanelWindow *       panelHelp;
+PanelScrollY *      panelScrHelp;
 PanelWindow *       panelResultat;
 PanelCourbe *       panelCourbe;
 PanelStdOut *       panelStdOut;
@@ -191,7 +196,7 @@ PanelText*          pHertz;
 PanelText*          pFPS;
 //PanelText *         pStatus;
 
-Pleiade*            pPleiade;
+Pleiade*            pPleiade = NULL;
 
 double               ac;
 double               dc;
@@ -266,6 +271,9 @@ int                 _b[256];
 
 double               xSuivi;
 double               ySuivi;
+double               xSuivi1;
+double               ySuivi1;
+double				 fDiamSuivi1 = 83.0;
 double               xSuiviSvg;
 double               ySuiviSvg;
 double               filtre      = 10.0;
@@ -324,7 +332,7 @@ vec3                vTr;
 bool                bCorrection = false;
 double              fTimeCorrection = 3.0;
 double               fTimeCpt = 0.0;
-double              fLimitCorrection = 80.0;
+double              fLimitCorrection0 = 80.0;
 double              pas_sideral;
 
 double               fpos_ad = -1.0;
@@ -1151,10 +1159,10 @@ void updatePanelResultat()
 
         if ( bCorrection )
         {
-            sprintf( sStr, "Asserv\t\t%0.2f/%0.2fpx", l, fLimitCorrection );
+            sprintf( sStr, "Asserv\t\t%0.2f/%0.2fpx", l, fLimitCorrection0 );
         }
         else{
-            sprintf( sStr, "Ecart\t\t%0.2f/%0.2fpx", l, fLimitCorrection );
+            sprintf( sStr, "Ecart\t\t%0.2f/%0.2fpx", l, fLimitCorrection0 );
         }
         pEcart->changeText(sStr);
         
@@ -1309,7 +1317,8 @@ void change_ad_status(double ad)
     deg2hms( ad, HMS);
     
     char    buff[255];
-    sprintf( buff, "AD: %02dh %02dm %0.2lfs", (int)HMS.h, (int)HMS.m, HMS.s );
+    sprintf( buff, "= %02dh %02dm %0.2lfs", (int)HMS.h, (int)HMS.m, HMS.s );
+    logf( (char*)"main::change_ad_status %s", buff );
     
     pAD->changeText( buff );
 }
@@ -1335,7 +1344,8 @@ void change_dc_status(double dc)
     if ( dc <0.0 )		signe[0] = '-';
     else				signe[0] = 0;
     
-    sprintf( buff, "DC: %s%02d %02d\' %0.2lf\"", signe, (int)DMS.d, (int)DMS.m, DMS.s );
+    sprintf( buff, "= %02d %02d\' %0.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
+    logf( (char*)"main::change_dc_status %s", buff );
     
     pDC->changeText( buff );
 
@@ -1528,7 +1538,7 @@ void suivi(void)
     
     if ( bSuivi && pV != NULL )
     {
-        panelCourbe->idle_guidage( *pV );        
+        panelCourbe-> idle_guidage( *pV );        
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1619,6 +1629,7 @@ static void idleGL(void)
     if ( panelHelp->getHaveMove() )
     {
         panelHelp->resetHaveMove();
+	    panelScrHelp->setSize( panelHelp->getDX(), panelHelp->getDY() );
 
         var.set("xPanelHelp",  panelHelp->getX() );
         var.set("yPanelHelp",  panelHelp->getY() );
@@ -1735,8 +1746,8 @@ static void idleGL(void)
             v = w - vec3( pv->x, pv->y, 0.0);
             l = v.length();
 
-            if ( l > fLimitCorrection ) {
-                logf( (char*)"[WARNING]Suivi l=%0.2f/%0.2f", l, fLimitCorrection ); 
+            if ( l > fLimitCorrection0 ) {
+                logf( (char*)"[WARNING]Suivi l=%0.2f/%0.2f", l, fLimitCorrection0 ); 
                 arret_urgence();
                 //system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
                 thread( &sound_alert).detach();
@@ -2132,6 +2143,18 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	        //logf( (char*)"Zref : %0.2f", (double)Zref );
 	    }
 	    break;
+	case 'b':
+	    {
+	        logf( (char*)"Alt+b : Recentrage suivi " );
+	        Camera* p = Camera_mgr::getInstance().getCurrent();
+	        if ( p!=NULL )
+	        {
+	        	p->recentreSuivi();
+	        }
+	        else
+		        logf( (char*)"Pas de camera" );
+		}
+	    break;
     default:
 		{
 		    cout << "Default..." << endl;
@@ -2146,9 +2169,10 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
 	iGlutModifier = glutGetModifiers();
+    bFileBrowser  = FileBrowser::getInstance().getVisible();
 
-    bFileBrowser = FileBrowser::getInstance().getVisible();
-    Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+    Camera_mgr&  		cam_mgr = Camera_mgr::getInstance();
+    WindowsManager& 	wm 		= WindowsManager::getInstance();
     
     //------------------------------------------------------------------------
     if (tAlert.size() != 0 )
@@ -2182,6 +2206,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     }
     //------------------------------------------------------------------------
     else
+    if ( panelApn && panelApn->keyboard(key, x, y) )      return;
+    //------------------------------------------------------------------------
+
+    //------------------------------------------------------------------------
 	if (iGlutModifier & GLUT_ACTIVE_ALT)
 	{
         //logf( (char*)" Touche ALT %c", key );
@@ -2196,11 +2224,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         glutKeyboardFuncCtrl(key,  x,  y);
         return;
 	}
-    //------------------------------------------------------------------------
-    else
-    if ( panelApn && panelApn->keyboard(key, x, y) )      return;
-    //------------------------------------------------------------------------
 	
+    //------------------------------------------------------------------------
 	switch(key){ 
 	
 	// CTRL I
@@ -2496,12 +2521,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
         break;
 
-/*
+
     case 'f':  // '-'
         {
+        	logf( (char*)"NbTextures %d", wm.getNbTextures() );
         }
         break;
-*/
+
     case 'F':  // '-'
         {
         //bSimu = !bSimu;
@@ -2546,7 +2572,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'h':
         {
-        logf( (char*)"Key (h) : Enregistre uneimage" );
+        logf( (char*)"Key (h) : Enregistre une image de la camera courante" );
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
@@ -2733,6 +2759,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 if ( pPleiade == NULL )             pPleiade = new Pleiade();
                 Camera_mgr::getInstance().add( pPleiade );
                 bPleiade = true;
+				var.set("bPleiade", bPleiade );
                 //bOneFrame = true;
             }
             else
@@ -2740,6 +2767,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 //*
                 Camera_mgr::getInstance().sup( pPleiade );
                 bPleiade = false;
+				var.set("bPleiade", bPleiade );
                 pPleiade = NULL;
                 //delete pPleiade;
                 //*/
@@ -2962,7 +2990,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             //BluetoothManager::getInstance().centre_joystick();
             bCentrageSuivi = !bCentrageSuivi;
-            WindowsManager& wm = WindowsManager::getInstance();
             if ( bCentrageSuivi )
             {
                 // Sauvegarde dans xClick et yClick
@@ -3075,7 +3102,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     default:
         {
         if ( key != 14 )
-            logf((char*)"key: %d", key);
+            logf((char*)"main::glutKeyboardFunc() key: %d", key);
         }
         break;
 	}
@@ -3235,7 +3262,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     Camera_mgr&     mgr = Camera_mgr::getInstance(); 
 
 	wm.mouseFunc(button, state, x, y);
-    //WindowsManager::getInstance().onBottom(panelPreView);
+
     PanelWindow*    pPreviewCam = NULL;
     Panel *         pCapture = NULL;
     Panel*          pMouseOver = NULL;
@@ -3254,87 +3281,104 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
         pMouseOver  = wm.findPanelMouseOver(x, y);
     }
     
-	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 0 )
-	{
-		bMouseDeplaceVers = true;
-        getSuiviParameter();
+    if( (iGlutModifier & GLUT_ACTIVE_CTRL ) == 0 )
+    {
+		if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 0 )
+		{
+			bMouseDeplaceVers = true;
+		    getSuiviParameter();
 
-        mgr.onBottom();
-        
-	    int X = x;
-	    int Y = y;
-	    
-	    mgr.screen2tex(X,Y);
-	    
-	    //xClick = X;
-	    //yClick = Y;
+		    mgr.onBottom();
+		    
+			int X = x;
+			int Y = y;
+			
+			mgr.screen2tex(X,Y);
+			
+		    vDepl[0].x = xClick;
+		    vDepl[0].y = yClick;
+		    vDepl[0].z = 0.0;
+		    logf( (char*)"vDepl[0](%0.2f, %0.2f)", vDepl[0].x, vDepl[0].y );
 
-        vDepl[0].x = xClick;
-        vDepl[0].y = yClick;
-        vDepl[0].z = 0.0;
-        logf( (char*)"vDepl[0](%0.2f, %0.2f)", vDepl[0].x, vDepl[0].y );
+			logf( (char*)"state = 0" );
+		}
+		if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 1 )
+		{
+		    bMouseDeplaceVers = false;
+		    getSuiviParameter();
 
-	    logf( (char*)"state = 0" );
-	}
-	if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 1 )
-	{
-        bMouseDeplaceVers = false;
-        getSuiviParameter();
+		    mgr.onBottom();
+		    
+			int X = x;
+			int Y = y;
+			
+			mgr.screen2tex(X,Y);
+			
+			xClick = X;
+			yClick = Y;
 
-        mgr.onBottom();
-        
-	    int X = x;
-	    int Y = y;
-	    
-	    mgr.screen2tex(X,Y);
-	    
-	    xClick = X;
-	    yClick = Y;
+		    vDepl[1].x = xClick;
+		    vDepl[1].y = yClick;
+		    vDepl[1].z = 0.0;
+		    logf( (char*)"vDepl[1](%0.2f, %0.2f)",  vDepl[1].x, vDepl[1].y );
 
-        vDepl[1].x = xClick;
-        vDepl[1].y = yClick;
-        vDepl[1].z = 0.0;
-        logf( (char*)"vDepl[1](%0.2f, %0.2f)",  vDepl[1].x, vDepl[1].y );
+			logf( (char*)"state = 1" );
 
-	    logf( (char*)"state = 1" );
+		    vec3 v = vDepl[1] - vDepl[0];
+			logf( (char*)"  delta (%0.2f, %0.2f)", v.x, v.y );
+			
+		    vTr = mChange * v;
+		    int ad = (int) (vTr.x * -1000.0);
+		    int dc = (int) (vTr.y * 1000.0);
+		    char cmd[255];
+		    sprintf( cmd, "a%dp;d%dp", ad, dc );
+		    logf( (char*)"Envoi de la commande : \"%s\"",  cmd );
 
-        vec3 v = vDepl[1] - vDepl[0];
-	    logf( (char*)"  delta (%0.2f, %0.2f)", v.x, v.y );
-	    
-        vTr = mChange * v;
-        int ad = (int) (vTr.x * -1000.0);
-        int dc = (int) (vTr.y * 1000.0);
-        char cmd[255];
-        sprintf( cmd, "a%dp;d%dp", ad, dc );
-        logf( (char*)"Envoi de la commande : \"%s\"",  cmd );
+		    Serial::getInstance().write_string(cmd);
+		}
 
-        Serial::getInstance().write_string(cmd);
-	}
+		//if ( bPause && button == 0 && state == 0 )	{
+		if ( bModeManuel && button == GLUT_LEFT_BUTTON && state == 0 )	{
+		    getSuiviParameter();
 
-	//if ( bPause && button == 0 && state == 0 )	{
-    if ( bModeManuel && button == GLUT_LEFT_BUTTON && state == 0 )	{
-        getSuiviParameter();
+		    mgr.onBottom();
+		    
+			int X = x;
+			int Y = y;
+			
+			mgr.screen2tex(X,Y);
+			
+			xClick = X;
+			yClick = Y;
+			
+			if ( iGlutModifier & GLUT_ACTIVE_ALT )
+			{
+		        xSuivi = xClick;
+		        ySuivi = yClick;
 
-        mgr.onBottom();
-        
-	    int X = x;
-	    int Y = y;
-	    
-	    mgr.screen2tex(X,Y);
-	    
-	    xClick = X;
-	    yClick = Y;
+		        var.set("xSuivi", xSuivi );
+		        var.set("ySuivi", ySuivi );
 
-	    logf( (char*)"Click Down Click(%d, %d)  vCamera (%dx%d)" , xClick, yClick, mgr.getRB()->w.load(), mgr.getRB()->h.load() );
-	    
-	} 
-    else
-	if ( !bModeManuel && button == 0 && state == 0 && pMouseOver == pPreviewCam )	{
+		        panelCourbe->get_vOrigine().x = x;
+		        panelCourbe->get_vOrigine().y = y;
+		        panelCourbe->get_vOrigine().z = 0.0;
+		        
+		        change_joy( x, y );
 
-	    logf( (char*)"Suivi=(%0.2f,%0.2f)" , xSuivi, ySuivi );
-	    //logf( (char*)"    l=%d rgb=%d,%d,%d" , r,g,b,  l );
+		        logf( (char*)"initialise vOrigine(click) : (%d,%d)", x, y);
+			}
 
-	} 
+			logf( (char*)"main::glutMouseFunc LeftClick (%d, %d)  vCamera (%dx%d)" , xClick, yClick, mgr.getRB()->w.load(), mgr.getRB()->h.load() );
+			
+		} 
+		else
+		if ( !bModeManuel && button == 0 && state == 0 && pMouseOver == pPreviewCam )	{
+
+			logf( (char*)"Suivi=(%0.2f,%0.2f)" , xSuivi, ySuivi );
+			//logf( (char*)"    l=%d rgb=%d,%d,%d" , r,g,b,  l );
+
+		} 
+	}//   if( !(iGlutModifier & GLUT_ACTIVE_CTRL ) )
 
     Camera_mgr::getInstance().onBottom();
     onTop();
@@ -3384,6 +3428,7 @@ void setColor()
 
     panelStdOut->setColor(color);
     panelHelp->setColor(color);
+    panelScrHelp->setColor(color);
     panelCourbe->setColor(color);
     panelStatus->setColor(color);
     panelResultat->setColor(color);
@@ -3419,6 +3464,7 @@ void resizeHelp(int width, int height)	{
     if ( var.existe("yPanelHelp") )         y  = var.geti( "yPanelHelp");
 
     panelHelp->setPos( x,  y );
+	panelScrHelp->setSize( width, height );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3502,13 +3548,13 @@ static void CreateResultat()	{
 //--------------------------------------------------------------------------------------------------------------------
 int x_help = 0;
 int y_help = 0;
-static void addString( string s )
+static void addString1( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
     PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help );
     //PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::UBUNTU_B, x_help, y_help );
     p->setTabSize(40);
-	panelHelp->add( p );
+	panelScrHelp->add( p );
 	y_help += 15;
 }	
 //--------------------------------------------------------------------------------------------------------------------
@@ -3519,7 +3565,18 @@ static void addString2( string s )
     if ( s.size() == 0 )       { y_help += 15; return; }
     PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help+400, y_help );
     p->setTabSize(40);
-	panelHelp->add( p );
+	panelScrHelp->add( p );
+	y_help += 15;
+}	
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+static void addString3( string s )
+{
+    if ( s.size() == 0 )       { y_help += 15; return; }
+    PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help+800, y_help );
+    p->setTabSize(40);
+	panelScrHelp->add( p );
 	y_help += 15;
 }	
 //--------------------------------------------------------------------------------------------------------------------
@@ -3533,12 +3590,17 @@ static void CreateHelp()
     int DY = 700;
     
     panelHelp = new PanelWindow();
+    panelScrHelp = new PanelScrollY();
+    panelHelp->add( panelScrHelp );
+    
 	panelHelp->setExtraString( (char*)"PanelHelp");
     panelHelp ->setDisplayGL(displayGLnuit_cb);
 	panelHelp->setPosAndSize( X, Y, DX, DY);
+	panelScrHelp->setPosAndSize( 0, 0, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
 	//panelHelp->setBackground( (char*)"/home/rene/programmes/opengl/video/images/background.tga");
 	panelHelp->setBackground( (char*)"images/background.tga");
+    //panelHelp->setBackground( (_Texture2D*)NULL);
     
 	int y = 10;
 	int dy = 15;
@@ -3547,13 +3609,19 @@ static void CreateHelp()
     //----------------------------------------------------------------------------------------------------------------
 	for( int i=0; i<t_sHelp1.size(); i++ )
 	{
-    	addString( t_sHelp1[i] );
+    	addString1( t_sHelp1[i] );
 	}
     //----------------------------------------------------------------------------------------------------------------
     y_help = 0;
 	for( int i=0; i<t_sHelp2.size(); i++ )
 	{
     	addString2( t_sHelp2[i] );
+	}
+    //----------------------------------------------------------------------------------------------------------------
+    y_help = 0;
+	for( int i=0; i<t_sHelp3.size(); i++ )
+	{
+    	addString3( t_sHelp3[i] );
 	}
     //----------------------------------------------------------------------------------------------------------------
 
@@ -3568,8 +3636,11 @@ static void CreateHelp()
     if ( var.existe("dyPanelHelp") )        DY = var.geti("dyPanelHelp");
 
     panelHelp->setSize(DX, DY);
+	panelScrHelp->setSize(DX, DY);
     //panelHelp->loadSkin((char*)"fen-2");
     resizeHelp(width, height);
+    panelHelp->setScissor( true );
+    
 
     //X = width - 20 - DX;
     //Y = 20 + 20 ;
@@ -3597,12 +3668,10 @@ static void CreateStatus()	{
 	panelStatus->setExtraString( (char*)"PanelStatus");
 	panelStatus->setPosAndSize( x, y, dx, dy );
 
-	//pStatus = new PanelText( (char*)"",		PanelText::NORMAL_FONT, 10, 2 );
-	//panelStatus->add( pStatus );
-    //if ( bPause )   pStatus->changeText((char*)"Pause" );
-    //else            pStatus->changeText((char*)"-----" );
-
     logf((char*)"** CreateStatus()  panelSatuts  %d", width);
+
+	//-------------------------------------------------------------------------------------------
+
     pFPS = new PanelText( (char*)"0",		            PanelText::NORMAL_FONT, width-100, 2 );
 	panelStatus->add( pFPS );
 
@@ -3612,12 +3681,6 @@ static void CreateStatus()	{
     pArduino = new PanelText( (char*)"Arduino",		    PanelText::NORMAL_FONT, width-280, 2 );
     pArduino->setColor(COLOR_GREY);
 	panelStatus->add( pArduino );
-
-    pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, width-560, 2 );
-	panelStatus->add( pCoordSuivi );
-
-    pSuivi = new PanelText( (char*)"Suivi",		        PanelText::NORMAL_FONT, width-440, 2 );
-	panelStatus->add( pSuivi );
 
     pStellarium = new PanelText( (char*)"Stellarium",   PanelText::NORMAL_FONT, width-230, 2 );
     pStellarium->setColor(COLOR_GREY);
@@ -3631,16 +3694,24 @@ static void CreateStatus()	{
     pDeplacement->setColor(COLOR_GREY);
 	panelStatus->add( pDeplacement );
 
-    pAD = new PanelText( (char*)"AD:",		            PanelText::NORMAL_FONT, 60, 2 );
+	//-------------------------------------------------------------------------------------------
+
+    pAD = new PanelText( (char*)"",		            PanelText::NORMAL_FONT, 60+10, 2 );
     change_ad_status( fpos_ad );
 	panelStatus->add( pAD );
     
-    pDC = new PanelText( (char*)"DC:",		            PanelText::NORMAL_FONT, 200, 2 );
+    pDC = new PanelText( (char*)"",		            PanelText::NORMAL_FONT, 200+10, 2 );
     change_dc_status( fpos_dc );
 	panelStatus->add( pDC );
 
-    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 705, 2 );
+    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, 715, 2 );
 	panelStatus->add( pAsservi );
+
+    pSuivi = new PanelText( (char*)"Suivi",		        PanelText::NORMAL_FONT, 750, 2 );
+	panelStatus->add( pSuivi );
+
+    pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, 785, 2 );
+	panelStatus->add( pCoordSuivi );
 
 
 
@@ -3873,16 +3944,17 @@ void parse_option( int argc, char**argv )
                     printf( "%s\n", cSize );
                     parse_size(cSize);
                     break;
+            /*
             case 'p':
                 {
                 pPleiade = new Pleiade();
                 //bOneFrame = true;
                 Camera_mgr::getInstance().add( pPleiade );
                 bPleiade = true;
+				var.set("bPleiade", bPleiade );
                 }
                 break;
     
-            /*
             case 'm':
                     io = IO_METHOD_MMAP;
                     break;
@@ -4045,7 +4117,7 @@ void init_var()
     var.set("xSuivi", xSuivi);
     var.set("ySuivi", ySuivi);
 
-    if ( !var.existe("fLimitCorrection") )      var.set( "fLimitCorrection", (double)80.0);
+    if ( !var.existe("fLimitCorrection0") )      var.set( "fLimitCorrection0", (double)80.0);
     
     /*
     var.set("xPanelStdOut",  panelStdOut->getX() );
@@ -4066,60 +4138,78 @@ void charge_var()
     if ( var.existe("bModeManuel") )        bModeManuel         = var.getb( "bModeManuel" );
     //bSuivi              = var.getb( "bSuivi" );
 
-    bPanelCourbe        = var.getb( "bPanelCourbe" );
+    if ( !var.existe("bPanelCourbe") )		var.set( "bPanelCourbe", true );
+	bPanelCourbe = var.getb( "bPanelCourbe" );
     if ( panelCourbe )      panelCourbe->setVisible(bPanelCourbe);
     
-    bPanelHelp          = var.getb( "bPanelHelp" );
+    if ( !var.existe("bPanelHelp") )		var.set( "bPanelHelp", true );
+    bPanelHelp = var.getb( "bPanelHelp" );
     if (panelHelp)      panelHelp->setVisible( bPanelHelp );
     
-    bPanelResultat      = var.getb( "bPanelResultat" );
+    if ( var.existe("bPanelResultat") )		bPanelResultat = var.getb( "bPanelResultat" );
+    else									bPanelResultat = true;
     if (panelResultat)  panelResultat->setVisible( bPanelResultat );
     
-    bPanelStdOut        = var.getb( "bPanelStdOut" );
+    if ( var.existe("bPanelStdOut") )		bPanelStdOut = var.getb( "bPanelStdOut" );
+    else									bPanelStdOut = true;
     if (panelStdOut)   panelStdOut->setVisible( bPanelStdOut );
     
-    
-    bPanelSerial        = var.getb( "bPanelSerial" );
+    if ( var.existe("bPanelSerial") )		bPanelSerial = var.getb( "bPanelSerial" );
+    else									bPanelSerial = true;
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
     
+    if ( !var.existe("bAfficheVec") )		var.set( "bAfficheVec", true );
     bAfficheVec         = var.getb("bAfficheVec");
 
+    if ( !var.existe("bPause") )			var.set( "bPause", true );
     bPause              = var.getb("bPause");
+
+    if ( !var.existe("bFull") )				var.set( "bFull", true );
     bFull               = var.getb("bFull");
+
     if ( bFull )        glutFullScreen();
 
+    if ( !var.existe("bCorrection") )		var.set( "bCorrection", true );
     bCorrection         = var.getb("bCorrection");
+
+    if ( !var.existe("bNuit") )				var.set( "bNuit", true );
     bNuit               = var.getb("bNuit");
 
     if ( panelCourbe == NULL )          logf( (char*)"[ERREUR] Erreur panelCourbe NULL ..." );
-    /*
-    panelCourbe->set_err( var.getf("err") );
-    //update_err();
-    
-    panelCourbe->set_courbe1( var.getf("courbe1"));
-    panelCourbe->set_delta_courbe1( var.getf("delta_courbe1"));
-    panelCourbe->set_courbe2( var.getf("courbe2"));
-    panelCourbe->set_delta_courbe2( var.getf("delta_courbe2"));
 
-    panelCourbe->get_vOrigine().x          = var.getf("vOrigine.x");
-    panelCourbe->get_vOrigine().y          = var.getf("vOrigine.y");
-    panelCourbe->get_vOrigine().z          = 0.0;
-    */
+	//------------------------------------------------------------------------------------
+    if ( !var.existe("vecAD[0].x") )				var.set( "vecAD[0].x", 0.0 );
     vecAD[0].x          = var.getf("vecAD[0].x");
+
+    if ( !var.existe("vecAD[0].y") )				var.set( "vecAD[0].y", 0.0 );
     vecAD[0].y          = var.getf("vecAD[0].y");
+
+    if ( !var.existe("vecAD[0].z") )				var.set( "vecAD[0].z", 0.0 );
     vecAD[0].z          = 0.0;
 
+    if ( !var.existe("vecAD[1].x") )				var.set( "vecAD[1].x", 0.0 );
     vecAD[1].x          = var.getf("vecAD[1].x");
-    vecAD[1].y          = var.getf("vecAD[1].y");
-    vecAD[1].z          = 0.0;
 
+    if ( !var.existe("vecAD[1].y") )				var.set( "vecAD[1].y", 0.0 );
+    vecAD[1].y          = var.getf("vecAD[1].y");
+
+    if ( !var.existe("vecAD[1].z") )				var.set( "vecAD[1].z", 0.0 );
+    vecAD[1].z          = 0.0;
+	//------------------------------------------------------------------------------------
+    if ( !var.existe("vecDC[0].x") )				var.set( "vecDC[0].x", 0.0 );
     vecDC[0].x          = var.getf("vecDC[0].x");
+    if ( !var.existe("vecDC[0].y") )				var.set( "vecDC[0].y", 0.0 );
     vecDC[0].y          = var.getf("vecDC[0].y");
+    if ( !var.existe("vecDC[0].z") )				var.set( "vecDC[0].z", 0.0 );
     vecDC[0].z          = 0.0;
 
+    if ( !var.existe("vecDC[1].x") )				var.set( "vecDC[1].x", 0.0 );
     vecDC[1].x          = var.getf("vecDC[1].x");
+    if ( !var.existe("vecDC[1].y") )				var.set( "vecDC[1].y", 0.0 );
     vecDC[1].y          = var.getf("vecDC[1].y");
+    if ( !var.existe("vecDC[1].z") )				var.set( "vecDC[1].z", 0.0 );
     vecDC[1].z          = 0.0;
+	//------------------------------------------------------------------------------------
     
     compute_matrix();
     logf( (char*)"vecAD[0] (%02f,%0.2f)", vecAD[0].x, vecAD[0].y );
@@ -4130,7 +4220,9 @@ void charge_var()
     logf( (char*)"MATRIX %02f", mChange.mat[0] );
 
 
+    if ( !var.existe("xSuivi") )				var.set( "xSuivi", 0.0 );
     xSuivi              = var.getf("xSuivi");
+    if ( !var.existe("ySuivi") )				var.set( "ySuivi", 0.0 );
     ySuivi              = var.getf("ySuivi");
     
     //xSuivi              = panelCourbe->get_vOrigine().x;
@@ -4139,26 +4231,73 @@ void charge_var()
 	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 	cam_mgr.active();
 
-    if ( var.existe("bSimu") )              bSimu           = var.getb("bSimu");
-    if ( var.existe("bAffSuivi") )          bAffSuivi       = var.getb("bAffSuivi");
-    if ( var.existe("bAffCentre") )         bAffCentre      = var.getb("bAffCentre");
-    if ( var.existe("bSound") )             bSound          = var.getb("bSound");
-    if ( var.existe("bInverseCouleur"))     bInverseCouleur = var.getb("bInverseCouleur");
-    if ( var.existe("fLimitCorrection"))    fLimitCorrection = var.getf("fLimitCorrection");
-    if ( var.existe("filtre"))              filtre          = var.geti("filtre");
-    if ( var.existe("fpos_ad"))             fpos_ad         = var.getf("fpos_ad");
-    if ( var.existe("fpos_dc"))             fpos_dc         = var.getf("fpos_dc");
-    if ( var.existe("Xref"))                Xref            = var.getf("Xref");
-    if ( var.existe("Yref"))                Yref            = var.getf("Yref");
-    if ( var.existe("ZrefX"))               ZrefX           = var.getf("ZrefX");
-    if ( var.existe("ZrefY"))               ZrefY           = var.getf("ZrefY");
-    if ( var.existe("Wref"))                Wref            = var.getf("Wref");
-    if ( var.existe("bAffCatalog"))         bAffCatalog     = var.getb("bAffCatalog");
-    if ( var.existe("bAffStar"))         	bAffStar	    = var.getb("bAffStar");
-    else													{ var.set("bAffStar", true); }
+    if ( !var.existe("bNuit") )            	var.set( "bNuit", false );
+    bNuit           = var.getb("bNuit");
+
+    if ( !var.existe("bSimu") )             var.set("bSimu", false);
+    bSimu           = var.getb("bSimu");
+
+    if ( !var.existe("bAffSuivi") )         var.set("bAffSuivi", false);
+    bAffSuivi       = var.getb("bAffSuivi");
+
+    if ( !var.existe("bAffCentre") )        var.set("bAffCentre", false);
+    bAffCentre      = var.getb("bAffCentre");
+
+    if ( !var.existe("bSound") )            var.set("bSound", true); 
+    bSound          = var.getb("bSound");
+
+    if ( !var.existe("bInverseCouleur"))    var.set("bInverseCouleur", false); 
+    bInverseCouleur = var.getb("bInverseCouleur");
+
+    if ( !var.existe("fLimitCorrection0"))   var.set("fLimitCorrection0", 45.0);
+    fLimitCorrection0 = var.getf("fLimitCorrection0");
+
+    if ( !var.existe("filtre"))             var.set("filtre", 14);
+    filtre          = var.geti("filtre");
+
+    if ( !var.existe("fpos_ad"))            var.set("fpos_ad", 5.0);
+    fpos_ad         = var.getf("fpos_ad");
+    
+    if ( !var.existe("fpos_dc"))            var.set("fpos_dc", 5.0);
+    fpos_dc         = var.getf("fpos_dc");
+    
+    if ( !var.existe("Xref"))               var.set("Xref", 5.0);
+    Xref            = var.getf("Xref");
+    
+    if ( !var.existe("Yref"))               var.set("Yref", 5.0);
+    Yref            = var.getf("Yref");
+    
+    if ( !var.existe("ZrefX"))              var.set("ZrefX", 5.0);
+    ZrefX           = var.getf("ZrefX");
+    
+    if ( !var.existe("ZrefY"))              var.set("ZrefY", 5.0);
+    ZrefY           = var.getf("ZrefY");
+    
+    if ( !var.existe("Wref"))               var.set("Wref", 5.0);
+    Wref            = var.getf("Wref");
+    
+    if ( !var.existe("bAffCatalog"))        var.set("bAffCatalog", true);
+    bAffCatalog     = var.getb("bAffCatalog");
+    
+    if ( !var.existe("bAffStar"))       	var.set("bAffStar", true);
+    bAffStar	    = var.getb("bAffStar");
+   	
    	if ( !var.existe("bVerboseArduino") )   var.set("bVerboseArduino", false);
+
     if ( !var.existe("bAffFitsCorrection")) var.set("bAffFitsCorrection", true );
-   
+
+    if ( !var.existe("err")) 				var.set("err", 0.63 );
+
+    if ( !var.existe("fDiamSuivi1")) 		var.set("fDiamSuivi1", 63.0 );
+    fDiamSuivi1 = var.getf("fDiamSuivi1" );
+
+    if ( !var.existe("bPleiade")) 			var.set("bPleiade", false );
+    bPleiade = var.getb("bPleiade" );
+    if ( bPleiade )
+    {
+        pPleiade = new Pleiade();
+        Camera_mgr::getInstance().add( pPleiade );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

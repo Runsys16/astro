@@ -34,13 +34,15 @@ protected:
     PanelWindow*                pW;
     PanelDir*                   panelDir;
     PanelFile*                  panelFile;
+    PanelSimple*                panelInverseDir;
+    PanelSimple*                panelInverseFile;
     
     ButtonOK*                   panelOK;
     ButtonQUIT*                 panelQuit;
 
     PanelEditText*              panelFilename;
-    //PanelText*                  panelDirName;
     PanelEditText*              panelDirName;
+    PanelText*                  panelDbug;
     
     vector<PanelText*>          lDirs;
     vector<PanelText*>          lFile;
@@ -59,6 +61,9 @@ protected:
     
     bool                        bNewline;
     unsigned long               color;
+    
+    PanelText*					pOldDir;
+    PanelText*					pOldFile;
    
 
 private :
@@ -83,6 +88,8 @@ public :
 
     FileBrowser();
 
+	bool						existe_remonte_dir();
+
     void                        explore_dir();
     void                        change_dir( int );
     void                        change_dir( string );
@@ -103,6 +110,9 @@ public :
     
     void                        scrollDir( int );
     void                        scrollFile( int );
+
+	void						mouseOverDir(int, int);
+	void						mouseOverFile(int, int);
 
     void                        setCallBackOK(ButtonCallBack* p);
     void                        setCallBackQUIT(ButtonCallBack* p);

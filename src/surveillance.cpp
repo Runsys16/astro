@@ -10,6 +10,7 @@ Surveillance::Surveillance()
 {
     bCharge = false;
     bRun    = false;
+    dirname = "";
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -17,18 +18,18 @@ Surveillance::Surveillance()
 bool Surveillance::isImage(string name)
 {
     if (    name.find( ".jpg")  != string::npos
-      /*   || name.find( ".jpeg") != string::npos
+         || name.find( ".jpeg") != string::npos
          || name.find( ".JPG")  != string::npos
          || name.find( ".fits") != string::npos
          || name.find( ".tga")  != string::npos
          || name.find( ".png")  != string::npos
-       */
+       //*/
     )
     {
-        logf( (char*)"%s est une image\n", name.c_str() );
+        logf( (char*)"  %s est une image", name.c_str() );
         return true;
     }        
-    logf( (char*)"%s n est pas une image\n", name.c_str() );
+    logf( (char*)"  %s n\'est pas une image", name.c_str() );
 
     return false;
 }
@@ -37,20 +38,31 @@ bool Surveillance::isImage(string name)
 //--------------------------------------------------------------------------------------------------------------------
 bool Surveillance::idleGL()
 {
-    if ( bCharge && iState == 2 )
+    //if ( bCharge && iState == 2 )
+    if ( basename_charge.size() != 0  )
     {
-        if (   isImage( basename ) ) {
-            charge_image( dirname, basename);
-            
-            logf( (char*)"charge(%s)", basename.c_str() );
-            logf( (char*)"charge(%s)", dirname.c_str() );
-            iState = -1;
-            return true;
-        }        
+    	logf( (char*)"Surveillance::idleGL()" );
+    	log_tab(true);
+
+    	string dir_name = dirname_charge.back();
+    	string bas_name = basename_charge.back();
+    	
+        charge_image( dir_name, bas_name);
+        
+        logf( (char*)"charge(%s)", bas_name.c_str() );
+        logf( (char*)"charge(%s)", dir_name.c_str() );
+
         iState = -1;
+	    bCharge = false;
+    	dirname_charge.pop_back();
+    	basename_charge.pop_back();
+    	
+
+    	log_tab(false);
+        return true;
     }
 
-    bCharge = false;
+    //bCharge = false;
     return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -83,33 +95,19 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
 
 
 
-
-    /*
-    if ( (i->mask & IN_MODIFY) && (i->len > 0) ){
-        iState = 1;
-    }
-    */
-
     if ( (i->mask & IN_CREATE) && (i->len > 0) ){
         iState = 1;
     }
 
-    //if (    ( (i->mask & IN_CLOSE_WRITE) || (i->mask & IN_CLOSE_NOWRITE) )
     if (    ( (i->mask & IN_CLOSE_WRITE) )  && (i->len > 0) && iState == 1)
     {
         iState = 2;
-    //}
-    //if ( (i->mask & IN_ATTRIB) && (i->len > 0) && iState == 2)
-    //{
-        //inotify_rm_watch(inotifyFd, wd);
         
         logf( (char*)"  Notification : file ecrit \"%s\"",i->name );
         string f = string(i->name);
         vector<string> vff = split( f, "/" );
         
         int n = vff.size();
-        //dirname = "/";
-        //basename;
         int i;
 
         for ( i=0; i<(n-1); i++ )
@@ -118,13 +116,21 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
         }
 
         basename = string(vff[i]);
-        filename = dirname + basename;
-        logf( (char*)"  charge(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
-        //dirname = dir;
 
-        //iState = 0;
+        filename = dirname + basename;
+
+        logf( (char*)"  fichier : %s", (char*)filename.c_str() );
+
         sleep(1);
-        bCharge = true;
+        if (   isImage(basename) )
+        {
+		    basename_charge.push_back( basename );
+		    dirname_charge.push_back( dirname );
+	        logf( (char*)"  push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
+ 			bCharge = true;
+ 			basename = "";
+ 			//dirname = "";
+ 	    }
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -155,16 +161,13 @@ void Surveillance::thread_surveille( string dir )
     wd = inotify_add_watch(inotifyFd, (char*)dir.c_str(), IN_ALL_EVENTS);
     if (wd == -1)               logf( (char*)"[ERREUR] inotify_add_watch");
 
-    logf( (char*)"  Watching '%s' using wd = %d", (char*)dir.c_str(), wd);
+    logf( (char*)"[INFO]  Watching '%s' using wd = %d", (char*)dir.c_str(), wd);
     //dirname = string( dir );
 
     while(bRun) {                                  /* Read events forever */
         numRead = read(inotifyFd, buf, BUF_LEN);
         if (numRead == 0)           logf( (char*)"read() from inotify fd returned 0!");
         if (numRead == -1)          logf( (char*)"[ERREUR] read");
-
-        //logf("  Read %ld bytes from inotify fd", (long) numRead);
-        /* Process all of the events in buffer returned by read() */
 
         for (p = buf; p < buf + numRead; ) {
             event = (struct inotify_event *) p;
@@ -176,13 +179,37 @@ void Surveillance::thread_surveille( string dir )
     
     inotify_rm_watch(inotifyFd, wd);
     close(inotifyFd);
+    logf( (char*)"[INFO] Arret du thread de  surveillance de repertoire" );
+    bThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Surveillance::start(string dir)
 {
+	if ( bRun && dirname.compare(dir) == 0 )
+	{
+	    logf( (char*)"Surveillance::start( \"%s\" )", (char*)dir.c_str() );
+	    bRun = false;
+	    logf( (char*)"[INFO] Arret de surveillance de repertoire" );
+	    return;
+	    
+	} 
+
+	if ( bRun )
+	{
+	    bRun = false;
+	    logf( (char*)"  Arret de surveillance de repertoire" );
+	    //th.terminate();
+	    while( bThread ) sleep(1);
+	    sleep(1);
+	    
+	}
+	
+	
+	
     dirname = string( dir );
+    bThread = true;
     bRun = true;
     th = std::thread(&Surveillance::thread_surveille, this, dir);
     th.detach();

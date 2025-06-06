@@ -13,13 +13,14 @@
 #include <complex>
 #include <valarray>
  
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include "main.h"
 #include "MathlibD.h"
 #include "console.h"
 #include "var_mgr.h"
 #include "timer.h"
-#include "panel_spin_edit_text.h"
+//#include "panel_spin_edit_text.h"
 
 
 
@@ -118,7 +119,7 @@ private:
     vector<float>       t_fOut;
     int                 nb;
 
-    PanelText*          pAffCourbe;
+    PanelTextOmbre*     pAffFiltre;
     PanelSpinEditText*  pFiltreVal;
     double              dVal;
     PanelCheckBox*      pCBAffCourbe;
@@ -159,6 +160,7 @@ static bool             bDebug;
 
 
     PanelCourbe();
+    PanelTextOmbre*     init_text_ombre( int, int, char* );
     PanelText*          init_text( int, int, char* );
     PanelCheckBox*      init_check_box( int, int );
     void                init_panel();

@@ -50,9 +50,12 @@ protected:
     
     PanelSimple*		pTelescope;
     PanelSimple*		pFondCoord;
+    PanelText*			pColor;
     PanelText*			pCoord;
     PanelText*			pJ2000_1;
     PanelText*			pJ2000_2;
+    PanelText*			pJ2000_alpha;
+    PanelText*			pJ2000_delta;
     
     vector<vec2>		p1;
     vector<vec2>		p2;

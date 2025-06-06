@@ -33,7 +33,7 @@ PanelApn::PanelApn()
     float gris = 0.7;
     vcf4 c  = vcf4(gris, gris, gris, 1.0);
 	
-	add( new PanelText( (char*)"Temps (s)\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
+	add( new PanelTextOmbre( (char*)"Temps (s)\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
     pTime = new PanelSpinEditText();
     pTime->set( 1, 60*15, 100,  1);
     pTime->set_delta( 20, 8 );
@@ -43,7 +43,7 @@ PanelApn::PanelApn()
     pTime->setExtraString( "pTime" );
     p++;
 
-	add( new PanelText( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add( new PanelTextOmbre( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pIso = new PanelSpinEditText();
     pIso->set( 100, 3200, 100, 1 );
     pIso->set_delta( 20, 8 );
@@ -55,7 +55,7 @@ PanelApn::PanelApn()
     pIso->setExtraString( "pIso" );
     p++;
     
-	add( new PanelText( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add( new PanelTextOmbre( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pFrames = new PanelSpinEditText();
     pFrames->set( 1, 200, 200, 2 );
     pFrames->set_delta( 20, 8 );
@@ -65,7 +65,7 @@ PanelApn::PanelApn()
     pFrames->setExtraString( "pFrames" );
     p++;
 
-	add( new PanelText( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add( new PanelTextOmbre( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pTimeOut = new PanelSpinEditText();
     pTimeOut->set( 1, 10, 10, 2);
     pTimeOut->set_delta( 20, 8 );
@@ -75,7 +75,7 @@ PanelApn::PanelApn()
     pTimeOut->setExtraString( "pTimeOut" );
     p++;
 
-	add( new PanelText( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add( new PanelTextOmbre( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pNum = new PanelSpinEditText();
     pNum->set( 0, 200, 20 , 1 );
     pNum->set_delta( 20, 8 );
@@ -122,6 +122,11 @@ PanelApn::PanelApn()
     wm.onTop(this);
     wm.changeCapture(this);
     wm.changeFocus(pTime);
+    
+    loadSkinPath( "images/astro" );
+	setBorderSize(16);
+
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

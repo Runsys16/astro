@@ -20,10 +20,17 @@ PanelConsoleSerial::PanelConsoleSerial()
     pw->loadSkin(PanelWindow::STD);
 
     VarManager& var= VarManager::getInstance();
-    int x = var.geti("xPanelSerial");
-    int y = var.geti("yPanelSerial");
-    int dx = var.geti("dxPanelSerial");
-    int dy = var.geti("dyPanelSerial");
+    int x, y, dx, dy;
+
+    if ( var.existe("xPanelSerial"))			x = var.geti("xPanelSerial");
+    else										x = 0;
+    if ( var.existe("yPanelSerial"))			y = var.geti("yPanelSerial");
+    else										y = 0;
+    if ( var.existe("dxPanelSerial"))			dx = var.geti("dxPanelSerial");
+    else										dx = 0;
+    if ( var.existe("dyPanelSerial"))			dy = var.geti("dyPanelSerial");
+    else										dy = 0;
+    
     if ( x<= 0 )        x = 10;
     if ( dx<= 100 )     dx = 500;
     if ( y<= 0 )        y = 10;
@@ -48,6 +55,7 @@ PanelConsoleSerial::PanelConsoleSerial()
     ad_change = -1.0;
     dc_change = -1.0;
 
+    if ( !var.existe("bNuit") )              var.set( "bNuit", false );
 
     if ( var.getb("bNuit") )    pc->setColor( 0xffff0000 );
     else                        pc->setColor( 0xffffffff );

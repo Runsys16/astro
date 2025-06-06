@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include "panel_console_serial.h"
 #include "serial.h"

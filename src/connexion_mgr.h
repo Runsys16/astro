@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include <string>
 
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include <thread>
 

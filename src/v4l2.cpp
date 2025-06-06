@@ -266,7 +266,7 @@ void Device_cam::enum_format()
     logf((char*)"Device_cam::enum_format()");
     log_tab(true);
 
-    logf( (char*)"ioctl =  VIDIOC_ENUM_FMT ------------------");
+    logf( (char*)"ioctl =  VIDIOC_ENUM_FMT");
     struct v4l2_fmtdesc fmtdesc;
     CLEAR(fmtdesc);
     
@@ -288,7 +288,7 @@ void Device_cam::enum_format()
         fmtdesc.index++;
     }
     log_tab(false);
-    logf((char*)"Device_cam::enum_format()");
+    logf((char*)"Device_cam::enum_format() ** END **");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -299,7 +299,7 @@ void Device_cam::enum_format_size(int pf)
     logf((char*)"Device_cam::enum_format_size(%d)", pf);
     log_tab(true);
 
-    logf( (char*)"    -- VIDIOC_ENUM_FRAMESIZES --");
+    logf( (char*)"ioctl = VIDIOC_ENUM_FRAMESIZES");
     struct v4l2_frmsizeenum frmsizeenum;
     
     CLEAR(frmsizeenum);
@@ -311,7 +311,7 @@ void Device_cam::enum_format_size(int pf)
     while (-1 != xioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum))
     {
         
-        logf( (char*)"Type=%08X size=%dx%d" , frmsizeenum.type, frmsizeenum.discrete.width, frmsizeenum.discrete.height );
+        //logf( (char*)"Type=%08X size=%dx%d" , frmsizeenum.type, frmsizeenum.discrete.width, frmsizeenum.discrete.height );
         
 
         //if (pixelformat != -1 ) {
@@ -327,7 +327,7 @@ void Device_cam::enum_format_size(int pf)
 
             if ( pf == 0x47504A4D )   
             {
-                sizeChoix = 0;//tSize.size();
+                sizeChoix = 1;//tSize.size();
             }
             tSize.push_back(s);
             nSize++;
@@ -344,7 +344,7 @@ void Device_cam::enum_format_size(int pf)
     logf( (char*)"Resolution courante %dx%d",  width, height );
 
     log_tab(false);
-    logf((char*)"Device_cam::enum_format_size(int pf");
+    logf((char*)"Device_cam::enum_format_size() ** END **");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -407,7 +407,9 @@ bool fileExists(const std::string& file) {
     struct stat buf;
     return (stat(file.c_str(), &buf) == 0);
 }
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Device_cam::process_image(const void *p, int size)
 {
     if (fd == -1)       return;
@@ -996,12 +998,11 @@ void Device_cam::init_device(void)
         break;
 
     case MJPG :
-        fprintf(stderr, "Set MJPG\r\n");
-        fmt.fmt.pix.width       = tSize[sizeChoix].width;//width; //replace
-        fmt.fmt.pix.height      = tSize[sizeChoix].height;//height; //replace
+        //fprintf(stderr, "Set MJPG\r\n");
+        width  = fmt.fmt.pix.width       = tSize[sizeChoix].width;//width; //replace
+        height = fmt.fmt.pix.height      = tSize[sizeChoix].height;//height; //replace
         
-        logf( (char*)"fmt.fmt.pix.width  = %d", fmt.fmt.pix.width );
-        logf( (char*)"fmt.fmt.pix.height = %d", fmt.fmt.pix.height );
+        logf( (char*)"Force format MJPG   %dx%d",fmt.fmt.pix.width, fmt.fmt.pix.height );
         //fmt.fmt.pix.width       = width; //replace
         //fmt.fmt.pix.height      = height; //replace
 

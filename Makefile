@@ -144,9 +144,9 @@ $(OBJDIR)panel_stdout.o: $(SRCDIR)panel_stdout.cpp $(SRCDIR)panel_stdout.h $(SRC
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_spin_edit_text.o: $(SRCDIR)panel_spin_edit_text.cpp $(SRCDIR)panel_spin_edit_text.h $(SRCDIR)main.h
-	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+#$(OBJDIR)panel_spin_edit_text.o: $(SRCDIR)panel_spin_edit_text.cpp $(SRCDIR)panel_spin_edit_text.h $(SRCDIR)main.h
+#	@echo ---------   compilation de $@
+#	$(GPP) -c $< -o $@  $(CFLAGS)
 	
 $(OBJDIR)star_catalogue.o: $(SRCDIR)star_catalogue.cpp $(SRCDIR)star_catalogue.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
@@ -160,7 +160,7 @@ $(OBJDIR)panel_fits.o: $(SRCDIR)panel_fits.cpp $(SRCDIR)panel_fits.h $(SRCDIR)va
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
-$(OBJDIR)panel_fits_correction.o: $(SRCDIR)panel_fits_correction.cpp $(SRCDIR)panel_fits.h $(SRCDIR)var_mgr.h $(SRCDIR)main.h $(SRCDIR)panel_spin_edit_text.h
+$(OBJDIR)panel_fits_correction.o: $(SRCDIR)panel_fits_correction.cpp $(SRCDIR)panel_fits.h $(SRCDIR)var_mgr.h $(SRCDIR)main.h
 	@echo ---------   compilation de $@
 	$(GPP) -c $< -o $@  $(CFLAGS)
 	
@@ -172,7 +172,7 @@ $(BIN_NAME): $(OBJDIR)main.o $(OBJDIR)v4l2.o $(OBJDIR)control.o $(OBJDIR)timer.o
              $(OBJDIR)stars.o $(OBJDIR)star.o $(OBJDIR)panel_camera.o $(OBJDIR)panel_zoom.o \
              $(OBJDIR)captures.o $(OBJDIR)panel_dir.o $(OBJDIR)panel_file.o $(OBJDIR)bluetooth.o \
              $(OBJDIR)surveillance.o $(OBJDIR)fits.o $(OBJDIR)panel_courbe.o $(OBJDIR)panel_apn.o \
-             $(OBJDIR)panel_stdout.o $(OBJDIR)panel_spin_edit_text.o $(OBJDIR)star_catalogue.o \
+             $(OBJDIR)panel_stdout.o $(OBJDIR)star_catalogue.o \
              $(OBJDIR)catalog.o $(OBJDIR)panel_fits.o $(OBJDIR)panel_fits_correction.o
 	@echo -- Edition des liens -----
 	$(GPP) $^ -o $(BIN_NAME) $(LIBS) 

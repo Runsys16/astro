@@ -23,10 +23,10 @@
 #include <sys/socket.h>
 
 
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include <thread>
 
-#include "MathlibD.h"
 #include "main.h"
 #include "serial.h"
 #include "serveur_mgr.h"

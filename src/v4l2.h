@@ -188,8 +188,8 @@ public :
     inline  bool            getHaveNew()            { return bHaveNew; }
     inline  void            setHaveNew(bool b)      { bHaveNew = b; }
 
-    inline  void            setName( char * s)      { name = s; }
-    inline  char*           getName()               { return (char*)name.c_str(); }
+    inline  void            setName( char * s)      { name = string(s); }
+    inline  string&         getName()               { return name; }
 
     inline int              getWidth()              { return width; }
     inline void             setWidth(int n)         { width = n; }

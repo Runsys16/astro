@@ -66,14 +66,16 @@ void Serveur_mgr::traite_connexion_init()
     {
         n = read(sock_ref,buffer,255);
         logf( (char*)"Serveur_mgr::traite_connexion_init()" );
+        log_tab(true);
 
         if (n <= 0)
         {
-            logf( (char*)" ERROR reading from socket");
+            logf( (char*)"ERROR reading from socket");
+	        log_tab(false);
             break;
         }
 
-        logf( (char*)"  nb octet lu : %d", n);
+        logf( (char*)"nb octet lu : %d", n);
 		//-------------------------------------------------
 		// recuperation des infos
         struct stellarium ss;
@@ -83,27 +85,36 @@ void Serveur_mgr::traite_connexion_init()
         double ra = com2rad(ss.ra);
         double dc = com2rad(ss.dc);
 
-        logf( (char*)"  reception de ra=%0.10f, dc=%0.10f", ra, dc);
+        logf( (char*)"reception de ra=%0.10f, dc=%0.10f", ra, dc);
+		change_ad_status( ra );
+		change_dc_status( dc );
+
 
 
         struct hms HMS;
         rad2hms( ra, HMS );
-        logf( (char*)"  AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+        logf( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( dc, DMS );
-        logf( (char*)"  Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+        logf( (char*)"Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );
+
+		//-------------------------------------------------
+        logf( (char*)"Envoi arduino : \"%s\"", cmd );
         Serial::getInstance().write_string(cmd);
-        logf( (char*)"  Envoi arduino : %s", cmd );
-        
-        Camera_mgr::getInstance().position(ra, dc);
+		//-------------------------------------------------
+        logf( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
+		Camera_mgr::getInstance().position(ra, dc);
         Captures::getInstance().position(ra, dc);
+		//-------------------------------------------------
+
         Xref = 0.0;
         Yref = 0.0;
         //Zref = 0.0;
+        log_tab(false);
 
     }
     

@@ -713,6 +713,8 @@ void Stars::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::position(double ra, double dc)
 {
+	logf( (char*)"Stars::position()" );
+
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
     {

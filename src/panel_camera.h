@@ -24,8 +24,10 @@ protected:
     double              echelle;
     double				ech_user;
     double				ech_geo;
-    double              dx;
-    double              dy;
+    double              _x;
+    double              _y;
+    double              _dx;
+    double              _dy;
     
     rb_t*				pReadBgr;
     
@@ -56,57 +58,57 @@ public:
 
     virtual void		idle(float);
     virtual void		update_stars();
-            void		displaySuivi();
-            void		displayCentre();
-            void		displayVizier();
-    virtual void		displayGL();
-    virtual void		updatePos();
     virtual void        releaseLeft( int, int);
     virtual void        releaseMiddle( int, int);
+	//-----------------------------------------------------------------
+    virtual void		updatePos();
 
-    virtual void        wheelUp( int, int);//                              {;};
-    virtual void        wheelDown( int, int)                            {;};
-
+	void				clip(int&, int&);
+	void				compute_centre();
     void                compute_echelle();
+    virtual void        wheelUp( int, int);//                              {;};
+    virtual void        wheelDown( int, int);//                            {;};
+	//-----------------------------------------------------------------
     void                tex2screen(vec2&);
     void                tex2screen(int&,int&);
     void                tex2screen(double&,double&);
 
     void                screen2tex(int&,int&);
     void                screen2tex(double&,double&);
-
+	//-----------------------------------------------------------------
     void                glCercle(int x, int y, int rayon);
-    inline void         glCercle(vec2 v, int r)
-                        { glCercle( (int)v.x, (int)v.y, r ); }
+    inline void         glCercle(vec2 v, int r)							{ glCercle( (int)v.x, (int)v.y, r ); }
+
     void                glCarre( int x,  int y,  int dx,  int dy );
+
     void                glCroix( int x,  int y,  int dx,  int dy );
-    inline void         glCroix( int x,  int y,  int dxy )
-                        { glCroix( x, y, dxy, dxy ); }
-    inline void         glCroix(vec2 v, int dxy)
-                        { glCroix( v.x, v.y, dxy, dxy ); }
+    inline void         glCroix( int x,  int y,  int dxy )				{ glCroix( x, y, dxy, dxy ); }
+    inline void         glCroix(vec2 v, int dxy)						{ glCroix( v.x, v.y, dxy, dxy ); }
 
     void                displayGLTrace(void);
+    void                displayVecAD();
+    void                displayVecDC();
 
-    void                glVecAD();
-    void                glVecDC();
+    void				displaySuivi();
+    void				displayCentre();
+    void				displayVizier();
 
+    virtual void		displayGL();
+	//-----------------------------------------------------------------
     void                findAllStar();
     bool                starExist(int, int);    
     void                addStar(int,int);
-
-    void                setEchelle(double f);
-    void                setCentX(double f);
-    void                setCentY(double f);
 
     void                setRB(rb_t* p);
     vec2*               getSuivi();
     void                add_catalogue(StarCatalog*);
     void                setRefCatalog(double _0, double _1);
-
-   
-inline double            getEchelle()                                    { return echelle; }
-inline double            getCentX()                                      { return dx; }
-inline double            getCentY()                                      { return dy; }
+	//-----------------------------------------------------------------
+	void				recentreSuivi();   
+	//-----------------------------------------------------------------
+inline double           getEchelle()                                    { return echelle; }
+inline double           getCentX()                                      { return dx; }
+inline double           getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
 inline rb_t*            getRB()                                         { return pReadBgr; }
 inline int              getNbStars()                                    { return stars.size(); }

@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include "Singleton.h"
 #include "serial.h"

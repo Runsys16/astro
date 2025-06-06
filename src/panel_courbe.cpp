@@ -43,25 +43,40 @@ PanelCourbe::PanelCourbe()
     
     err = var.getf("err");
 
-    courbe1         = var.getf("courbe1");
-    delta_courbe1   = var.getf("delta_courbe1");
-    courbe2         = var.getf("courbe2");
-    delta_courbe2   = var.getf("delta_courbe2");
+    bDisplayCourbeX = true;
+    bDisplayCourbeY = true;
+    bDisplayfftX    = true;
+    bDisplayfftY    = true;
+    bDisplayPt      = true;
+    courbe1         = 1.0;
+    courbe2         = 1.0;
+    delta_courbe1   = 1.0;
+    delta_courbe2   = 1.0;
+    vOrigine.x      = 0.0;
+    vOrigine.y      = 0.0;
+    taille_mini		= 10.0;
+    filtre			= 10.0;
+    decal_x			= 10;
+    decal_y			= 10;
 
-    vOrigine.x      = var.getf("vOrigine.x");
-    vOrigine.y      = var.getf("vOrigine.y");
+    if ( var.existe("vOrigine.x") )        		vOrigine.x      = var.getf("vOrigine.x");
+    if ( var.existe("vOrigine.y") )        		vOrigine.y      = var.getf("vOrigine.y");
     vOrigine.z      = 0.0;
+
+    if ( var.existe("courbe1") )        		courbe1         = var.getf("courbe1");
+    if ( var.existe("delta_courbe1") )        	delta_courbe1   = var.getf("delta_courbe1");
+    if ( var.existe("courbe2") )        		courbe2         = var.getf("courbe2");
+    if ( var.existe("delta_courbe2") )        	delta_courbe2   = var.getf("delta_courbe2");
+
 
     if ( var.existe("bDisplayCourbeX") )        bDisplayCourbeX = var.getb("bDisplayCourbeX");
     if ( var.existe("bDisplayCourbeY") )        bDisplayCourbeY = var.getb("bDisplayCourbeY");
     if ( var.existe("bDisplayfftX") )           bDisplayfftX    = var.getb("bDisplayfftX");
     if ( var.existe("bDisplayfftY") )           bDisplayfftY    = var.getb("bDisplayfftY");
     if ( var.existe("bDisplayPt") )             bDisplayPt      = var.getb("bDisplayPt");
-    else                                        { bDisplayPt=true; var.set("bDisplayPt", bDisplayPt ); }
 
-    taille_mini     = var.getf("taille_mini_unite");
-
-    filtre          = var.getf("filtre");
+    if ( var.existe("taille_mini_unite") )      taille_mini     = var.getf("taille_mini_unite");
+    if ( var.existe("filtre") )             	filtre          = var.getf("filtre");
 
 
 
@@ -86,13 +101,21 @@ PanelCourbe::PanelCourbe()
 
     nb = 256;
 
+    logf( (char*)"init_panel()" );
     init_panel();
 
-    string* pFile = var.gets( "FileResultat" );
-    logf( (char*)"Chargement de %s", pFile->c_str() );
+	string* pFile = NULL;
+	
+    if ( var.existe( "FileResultat" ) )					pFile = var.gets( "FileResultat" );
+    
+    logf( (char*)"init_panel()retour" );
+    if ( pFile != NULL)	    logf( (char*)"Chargement " );
+    else				    logf( (char*)"Fichier de guidage NULL" );
+
     
     t_vCourbe.reserve(512);
-
+	/*
+    */
     if ( pFile!=NULL )
     {
         if ( pFile->find( "---" ) == std::string::npos )
@@ -102,8 +125,8 @@ PanelCourbe::PanelCourbe()
         }
     }
     
-    decal_x = var.geti( "decal_x" );
-    decal_y = var.geti( "decal_y" );
+    if ( var.existe("decal_x") )             	decal_x = var.geti( "decal_x" );
+    if ( var.existe("decal_y") )             	decal_y = var.geti( "decal_y" );
     
     setVisible( var.getb( "bPanelCourbe" ) );
 
@@ -120,6 +143,15 @@ PanelCourbe::PanelCourbe()
 PanelText* PanelCourbe::init_text( int x, int y, char* ptext )
 {
     PanelText* pT  = new PanelText( (char*)ptext,   PanelText::NORMAL_FONT, x, y ) ;
+    add( pT );
+    return pT;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+PanelTextOmbre* PanelCourbe::init_text_ombre( int x, int y, char* ptext )
+{
+    PanelTextOmbre* pT  = new PanelTextOmbre( (char*)ptext,   PanelText::NORMAL_FONT, x, y ) ;
     add( pT );
     return pT;
 }
@@ -168,7 +200,7 @@ void PanelCourbe::init_panel()
     if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
     else                            pAffPt->setColor( (unsigned long)0x808080ff );
 
-    pAffCourbe    = init_text( x, y*dy, (char*)"On" );
+    pAffFiltre    = init_text_ombre( x, y*dy, (char*)"On" );
     y++;
 
     if ( bDisplayfftX )         sprintf( s, (char*)"X fft On" );
@@ -1079,10 +1111,10 @@ void PanelCourbe::updatePos()
     pCourbeY->setPos(       getDX()-100, pCourbeY->getPosY() );
     pCBCourbeY->setPos(     getDX()-120, pCourbeY->getPosY() );
 
-    pAffCourbe->setPos(     getDX()-100, pAffCourbe->getPosY() );
-    //logf( (char*)"setPos %d, %d ", getDX()-180,  pAffCourbe->getPosY() );
-    pFiltreVal->setPos(     getDX()-55,  pAffCourbe->getPosY() );
-    //pCBAffCourbe->setPos(   getDX()-120, pAffCourbe->getPosY() );
+    pAffFiltre->setPos(     getDX()-100, pAffFiltre->getPosY() );
+    //logf( (char*)"setPos %d, %d ", getDX()-180,  pAffFiltre->getPosY() );
+    pFiltreVal->setPos(     getDX()-55,  pAffFiltre->getPosY() );
+    //pCBAffCourbe->setPos(   getDX()-120, pAffFiltre->getPosY() );
 
     pAffFFTX->setPos(        getDX()-100, pAffFFTX->getPosY() );
     pCBAffFFTX->setPos(      getDX()-120, pAffFFTX->getPosY() );
@@ -1160,7 +1192,7 @@ void PanelCourbe::updatePos()
     if ( filtre_old != filtre )
     {
         sprintf( s, (char*)"Filtre :" );
-        pAffCourbe->changeText( s, true );
+        pAffFiltre->changeText( s, true );
 
         VarManager::getInstance().set( "filtre", filtre );
         //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
@@ -1182,7 +1214,7 @@ void PanelCourbe::updatePos()
     pFilename->setPos( (getDX()-l)/2, 0 );
 
     /*
-    PanelText*          pAffCourbe;
+    PanelText*          pAffFiltre;
     PanelText*          pValAffCourbe;
     PanelText*          pAffFFT;
     PanelText*          pCourbeX;

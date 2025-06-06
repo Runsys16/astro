@@ -328,8 +328,8 @@ void Capture::create_preview()	{
     log_tab(true);
     
 
-	loadSkin( RED );
-	setBorderSize(2);
+	loadSkinPath( "images/astro" );
+	setBorderSize(8);
 
     //create_icones();
     logf((char*)"fichier = %s", (char*)filename.c_str() );

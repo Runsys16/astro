@@ -5,7 +5,7 @@
 #include "stars.h"
 #include "timer.h"
 #include "panel_camera.h"
-#include "panel_spin_edit_text.h"
+//#include "panel_spin_edit_text.h"
 
 #include <WindowsManager.h>
 #include <thread>
@@ -68,7 +68,7 @@ virtual void 					changeValueDouble( double val, void *p );
     virtual void                start_thread();
     		void                stop_thread()								{ bExitThread = true; }
     virtual void                CreatePreview();
-    virtual void                resizePreview(int, int);
+    virtual void                iconSizePreview(int, int);
     virtual void                fullSizePreview(int, int);
 
     virtual void                resizeControl(int, int);
@@ -98,6 +98,7 @@ virtual void 					changeValueDouble( double val, void *p );
     ivec2                       get_vCameraSize();
 
     vec2*                       getSuivi();
+    void						recentreSuivi();
     
     void                        setColor(long);
 

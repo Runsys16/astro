@@ -1,5 +1,6 @@
 #include "var_mgr.h"
-
+//--------------------------------------------------------------------------------------------------------------------
+#define TYPE2STR(t)			(t=='f'?"FLOAT":t=='i'?"INTEGER":t=='b'?"BOOL":"UNKNOW")
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -64,6 +65,7 @@ void VarManager::set(const std::string& name, const std::string& val)
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::sauve()
 {
+	//#define AFF_SAUVE
     if (!bSauve)        return;
 
     string filename = "/home/rene/.astropilot/var.ini";
@@ -87,11 +89,12 @@ void VarManager::sauve()
         key = string( p->first );
         int c = (int)p->second.type;
         
-        //logf((char*)"sauve() %s  type : %d %d", key.c_str(), (int)c, (int)'f' );
         if ( c == (int)'f' )
         {
             float f = p->second.fval;
-            //logf( (char*)"  float : %f", f );
+		#ifdef AFF_SAUVE
+	        logf((char*)"sauve() %s  type : %s %.2f", key.c_str(), (char*)TYPE2STR(c), (float)f );
+		#endif
             
             fichier << "float " << key << " = " << f << "\n";
         }
@@ -99,7 +102,9 @@ void VarManager::sauve()
         else if ( c == (int)'i' )
         {
             int i = p->second.ival;
-            //logf( (char*)"  integer : %d", i );
+		#ifdef AFF_SAUVE
+	        logf((char*)"sauve() %s  type : %s %d", key.c_str(), (char*)TYPE2STR(c), (int)i );
+		#endif
             
             fichier << "int "<< key << " = " << i << "\n";
         }
@@ -111,7 +116,9 @@ void VarManager::sauve()
             if (b)                      val = "TRUE";
             else                        val = "FALSE";
 
-            //logf( (char*)"  bool : %s", val.c_str() );
+		#ifdef AFF_SAUVE
+	        logf((char*)"sauve() %s  type : %s %s", key.c_str(), (char*)TYPE2STR(c), val.c_str() );
+		#endif
 
             fichier << "bool "<< key << " = " << val << "\n";
          }

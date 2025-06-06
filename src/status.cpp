@@ -25,6 +25,7 @@ PanelCheckBox *     pButtonPause;
 PanelCheckBox *     pButtonDeplac;
 PanelSpinEditText*  pCercleAsserv;
 PanelSpinEditText*  pCercleErr;
+PanelSpinEditText*  pCercleSuivi1;
 
 PanelButtonAsservissement *       pFlecheHaut;
 PanelButtonAsservissement *       pFlecheBas;
@@ -34,6 +35,10 @@ PanelButtonAsservissement *       pUrgentDown;
 
 
 PanelCheckBox *     pButtonAsserv;
+
+PanelText *			pAlpha;
+PanelText *			pDelta;
+
 
 //--------------------------------------------------------------------------------------------------------------------
 double  oldPas = -1.0;
@@ -58,16 +63,15 @@ void set_courbe(void)
 //--------------------------------------------------------------------------------------------------------------------
 void set_asservissement(void)
 {
+	logf( (char*)"set_asservissement()" );
+	
     var.set("bCorrection", bCorrection);
     fTimeCpt = 0.0; 
 
     var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
     var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
-    //if (bCorrection)            pAsservi->changeText((char*)"Asservissemnent");
-    //else                        pAsservi->changeText((char*)" ");
 
-    //pAsservi->changeText((char*)"Asservissemnent");
 
     if (bCorrection)            pAsservi->setColor(0xFFFFFFFF);
     else                        pAsservi->setColor(0X404040FF);
@@ -150,10 +154,10 @@ void PanelButtonAsservissement::wheelUp( int, int)
     float err = panelCourbe->get_err();
     if ( this == pUrgentUp || this == pUrgentDown )
     {
-	    fLimitCorrection /= 0.9f;
-        var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "PanelButtonAsservissement::wheelUp() fLimitCorrection = %0.2f", (float)fLimitCorrection );
-        sprintf( s, "%0.0f", fLimitCorrection );
+	    fLimitCorrection0 /= 0.9f;
+        var.set("fLimitCorrection0", (float)fLimitCorrection0);
+        logf( (char*) "PanelButtonAsservissement::wheelUp() fLimitCorrection0 = %0.2f", (float)fLimitCorrection0 );
+        sprintf( s, "%0.0f", fLimitCorrection0 );
     }
     else if ( this == pFlecheHaut || this == pFlecheBas)
     {
@@ -176,10 +180,10 @@ void PanelButtonAsservissement::wheelDown( int, int)
     float err = panelCourbe->get_err();
     if ( this == pUrgentUp || this == pUrgentDown )
     {
-	    fLimitCorrection *= 0.9f;
-        var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "PanelButtonAsservissement::wheelDown() fLimitCorrection = %0.2f", (float)fLimitCorrection );
-        sprintf( s, "%0.0f", fLimitCorrection );
+	    fLimitCorrection0 *= 0.9f;
+        var.set("fLimitCorrection0", (float)fLimitCorrection0);
+        logf( (char*) "PanelButtonAsservissement::wheelDown() fLimitCorrection0 = %0.2f", (float)fLimitCorrection0 );
+        sprintf( s, "%0.0f", fLimitCorrection0 );
     }
     else if ( this == pFlecheHaut || this == pFlecheBas)
     {
@@ -219,17 +223,17 @@ void cb_fleche(PanelButton* pPanel)
     else
     if ( pPanel == pUrgentUp )
     {
-		fLimitCorrection *= 1.1f;
-        var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+		fLimitCorrection0 *= 1.1f;
+        var.set("fLimitCorrection0", (float)fLimitCorrection0);
+        logf( (char*) "fLimitCorrection0 = %0.2f", (float)fLimitCorrection0 );
 
     }
     else
     if ( pPanel == pUrgentDown )
     {
-		fLimitCorrection *= 0.9f;
-        var.set("fLimitCorrection", (float)fLimitCorrection);
-        logf( (char*) "fLimitCorrection = %0.2f", (float)fLimitCorrection );
+		fLimitCorrection0 *= 0.9f;
+        var.set("fLimitCorrection0", (float)fLimitCorrection0);
+        logf( (char*) "fLimitCorrection0 = %0.2f", (float)fLimitCorrection0 );
     }
 
 }
@@ -533,8 +537,8 @@ void click_left_cercle_asserv( int xm, int ym )
 void release_left_cercle_asserv( int xm, int ym ) 
 {
     logf((char*)"release_left_cercle_asserv( %d, %d)", xm, ym );
-    //logf((char*)"val = %lf",  fLimitCorrection );
-    var.set( "fLimitCorrection", fLimitCorrection );
+    //logf((char*)"val = %lf",  fLimitCorrection0 );
+    var.set( "fLimitCorrection0", fLimitCorrection0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -557,6 +561,25 @@ void release_left_cercle_err( int xm, int ym )
 	double* pErr = panelCourbe->get_perr();
 	logf( (char*)"err=%0.2f", *pErr );
     var.set( "err", *pErr );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void click_left_cercle_suivi1( int xm, int ym ) 
+{
+    logf((char*)"click_left_cercle_err( %d, %d)", xm, ym );
+    //pCercleAsserv->setPosAndSize( 200, -200, 180, 20 );
+    xAsserv =     pCercleErr->getPosX();
+    yAsserv =     pCercleErr->getPosY();
+    //pCercleErr->setPos( xAsserv, yAsserv-100-8 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void release_left_cercle_suivi1( int xm, int ym ) 
+{
+    logf((char*)"release_left_cercle_suivi1( %d, %d)", xm, ym );
+    var.set( "fDiamSuivi1", (float)fDiamSuivi1 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -632,19 +655,66 @@ void create_windows_button()
     pCercleAsserv->setClickLeft( click_left_cercle_asserv );
     pCercleAsserv->setReleaseLeft( release_left_cercle_asserv );
 
-    sprintf( s,"%0.0f", fLimitCorrection );
+    sprintf( s,"%0.0f", fLimitCorrection0 );
     pCercleAsserv->changeText( s );
 
     //  Valeur de l'edition dimension de la
     pCercleAsserv->set( 1, 600, 760, 4 );
     pCercleAsserv->set_delta( 20, -100 );
     //pCercleAsserv->set_nb( 2 );
-    pCercleAsserv->set_val( fLimitCorrection );
-    pCercleAsserv->set_pVal( &fLimitCorrection );
+    pCercleAsserv->set_val( fLimitCorrection0 );
+    pCercleAsserv->set_pVal( &fLimitCorrection0 );
 
     panelStatus->add( pCercleAsserv );
     pCercleAsserv->setExtraString( string("SpinEdit Asservi") );
 	//--------------------------------------------------------
+	//--------------------------------------------------------
+	pCercleSuivi1 = new PanelSpinEditText();
+    pCercleSuivi1->setPosAndSize( X+62+30, 2, 40, 20 );
+    pCercleSuivi1->setClickLeft( click_left_cercle_suivi1 );
+    pCercleSuivi1->setReleaseLeft( release_left_cercle_suivi1 );
+
+    sprintf( s,"%0.0f", fDiamSuivi1 );
+    pCercleSuivi1->changeText( s );
+
+    //  Valeur de l'edition dimension de la
+    pCercleSuivi1->set( 1, 600, 760, 4 );
+    pCercleSuivi1->set_delta( 20, -100 );
+    //pCercleAsserv->set_nb( 2 );
+    pCercleSuivi1->set_val( fDiamSuivi1 );
+    pCercleSuivi1->set_pVal( &fDiamSuivi1 );
+
+    panelStatus->add( pCercleSuivi1 );
+    pCercleSuivi1->setExtraString( string("SpinEdit fDiamSuivi1") );
+	//--------------------------------------------------------
+	//#define POLICE "usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf",
+	//#define POLICE "usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf",
+	//#define POLICE "fonts/IFAOGrecBold.ttf" ,
+	#define POLICE "fonts/greek-wsi-regular.ttf"   	// 360 glyphe voir alpha ...
+
+	pAlpha = new PanelText( 	(char*)"a", (char*)POLICE , 60, 0, 14, 0xFFFFFFFF );
+	pDelta = new PanelText( 	(char*)"d", (char*)POLICE , 200, 0, 14, 0xFFFFFFFF );
+	
+    //pAD = new PanelText( (char*)"=\ --h --\' --\"",		            PanelText::NORMAL_FONT, 60+10, 2 );
+    char strAD[] = "= --h --\' --\"";
+    char strDC[] = "= --  --\' --\"";
+    strDC[4] = 176;		// caractere degre °
+    
+    pAD = new PanelText( (char*)strAD,		PanelText::NORMAL_FONT, 60+10, 2 );
+    pDC = new PanelText( (char*)strDC,		PanelText::NORMAL_FONT, 200+10, 2 );
+
+	panelStatus->add( pAD );
+	panelStatus->add( pDC );
+
+    pAlpha->setPos( 60-2,  2);
+    pDelta->setPos( 200-2, 1);
+    /*
+    */
+    
+	panelStatus->add( pAlpha );
+	panelStatus->add( pDelta );
+	//WindowsManager::getInstance().add( pAlpha );
+	//WindowsManager::getInstance().add( pDelta );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -707,9 +777,9 @@ void idleStatus()
         pErr->changeText( (char*)str );
     }
 
-    if (urg_old != fLimitCorrection )
+    if (urg_old != fLimitCorrection0 )
     {
-        urg_old = fLimitCorrection;
+        urg_old = fLimitCorrection0;
         char str[255];
         sprintf( str, "%0.2f", urg_old );
         pUrg->changeText( (char*)str );

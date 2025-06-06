@@ -25,12 +25,16 @@ private:
     thread              th;
     string              dir;
     int                 iState;
-    bool                bRun;
-    bool                bCharge;
+	bool                bCharge;
+volatile bool           bRun;
+volatile bool           bThread;
 
     string              dirname;
     string              basename;
     string              filename;
+    
+    vector<string>		basename_charge;
+    vector<string>		dirname_charge;
     
 public:
     //---------------------------------------------------------

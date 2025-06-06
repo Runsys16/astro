@@ -9,7 +9,7 @@
 #include "var_mgr.h"
 #include <WindowsManager.h>
 #include "surveillance.h"
-#include "panel_spin_edit_text.h"
+//#include "panel_spin_edit_text.h"
 
 
 using namespace std;

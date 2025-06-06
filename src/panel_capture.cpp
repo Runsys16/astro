@@ -32,7 +32,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     
     pFondCoord = new PanelSimple();
     pFondCoord->setBackground( (char*)"images/background.tga" );
-    pFondCoord->setSize( 200,50 );
+    pFondCoord->setSize( 210, 65 );
     this->add( pFondCoord );
     
     pTelescope = new PanelSimple();
@@ -41,15 +41,28 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pTelescope->setFantome( true );
     this->add( pTelescope );
     
-    pCoord = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 20, 10 );
-    pJ2000_1 = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, 20, 10 );
-    pJ2000_2 = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, 20, 10 );
-	/*
-    this->add( pCoord );
-    this->add( pJ2000_1 );
-    this->add( pJ2000_2 );
-	*/    
+    #define SIZEY 14
+	//#define POLICE "fonts/grec.ttf"
+	#define POLICE "fonts/greek-wsi-regular.ttf"   	// 218 glyphe voir alpha ...
+
+    int x = 90, y = SIZEY, deltax = 16;
+    pColor = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 5, y );
+    y += SIZEY;
+    pCoord = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 5, y );
+    //y += SIZEY;
+
+
+    pJ2000_alpha = new PanelText( 	(char*)"a", (char*)POLICE , x, y, 14, 0xFFFFFFFF );
+    pJ2000_1 = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, x+deltax, y );
+
+    y += SIZEY+4;
+    pJ2000_delta = new PanelText( 	(char*)"d", (char*)POLICE , x, y, 14, 0xFFFFFFFF );
+    pJ2000_2 = new PanelText( (char*)"(0,0)",		PanelText::NORMAL_FONT, x+deltax, y );
+
+    pFondCoord->add( pColor );
     pFondCoord->add( pCoord );
+    pFondCoord->add( pJ2000_alpha );
+    pFondCoord->add( pJ2000_delta );
     pFondCoord->add( pJ2000_1 );
     pFondCoord->add( pJ2000_2 );
     
@@ -121,7 +134,7 @@ void PanelCapture::updateEchelleGeo()
         log_tab(true);
         logf( (char*)"%s", pCapture!=NULL? (char*)pCapture->getBasename().c_str() : (char*)"" );
         logf( (char*)"ech_geo=%0.2lf ech_user=%0.2lf", coef, ech_user );
-        logf( (char*)"alphaAD=%0.2lf alphaED=%0.2lf", dAngleAD, dAngleDE );
+        //logf( (char*)"alphaAD=%0.2lf alphaED=%0.2lf", dAngleAD, dAngleDE );
         
         ech = ech_user * ech_geo;
         dx /= ech;
@@ -483,15 +496,21 @@ void PanelCapture::displayGL()
     
     if ( bNuit )		{
     	setColorBgr( COLOR32(255, 0, 0, 255) );
+    	pColor->setColor( COLOR32(255, 0, 0, 255) );
     	pCoord->setColor( COLOR32(255, 0, 0, 255) );
     	pJ2000_1->setColor( COLOR32(255, 0, 0, 255) );
     	pJ2000_2->setColor( COLOR32(255, 0, 0, 255) );
+    	pJ2000_alpha->setColor( COLOR32(255, 0, 0, 255) );
+    	pJ2000_delta->setColor( COLOR32(255, 0, 0, 255) );
     }
     else	{
     	setColorBgr( COLOR32(255, 255, 255, 255) );    
+    	pColor->setColor( COLOR32(255, 255, 255, 255) );
     	pCoord->setColor( COLOR32(255, 255, 255, 255) );
     	pJ2000_1->setColor( COLOR32(255, 255, 255, 255) );
     	pJ2000_2->setColor( COLOR32(255, 255, 255, 255) );
+    	pJ2000_alpha->setColor( COLOR32(255, 255, 255, 255) );
+    	pJ2000_delta->setColor( COLOR32(255, 255, 255, 255) );
     }
     
 	
@@ -760,7 +779,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	
 	// Affichage du resultat	
 	snprintf( (char*)coord, sizeof(coord), "rvb = (%d, %d, %d)", (unsigned)r, (unsigned)g, (unsigned)b );
-	pCoord->changeText( (char*)coord );
+	pColor->changeText( (char*)coord );
 
 	
 	if ( pCapture->isFits() )	{
@@ -777,24 +796,24 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 		deg2hms( vJ2000.x, HMS );
 		deg2dms( vJ2000.y, DMS );
 		
-		
+		snprintf( (char*)coord, sizeof(coord), "(%ld,%ld)", XX, YY );
+		pCoord->changeText( (char*)coord );
+		pCoord->setChangeText(true);
 #ifdef DEG_MS
-		snprintf( (char*)coord, sizeof(coord), "%ld %ld \tAD:%02.0fh %02.0f' %02.2f\"", XX, YY, HMS.h, HMS.m, HMS.s );
+		snprintf( (char*)coord, sizeof(coord), "=%02.0fh %02.0f' %02.2f\"", HMS.h, HMS.m, HMS.s );
 #else
-		snprintf( (char*)coord, sizeof(coord), "%ld %ld \t%f", XX, YY, vJ2000.x );
+		snprintf( (char*)coord, sizeof(coord), "=%f", vJ2000.x );
 #endif
 		pJ2000_1->changeText( (char*)coord );
 		pJ2000_1->setChangeText(true);
-		pJ2000_1->setPos( 5, 17);
 
 #ifdef DEG_MS
-		snprintf( (char*)coord, sizeof(coord), "\t\tDE:%2.0fd %02.0f' %02.2f\"", DMS.d, DMS.m, DMS.s );
+		snprintf( (char*)coord, sizeof(coord), "=%2.0fd %02.0f' %02.2f\"", DMS.d, DMS.m, DMS.s );
 #else
-		snprintf( (char*)coord, sizeof(coord), "\t\t%f", vJ2000.y );
+		snprintf( (char*)coord, sizeof(coord), "=%f", vJ2000.y );
 #endif
 		pJ2000_2->changeText( (char*)coord );
 		pJ2000_2->setChangeText(true);
-		pJ2000_2->setPos( 5, 32);
 	}
 	// Mise a jour du panelText
 	// dans la position de la souris
@@ -802,8 +821,6 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	pFondCoord->setPos( x+15, y+15);
 	pFondCoord->onTop();
 
-	pCoord->setPos( 5, 2);
-	pCoord->setChangeText(true);
 	
 	//log_tab(false);
 	//log( (char*)"---" );
@@ -1185,7 +1202,7 @@ void PanelCapture::findGaiaDR3()
 	double res;
 	if ( resH > resV )			res = resH;
 	else						res = resV;
-	if ( res>3500.0 )       res = 3500.0;
+	if ( res>3500.0 )       	res = 3500.0;
 	// RECHERCHE DU CENTRE DE L'IMAGE
 	static char coord[80];
 	double xCentre = pCapture->getFits()->getCRVAL1();
@@ -1287,9 +1304,6 @@ void PanelCapture::setInfoSouris(bool b)
 		
 		int x = Screen2x(xx);
 		int y = Screen2y(yy);
-		
-		pCoord->setPos( 5, 2);
-		pCoord->updatePos();
 	}
 	else
 	{	

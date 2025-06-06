@@ -11,10 +11,10 @@ PanelStdOut::PanelStdOut()	{
 	int dx=350;
 	int dy=400;
 
-    x = var.geti("xPanelStdOut");
-    y = var.geti("yPanelStdOut");
-    dx = var.geti("dxPanelStdOut");
-    dy = var.geti("dyPanelStdOut");
+    if ( var.existe("xPanelStdOut") )			x = var.geti("xPanelStdOut");
+    if ( var.existe("yPanelStdOut") )			y = var.geti("yPanelStdOut");
+    if ( var.existe("dxPanelStdOut") )			dx = var.geti("dxPanelStdOut");
+    if ( var.existe("dyPanelStdOut") )			dy = var.geti("dyPanelStdOut");
 
     logf( (char*)"dy=%d", dy );
     if ( x<= 0 )        x = 10;

@@ -17,11 +17,11 @@
 #include <time.h>
 #include <atomic>
 
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include "button_callback.h"
 
 #include "surveillance.h"
-#include "MathlibD.h"
 #include "panel_courbe.h"
 //#include "catalog.h"
 
@@ -105,6 +105,11 @@ typedef struct readBackground       rb_t;
 
     extern double                    xSuivi;
     extern double                    ySuivi;
+    extern double                    xSuivi0;
+    extern double                    ySuivi0;
+    extern double                    xSuivi1;
+    extern double                    ySuivi1;
+	extern double				 	 fDiamSuivi1;
     extern double                    xSuiviSvg;
     extern double                    ySuiviSvg;
         
@@ -117,7 +122,8 @@ typedef struct readBackground       rb_t;
     extern vcf4                     colorTraces[];
 
     extern bool                     bInverseCouleur;
-    extern double					fLimitCorrection;
+    extern double					fLimitCorrection0;
+    extern double					fLimitCorrection1;
     extern double                    fTimeMili;
     
     #ifndef PANELCOURBE_CPP

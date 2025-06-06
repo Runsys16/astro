@@ -26,6 +26,7 @@ public:
 	virtual void		wheelDown( int, int);
 
 	virtual void		releaseLeft( int, int);
+	virtual Panel*		isMouseOver( int, int);
 };
 
 
