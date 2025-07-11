@@ -94,13 +94,13 @@ void Stars::sup(Star * p)
 //--------------------------------------------------------------------------------------------------------------------
 Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 {
-    logf( (char*)"Stars::addStar() souris(%d, %d)   dx_screen=%d, dy_screen%d, echelle =%0.2f) : %d",
+    logf( (char*)"Stars::addStar() souris(%d, %d)   dx_screen=%d, dy_screen=%d, echelle =%0.2f : %d",
                   xm, ym, dx_screen, dy_screen, e, __LINE__);
     log_tab(true);
 
     float X = (float) ((float)xm - (float)dx_screen)/e; 
     float Y = (float) ((float)ym - (float)dy_screen)/e; 
-    logf( (char*)"conversion  (%d, %d) => (%0.4f, %0.4f)", xm, ym, X, Y);
+    logf( (char*)"conversion souris (%d, %d) => (%0.4f, %0.4f)", xm, ym, X, Y);
     
 
 
@@ -135,13 +135,13 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
         return NULL;
     }
     
-    logf( (char*)"Appelle star::updatePos()" );
+    logf( (char*)"Appelle star::updatePos(%d, %d, %d, %d)", dx_screen, dy_screen, e, e ); 
     pp->updatePos( dx_screen, dy_screen, e, e ); 
 
     logf( (char*)"find(%d, %d)", pp->getXScreen(), pp->getYScreen()  );
     if ( starExist(pp->getXScreen(), pp->getYScreen()) )        { 
         delete pp;
-        logf( (char*)"Etoile existe deja ..." );
+        logf( (char*)"Efface etoile ..." );
 
         log_tab(false);
 		log( (char*)"---" );
@@ -288,6 +288,9 @@ void Stars::findAllStars()
         char t[] = "00000000000";  
         sprintf( t, "%d", (int)v_tStars.size() );
         logf( (char*)"Nb etoiles %d", (int)v_tStars.size() );
+
+		if ( bNuit )        pNbStars->setColor( 0xffff0000 );//glColor4f( 0.3,  0.0,  0.0, 1.0 );
+		else                pNbStars->setColor( 0x00ff00ff );//glColor4f( 0.0,   1.0,  0.0, 0.4 );
         pNbStars->changeText( t );
     }
     
@@ -433,8 +436,13 @@ void Stars::selectLeft( int xp, int yp)
         if ( dx <20 && dy < 20 )
         {
             for( int k=0; k<nb; k++ )   { if (k!=n) v_tStars[k]->setZoom(false); }
-            v_tStars[n]->setZoom(true);
+            
+            bool bz = !v_tStars[n]->getZoom();
+           	v_tStars[n]->setZoom(bz);
+            
+        	logf( (char*)"Stars::selectLeft Etoile[%d] set Zoom = %s", n, BOOL2STR(bz) );
         }
+        //else
     }
     log_tab(false);
     //logf( (char*)"Stars::selectLeft(%d, %d) : %d ", xp, yp, __LINE__ );
@@ -453,11 +461,15 @@ void Stars::selectMiddle( int xp, int yp)
         int dx = abs(xp-x_star);
         int dy = abs(yp-y_star);
         
-        //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
         if ( dx <20 && dy < 20 )
-            v_tStars[n]->toggleSuivi();
-        else
-            v_tStars[n]->setSuivi(false);
+        {
+			v_tStars[n]->toggleSuivi();
+        	logf( (char*)"Stars::selectMiddle Etoile[%d] toggle suivi ", n );
+		}
+		else
+		{
+			v_tStars[n]->setSuivi(false);
+		}
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

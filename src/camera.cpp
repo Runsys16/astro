@@ -12,7 +12,7 @@ Camera::~Camera()
     bCharging = false;
 
 
-    logf( (char*)"  join()" );
+    logf( (char*)"  fermeture thread join()" );
     bExitThread = true;
     while( bStartThread );
     logf( (char*)"  join() OK" );
@@ -21,11 +21,11 @@ Camera::~Camera()
     
     WindowsManager& vm = WindowsManager::getInstance();
 
-    //panelPreview->deleteBackground();
+    //panelCamera->deleteBackground();
 
-	if ( panelPreview != NULL )	{
-		vm.sup( panelPreview );
-	    delete panelPreview;
+	if ( panelCamera != NULL )	{
+		vm.sup( panelCamera );
+	    delete panelCamera;
     }
     
 	if ( panelControl != NULL )	{
@@ -77,12 +77,26 @@ void Camera::init()
     
     previousTime = -1;
     bStartThread = false;
+    bPanelControl = false;
 
     nb_images   = 0;
     sSauveDir = "/home/rene/.astropilot/";
     
-	panelPreview = NULL;
+	panelCamera = NULL;
 	panelControl = NULL;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Camera::addControlName( const string& sName, int xt, int yt )	{
+
+    if ( isControl(sName ) )
+    {
+		createControlIDminmax(     panelControl, xt, yt, (char*)sName.c_str() );
+		//createControlID(     panelControl, xt, yt, (char*)sName.c_str() );
+		return 1;
+	}
+	return 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -95,64 +109,27 @@ int Camera::addControl()	{
     int yt  = 10;
     int dyt = 16;
     int n = 0;
-    string name;
-    name = "Brightness";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Contrast";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Saturation";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Hue";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Gamma";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Sharpness";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Exposure, Auto";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Exposure (Absolute)";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Power Line";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Pan";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Backlight";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Auto Exposure";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Exposure Time";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Tilt";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Zoom";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "White";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    name = "Temperature";
-    if ( isControl(name ) )
-        createControlID(     panelControl, xt, yt + n++*dyt, (char*)name.c_str() );
-    //createControlID(     panelControl, xt, yt + n++*dyt, (char*)"" );
-    //createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance (auto)", 0x0098090C );
-    //createControlIDbyID( panelControl, xt, yt + n++*dyt, (char*)"White Balance", 0x0098091A );
+
+    n += addControlName( string("Brightness"), 			xt, yt + n*dyt );
+    n += addControlName( string("Contrast"), 			xt, yt + n*dyt );
+    n += addControlName( string("Saturation"), 			xt, yt + n*dyt );
+    n += addControlName( string("Hue"),					xt, yt + n*dyt );
+    n += addControlName( string("Gamma"),				xt, yt + n*dyt );
+    n += addControlName( string("Sharpness"),			xt, yt + n*dyt );
+    n += addControlName( string("Exposure, Auto"),		xt, yt + n*dyt );
+    n += addControlName( string("Exposure (Absolute)"),	xt, yt + n*dyt );
+    n += addControlName( string("Power Line"),			xt, yt + n*dyt );
+    n += addControlName( string("Pan"),					xt, yt + n*dyt );
+    n += addControlName( string("Backlight"),			xt, yt + n*dyt );
+    n += addControlName( string("Auto Exposure"),		xt, yt + n*dyt );
+    n += addControlName( string("Exposure Time"),		xt, yt + n*dyt );
+    n += addControlName( string("Tilt"),				xt, yt + n*dyt );
+    n += addControlName( string("Zoom"),				xt, yt + n*dyt );
+	n += addControlName( string("White"),				xt, yt + n*dyt );
+    n += addControlName( string("Temperature"),			xt, yt + n*dyt );
 
     int dy = ++n*dyt;
-    panelControl->setSize( 200, dy);
+    panelControl->setSize( 200+150, dy);
     
     logf( (char*)"dy=%d", dy);
     log_tab(false);
@@ -175,18 +152,15 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
 
 	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
 
-    PanelText* pt = new PanelText( (char*)"     ", PanelText::NORMAL_FONT, x + 150, y );
-    p->add( pt );
-
     Control* pControl = getControl(str);
     
     if (pControl)       {
-        pControl->setPanelText(pt);
+
         PanelSpinEditText* pSET = new PanelSpinEditText();
+        
         double min = pControl->getMin();
         double max = pControl->getMax();
         double step = pControl->getStep();
-        //pSET->set( min, max, max-min, (int)(max-min/2000)+1 );
         
         pSET->set( min, max, max-min, 1 );
         pSET->set_ndecimal(0);
@@ -194,49 +168,51 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
         pSET->setPos( x+150, y );
         pSET->setSize( 90, 14 );
         pSET->setExtraString( "Control" );
-        pSET->setChangeValue( this );
-        pSET->setID( pControl );
+        pSET->setChangeValue( (ChangeValue*)this );
+        pSET->setID( (void*)pControl );
         pSET->set_val( pControl->getValue() );
         p->add(pSET);
-        char text[] = "0000000000000000";
-        sprintf( text, "%d", pControl->getValue()); 
-        pt->changeText(text);
 
-	    logf( (char*)"Ajout de '%s'  %.2f>%.2f  / %.2f", str, (float)min, (float)max, (float)step );
+	    logf( (char*)"Ajout de '%s'  %.2f>%.2f/%.2f = %.2f", str, (float)min, (float)max, (float)step, (float)pControl->getValue() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id)	{   
-	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
-    PanelText* pt = new PanelText( (char*)"     ", PanelText::NORMAL_FONT, x + 150, y );
-    p->add( pt );
+void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{   
+	p->add( new PanelTextOmbre( (char*)str0,  	   PanelText::NORMAL_FONT, x, y ) );
 
-    Control* pControl = getControl(id);
+    Control* pControl = getControl(str0);
+
     if (pControl)       {
-        pControl->setPanelText(pt);
-        char text[] = "0000000000000000";
-        sprintf( text, "%d", pControl->getValue()); 
-        pt->changeText(text);
-
 
         PanelSpinEditText* pSET = new PanelSpinEditText();
+        
         double min = pControl->getMin();
         double max = pControl->getMax();
         double step = pControl->getStep();
+        
         pSET->set( min, max, max-min, 1 );
         pSET->set_ndecimal(0);
         pSET->set_delta( 20, 8 );
-        pSET->setPos( x+150, y );
+        pSET->setPos( x+150+150, y );
         pSET->setSize( 90, 14 );
         pSET->setExtraString( "Control" );
-        pSET->setChangeValue( this );
-        pSET->setID( pControl );
+        pSET->setChangeValue( (ChangeValue*)this );
+        pSET->setID( (void*)pControl );
         pSET->set_val( pControl->getValue() );
         p->add(pSET);
 
-	    logf( (char*)"Ajout de '%s'  %.2f>%.2f  / %.2f", str, (float)min, (float)max, (float)step );
+	    logf( (char*)"Ajout de '%s'  %.2f>%.2f/%.2f = %.2f", str0, (float)min, (float)max, (float)step, (float)pControl->getValue() );
+
+		char str1[256];
+		snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t\ %.0lf", min, max, step );
+		PanelText* pp = new PanelText( (char*)"  ", PanelText::NORMAL_FONT, x + 150, y );
+		pp->setTabSize(85);
+		pp->setColor(0x808080ff);
+		pp->changeText( (char*)str1 );
+		p->add( pp );
+	
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -255,14 +231,14 @@ void Camera::CreateControl()	{
     panelControl->setDisplayGL(displayGLnuit_cb);
     panelControl->setExtraString( getDevName() );
     panelControl->loadSkinPath( "images/astro" );
-	panelControl->setBorderSize(16);
+	panelControl->setBorderSize(8);
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
     
     
-    int dx = 200;
+    int dx = 200 +150;
     int dy = 150;
     int x = 20;
     int y = 20;
@@ -288,6 +264,7 @@ void Camera::start_thread()
 {
     if ( !bStartThread )
     {
+	    logf((char*)"[THREAD] Camera::start_thread() start %s", (char*)getName().c_str());
         thread_chargement = thread(&Camera::threadExtractImg, this);
         thread_chargement.detach();
 
@@ -303,34 +280,34 @@ void Camera::CreatePreview()	{
 
 	WindowsManager& wm = WindowsManager::getInstance();
 
-	//panelPreview = new PanelSimple();
-	panelPreview = new PanelCamera(this);
-    panelPreview->setExtraString( "PanelCamera View");
-    panelPreview->setExtraString( getName().c_str() );
+	//panelCamera = new PanelSimple();
+	panelCamera = new PanelCamera(this);
+    panelCamera->setExtraString( "PanelCamera View");
+    panelCamera->setExtraString( getName().c_str() );
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
     logf((char*)"wsc=%d hsc=%d", wsc, hsc);
 	iconSizePreview(wsc, hsc);
-	//panelPreview->setBackground( (char*)"frame-0.raw");
+	//panelCamera->setBackground( (char*)"frame-0.raw");
 	
 	//pCamFilename = new PanelText( (char*)"frame-0.raw",		PanelText::LARGE_FONT, 20, 10 );
 	pCamFilename = new PanelText( (char*)getDevName(),		PanelText::LARGE_FONT, 20, 10 );
-	panelPreview->add( pCamFilename );
+	panelCamera->add( pCamFilename );
 	
 	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, wsc-50, 10 );
-	panelPreview->add( pNbStars );
-	panelPreview->getStars()->setPanelNbStars( pNbStars );
+	panelCamera->add( pNbStars );
+	panelCamera->getStars()->setPanelNbStars( pNbStars );
 	
 	
 	//string pStr = getName().c_str();
 	pPanelName = new PanelText( (char*)getName().c_str(),	PanelText::LARGE_FONT, 0, 10 );
 	pPanelName->setAlign( PanelText::CENTER );
-	panelPreview->add( pPanelName );
+	panelCamera->add( pPanelName );
 	
 
-	//panelPreview->setCanMove(false);
- 	wm.add( panelPreview );
+	//panelCamera->setCanMove(false);
+ 	wm.add( panelCamera );
 
     logf((char*)"    name    %s ", getName().c_str() );
     logf((char*)"    devname %s ", getDevName() );
@@ -348,7 +325,7 @@ void Camera::resizeControl(int width, int height)	{
     int dy = panelControl->getDY();
     
     //if ( dx==0)     return;
-    dx = 200;
+    dx = 200+150;
     dy = 192;
     
     //int x = width - dx - 20;
@@ -368,7 +345,7 @@ void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
     
     //if ( dx==0)     return;
 
-    dx = 200;
+    dx = 200+150;
     dy = 192;
 
     int x = width - dx - 20;
@@ -389,6 +366,8 @@ void Camera::iconSizePreview(int width, int height)	{
 	int wsc = width;
 	int hsc = height;
 
+	bFullScreen	= false;
+	bIconized	= true;
 
     if ( vCameraSize.x == -1 )
     {
@@ -432,8 +411,12 @@ void Camera::iconSizePreview(int width, int height)	{
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
 	
-	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
-	//panelPreview->setDisplayGL(displayGLCamera_cb);
+	panelCamera->setPosAndSize( xCam, yCam, dxCam, dyCam);
+	panelCamera->raz_ech_usr();
+	panelCamera->compute_echelle();
+	
+	if ( panelControl != NULL )			panelControl->setVisible(false);
+	//panelCamera->setDisplayGL(displayGLCamera_cb);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -441,6 +424,9 @@ void Camera::iconSizePreview(int width, int height)	{
 void Camera::fullSizePreview(int width, int height)	{
     logf((char*) "Camera::fullSizePreview(%d, %d) %s ", width, height, (char*)getName().c_str() );
 	WindowsManager& wm = WindowsManager::getInstance();
+	
+	bFullScreen	= true;
+	bIconized	= false;
 
 	int wsc = width;
 	int hsc = height;
@@ -486,8 +472,12 @@ void Camera::fullSizePreview(int width, int height)	{
     logf((char*) "   Screen  : %dx%d", wsc, hsc);
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
-	panelPreview->setPosAndSize( xCam, yCam, dxCam, dyCam);
-	//panelPreview->setDisplayGL(displayGLCamera_cb);
+	panelCamera->setPosAndSize( xCam, yCam, dxCam, dyCam);
+	panelCamera->raz_ech_usr();
+	panelCamera->compute_echelle();
+	
+	if ( bPanelControl )		panelControl->setVisible( true );
+	//panelCamera->setDisplayGL(displayGLCamera_cb);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -505,7 +495,6 @@ void charge_camera()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::threadExtractImg()
 {
-    logf((char*)"[THREAD] Camera::threadExtractImg() start %s", (char*)getName().c_str());
 
     while( true )
     {
@@ -541,17 +530,17 @@ void Camera::change_background(void)
     if ( bCharging )
     {
         //log((char*)"START Camera::change_background()");
-        panelPreview->deleteBackground();
+        panelCamera->deleteBackground();
         try
         {
-            //panelPreview->setBackground( getBuffer(), vCameraSize.x, vCameraSize.y, 3);
+            //panelCamera->setBackground( getBuffer(), vCameraSize.x, vCameraSize.y, 3);
             readBgr.ptr = getBuffer();
             readBgr.w = vCameraSize.x;
             readBgr.h = vCameraSize.y;
             readBgr.d = 3;
              
-            panelPreview->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
-            panelPreview->setRB( &readBgr);
+            panelCamera->setBackground( readBgr.ptr, readBgr.w, readBgr.h, readBgr.d);
+            panelCamera->setRB( &readBgr);
             //logf((char*)" %s : %ld", getName().c_str(), getBuffer() );
             //if (bSuivi)    suivi();
         }
@@ -589,6 +578,7 @@ void Camera::change_background(void)
 //--------------------------------------------------------------------------------------------------------------------
 bool Camera::keyboard(char key)
 {
+return false;
     //std::cout << (int)key << std::endl;
 	Control* pControl;
 	if ( !panelControl->getVisible() )       return false;
@@ -714,7 +704,8 @@ bool Camera::keyboard(char key)
 void Camera::setVisible(bool b)
 {
     //log((char*)"Camera::setVisible()");
-    panelPreview->setVisible( b );
+    panelCamera->setVisible( b );
+    if ( bPanelControl )	panelControl->setVisible( b );
     //log((char*)"Camera::setVisible()");
     //panelControl->setVisible( b );
 }
@@ -730,7 +721,8 @@ void Camera::setControlVisible(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::togglePanel()
 {
-    panelControl->setVisible( !panelControl->getVisible() );
+	bPanelControl = ! bPanelControl;
+    panelControl->setVisible( bPanelControl );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -758,7 +750,7 @@ GLubyte* Camera::getPtr()
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::get_xCam()
 {
-    xCam = panelPreview->getPosX();
+    xCam = panelCamera->getPosX();
     return xCam;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -766,7 +758,7 @@ int Camera::get_xCam()
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::get_yCam()
 {
-    yCam = panelPreview->getPosY();
+    yCam = panelCamera->getPosY();
     return yCam;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -795,7 +787,7 @@ ivec2 Camera::get_vCameraSize()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::recentreSuivi()
 {
-    if ( panelPreview!=NULL )		panelPreview->recentreSuivi();
+    if ( panelCamera!=NULL )		panelCamera->recentreSuivi();
     else
     	logf( (char*)"Pas de panel preview !!");
 }
@@ -804,7 +796,7 @@ void Camera::recentreSuivi()
 //--------------------------------------------------------------------------------------------------------------------
 vec2* Camera::getSuivi()
 {
-    if ( panelPreview!=NULL )           return panelPreview->getSuivi();
+    if ( panelCamera!=NULL )           return panelCamera->getSuivi();
     return NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -812,7 +804,7 @@ vec2* Camera::getSuivi()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::setColor( long color )
 {
-    panelPreview->setColor( color );
+    panelCamera->setColor( color );
     panelControl->setColor( color );
 }
 

@@ -1,5 +1,6 @@
 #include "camera_mgr.h"
 #include "pleiade.h"
+#include "main.h"
 
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -36,42 +37,62 @@ bool Camera_mgr::camera_exist( string sdev )
 void Camera_mgr::add( string sdev_name )
 {
 
+    logf((char*)"Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
     if ( camera_exist( sdev_name ) )            return;
 
+	log_tab(true);
+
+
     //logf( (char*)"    Not Exist" );
-    logf((char*)"Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
 
     Camera *        pCamera = new Camera(1600,900);
     //pCameras.push_back( pCamera );
     string newString = sdev_name;
     
     pCamera->setDevName( newString );
+
     pCamera->open_device();
     if ( !pCamera->getIOCapability() ) {
     	delete pCamera;
+	    log_tab(false);
+	    logf((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
     	return;
     }
+    if ( pCamera->getName().find( "USB Camera" ) == 0 )
+    {
+    	delete pCamera;
+	    log_tab(false);
+	    logf((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
+	    return;
+    }
+
     
     pCamera->init_device();
     pCamera->capability_list();
     pCamera->start_capturing();
 
+
     pCamera->CreatePreview();
     pCamera->CreateControl();
 
     pCameras.push_back( pCamera );
-    pCamera->start_thread();
-    
-    active();
+	
     onBottom();
+    active( pCamera );
 
+	//bDesactiveLog = true;
+    pCamera->start_thread();
+	//bDesactiveLog = false;
+
+	log_tab(false);
+    logf((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::add( Camera* p )
 {
-    logf((char*)"Camera_mgr::add() -------------" );
+    logf((char*)"Camera_mgr::add(Camera *)"	 );
     log_tab(true);
 
 
@@ -86,12 +107,12 @@ void Camera_mgr::add( Camera* p )
         logf( (char*)"Ce n'est pas une camera" );
     }
 
-    active();
     onBottom();
+	active( p );
     
     //vizier.charge();
     log_tab(false);
-    logf((char*)"Camera_mgr::add() -------------" );
+    logf((char*)"Camera_mgr::add(Camera*) END" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -210,14 +231,14 @@ void Camera_mgr::resize(int width, int height)
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::onBottom()
 {
-    if ( pCurrent && pCurrent->getPanelPreview() )            
-        WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
+    if ( pCurrent && pCurrent->getPanelCamera() )            
+        WindowsManager::getInstance().onBottom( pCurrent->getPanelCamera() );
 
     /*
     for( int i=0; i<pCameras.size(); i++ )
     {
         if ( pCameras[i] != pCurrent )
-            WindowsManager::getInstance().onBottom( pCameras[i]->getPanelPreview() );
+            WindowsManager::getInstance().onBottom( pCameras[i]->getPanelCamera() );
     }
     */
     
@@ -229,7 +250,7 @@ void Camera_mgr::onBottom()
 void Camera_mgr::idleGL()
 {
     if ( pCurrent )            
-        WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
+        WindowsManager::getInstance().onBottom( pCurrent->getPanelCamera() );
     
 
     int nb = pCameras.size();
@@ -246,7 +267,7 @@ void Camera_mgr::idleGL()
 void Camera_mgr::update()
 {
     if ( pCurrent )            
-        WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
+        WindowsManager::getInstance().onBottom( pCurrent->getPanelCamera() );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -254,7 +275,8 @@ void Camera_mgr::update()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::active()
 {
-    logf((char*)"Camera_mgr::active() -------------" );
+	// Si la camera est connecte au demarrage => Plantage
+    //logf((char*)"Camera_mgr::active() -------------" );
 
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
@@ -276,6 +298,35 @@ void Camera_mgr::active()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::active( Camera* pCamera)
+{
+	// Si la camera est connecte au demarrage => Plantage
+    //logf((char*)"Camera_mgr::active() -------------" );
+    if ( pCamera == NULL )			return;
+
+    int w = WindowsManager::getInstance().getWidth();
+    int h = WindowsManager::getInstance().getHeight();
+
+    if ( pCurrent != NULL )         pCurrent->iconSizePreview( w, h );
+
+    int n = pCameras.size();
+    nActive = -1;
+	for( int i=0; i<n; i++ )
+	{
+		if ( pCameras[i] == pCamera )		nActive = i;
+	}
+	if ( nActive == -1 )			logf( (char*)"[Erreur] Camera_mgr::active(Camera*) nAtive = -1" );
+
+    pCurrent = pCamera;
+    
+    reOrder();
+
+
+    pCamera->fullSizePreview( w, h );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::reOrder()
 {
     logf((char*)"Camera_mgr::reOrder() -------------" );
@@ -285,8 +336,8 @@ void  Camera_mgr::reOrder()
     {
         if ( pCameras[i] != pCurrent )
         {
-            WindowsManager::getInstance().onBottom( pCameras[i]->getPanelPreview() );
-            pCameras[i]->getPanelPreview()->setPos( a*00+10, a*200+10 );
+            WindowsManager::getInstance().onBottom( pCameras[i]->getPanelCamera() );
+            pCameras[i]->getPanelCamera()->setPos( a*00+10, a*200+10 );
         }
         else
             a--;
@@ -294,7 +345,7 @@ void  Camera_mgr::reOrder()
 
 
     if ( pCurrent )            
-        WindowsManager::getInstance().onBottom( pCurrent->getPanelPreview() );
+        WindowsManager::getInstance().onBottom( pCurrent->getPanelCamera() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -408,7 +459,7 @@ void Camera_mgr::print_list()
     logf( (char*)"  pCameras : " );
     for( int i=0; i<nb0; i++ )
     {
-        logf( (char*)"    %s", pCameras[i]->getName() );
+        logf( (char*)"    %s", pCameras[i]->getName().c_str() );
     }
 
 }    
@@ -446,7 +497,7 @@ void Camera_mgr::deleteAllStars()
     
     logf( (char*)"Camera_mgr::findAllStars()" );
     
-    pCurrent->getPanelPreview()->getStars()->deleteAllStars();
+    pCurrent->getPanelCamera()->getStars()->deleteAllStars();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -458,15 +509,15 @@ void Camera_mgr::findAllStars()
     
     logf( (char*)"Camera_mgr::findAllStars()" );
     
-    pCurrent->getPanelPreview()->getStars()->setView( pCurrent->getPanelPreview() );
-    pCurrent->getPanelPreview()->getStars()->setRB( pCurrent->getRB() );
-    pCurrent->getPanelPreview()->getStars()->findAllStars();
-    pCurrent->getPanelPreview()->getStars()->setVisible(true);
+    pCurrent->getPanelCamera()->getStars()->setView( pCurrent->getPanelCamera() );
+    pCurrent->getPanelCamera()->getStars()->setRB( pCurrent->getRB() );
+    pCurrent->getPanelCamera()->getStars()->findAllStars();
+    pCurrent->getPanelCamera()->getStars()->setVisible(true);
 
     /*
     char t[] = "00000000000";  
     PanelText* p = pCurrent->getPanelNbStars();
-    sprintf( t, "%d", pCurrent->getPanelPreview()->getStars()->size() );
+    sprintf( t, "%d", pCurrent->getPanelCamera()->getStars()->size() );
     p->changeText( t );
     */
 }
@@ -482,9 +533,9 @@ void Camera_mgr::suivi()
     if ( getRB() != NULL )
     {
         //logf( (char*)"Camera_mgr::suivi()" );
-        Panel * pView= pCurrent->getPanelPreview();
-        pCurrent->getPanelPreview()->getStars()->setView( (PanelSimple*)pView );
-        pCurrent->getPanelPreview()->getStars()->suivi( getRB() );
+        Panel * pView= pCurrent->getPanelCamera();
+        pCurrent->getPanelCamera()->getStars()->setView( (PanelSimple*)pView );
+        pCurrent->getPanelCamera()->getStars()->suivi( getRB() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -502,7 +553,7 @@ void Camera_mgr::position(double ra, double dc)
     		logf( (char*)"Camera_mgr::position() pCurrent = objet<pleiade>" );
     	}
     	else {
-	        pCurrent->getPanelPreview()->getStars()->position(ra, dc);
+	        pCurrent->getPanelCamera()->getStars()->position(ra, dc);
 	   	}
     }
 }
@@ -523,7 +574,7 @@ void Camera_mgr::setColor(long color)
 void  Camera_mgr::tex2screen(int& x, int& y)
 {
     if (pCurrent == NULL)                   return;
-    pCurrent->getPanelPreview()->tex2screen(x, y);
+    pCurrent->getPanelCamera()->tex2screen(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -531,7 +582,7 @@ void  Camera_mgr::tex2screen(int& x, int& y)
 void  Camera_mgr::tex2screen(double& x,double& y)
 {
     if (pCurrent == NULL)                   return;
-    pCurrent->getPanelPreview()->tex2screen(x, y);
+    pCurrent->getPanelCamera()->tex2screen(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -539,7 +590,7 @@ void  Camera_mgr::tex2screen(double& x,double& y)
 void  Camera_mgr::screen2tex(int& x,int& y)
 {
     if (pCurrent == NULL)                   return;
-    pCurrent->getPanelPreview()->screen2tex(x, y);
+    pCurrent->getPanelCamera()->screen2tex(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -547,7 +598,7 @@ void  Camera_mgr::screen2tex(int& x,int& y)
 void  Camera_mgr::screen2tex(double& x,double& y)
 {
     if (pCurrent == NULL)                   return;
-    pCurrent->getPanelPreview()->screen2tex(x, y);
+    pCurrent->getPanelCamera()->screen2tex(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -586,6 +637,16 @@ void  Camera_mgr::stopAllCameras()
     {
         if ( pCameras[i] )				pCameras[i]->stop_thread();
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::cam_full_screen()
+{   
+    if (pCurrent == NULL)                   return; 
+    
+    // taille main.cpp
+    pCurrent->fullSizePreview( width, height );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

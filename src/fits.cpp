@@ -6,6 +6,7 @@
 //		https://fits.gsfc.nasa.gov/standard30/fits_standard30.pdf
 //
 //--------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
 Fits::Fits(string filename, PanelCapture* p)
 {
     logf((char*)"Constructeur Fits::Fits() -------------" );
@@ -27,17 +28,26 @@ Fits::Fits(string filename, PanelCapture* p)
     dCRVAL1 =  0.0;
     dCRVAL2 =  0.0;
 
+    dCBLACK = -1.0;
+    dCWHITE = -1.0;
+    
+    dMIPS_HI = -1.0;
+    dMIPS_LO = -1.0;
+
+    dDATAMAX = -1.0;
+    dDATAMIN = -1.0;
+
     dCD1_1  = -1.0;
     dCD1_2  = -1.0;
     dCD2_1  = -1.0;
     dCD2_2  = -1.0;
-    dBZERO  = -1.0;
 
+    dBZERO  = -1.0;
     dBSCALE = -1.0;
     iOFFSET = -1;
 
-    dMin = 999999999999.9;
-    dMax = -999999999999.9;
+    dMin0 = dMin1 = dMin2 = dMin3 = 999999999999.9;
+    dMax0 = dMax1 = dMax2 = dMax3 = -999999999999.9;
 
 	//------------------------------------------------------------------------
     VarManager& 		var	= VarManager::getInstance();
@@ -81,7 +91,14 @@ void Fits::chargeFits()
 {
 	int n = 0;
 	bEOF = false;
-	while( !bEOF )    chargeHDU(n++);
+	while( !bEOF )    {
+		chargeHDU(n++);
+		if ( n>3 )	{
+			logf( (char*)"[Erreur} Chargement de 3 FDU" );
+			logf( (char*)"  %s", _filename.c_str() );
+			return;
+		}
+	}
     
     chargeTexture(n);
     
@@ -114,47 +131,41 @@ void Fits::chargeHDU(int n)
     
     for( int i=0; i<(LENGTH_HDU/80); i++ )
     {
-        string k = "";
-        string v = "";
+        string k = "";	// key
+        string v = "";  // value
         
-		//if (  buffer[i*80+8] != '=' )			logf( (char*)"[WARNING] Mot cle non standart" );;
-        
+		//  Recuperation de la valeur keyword        
         for( int j=0; j<8; j++ )
         {
             k = k + buffer[i*80+j];
         }
         
-      	/*
-        if ( i==0 )
-        {
-            if ( k.find("SIMPLE") == std::string::npos )
-            {
-                logf( (char*)"[ERREUR] Ce n'est pas un fichier FITS standard 'SIMPLE' non trouve" );
-                return;
-            }
-        }
-        */
-        
+		//  Recuperation de la valeur        
         for( int j=9; j<80; j++ )
         {
             v = v + buffer[i*80+j];
         }
 
-        //logf( (char*)"Lecture de  :             '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
         logf( (char*)"Fits::chargeHDU()         '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
         
         
-             if ( k.find("BITPIX") == 0 )               readBITPIX(v);
-        else if ( k.find("NAXIS")  == 0 )               readNAXIS( k, v );
-        else if ( k.find("CR")     == 0 )               readCR( k, v );
-        else if ( k.find("CDELT")  == 0 )               readCDELT( k, v );
-        else if ( k.find("CD")     == 0 )               readCD( k, v );
-        else if ( k.find("PC")     == 0 )               readPC( k, v );
-        else if ( k.find("BZERO")  == 0 )               dBZERO = getDouble( v );
-        else if ( k.find("BSCALE") == 0 )               dBSCALE = getDouble( v );
-        else if ( k.find("OFFSET") == 0 )               iOFFSET = getInt( v );
-        //else if ( k.find("SWCREATE") == 0 )
-        else if ( k.find("HISTORY") == 0 )				
+             if ( k.find("BITPIX") == 0 )				readBITPIX(v);
+        else if ( k.find("NAXIS") == 0 )				readNAXIS( k, v );
+        else if ( k.find("CDELT" ) == 0 )				readCDELT( k, v );
+        else if ( k.find("CR") == 0 )					readCR( k, v );
+        else if ( k.find("CD") == 0 )					readCD( k, v );
+        else if ( k.find("PC") == 0 )					readPC( k, v );
+        
+        else if ( k.find("BZERO   ") == 0 )             dBZERO		= getDouble( v );
+        else if ( k.find("BSCALE  ") == 0 )             dBSCALE 	= getDouble( v );
+        else if ( k.find("OFFSET  ") == 0 )             iOFFSET		= getInt( v );
+        else if ( k.find("CWHITE  ") == 0 )				dCWHITE		= getDouble( v );
+        else if ( k.find("CBLACK  ") == 0 )				dCBLACK		= getDouble( v );
+        else if ( k.find("MIPS-HI ") == 0 )				dMIPS_HI	= getDouble( v );
+        else if ( k.find("MIPS-LO ") == 0 )				dMIPS_LO	= getDouble( v );
+        else if ( k.find("DATAMAX ") == 0 )				dDATAMAX	= getDouble( v );
+        else if ( k.find("DATAMIN ") == 0 )				dDATAMIN	= getDouble( v );
+        else if ( k.find("HISTORY ") == 0 )				
         {
         	k = "";
 	        for( int j=0; j<80; j++ )            k = k + buffer[i*80+j];
@@ -179,12 +190,30 @@ void Fits::chargeHDU(int n)
         
         pPanelFits->add_key_value( k, v);
         
+        
+        
         if ( k.find("END") == 0 )       { bEOF = true; break; }
     }
 
     fichier.close();
     
-	//afficheDic();
+	if ( nBITPIX == -32 )			nBITPIX = 32;
+	
+	//--------------------------------------------------------------------
+	// corrction CDELT1
+	// https://danmoser.github.io/notes/gai_fits-imgs.html#fits-header-example
+	//
+	// https://www.atnf.csiro.au/computing/software/miriad/progguide/node33.html    : Table 2.8
+	//
+	dCDELT1 =  dCDELT1 / cos( DEG2RAD(dCRVAL2) );
+	
+	vCRPIX =  vec2( dCRPIX1, dCRPIX2 );
+	vCRVAL =  vec2( dCRVAL1, dCRVAL2 );
+	vCDELT =  vec2( dCDELT1, dCDELT2 );
+
+
+	pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -255,8 +284,7 @@ void Fits::intersectionD( vec2&r, vec2& c, vec2& d )
 //--------------------------------------------------------------------------------------------------------------------
 double Fits::computeEchelle(vec2 v)
 {
-	mat2 mInv = mMat.inverse();
-	vec2 w = mInv * v;
+	vec2 w = mMatInv * v;
 	
 	return  5.0 * w.length() / v.length();
 }
@@ -291,6 +319,7 @@ void Fits::sauveMatrice()
 	
 	mat2 mMoinsX = mat2( -1.0, 0.0, 0.0, -1.0 );
 	mMat = mMoinsX * mAstroEchl * mAstroTrns;// * sym0;
+	mMatInv = mMat.inverse();
 	//mMat = mAstroTrns * mAstroEchl * mMoinsX ;// * sym0;
 	//mMat = mAstroEchl * mAstroTrns;// * sym0;
 
@@ -320,7 +349,7 @@ void Fits::sauveMatrice()
     r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 	v = mMat * bd + vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
-    r.key = "BD";
+    r.key = "Coord Ba-Dr";
     v.to_str(STR);
     r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
@@ -435,65 +464,131 @@ void Fits::sauveMatrice()
 //--------------------------------------------------------------------------------------------------------------------
 // Pour une image en 8eb par couleur
 // Lit une couleur du fichier fit, et applique les corrections si nessecaire
+// Lecture normalisee entre 0.0 et 1.0
+//--------------------------------------------------------------------------------------------------------------------
+	#define NORMALIZE(n,N)	n = n/N;
+	#define INTERVAL(c, N)	dMax##N = C>dMax##N ? C : dMax##N; dMin##N = C<dMin##N ? C : dMin##N;
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::read_RGB_8( float &C, uint8_t* pBuffer )
 {
 	C = *pBuffer;
+	INTERVAL(C, 0)
 
-	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = C = (C * dBSCALE) + dBZERO ;
-	if ( iOFFSET != -1 )				C -= iOFFSET;
+	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C - dBZERO) * dBSCALE;
+	INTERVAL(C, 1)
 
-	C /= 255.0;
+	NORMALIZE(C, 255.0)
+	INTERVAL(C, 2)
 
-	if ( C>dMax )				dMax = C;
-	if ( C<dMin )				dMin = C;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
 // Pour une image en 16eb par couleur
 // Lit une couleur du fichier fit, et applique les corrections si nessecaire
+// Lecture normalisee entre 0.0 et 1.0
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::read_RGB_16( float &C, int16_t* pBuffer )
-{	/*
-	uint8_t* p = (uint8_t*)pBuffer;
-	uint8_t  uLow  = *(p+0);
-	uint8_t  uHigh = *(p+1);
+void Fits::read_RGB_16( float &C, uint16_t* pBuffer )
+{
+	uint8_t* pBuffer8 = (uint8_t*) pBuffer;
+	uint16_t C_00 = *(pBuffer8 + 0)<<8;
+	uint16_t C_01 = *(pBuffer8 + 1);
 	
-	
-	
-	C = ((uint16_t)uHigh<<8 + (uint16_t)uLow);
-	*/
-	int16_t c = *pBuffer;
-	
-	C = (float)c;
-	
-	//if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C * dBSCALE);
-	//if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C * dBSCALE) + dBZERO ;
-	//if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C-dBZERO) * dBSCALE;
-	//if ( iOFFSET != -1 )				C -= iOFFSET;
-	
-	/*
-	if ( C < 0.0 )
-	{ 
-		logf( (char*)"Pixel hors valeur" );
-		//C *= -1.0;
+	C = (float)C_00 + (float)C_01;
+	INTERVAL(C, 0)
+
+
+	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C - dBZERO ) * dBSCALE;
+	INTERVAL(C, 1);
+
+
+
+	if ( dCWHITE!=-1 && dCBLACK!=-1 )
+	{
+		C = clamp( C, dCBLACK, dCWHITE );
+		C -= (dCBLACK);
+		C *= 65535.0 / (dCWHITE-dCBLACK);
 	}
+	INTERVAL(C, 2);
 
-	if ( C>dMax )				dMax = C;
-	if ( C<dMin )				dMin = C;
+	/*
+	if ( dDATAMAX!=-1 && dDATAMIN!=-1 )
+	{
+		C -= dBZERO;
+		C = clamp( C, (dDATAMIN), (dDATAMAX) );
+		C -= (dDATAMIN);
+		C *= 65535.0 / (dDATAMAX-dDATAMIN);
+	}
+	*/
+
+	if ( dMIPS_HI!=-1.0 && dMIPS_LO!=-1.0 )
+	{
+		//C = clamp( C, dMIPS_LO, dMIPS_HI );
+		C -= (dMIPS_LO);
+		C *= 65535.0 / (dMIPS_HI-dMIPS_LO);
+		//C = clamp( C, 0.0, 65535.0 );
+	}
+	INTERVAL(C, 3);
+	/*
 	*/
 	
-	if ( isnan(C) )	logf( (char*)"[ERREUR] Ce n'est pas un chiffre %d", c );
-	C /= 65536.0;
+	NORMALIZE(C, 65535.0);
+	INTERVAL(C, 4);
+	//clamp( C, 0, 65535.0 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+// Pour une image en 16eb par couleur
+// Lit une couleur du fichier fit, et applique les corrections si nessecaire
+// Lecture normalisee entre 0.0 et 1.0
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::read_RGB_32( float &C, uint32_t* pBuffer )
+{
+	uint8_t* pBuffer8 = (uint8_t*) pBuffer;
+	
+	uint32_t C_00 = *(pBuffer8 + 0)<<24;
+	uint32_t C_01 = *(pBuffer8 + 1)<<16;
+	uint32_t C_02 = *(pBuffer8 + 2)<<8;
+	uint32_t C_03 = *(pBuffer8 + 3);
+	
+	C = (float)( C_00 + (float)C_01 + (float)C_02 + (float)C_03);
+	INTERVAL(C, 0)
 
-	if ( isnan(C) )	logf( (char*)"[ERREUR] Ce n'est pas un chiffre %d", c );
 
-	if ( C>dMax )				dMax = C;
-	if ( C<dMin )				dMin = C;
+	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C - dBZERO ) * dBSCALE;
+	INTERVAL(C, 1);
 
-	if ( C>1.0  )		c = 1.0;
-	if ( C<-1.0 )		c = -1.0;
-	//C /= 21758.0;
+
+
+	if ( dCWHITE!=-1 && dCBLACK!=-1 )
+	{
+		C = clamp( C, dCBLACK, dCWHITE );
+		C -= (dCBLACK);
+		C *= 4294967296.0 / (dCWHITE-dCBLACK);
+	}
+	INTERVAL(C, 2);
+
+	/*
+	if ( dDATAMAX!=-1 && dDATAMIN!=-1 )
+	{
+		C -= dBZERO;
+		C = clamp( C, (dDATAMIN), (dDATAMAX) );
+		C -= (dDATAMIN);
+		C *= 65535.0 / (dDATAMAX-dDATAMIN);
+	}
+	*/
+
+	if ( dMIPS_HI!=-1.0 && dMIPS_LO!=-1.0 )
+	{
+		//C = clamp( C, dMIPS_LO, dMIPS_HI );
+		C -= (dMIPS_LO);
+		C *= 4294967296.0 / (dMIPS_HI-dMIPS_LO);
+		//C = clamp( C, 0.0, 65535.0 );
+	}
+	INTERVAL(C, 3);
+	/*
+	*/
+	
+	NORMALIZE(C, 4294967296.0);
+	INTERVAL(C, 4);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -531,11 +626,13 @@ void Fits::chargeTexture(int nHDU)
 	// Allocation des buffer
     GLubyte* 		pBuffer_gl     	= (GLubyte*)malloc( 3*size_gl );
     uint8_t* 		pBuffer_8   	= NULL;
-    int16_t* 		pBuffer_16  	= NULL;
+    uint16_t* 		pBuffer_16  	= NULL;
+    uint32_t* 		pBuffer_32  	= NULL;
     float* 			pBuffer_fit 	= NULL;
 
-	if 		( nBITPIX == 16 )		pBuffer_16  = (int16_t*)malloc( 2 * l_fit * sizeof(int16_t) );
-	else if	( nBITPIX == 8  )		pBuffer_8   = (uint8_t*)malloc( 1 * l_fit * sizeof(uint8_t) );
+	if 		( nBITPIX == 32 )		pBuffer_32  = (uint32_t*)malloc( l_fit * sizeof(uint32_t) );
+	else if	( nBITPIX == 16 )		pBuffer_16  = (uint16_t*)malloc( l_fit * sizeof(uint16_t) );
+	else if	( nBITPIX == 8  )		pBuffer_8   = (uint8_t*) malloc( l_fit * sizeof(uint8_t)  );
     else {
         logf( (char*)"[ERROR] Nompbre de bits par pixel non pris en charge ..." );
         log_tab(false);
@@ -544,7 +641,7 @@ void Fits::chargeTexture(int nHDU)
     
 	pBuffer_fit  = (float*)malloc( l_fit * sizeof(float) );
 	//---------------------------------------------------
-	// traitement des erreurs
+	// traitement des erreurs d'allocation
     if ( pBuffer_gl == NULL )	{
         logf( (char*)"[ERROR] Impossible d\'alloue la memoire pBuffer_gl" );
         log_tab(false);
@@ -570,6 +667,7 @@ void Fits::chargeTexture(int nHDU)
     std::ifstream fichier;
     fichier.open(_filename, std::ios_base::app);
 	//---------------------------------------------------
+	// Erreur ?
     if ( !fichier ) 		{
         logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)_filename.c_str() );
         log_tab(false);
@@ -580,7 +678,8 @@ void Fits::chargeTexture(int nHDU)
     fichier.seekg( LENGTH_HDU*nHDU, fichier.beg );
 	//---------------------------------------------------
     // lecture des plans memoires
-	if 		( nBITPIX == 16 )		fichier.read( (char*)pBuffer_16, l_fit * sizeof(int16_t) );
+	if 		( nBITPIX == 32 )		fichier.read( (char*)pBuffer_32, l_fit * sizeof(uint32_t) );
+	else if	( nBITPIX == 16 )		fichier.read( (char*)pBuffer_16, l_fit * sizeof(uint16_t) );
 	else if	( nBITPIX == 8  )		fichier.read( (char*)pBuffer_8,  l_fit * sizeof(uint8_t) );
     fichier.close();    
 	//---------------------------------------------------
@@ -593,37 +692,62 @@ void Fits::chargeTexture(int nHDU)
 	//    Pout tout le contenu d'un plan
 	//
 	// remplissage du pointeur pBuffer_gl alias le pointeur readBackground
-	unsigned long	p=0;
-    float	 		R, G, B;
 	long			i_fit, i_gl;
-    long			y = nNAXISn[1]-1;
-    long 			x = 0;
     long 			idx;
+    float			RR, GG, BB;
 	
-    i_fit = 0;
-    i_gl = 0;
-    idx = 0;
-    float RR, GG, BB;
+    i_fit		= 0;
+    i_gl		= 0;
+    idx			= 0;
 	//---------------------------------------------------
 	// LECTURE DU FICHIER FIT  
 	//   Conversion  entier->float (0.0<Pix<1.0)
+	//	 Sauvegarde dans pBuffer_fit
+	//   Memoire panel capture readBgr.ptr = pBuffer_gl;
 	//---------------------------------------------------
     for( long i_gl=0; i_gl<nNAXISn[0]*nNAXISn[1]; i_gl++ )    {
 
-        if ( nBITPIX == 16 )			
+        if ( nBITPIX == 32 )			
         {
-            	read_RGB_16( RR, pBuffer_16 + 0*size_fit + i_fit );
-		    GG = BB = RR;
+            if ( nNAXIS == 1 )	{
+            	read_RGB_32( RR, pBuffer_32 + 0*size_fit + i_fit );
+			    GG = BB = RR;
+            }
+            else
             if ( nNAXIS == 3 )	{
+            	read_RGB_32( RR, pBuffer_32 + 0*size_fit + i_fit );
+            	read_RGB_32( GG, pBuffer_32 + 1*size_fit + i_fit );
+            	read_RGB_32( BB, pBuffer_32 + 2*size_fit + i_fit );
+            }
+		}
+        else if ( nBITPIX == 16 )			
+        {
+            if ( nNAXIS == 1 )	{
+            	read_RGB_16( RR, pBuffer_16 + 0*size_fit + i_fit );
+			    GG = BB = RR;
+            }
+            else
+            if ( nNAXIS == 3 )	{
+            	read_RGB_16( RR, pBuffer_16 + 0*size_fit + i_fit );
             	read_RGB_16( GG, pBuffer_16 + 1*size_fit + i_fit );
             	read_RGB_16( BB, pBuffer_16 + 2*size_fit + i_fit );
+            	
+            	/*
+            	if ( RR < 0 )		RR = 1.0;
+            	if ( GG < 0 )		GG = 1.0;
+            	if ( BB < 0 )		BB = 1.0;
+            	*/
             }
 		}
 		else  if ( nBITPIX == 8  )	
 		{
+            if ( nNAXIS == 1 )	{
             	read_RGB_8( RR, pBuffer_8 + 0*size_fit + i_fit );
-		    GG = BB = RR;
+			    GG = BB = RR;
+            }
+            else
             if ( nNAXIS == 3 )	{
+            	read_RGB_8( RR, pBuffer_8 + 0*size_fit + i_fit );
             	read_RGB_8( GG, pBuffer_8 + 1*size_fit + i_fit );
             	read_RGB_8( BB, pBuffer_8 + 2*size_fit + i_fit );
             }
@@ -635,9 +759,11 @@ void Fits::chargeTexture(int nHDU)
 	    
 		idx += 3;
 		i_fit++;
+		//if ( nBITPIX == 16 )			i_fit++;
     }
 	//---------------------------------------------------
 	// INIT TEXTURE OPENGL
+	// Transfert de pBuffer_fit => pBuffer_gl
 	//---------------------------------------------------
 	for( long y=0; y<nNAXISn[1]; y++ )	{
 		for( long x=0; x<nNAXISn[0]; x++ )	{
@@ -664,7 +790,8 @@ void Fits::chargeTexture(int nHDU)
     }
     //------------------------------------------------
 	// Liberation de la memoire
-	if 		( nBITPIX == 16 )		free( pBuffer_16 );
+	if		( nBITPIX == 32 )		free( pBuffer_32 );
+	else if	( nBITPIX == 16 )		free( pBuffer_16 );
 	else if	( nBITPIX == 8  )		free( pBuffer_8  );
 		
 	free( pBuffer_fit );
@@ -673,7 +800,7 @@ void Fits::chargeTexture(int nHDU)
 	readBgr.ptr = pBuffer_gl;
 	
 	string s0 = "Min, Max";
-	string s1 = "Min="+ to_string(dMin) +" Max="+ to_string(dMax) +" bFlip="+ string(BOOL2STR(bFlip)) ;
+	string s1 = "Min="+ to_string(dMin0) +" Max="+ to_string(dMax0) +" bFlip="+ string(BOOL2STR(bFlip)) ;
 	
     pPanelFits->add_key_value( s0, s1 );
 
@@ -810,6 +937,7 @@ void Fits::afficheDic()
     {
         logf( (char*)" - %s\t: %s", (char*)datas[i].key.c_str(), (char*)datas[i].value.c_str() );
     }
+    afficheDatas();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -834,6 +962,9 @@ void Fits::afficheDatas()
     logf( (char*)" - nBITPIX %d", nBITPIX );    
     logf( (char*)" - nNAXIS  %d", nNAXIS );    
 
+    logf( (char*)" - dCDELT1 %f", dCDELT1 );    
+    logf( (char*)" - dCDELT2 %f", dCDELT2 );    
+
     logf( (char*)" - dCRPIX1 %f", dCRPIX1 );    
     logf( (char*)" - dCRVAL1 %f", dCRVAL1 );    
 
@@ -851,6 +982,21 @@ void Fits::afficheDatas()
     logf( (char*)" - dBSCALE %f", dBSCALE );
 
     logf( (char*)" - iOFFSET %d", iOFFSET );
+
+    logf( (char*)" - dMIPS_HI %f", dMIPS_HI );
+    logf( (char*)" - dMIPS_LO %f", dMIPS_LO );
+
+    logf( (char*)" - dCWHITE %f", dCWHITE );
+    logf( (char*)" - dCBLACK %f", dCBLACK );
+
+    logf( (char*)" - dDATAMIN %f", dDATAMIN );
+    logf( (char*)" - dDATAMAX %f", dDATAMAX );
+
+    logf( (char*)" - min0/max0 %f/%f", dMin0, dMax0 );
+    logf( (char*)" - min1/max1 %f/%f", dMin1, dMax1 );
+    logf( (char*)" - min2/max2 %f/%f", dMin2, dMax2 );
+    logf( (char*)" - min3/max3 %f/%f", dMin3, dMax3 );
+    logf( (char*)" - min4/max4 %f/%f", dMin4, dMax4 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -879,6 +1025,14 @@ void Fits::afficheInfoFits(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Fits::tex_2_J2000( vec2& v )
+{
+	vec2 w = vec2(v);
+	tex_2_J2000( w, v );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Fits::tex_2_J2000(vec2 s, vec2& j )
 {
 //#define DEBUG
@@ -889,36 +1043,11 @@ void Fits::tex_2_J2000(vec2 s, vec2& j )
 		log_tab( true );
 	#endif
 
-	vec2 crpix =  vec2( dCRPIX1, dCRPIX2 );
-	vec2 crval =  vec2( dCRVAL1, dCRVAL2 );
-	vec2 cdelt =  vec2( dCDELT1, dCDELT2 );
-
-	s -= crpix;
+	s -= vCRPIX;
 	s.x = - s.x;
-
-	#ifdef DEBUG
-		r.to_str(STR);
-		logf( (char*)"s=%s", s. STR);
-	#endif
-	
-	mat2 m = mMat;
-	//m.inverse();
-	j = m * s;
-
-	#ifdef DEBUG
-		r.to_st(STR);
-		logf( (char*)"Coef deg/pix: %s", STR );
-	#endif
-
-	j.x = j.x * cdelt.x;
-	j.y = j.y * cdelt.y;
-
-	#ifdef DEBUG
-		r.to_st(STR);
-		logf( (char*)"m.inverse*v: %s", STR );
-	#endif
-
-	j += crval;
+	j = mMat * s;
+	j *= vCDELT;
+	j += vCRVAL;
 
 	#ifdef DEBUG
 		r.to_str(STR);
@@ -926,6 +1055,15 @@ void Fits::tex_2_J2000(vec2 s, vec2& j )
 		
 		log_tab( false );
 	#endif
+#undef DEBUG
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::J2000_2_tex( vec2& v )
+{
+	vec2 w = vec2(v);
+	J2000_2_tex( w, v );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -942,36 +1080,12 @@ void Fits::J2000_2_tex(vec2 j, vec2& s )
 		logf( (char*)"Fits::J2000_2_screen( j%s, s%s )", str1, str2 );
 		log_tab( true );
 	#endif
-
-	vec2 crpix =  vec2( dCRPIX1, dCRPIX2 );
-	vec2 crval =  vec2( dCRVAL1, dCRVAL2 );
-	vec2 cdelt =  vec2( dCDELT1, dCDELT2 );
-
-	j -= crval;
-
-	#ifdef DEBUG
-		j.to_str(str1); crval.to_str(str2);
-		logf( (char*)"j%s crval%s", str1, str2 );
-	#endif
-
-	j.x = j.x / cdelt.x;
-	j.y = j.y / cdelt.y;
-
-	#ifdef DEBUG
-		j.to_str(str1); cdelt.to_str(str2);
-		logf( (char*)"j%s cdelt%s", str1, str2 );
-	#endif
 	
-	mat2 m = mMat.inverse();
-	s = m * j;
-
-	#ifdef DEBUG
-		s.to_str(str1);
-		logf( (char*)"s%s", str1 );
-	#endif
-	
+	j -= vCRVAL;
+	j /= vCDELT;
+	s = mMatInv * j;
 	s.x = -s.x;
-	s += crpix;
+	s += vCRPIX;
 	
 	#ifdef DEBUG
 		s.to_str(str1);

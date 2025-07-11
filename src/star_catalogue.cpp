@@ -48,6 +48,7 @@ StarCatalog::StarCatalog( double ra, double de, double mag, string n )
     else                        color = 0xFFFFFFFF;
 
     pInfo->setColor(color);
+    //WindowsManager::getInstance().add(pInfo);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -59,6 +60,21 @@ void StarCatalog::affiche_position()
     deg2hms( fRA, HMS );
     deg2dms( fDE, DMS );
     sprintf((char*)p_sInfo, "%0.2f AD=%02dh %02d' %2.2f\" DE=%02dd %02d' %02.2f\"", (float)fMag, (int)HMS.h, (int)HMS.m, HMS.s, (int)DMS.d, (int)DMS.m,  DMS.s   );
+
+    pInfo->changeText( (char*)p_sInfo );
+    
+    unsigned long color;
+    if (bNuit)                  color = 0xFFFF0000;
+    else                        color = 0xFFFFFFFF;
+
+    pInfo->setColor(color);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void StarCatalog::affiche_magnitude()
+{
+    sprintf((char*)p_sInfo, "%0.2f", (float)fMag );
 
     pInfo->changeText( (char*)p_sInfo );
     

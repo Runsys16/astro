@@ -279,7 +279,7 @@ void Star::computeMag()
 //--------------------------------------------------------------------------------------------------------------------
 float Star::computeRayon()
 {
-    double r = ( 30.0 - 1.5*(magnitude+8) ) * 0.45;
+    double r = ( 30.0 - 1.5*(magnitude+8) ) ;
 	/*
     float r = (15.0 - magnitude)*1.5 - 8.0;
     if ( r<0.0 )    r = 0.0;
@@ -829,6 +829,7 @@ void Star::set_delta(float xx, float yy)
 void Star::updatePos(int X, int Y, float ew, float eh)
 {
     //logf( (char*)"Star::updatePos(%d, %d, %0.2f)", X, Y, ew, eh);
+    float xx, yy;
 
     ech_x = ew;
     ech_y = eh;
@@ -839,25 +840,37 @@ void Star::updatePos(int X, int Y, float ew, float eh)
     //y_screen = ech_y*(pos.y+0.5) + (float)Y;
     x_screen = ech_x*(pos.x) + (float)X;
     y_screen = ech_y*(pos.y) + (float)Y;
+
+    float r = computeRayon();
+    xx = x + 0.707 * r;
+    yy = y + 0.707 * r;
     
-    pInfo->setPos( (x+8)*ech_x, (y+8)*ech_y );
+    xx *= ech_x;
+    yy *= ech_y;
+    
+    pInfo->setPos( xx, yy );
     pInfo->updatePos();
 
     if (panelZoom!=NULL)
     {
-        //panelZoom->setRB( RB );
-        //panelZoom->setBackground( pView->getBackground() );
-        //panelZoom->setTextureSize( RB->w, RB->h );
-        float xx = 1.0 * x;
-        float yy = 1.0 * y;
-        //panelZoom->setPosStar(pos.x, pos.y);
-        //panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
+	    panelZoom->setTextureSize( RB->w, RB->h );
 
-        panelZoom->setTextureSize( RB->w, RB->h );
-
-        //panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
-        panelZoom->setPosAndSize( (x_screen)+40, (y_screen)+40, 200, 200 );
-        panelZoom->updatePos();
+	    //logf( (char*)"Star::updatePos bSuivi : %s bSelect : %s", BOOL2STR(bSuivi), BOOL2STR(bSelect) );
+    	//if ( bPanelResultat && panelResultat->getVisible() )
+    	if ( bPanelResultat && bSuivi )
+    	{
+    		xx = panelResultat->getPosX();
+    		yy = panelResultat->getPosY() + 20;
+    	}
+    	else
+    	{
+    		//logf( (char*)"panelResultat False" );
+    		xx = pInfo->getX();
+    		yy = pInfo->getY() + 20;
+			yy += 20.0;
+		}
+	    panelZoom->setPosAndSize( xx, yy, 200, 200 );
+	    panelZoom->updatePos();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -874,15 +887,11 @@ void Star::suivi()
 {
     if ( panelZoom == NULL )                return;
     
-    //panelZoom->setRB( RB );
-    //panelZoom->setBackground( pView->getBackground() );
     panelZoom->setPosStar(pos.x, pos.y);
-    //panelZoom->setPosStar(x_screen, y_screen);
     panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
 
     panelZoom->setTextureSize( RB->w, RB->h );
 
-    //panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 300, 300 );
     panelZoom->setPosAndSize( (x_screen)+40, (y_screen)+40, 200, 200 );
     panelZoom->updatePos();
 }
@@ -899,7 +908,6 @@ void Star::setZoom(bool b)
             bZoom = bSelect = false;
             if (panelZoom!=NULL)
             {
-                //pView->sup( panelZoom );
                 delete panelZoom;
                 panelZoom = NULL;
             }
@@ -916,7 +924,6 @@ void Star::setZoom(bool b)
 
             panelZoom->setTextureSize( RB->w, RB->h );
 
-            //panelZoom->setPosAndSize( (x+40)*ech_x + dx_screen, (y+40)*ech_y + dy_screen, 200, 200 );
             panelZoom->setPosAndSize( (x_screen)+40, (y_screen)+40, 200, 200 );
             
             logf( (char*)"Star::setZoom() setBackGround() : %d", __LINE__ );
@@ -957,7 +964,7 @@ void Star::displayGL()
     //
     // demi-croix et cercle d'etoile
     glMark(ech_x*20, ech_y*20);
-    glCercle( ech*(computeRayon() + 4) );
+    glCercle( ech*(computeRayon()) );
     
     //
     // Carre de Zoom
@@ -978,7 +985,8 @@ void Star::displayGL()
     if ( bSuivi )      
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
-        glCercle( 1.5*ech*(computeRayon()) );// + 4 +10) );
+        float rayon = 2.0	*ech*(float)(computeRayon());
+        glCercle( rayon );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -126,14 +126,14 @@ Capture::~Capture()
     log_tab(true);
 
     sup(pTitre);
-    sup(panelPreview);
+    sup(panelCapture);
     sup(pNbStars);
 
-    panelPreview->sup(pFermer);
-    panelPreview->sup(pIconiser);
-    panelPreview->sup(pMaximiser);
+    panelCapture->sup(pFermer);
+    panelCapture->sup(pIconiser);
+    panelCapture->sup(pMaximiser);
 
-    sup( panelPreview );
+    sup( panelCapture );
 
     //if ( isFits() )     delete fits;
 
@@ -146,8 +146,10 @@ Capture::~Capture()
 	delete pTitre;
     logf((char*)"Capture::~Capture() delete pNbStars" );
 	delete pNbStars;
-    logf((char*)"Capture::~Capture() delete le panelPreview" );
-	delete panelPreview;
+    logf((char*)"Capture::~Capture() delete pNbVizier" );
+	delete pNbVizier;
+    logf((char*)"Capture::~Capture() delete le panelCapture" );
+	delete panelCapture;
 	
 	filenames.clear();
     logf((char*)"Destructeur Capture::~Capture() reste %d fenetre", getNbPanel() );
@@ -204,8 +206,8 @@ void Capture::pooling()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::update()
 {
-    panelPreview->setRB( &readBgr );
-    //panelPreview->updatePos();
+    panelCapture->setRB( &readBgr );
+    //panelCapture->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -221,17 +223,21 @@ void Capture::updatePos()
 void Capture::updatePosIcones()
 {
     int dx = getDX();
-    int DX = panelPreview->getPosX();
-    int DY = panelPreview->getPosY();
+    int DX = panelCapture->getPosX();
+    int DY = panelCapture->getPosY();
 
 
     pFermer->setPos(    dx - 20*3 -DX, 2 -DY);
     pMaximiser->setPos( dx - 20*2 -DX, 2 -DY);
     pIconiser->setPos(  dx - 20*1 -DX, 2 -DY);
+    pNbStars->setPos(	dx - 20*3 -DX, 2 -DY + 20);
+    pNbVizier->setPos(	dx - 20*3 -DX, 2 -DY + 40);
 
 	pFermer->updatePos();
 	pIconiser->updatePos();
 	pMaximiser->updatePos();
+	pNbStars->updatePos();
+	pNbVizier->updatePos();
     //logf( (char*)"Captures::update() ..." );
     return;
 }
@@ -300,7 +306,7 @@ void Capture::create_icones()
     pFermer->setExtraString( "pFermer" );
     pFermer->setPanelReleaseLeft(this);
     
-    panelPreview->add(pFermer);
+    panelCapture->add(pFermer);
 
     pMaximiser = new PanelSimple();
     pMaximiser->setBackground((char*)"images/maximiser.tga");
@@ -309,7 +315,7 @@ void Capture::create_icones()
     pMaximiser->setExtraString( "pMaximiser" );
     pMaximiser->setPanelReleaseLeft(this);
 
-    panelPreview->add(pMaximiser);
+    panelCapture->add(pMaximiser);
 
     pIconiser = new PanelSimple();
     pIconiser->setBackground((char*)"images/iconiser.tga");
@@ -318,7 +324,7 @@ void Capture::create_icones()
     pIconiser->setExtraString( "pIconiser" );
     pIconiser->setPanelReleaseLeft(this);
 
-    panelPreview->add(pIconiser);
+    panelCapture->add(pIconiser);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -336,54 +342,59 @@ void Capture::create_preview()	{
     
 	WindowsManager& wm = WindowsManager::getInstance();
 
-	//panelPreview = new PanelSimple();
-	//panelPreview = new PanelWindow();
     setDisplayGL(displayGLnuit_cb);
 
-	panelPreview = new PanelCapture(NULL, this);
-
+	//-------------------------------------------------------------------------
+	// Chargement de l(image dans la structure
+	// struct readBackground   (main.h)
+	// ------ readBackground.ptr = pointeur sur le tableau de couleur
+	//
+	panelCapture = new PanelCapture(NULL, this);
     bFits = false;
     if ( 	filename.find( ".fits" ) != std::string::npos  
     	||	filename.find( ".fit" ) != std::string::npos
     		)
     {
         logf((char*)"Fichier fits %s", (char*)filename.c_str() );
-        fits = new Fits(filename, panelPreview );
+        fits = new Fits(filename, panelCapture );
+
+        log((char*)"Chargement fichier" );
+        log_tab(true);
+
         fits->chargeFits();
-        fits->getPanelFits()->setParent(panelPreview);
+        fits->getPanelFits()->setParent(panelCapture);
         fits->getPanelCorrectionFits()->setParent();
         fits->getRB(&readBgr);
         bFits = true;
+        log_tab(false);
     }
     else
     {
-        //readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, readBgr.w, readBgr.h, readBgr.d );
         unsigned int w, h, d;
         readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, w, h, d );
         readBgr.w = w;
         readBgr.h = h,
         readBgr.d = d;
-        //usleep(1000000);
     }
-
+	//-------------------------------------------------------------------------
+	// Gestion des Erreurs
 	if ( readBgr.ptr == NULL )
 	{
-	    logf( (char*)"[Erreur]Pointeur sur background readBgr.ptr == NULL");
-        panelPreview->setRB( NULL );
+	    logf( (char*)"[Erreur] Pointeur sur background readBgr.ptr == NULL");
+        panelCapture->setRB( NULL );
     }
     else
     {
 	    logf( (char*)"setBackground( ..., %d, %d, %d)", readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
-        panelPreview->setBackground( readBgr.ptr, readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
-        panelPreview->setRB( &readBgr );
+        panelCapture->setBackground( readBgr.ptr, readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
+        panelCapture->setRB( &readBgr );
     }
-    //panelPreview->findAllStar();
 
-    add(panelPreview);
-
-
+    add(panelCapture);
     resize( getWidth(), getHeight() );
 
+	//-------------------------------------------------------------------------
+	// recuperarion du nom de fichier seul
     char * pS = (char*)filename.c_str();
     char * filenameShort = NULL;
     int nb = filename.size();
@@ -394,22 +405,31 @@ void Capture::create_preview()	{
         if ( pS[j]=='/' )       { filenameShort = pS+j+1; break; }
     }
 
-	//pTitre = new PanelText( (char*)filename.c_str(),		PanelText::LARGE_FONT, 20, 10 );
+	//-----------------------------------------------------------------------
+	// Ajoute les textes d'informations
+	// nombre d'etoile (star)
+	// nombre d'etoile (vizier)
+	// Titre de la fenetre (nm de fichier)
 	pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
 	pTitre->setExtraString( "PanelText Titre" );
+
 	add( pTitre );
-	
-	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, getWidth()-50, 10 );
+	//------------------------
+	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, getWidth()-50, 20 );
 	pNbStars->setExtraString( "PanelText NbStar" );
-	panelPreview->add( pNbStars );
-	panelPreview->getStars()->setPanelNbStars( pNbStars );
+	panelCapture->add( pNbStars );
+	panelCapture->getStars()->setPanelNbStars( pNbStars );
 	
  	wm.add( this );
+	//------------------------
+	pNbVizier = new PanelText( (char*)"20",		PanelText::LARGE_FONT, getWidth()-50, 20 );
+	pNbVizier->setExtraString( "PanelText NbVizier" );
 
-
+	panelCapture->add( pNbVizier );
+	//------------------------
     
     create_icones();
-    panelPreview->onBottom();
+    panelCapture->onBottom();
 
 
     log_tab(false);
@@ -453,9 +473,9 @@ void Capture::resize(int w, int h )
     setPosAndSize( x, y, dx, dy );
     //pMaximiser->setPos(dx-32*2, y-12);
 
-    //panelPreview->setPosAndSize( 0, 0, dx, dy );
-    panelPreview->setSize( dx, dy );
-    //panelPreview->setEchelle( (double)readBgr.w / (double)dx );
+    //panelCapture->setPosAndSize( 0, 0, dx, dy );
+    panelCapture->setSize( dx, dy );
+    //panelCapture->setEchelle( (double)readBgr.w / (double)dx );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -497,8 +517,8 @@ void Capture::resize(int x, int y, int w, int h )
     }
     
     setPosAndSize( x, y, dx, dy );
-    //panelPreview->setPosAndSize( 0, 0, dx, dy );
-    panelPreview->setSize( dx, dy );
+    //panelCapture->setPosAndSize( 0, 0, dx, dy );
+    panelCapture->setSize( dx, dy );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -509,19 +529,19 @@ void Capture::fullscreen()
     int dy = WindowsManager::getInstance().getHeight();
     logf((char*)"Capture::fullscreen()  dx=%d dy=%d", dx, dy );
 
-    logf((char*)" preview  dx=%d dy=%d", panelPreview->getDX(), panelPreview->getDY() );
+    logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
     setPosAndSize(0, 0, dx, dy);
     updatePos();
-    logf((char*)" preview  dx=%d dy=%d", panelPreview->getDX(), panelPreview->getDY() );
+    logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
     
     int X=0, Y=0;
-    if ( panelPreview->getDX() > dx ) {
-    	X = (panelPreview->getDX() - dx ) / 2;
+    if ( panelCapture->getDX() > dx ) {
+    	X = (panelCapture->getDX() - dx ) / 2;
     }
-    if ( panelPreview->getDY() > dy ) {
-    	Y = (panelPreview->getDY() - dy ) / 2;
+    if ( panelCapture->getDY() > dy ) {
+    	Y = (panelCapture->getDY() - dy ) / 2;
     }
-	//panelPreview->setPos(-X, -Y);
+	//panelCapture->setPos(-X, -Y);
     bIconized = false;
     bFullScreen = true;
 }
@@ -551,7 +571,7 @@ void Capture::onTop()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::addStar( int x, int y )
 {
-    panelPreview->addStar(x, y);
+    panelCapture->addStar(x, y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -574,10 +594,21 @@ void Capture::setColor(long c)
 {
     pTitre->setColor( c);
     PanelWindow::setColor( c);
-    //panelPreview->setColor( c);
+    //panelCapture->setColor( c);
     pFermer->setColor( c);
     pIconiser->setColor( c);
     pMaximiser->setColor( c);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::afficheFitsDic()
+{
+	if ( isFits() )			fits->afficheDic();
+	else
+	{
+		logf( (char*)"Ce n'est pas une image fits" );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -638,7 +669,7 @@ void Capture::iconize( int dxIcon, int dyIcon)
 	*/
 	setSize( dxIcon, dyIcon );
 	
-	panelPreview->iconize();
+	panelCapture->iconize();
 
 
 	if ( bFits )	{
@@ -659,7 +690,7 @@ void Capture::restaure(bool bInfo, bool bGrille, bool bSouris )
     bAfficheInfoSouris		= bGrille;
     bAfficheGrille			= bSouris;
 	
-	panelPreview->restaure( bGrille, bSouris );
+	panelCapture->restaure( bGrille, bSouris );
 
 	if ( bFits )	{
 		fits->restaure( bAffInfoFits );
@@ -670,7 +701,7 @@ void Capture::restaure(bool bInfo, bool bGrille, bool bSouris )
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::export_stars()
 {
-    Stars*            pStars = panelPreview->getStars();
+    Stars*            pStars = panelCapture->getStars();
     if ( pStars == NULL || pStars->size() == 0 )	{
     	log( (char*)"[ERREUR] Etoiles non chargees" );
     	return;
@@ -701,7 +732,7 @@ void Capture::export_stars()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::export_vizier()
 {
-    Catalog*            pVizier = panelPreview->getCatalog();
+    Catalog*            pVizier = panelCapture->getCatalog();
     if ( pVizier == NULL )	{
     	log( (char*)"[ERREUR] Etoiles Vizier non chargees" );
     	return;
@@ -729,37 +760,13 @@ void Capture::export_vizier()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-/*
-uint8_t* laplacien (uint8_t* image, int width, int height, int nb_iter) {
- 
-	int num;
-	int i, j;
-	uint8_t *temp;
-	uint8_t *image_filtree;
- 
-	temp = (uint8_t*)malloc(width*height*sizeof(uint8_t));
-	image_filtree = (uint8_t*)malloc(width*height*sizeof(uint8_t));
- 
-	for (i=0;i<width*height;i++) {
-		temp[i] = image[i];
-	}
- 
-	for (j=0;j<nb_iter;j++) {
-		for (i=0;i<width*height;i++) {
-			if ((i%width!=0)&&(i%width!=width-1)&&(i>width-1)&&(i<width*(height-1))) {
-				num = 4*temp[i] - temp[i-1] - temp[i+1] - temp[i-width] - temp[i+width];
-				image_filtree[i] = ((4*abs(num) > 255) ? 255 :  4*abs(num));
-			}
-		}
-		if (j!=nb_iter-1) {
-			for (i=0;i<width*height;i++) {
-				temp[i] = image_filtree[i];
-			}
-		}
-		j++;
-	}
- 
-	free(temp);
-	return image_filtree;
+void Capture::setNbVizier( unsigned u )
+{
+    char t[] = "00000000000";  
+    sprintf( t, "%d", (int)u );
+    pNbVizier->changeText( t );
 }
-*/
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+

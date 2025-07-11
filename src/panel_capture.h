@@ -11,6 +11,8 @@
 #include "stars.h"
 #include "catalog.h"
 #include "stars.h"
+#include "timer.h"
+
 
 
 class Capture;
@@ -65,6 +67,9 @@ protected:
     double				dAngleAD;
     double				dAngleDE;
     double				dTimeAnim;
+    
+    double				dDebug5s;
+    int					nbNonAff;
 public:
     PanelCapture( rb_t *, Capture* );
     ~PanelCapture();    
@@ -111,14 +116,15 @@ public:
     void                setCentY(double f);
 
     void                screen2tex( vec2& );
+    void                screen2panel( vec2& );
     void                tex2screen( vec2& );
     void                tex2panel( vec2& );
     void                panel2tex( vec2& );
-    void                screen2panel( vec2& );
     void                panel2screen( vec2& );
 
     void                printObjet();
     void				findGaiaDR3();
+    void				eraseGaiaDR3();
     void				sendStellarium( int, int );
     
 	void             	setInfoSouris(bool);

@@ -612,10 +612,14 @@ void create_windows_button()
     pButtonStdOut   = create_window_check_box( pos++, "console" );	pButtonStdOut->setExtraString( string("Button StdOut") );
     pButtonSerial   = create_window_check_box( pos++, "arduino" );	pButtonSerial->setExtraString( string("Button Serial") );
 
+	pos++;
+
     pButtonMode     = create_window_check_box( pos++, "mode" );		pButtonMode->setExtraString( string("Button Mode") );
     pButtonDeplac   = create_window_check_box( pos++, "pas" );		pButtonDeplac->setExtraString( string("Button Deplacement") );
     pButtonAsserv   = create_window_check_box( pos++, "cadena" );	pButtonAsserv->setExtraString( string("Button Asservissement") );
     pButtonSon      = create_window_check_box( pos++, "son" );		pButtonSon->setExtraString( string("Button Son") );
+
+	pos++;
 
     pButtonAsc      = create_window_check_box( pos++, "asc" );		pButtonAsc->setExtraString( string("Button Asc Droite") );
     pButtonDec      = create_window_check_box( pos++, "dec" );		pButtonDec->setExtraString( string("Button Declinaison") );

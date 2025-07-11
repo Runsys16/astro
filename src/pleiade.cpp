@@ -14,8 +14,8 @@ Pleiade::Pleiade()
 //                      00        10        20        30        40        50        60        -
     //sprintf( sPleiade, "%s", sTmp );
 
-    sPleiades = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-";
-    sPleiade  = "/home/rene/Documents/astronomie/tmp/test/suivi-20190103-000.png";
+    sPleiades = "/home/rene/.astropilot/pleiades/suivi-20190103-";
+    sPleiade  = "/home/rene/.astropilot/pleiades/suivi-20190103-000.png";
 
     ptr = NULL;
 
@@ -121,7 +121,7 @@ void Pleiade::change_background(void)
         logf((char*)"Pleiade::change_background()");
         #endif
         
-        panelPreview->deleteBackground();
+        panelCamera->deleteBackground();
         
 
         if ( bFirst && bFreePtr )
@@ -141,9 +141,9 @@ void Pleiade::change_background(void)
         h   = readBgr.h.load();
         d   = readBgr.d.load();
         
-        //logf((char*)"|  change le background de panelPreview" );
-        panelPreview->setBackground( ptr, w, h, d);
-        panelPreview->setRB( &readBgr);
+        //logf((char*)"|  change le background de panelCamera" );
+        panelCamera->setBackground( ptr, w, h, d);
+        panelCamera->setRB( &readBgr);
 
         bNewBackground = true;
 
@@ -151,7 +151,7 @@ void Pleiade::change_background(void)
         
         sprintf( num, "%03d", count_png );
         string titre = "Pleiages : suivi-20190103-" + string(num) + ".png";
-        panelPreview->setExtraString( string(titre) );
+        panelCamera->setExtraString( string(titre) );
         
         pCamFilename->changeText( (char*)titre.c_str() );
         pCamFilename->setAlign( PanelText::LEFT );

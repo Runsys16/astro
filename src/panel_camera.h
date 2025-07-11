@@ -60,6 +60,7 @@ public:
     virtual void		update_stars();
     virtual void        releaseLeft( int, int);
     virtual void        releaseMiddle( int, int);
+    virtual void        motionRight( int, int);
 	//-----------------------------------------------------------------
     virtual void		updatePos();
 
@@ -68,13 +69,22 @@ public:
     void                compute_echelle();
     virtual void        wheelUp( int, int);//                              {;};
     virtual void        wheelDown( int, int);//                            {;};
-	//-----------------------------------------------------------------
+/*	//-----------------------------------------------------------------
     void                tex2screen(vec2&);
+
+
+*/	//-----------------------------------------------------------------
     void                tex2screen(int&,int&);
     void                tex2screen(double&,double&);
-
     void                screen2tex(int&,int&);
     void                screen2tex(double&,double&);
+
+    void                screen2tex( vec2& );
+    void                screen2panel( vec2& );
+    void                tex2screen( vec2& );
+    void                tex2panel( vec2& );
+    void                panel2tex( vec2& );
+    void                panel2screen( vec2& );
 	//-----------------------------------------------------------------
     void                glCercle(int x, int y, int rayon);
     inline void         glCercle(vec2 v, int r)							{ glCercle( (int)v.x, (int)v.y, r ); }
@@ -103,9 +113,11 @@ public:
     vec2*               getSuivi();
     void                add_catalogue(StarCatalog*);
     void                setRefCatalog(double _0, double _1);
+    void				updateVizizePos();
 	//-----------------------------------------------------------------
 	void				recentreSuivi();   
 	//-----------------------------------------------------------------
+inline void				raz_ech_usr()                                   { ech_user = 1.0; }
 inline double           getEchelle()                                    { return echelle; }
 inline double           getCentX()                                      { return dx; }
 inline double           getCentY()                                      { return dy; }

@@ -102,7 +102,7 @@ bool Device_cam::getIOCapability()
         if ( n>0 )      s[n] = 0;
         //logf("n = %d", n );
         name = string(s);
-        logf( (char*)"Device_cam::getIOName() Name: '%s'", name.c_str() );
+        logf( (char*)"Device_cam::getIOCapability() Name: '%s'", name.c_str() );
         if ( cap.device_caps&V4L2_CAP_VIDEO_CAPTURE )	{
 	        logf( (char*)"  cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
 	    }
@@ -335,12 +335,20 @@ void Device_cam::enum_format_size(int pf)
         frmsizeenum.index++;
     }
     
-    
-    //if (pixelformat != -1 ) {
-        for( int i=0; i<nSize; i++ )  {
-            logf( (char*)"%d- %dx%d",  i, tSize[i].width, tSize[i].height );
-        }
-    //}
+    //--------------------------------------------------------------
+    // Determine le plus grand format
+    int max = 0;
+    for( int i=0; i<nSize; i++ )  {
+        logf( (char*)"%d- %dx%d",  i, tSize[i].width, tSize[i].height );
+        if ( tSize[i].width > max )			max = tSize[i].width;
+    }
+    //--------------------------------------------------------------
+    // on choisi le format le plus grand
+    for( int i=0; i<nSize; i++ )  {
+        if ( tSize[i].width == max )			sizeChoix = i;
+    }
+
+
     logf( (char*)"Resolution courante %dx%d",  width, height );
 
     log_tab(false);
@@ -948,20 +956,21 @@ void Device_cam::init_device(void)
     cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
     if (0 == xioctl(fd, VIDIOC_CROPCAP, &cropcap)) {
-            crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            crop.c = cropcap.defrect; /* reset to default */
+        crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        crop.c = cropcap.defrect; /* reset to default */
 
-            if (-1 == xioctl(fd, VIDIOC_S_CROP, &crop)) {
-                    switch (errno) {
-                    case EINVAL:
-                            /* Cropping not supported. */
-                            break;
-                    default:
-                            /* Errors ignored. */
-                            break;
-                    }
+        if (-1 == xioctl(fd, VIDIOC_S_CROP, &crop)) {
+            switch (errno) {
+	            case EINVAL:
+	                    /* Cropping not supported. */
+	                    break;
+	            default:
+	                    /* Errors ignored. */
+	                    break;
             }
-    } else {
+        }
+	} else
+	{
             /* Errors ignored. */
     }
 
@@ -1086,6 +1095,7 @@ int Device_cam::open_device(char * name)
 int Device_cam::open_device()
 {
     struct stat st;
+    logf( (char*)"Device_cam::open_device() ... '%s'", dev_name.c_str());
 
     /*
     if ( dev_name.find("/dev/video1")!=string::npos )
@@ -1120,7 +1130,6 @@ int Device_cam::open_device()
         return(EXIT_FAILURE);
     }
     
-    logf( (char*)"Device_cam::open_device() ... '%s'", dev_name.c_str());
     
     return 0;
 }
@@ -1193,7 +1202,7 @@ void Device_cam::change_value_abs(int V4L2_CID, int v)
 int Device_cam::change_value(int id, int value)
 {
     if (fd == -1)       return -1;
-	logf( (char*)"Device_cam::change_value(%d, %d)", id, value );
+	//logf( (char*)"Device_cam::change_value(%d, %d)", id, value );
 
     //struct v4l2_queryctrl   queryctrl;
     struct v4l2_control     control;
@@ -1250,8 +1259,23 @@ bool  Device_cam::isControl(string s)
     for(int i=0; i<si; i++ ) {
         if ( pControl[i]->getName().find(s) != string::npos )          return true;
     }
+    return false;
+}
+/*
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool  Device_cam::isControl(string s)
+{
+    int si;
+    si = pControl.size();    
+    
+    for(int i=0; i<si; i++ ) {
+        if ( pControl[i]->getName().find(s) != string::npos )          return true;
+    }
     return NULL;
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

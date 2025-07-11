@@ -27,6 +27,7 @@ public :
         ~StarCatalog();
         
         void			affiche_position();
+        void			affiche_magnitude();
         
 inline  void            setXScreen(double d)    { fXScreen = d;}
 inline  void            setYScreen(double d)    { fYScreen = d;}

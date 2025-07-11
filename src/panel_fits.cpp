@@ -62,8 +62,8 @@ void PanelFits::add_key_value(string k, string v )
 	
 	//#define POLICE "fonts/DOS-VGA.ttf"
 	#define POLICE "fonts/UbuntuMono-R.ttf"
-	fits_keys.push_back(   new PanelText((char*)k.c_str(), 		(char*)POLICE, 0,   i*16, 12, 0xFFFFFFFF ) );
-	fits_values.push_back( new PanelText((char*)val.c_str(),  	(char*)POLICE, 100, i*16, 12, 0xFFFFFFFF ) );
+	fits_keys.push_back(   new PanelText((char*)k.c_str(), 		(char*)POLICE, 0,   i*16, 11, 0xFFFFFFFF ) );
+	fits_values.push_back( new PanelText((char*)val.c_str(),  	(char*)POLICE, 100, i*16, 11, 0xFFFFFFFF ) );
 		
 	//this->add( fits_keys[i] );
 	//this->add( fits_values[i] );

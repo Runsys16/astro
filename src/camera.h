@@ -23,7 +23,7 @@ class Camera : public Device_cam , public ChangeValue
 {
 protected:
     PanelWindow *               panelControl;
-    PanelCamera *               panelPreview;
+    PanelCamera *               panelCamera;
     PanelText*                  pPanelName;
     PanelText*                  pCamFilename;
     PanelText*                  pNbStars;
@@ -43,6 +43,9 @@ protected:
     string                      sSauveDir;
     
     bool						bOnScreen;
+    bool						bPanelControl;
+    bool						bFullScreen;
+    bool						bIconized;
 
     //Stars                       stars;
     
@@ -58,9 +61,10 @@ virtual void 					changeValueDouble( double val, void *p );
 
     void                        init();
     
+    int                         addControlName(const string&, int, int);
     int                         addControl();
     void                        createControlID(PanelSimple * p, int x, int y, char* str);
-    void                        createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
+    void                        createControlIDminmax(PanelSimple * p, int x, int y, char* str0 );
     void                        CreateControl();
 
 //    void                        update();
@@ -103,16 +107,16 @@ virtual void 					changeValueDouble( double val, void *p );
     void                        setColor(long);
 
 inline bool                     getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }
-inline PanelCamera *            getPanelPreview()                   { return panelPreview; }
+inline PanelCamera *            getPanelCamera()                   { return panelCamera; }
 inline PanelWindow *            getPanelControl()                   { return panelControl; }
 inline float                    getHertz()                          { return hz; }
 inline PanelText *              getPanelName()                      { return pPanelName; }
 inline PanelText *              getpCamFilename()                   { return pCamFilename; }
 inline PanelText *              getPanelNbStars()                   { return pNbStars; }
-inline int                      getNbStars()                        { return panelPreview->getNbStars(); }
+inline int                      getNbStars()                        { return panelCamera->getNbStars(); }
 
-inline void                     add_catalogue(StarCatalog* p)       { panelPreview->add_catalogue(p); }
-inline void                     setRefCatalog(double _0, double _1) { panelPreview->setRefCatalog(_0, _1); }
+inline void                     add_catalogue(StarCatalog* p)       { panelCamera->add_catalogue(p); }
+inline void                     setRefCatalog(double _0, double _1) { panelCamera->setRefCatalog(_0, _1); }
 
 inline	bool					getOnScreen()						{ return bOnScreen;}
 inline	void					setOnScreen(bool b)					{ bOnScreen = b;}

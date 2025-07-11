@@ -76,10 +76,11 @@ void Control::moins()
 //--------------------------------------------------------------------------------------------------------------------
 void Control::setValue(int v)
 {
+    //logf( (char*)"Control::setValue(%d)  %s", v, name.c_str() );
     if ( v >= min && v <= max)
     {
-        value = v;
         //logf( (char*)"Control::setValue(%d)  OK", v );
+        value = v;
         int r = dev->change_value(id, v);
         if ( r<0 )      logf( (char*)"[erreur] change_value" );
         printValue();

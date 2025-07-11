@@ -36,6 +36,7 @@ public:
     void                        onBottom();
     void                        resize( int, int );
     void                        active();
+    void                        active( Camera*);
     void                        reOrder();
     void                        togglePanel();
 
@@ -82,6 +83,7 @@ public:
     void                        setRefCatalog(double, double);
    
 	void						stopAllCameras();
+	void						cam_full_screen();
 private:
     vector<Camera*>             pCameras;
     Camera*                     pCurrent;

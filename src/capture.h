@@ -33,10 +33,10 @@ protected:
     string                      dirname;
     string                      basename;
     
-    //PanelWindow*                pW;
-    PanelCapture*               panelPreview;
+    PanelCapture*               panelCapture;
     PanelText*                  pTitre;
     PanelText*                  pNbStars;
+    PanelText*                  pNbVizier;
 
     PanelSimple*                pFermer;
     PanelSimple*                pIconiser;
@@ -71,13 +71,12 @@ public :
     void                        onTop();
     void                        addStar(int,int);
 
-    //bool                        isMouseOver(int, int);
-    
     void                        show();
     void                        hide();
     
     void                        setColor(long);
 
+    void                        afficheFitsDic();
     void                        afficheFits();
     void                        afficheInfoFits();
     void                        afficheInfoFits(bool);
@@ -87,22 +86,25 @@ public :
 
 	void						export_stars();
 	void						export_vizier();
+	
+	void						setNbVizier(unsigned);
 
     
 inline rb_t *                   getRB()                                     { return &readBgr; }
 
-inline void                     setEchelle(float f)                         { panelPreview->setEchelle(f); }
-inline float                    getEchelle()                                { return panelPreview->getEchelle(); }
+inline void                     setEchelle(float f)                         { panelCapture->setEchelle(f); }
+inline float                    getEchelle()                                { return panelCapture->getEchelle(); }
 
-inline void                     setCentX(float f)                           { panelPreview->setCentX(f); }
-inline void                     setCentY(float f)                           { panelPreview->setCentY(f); }
-inline float                    getCentX()                                  { return panelPreview->getCentX(); }
-inline float                    getCentY()                                  { return panelPreview->getCentY(); }
+inline void                     setCentX(float f)                           { panelCapture->setCentX(f); }
+inline void                     setCentY(float f)                           { panelCapture->setCentY(f); }
+inline float                    getCentX()                                  { return panelCapture->getCentX(); }
+inline float                    getCentY()                                  { return panelCapture->getCentY(); }
 
 inline string                   getFilename()                               { return filename; }
 inline string                   getBasename()                               { return basename; }
 inline string                   getDirname()                                { return dirname; }
-inline PanelCapture*            getPreview()                                { return panelPreview; }
+inline PanelCapture*            getPreview()                                { return panelCapture; }
+inline PanelText*	            getNbVizier()                               { return pNbVizier; }
 
 	   void                     setIconized(bool b);
 inline bool                     getIconezed()                               { return bIconized; }

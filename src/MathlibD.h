@@ -63,6 +63,7 @@ const double INV_RAND_MAX = 1.0 / (RAND_MAX );
 inline double random(double max=1.0) { return max * rand() * INV_RAND_MAX; }
 inline double random(double min, double max) { return min + (max - min) * INV_RAND_MAX * rand(); }
 inline int random(int max=RAND_MAX) { return rand()%(max+1); }
+inline double clamp(double n, double min, double max)	{ return n>max?max:n<min?min:n; }
 
 class vec2;
 class vecf2;
@@ -95,6 +96,7 @@ public:
 	int operator!=(const vec2 &_v) { return !(*this == _v); }
 
 	vec2 &operator=(double _f) { this->x=_f; this->y=_f; return (*this); }
+
 	const vec2 operator*(double _f) const { return vec2(this->x * _f,this->y * _f); }
 	const vec2 operator/(double _f) const {
 		if(fabs(_f) < EPSILON) return *this;
@@ -102,15 +104,21 @@ public:
 		return (*this) * _f;
 	}
 	const vec2 operator+(const vec2 &_v) const { return vec2(this->x + _v.x,this->y + _v.y); }
-	const vec2 operator-() const { return vec2(-this->x,-this->y); }
 	const vec2 operator-(const vec2 &_v) const { return vec2(this->x - _v.x,this->y - _v.y); }
+	const vec2 operator*(const vec2 &_v) const { return vec2(this->x * _v.x,this->y * _v.y); }
+	const vec2 operator/(const vec2 &_v) const { return vec2(this->x / _v.x,this->y / _v.y); }
+	const vec2 operator-() const { return vec2(-this->x,-this->y); }
 
-	vec2 &operator*=(double _f) { return *this = *this * _f; }
-	vec2 &operator/=(double _f) { return *this = *this / _f; }
-	vec2 &operator+=(const vec2 &_v) { return *this = *this + _v; }
-	vec2 &operator-=(const vec2 &_v) { return *this = *this - _v; }
+	vec2 &operator*=(const double _f)	{ return *this = *this * _f; }
+	vec2 &operator/=(const double _f)	{ return *this = *this / _f; }
 
-	double operator*(const vec2 &_v) const { return this->x * _v.x + this->y * _v.y; }
+	vec2 &operator+=(const vec2 &_v)	{ return *this = *this + _v; }
+	vec2 &operator-=(const vec2 &_v)	{ return *this = *this - _v; }
+	vec2 &operator*=(const vec2 _v)		{ return *this = *this * _v; }
+	vec2 &operator/=(const vec2 _v)		{ return *this = *this / _v; }
+
+	//double operator*(const vec2 &_v) const { return this->x * _v.x + this->y * _v.y; }
+	//double operator/(const vec2 &_v) const { return this->x / _v.x + this->y / _v.y; }
 
 	operator double*() { return this->v; }
 	operator const double*() const { return this->v; }

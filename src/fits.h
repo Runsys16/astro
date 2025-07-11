@@ -52,8 +52,16 @@ protected:
         string                      sCTYPE1;
         string                      sCTYPE2;
         
-        double						dMin;
-        double						dMax;
+        double						dMin0;
+        double						dMax0;
+        double						dMin1;
+        double						dMax1;
+        double						dMin2;
+        double						dMax2;
+        double						dMin3;
+        double						dMax3;
+        double						dMin4;
+        double						dMax4;
         
 volatile double                     dCRVAL1;
 volatile double                     dCRVAL2;
@@ -64,6 +72,7 @@ volatile double                     dCRPIX2;
         mat2						mAstroEchl;
         mat2						mAstroTrns;
         mat2						mMat;
+        mat2						mMatInv;
 
         double                      dCD1_1;
         double                      dCD1_2;
@@ -81,7 +90,23 @@ volatile double                     dCDELT2;
         double						dBZERO;
         double						dBSCALE;
         
+        double						dCWHITE;
+        double						dCBLACK;
+
+        double						dMIPS_HI;
+        double						dMIPS_LO;
+
+        double						dDATAMAX;
+        double						dDATAMIN;
+
         int16_t						iOFFSET;
+
+		vec2						vCRPIX;
+		vec2						vCRVAL;
+		vec2						vCDELT;
+
+
+
 public :
         Fits(string, PanelCapture*);
         ~Fits();
@@ -97,7 +122,8 @@ public :
         void                        sauveMatrice();
         void                        chargeHDU(int);
         void						read_RGB_8(  float&, uint8_t* );
-        void						read_RGB_16( float&, int16_t* );
+        void						read_RGB_16( float&, uint16_t* );
+        void						read_RGB_32( float&, uint32_t* );
         void                        chargeTexture(int);
         
         int                         getInt( string );
@@ -131,7 +157,9 @@ inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionF
 
         void                        getRB( struct readBackground* );
         void						tex_2_J2000( vec2, vec2& );
+        void						tex_2_J2000( vec2& );
         void						J2000_2_tex( vec2, vec2& );
+        void						J2000_2_tex( vec2& );
 
 inline	double                      getNAXIS1()				{ return nNAXISn[0]; }
 inline	double                      getNAXIS2()				{ return nNAXISn[1]; }

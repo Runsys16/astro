@@ -157,7 +157,7 @@ FileBrowser::FileBrowser()
 	pW->setBorderSize(8);
     pW->setPosAndSize(x, y, dx, dy);
     pW->setDisplayGL(displayGLnuit_cb);
-    pW->setExtraString( "panelFileBrowser" );
+    pW->setExtraString( "panelWindowsFileBrowser" );
 
     pW->setBackground( (char*)"images/background.tga" );
     cache();
@@ -211,6 +211,8 @@ FileBrowser::FileBrowser()
     pOldDir = NULL;
     pOldFile = NULL;
 
+    panelFilename->setExtraString( "panelFilename" );
+    panelDir->setExtraString( "panelDir" );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -534,8 +536,9 @@ void FileBrowser::supCallBacks()
 //--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::keyboard(char key, int x, int y)
 {
+	logf( (char*)"Traitement FileBrowser::keyboard()" );
+	log_tab( true );
   /*
-    //logf( (char*)"Traitement FileBrowser::keyboard()" );
     WindowsManager& wm = WindowsManager::getInstance();
     Panel* p = wm.getCapture();
     
@@ -576,19 +579,23 @@ bool FileBrowser::keyboard(char key, int x, int y)
     
     if ( p == panelFilename   )
     {
+	    logf( (char*)"Focus : panelFileName %s", p->getExtraString().c_str() );
         supCallBacks();
         wm.call_back_keyboard( p );
     }
+    /*
     else
     {
-        wm.stopKeyboard();
+        //wm.stopKeyboard();
+        wm.call_back_keyboard( p );
         return false;
     }
+    */
         
 
     wm.startKeyboard();
 
-    logf( (char*)"PanelApn::keyboard(%d) %c", key, key );
+    logf( (char*)"FileBrowser::keyboard(%d) %c", key, key );
 
     if (   0 <= key &&  key <  'z' )                wm.keyboardFunc( key, x, y);
     
@@ -597,8 +604,9 @@ bool FileBrowser::keyboard(char key, int x, int y)
 	
 	case 27:
 	    {
-            logf( (char*)"Echappe" );
+            log( (char*)"Echappe" );
             cache();
+			log_tab( false );
         return false;
 	    }
 	    break;
@@ -685,10 +693,13 @@ bool FileBrowser::keyboard(char key, int x, int y)
     */
     default:
         {
-            logf((char*)"FileBrowser key: %d", key);
+            logf((char*)" - Pas de traitement" );
         }
         break;
 	}
+
+	log_tab( false );
+
     return true;
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 #include "captures.h"
-
+#include <sys/stat.h>
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -662,7 +662,6 @@ void Captures::charge(void)
 void Captures::charge2(void)
 {
     logf( (char*)"Captures::charge2')" );
-	log_tab( true );            
 
     VarManager&         var = VarManager::getInstance();
 
@@ -673,22 +672,32 @@ void Captures::charge2(void)
     	char buf[80];
     	snprintf( (char*)buf, sizeof(buf), "FileCapture%03d", no++ );
         string key = buf;
+		logf( (char*)"Chargement ; %s", key.c_str() );
+		log_tab( true );            
 
         if ( var.existe( key ) )
         {
             string filename = *var.gets( key );;
-
-            captures.push_back( new Capture(filename) );
-            current_capture = captures.size() - 1;
-            //captures[current_capture]->iconize();
-            captures[current_capture]->setFullScreen(false);
-            //var.set( name, filename );
+			
+			// Le fichier existe
+			//-----------------------
+			struct stat buffer;
+			if ( stat (filename.c_str(), &buffer) == 0 )
+			{
+		        captures.push_back( new Capture(filename) );
+		        current_capture = captures.size() - 1;
+		        //captures[current_capture]->iconize();
+		        captures[current_capture]->setFullScreen(false);
+		        //var.set( name, filename );
+		    }
+		    else
+				logf( (char*)"[Erreur] Fichier \"%s\" inexistant", filename.c_str() );
         }
         else
         {
             break;
         }
-        //break;
+		log_tab( false );            
     }
     
 	log_tab( false );            
@@ -795,9 +804,18 @@ void Captures::setMode()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Captures::afficheInfoFits()
+void Captures::rotateInfoFitsPlus()
 {
 	mode = ++mode % 4;
+	logf( (char*)"Captures::afficheInfoFits()" );
+	afficheInfoFits( mode );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::rotateInfoFitsMoins()
+{
+	mode = (4 + (--mode)) % 4;
 	logf( (char*)"Captures::afficheInfoFits()" );
 	afficheInfoFits( mode );
 }

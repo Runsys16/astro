@@ -67,7 +67,8 @@ public:
     void                        setColor(long);
     
     void						setMode();
-    void						afficheInfoFits();
+    void						rotateInfoFitsPlus();
+    void						rotateInfoFitsMoins();
     void						afficheInfoFits(int);
 	void						onTop();
 	

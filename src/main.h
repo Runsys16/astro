@@ -96,6 +96,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bCorrection;
     extern bool                     bCentrageSuivi;
     extern bool                     bPanelResultat;
+    extern bool                     bDesactiveLog;
 
     extern int                      width;
     extern int                      height;
