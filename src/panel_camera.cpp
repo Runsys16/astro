@@ -164,34 +164,20 @@ void PanelCamera::idle(float f)
 	Camera* pCurrentCamera = Camera_mgr::getInstance().getCurrent();
 	bool bIsCurrentCamera;
 	
-	if ( pCurrentCamera != NULL ) {
-		bIsCurrentCamera  = this == pCurrentCamera->getPanelCamera();
-	}
-	else
-		bIsCurrentCamera = false;
+	bIsCurrentCamera  = (pCamera == pCurrentCamera);
 	
- 
-    int color = 0;
-//    if ( bNuit )        color = 0xFF0000FF;
-//    else                color = 0xFFFFFFFF;
-
+	updatePos();
     stars.set_delta( getPosX(), getPosY() );
-    
-    Camera_mgr& cam_mgr = Camera_mgr::getInstance();
-    Camera* cam = cam_mgr.getCurrent();
-    if ( cam != NULL )  {
-        cam->getpCamFilename()->setColor(color);
-        cam->getPanelNbStars()->setColor(color);
-        cam->getPanelName()->setColor(color);
-    }
-    //pCamFilename
+    computeColor();
     
     //----------------------------------------------
     //                 Vizier
     //----------------------------------------------
     if ( bIsCurrentCamera )
     {
-		updatePos();
+	    //logf( (char*)"PanelCamera::displayVizier() %d etoiles", vizier.size() );;
+		//compute_echelle();
+	    //updatePos();
 		updateVizizePos();	
 	}
     //----------------------------------------------
@@ -217,6 +203,7 @@ void PanelCamera::idle(float f)
 	if ( bAffStar   )	{
 		stars.setVisible(bAffStar && bIsCurrentCamera );
 		stars.idle();
+		stars.setModeMag(0);
 		if ( pReadBgr!=NULL)		stars.suivi(pReadBgr);
 		//log( (char*)"Stars::Idle()" );
 	}	
@@ -237,6 +224,7 @@ void PanelCamera::update_stars()
     }
     //else            logf((char*)"PanelCamera::update() w=%d", pReadBgr->w);
     
+	stars.setModeMag(0);
     stars.update_stars( getX(), getY(), this, pReadBgr );
     //logf((char*)"PanelCamera::update_stars() dx=%d dy=%d", getX(), getY() );
 }
@@ -330,6 +318,68 @@ void PanelCamera::motionRight(int xm, int ym)
     Camera_mgr&     mgr = Camera_mgr::getInstance(); 
 	mgr.onBottom();
 	updatePos();    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::wheelUp(int xm, int ym)
+{
+    logf( (char*)"PanelCamera::wheelUp(%d,%d) ...", xm, ym );
+    log_tab(true);
+    
+    
+    _dx = getDX() / echelle;
+    _dy = getDY() / echelle;
+    
+    double XM0 =  (double)xm;
+    double YM0 =  (double)ym;
+    screen2tex(XM0, YM0);
+    
+    double k = 1.1;
+    ech_user *= k;
+    echelle = ech_user * ech_geo;
+    setSize( _dx*echelle, _dy*echelle );
+    
+    double X1 =  XM0 * echelle - (double)xm;
+    double Y1 =  YM0 * echelle - (double)ym;
+
+    setPos( -X1, -Y1 );
+    updatePos();
+    
+    logf( (char*)"+Nouvelle echelle %.2f", (float)echelle );
+    log_tab(false);
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::wheelDown(int xm, int ym)
+{
+    logf( (char*)"PanelCamera::wheelDown(%d,%d) ...", xm, ym );
+    log_tab(true);
+
+    _dx = getDX() / echelle;
+    _dy = getDY() / echelle;
+
+    double XM0 =  (double)xm;
+    double YM0 =  (double)ym;
+    screen2tex(XM0, YM0);
+    
+    double k = 0.9;
+    ech_user *= k;
+    if (ech_user<=0.1)           ech_user = 0.1;
+
+    echelle = ech_user * ech_geo;
+    setSize( _dx*echelle, _dy*echelle );
+
+    double X1 =  XM0 * echelle - (double)xm;
+    double Y1 =  YM0 * echelle - (double)ym;
+
+    setPos( -X1, -Y1 );
+    updatePos();    
+
+    logf( (char*)"+Nouvelle echelle %.2f", (float)echelle );
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -438,6 +488,8 @@ void PanelCamera::compute_echelle()
     //ew = 1600.0/1920.0;
     //eh = 900.0/1080.0;
     ech_geo = ew<eh ? ew : eh;
+
+	// Echelle totale
     echelle = ech_user * ech_geo;
 
     logf( (char*)"PanelCamera::compute_echelle %.2f  (%.2fx,%.2f) ...", (float)echelle, (float)ech_user, (float)ech_geo );
@@ -445,64 +497,30 @@ void PanelCamera::compute_echelle()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::wheelUp(int xm, int ym)
+void PanelCamera::computeColor()
 {
-    logf( (char*)"PanelCamera::wheelUp(%d,%d) ...", xm, ym );
-    log_tab(true);
-    
-    
-    _dx = getDX() / echelle;
-    _dy = getDY() / echelle;
-    
-    double XM0 =  (double)xm;
-    double YM0 =  (double)ym;
-    screen2tex(XM0, YM0);
-    
-    double k = 1.1;
-    ech_user *= k;
-    echelle = ech_user * ech_geo;
-    setSize( _dx*echelle, _dy*echelle );
-    
-    double X1 =  XM0 * echelle - (double)xm;
-    double Y1 =  YM0 * echelle - (double)ym;
+    //logf( (char*)"PanelCamera::setColor()" );
 
-    setPos( -X1, -Y1 );
-    updatePos();
-    
-    logf( (char*)"+Nouvelle echelle %.2f", (float)echelle );
-    log_tab(false);
-    
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::wheelDown(int xm, int ym)
-{
-    logf( (char*)"PanelCamera::wheelDown(%d,%d) ...", xm, ym );
-    log_tab(true);
+    Camera_mgr& cam_mgr = Camera_mgr::getInstance();
+    Camera* cam = cam_mgr.getCurrent();
 
-    _dx = getDX() / echelle;
-    _dy = getDY() / echelle;
-
-    double XM0 =  (double)xm;
-    double YM0 =  (double)ym;
-    screen2tex(XM0, YM0);
-    
-    double k = 0.9;
-    ech_user *= k;
-    if (ech_user<=0.1)           ech_user = 0.1;
-
-    echelle = ech_user * ech_geo;
-    setSize( _dx*echelle, _dy*echelle );
-
-    double X1 =  XM0 * echelle - (double)xm;
-    double Y1 =  YM0 * echelle - (double)ym;
-
-    setPos( -X1, -Y1 );
-    updatePos();    
-
-    logf( (char*)"+Nouvelle echelle %.2f", (float)echelle );
-    log_tab(false);
+    if ( cam == pCamera )  {
+    	
+    	if ( bNuit )	
+    	{
+			uint32_t color = 0xff0000ff;
+			cam->getpCamFilename()->setColor(color);
+			cam->getPanelNbStars()->setColor(color);
+			cam->getPanelName()->setColor(color);
+		}
+		else
+    	{
+			uint32_t color = 0xffFFffFF;
+			cam->getpCamFilename()->setColor(color);
+			cam->getPanelNbStars()->setColor(color);
+			cam->getPanelName()->setColor(color);
+		}
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -866,10 +884,10 @@ void PanelCamera::displayVizier()
 {
     int n = vizier.size();
     vec2 v;
-    //logf( (char*)"PanelCamera::displayVizier() %d etoiles", n );;
     
     if ( n!= 0)
     {
+	    //logf( (char*)"PanelCamera::displayVizier() %d etoiles", n );;
         if ( bNuit )        glColor4f( 1.0,  0.0,  0.0, 1.0 );
         else                glColor4f( 1.0, 0.7, 0.0, 0.8 );
 
@@ -882,10 +900,12 @@ void PanelCamera::displayVizier()
 			if ( 	v.x != -1.0  )
 			{
 				PanelText* p = vizier.get(i)->getInfo();
-		        double r = 17.5 - 0.675*vizier.get(i)->fMag;
+		        double r = 17.5  - 0.675*vizier.get(i)->fMag;
+		        if ( bAffStar && stars.size() != 0 ) 	r += 5;
 			
 		        glCercle( v.x, v.y, r*echelle );
 				p->displayGL();
+				//p->setVisible( true );
 			}
         }
     }    
@@ -912,14 +932,8 @@ void PanelCamera::displayGL()
 
     
 	Camera* pCurrentCamera = Camera_mgr::getInstance().getCurrent();
-	bool bIsCurrentCamera;
-	
-	if ( pCurrentCamera != NULL ) {
-		bIsCurrentCamera  = this == pCurrentCamera->getPanelCamera();
-	}
-	else
-		bIsCurrentCamera = false;
-	
+	bool bIsCurrentCamera  = (pCamera == pCurrentCamera);
+
     if ( bIsCurrentCamera )
     {
 		
@@ -965,6 +979,8 @@ void PanelCamera::displayGL()
 		}
 		
     }
+    else
+    	log( (char*)"Pleiade ss not current" );
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
@@ -1025,24 +1041,6 @@ vec2* PanelCamera::getSuivi()
 void PanelCamera::add_catalogue(StarCatalog* p)
 {
     vizier.add( p );
-    /*
-    double xx = (p->getRA() - fRefCatalogX );
-    double yy = (p->getDE() - fRefCatalogY );
-
-    vec3 v = vec3( xx, yy, 1.0 );
-    mat3 m;
-    m.rotate( vec3(0.0,0.0,1.0), Wref );
-    vec3 w = m * v;
-    
-    double x = -w.x * ZrefX + fRefCatalogDecalX + getX() + Xref;
-    double y = -w.y * ZrefY + fRefCatalogDecalY + getY() + Yref;
-    
-    logf( (char*)"PanelCamera::add_catalogue(%0.4f,%0.4f) ...", x, y );
-    //p->getInfo()->setX(x);
-    //p->getInfo()->setY(y);
-    p->getInfo()->setPos(x,y);
-    */
-    
     this->add(p->getInfo());
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1056,9 +1054,6 @@ void PanelCamera::setRefCatalog(double _0, double _1)
     
     fRefCatalogDecalX = stars.getSuiviScreenX();
     fRefCatalogDecalY = stars.getSuiviScreenY();
-    
-    //Xref = 0.0;
-    //Yref = 0.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1073,8 +1068,9 @@ void PanelCamera::updateVizizePos()
 	vec2 v;
 	if ( n!=0 )
 	{
-		vec2 vMin = vec2( getX(), getY() );
-		vec2 vMax = vec2( getX()+getDX()  ,  getY()+getDY()  );
+		//logf( (char*)"PanelCamera::updateVizizePos()" );
+		vec2 vMin = vec2( getX()			, getY() );
+		vec2 vMax = vec2( getX()+getDX()  	, getY()+getDY()  );
 
 	    for ( int i=0; i<n; i++ )
 	    {
@@ -1089,25 +1085,28 @@ void PanelCamera::updateVizizePos()
 	        vec2 vViz = m * v;
 	        vViz = -vViz * vHomothetie  + vTranslatio;
 	        
-			tex2screen(vViz);
+	        vec2 vScreen = vec2(vViz);
+			tex2screen(vScreen);
 			/*
 			*/
-			if ( 	vViz.x> vMin.x   &&	vViz.x < vMax.x  
-				&& 	vViz.y> vMin.y   &&	vViz.y < vMax.y  )
+			if ( 	vScreen.x> vMin.x   &&	vScreen.x < vMax.x  
+				&& 	vScreen.y> vMin.y   &&	vScreen.y < vMax.y  )
 			{
-				vizier.get(i)->setXScreen( vViz.x );
-				vizier.get(i)->setYScreen( vViz.y );
+				vizier.get(i)->setScreen( vScreen );
+				vizier.get(i)->setTex( vViz );
 
 				double r = 17.5 - 0.675*vizier.get(i)->fMag;
-				p->setPos( vViz.x + echelle*r*0.707,    vViz.y - echelle*r*0.707 - 15.0 );
+		        if ( bAffStar && stars.size() != 0 ) 	r += 5;
+				p->setPos( vScreen.x + echelle*r*0.707,    vScreen.y - echelle*r*0.707 - 15.0 );
 				p->updatePos();
 				p->setAlpha(0.0);
 		        p->setVisible(true);
 			}
 			else
 			{
-			    vizier.get(i)->setXScreen( -1.0 );
-			    vizier.get(i)->setYScreen( -1.0 );
+				vec2 vOut = vec2(-1.0,-1.0);
+			    vizier.get(i)->setScreen( vOut );
+			    vizier.get(i)->setTex(    vOut );
 			    
 				p->setVisible(false);
 			}

@@ -96,6 +96,7 @@ public:
     inline int          getYScreen()                                    { return y_screen; }
     inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
     inline float        getMagnitude()                                  { return magnitude; }
+    inline float        getPonderation()								{ return ponderation; }
     inline PanelText*   getInfo()                                       { return pInfo; }
     inline void         select()                                        { bSelect = !bSelect; }
     
@@ -108,6 +109,7 @@ public:
 
     inline int          getNotFound()                                   { return nbNotFound; }
     inline void         resetNotFound()                                 { nbNotFound = 0; }
+	inline void			setModeMag(int n)								{ modeMag = n; }
 
     
 private:
@@ -139,6 +141,7 @@ private:
     float               ponderation;
     
     float               magnitude;
+    int					modeMag;
     float               maxLum;
     float               limitLum;
     float               ech_x;

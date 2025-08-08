@@ -70,20 +70,20 @@ void Camera::init()
 {
     logf((char*)"Camera::init() -------------");
 
-    bCharging = true;
-    bExitThread = false;
-    vCameraSize.x = -1;
-    vCameraSize.y = -1;
+    bCharging			= true;
+    bExitThread			= false;
+    vCameraSize.x		= -1;
+    vCameraSize.y		= -1;
     
-    previousTime = -1;
-    bStartThread = false;
-    bPanelControl = false;
+    previousTime		= -1;
+    bStartThread		= false;
+    bPanelControl		= false;
 
-    nb_images   = 0;
-    sSauveDir = "/home/rene/.astropilot/";
+    nb_images			= 0;
+    sSauveDir			= "/home/rene/.astropilot/";
     
-	panelCamera = NULL;
-	panelControl = NULL;
+	panelCamera			= NULL;
+	panelControl		= NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -299,12 +299,10 @@ void Camera::CreatePreview()	{
 	panelCamera->add( pNbStars );
 	panelCamera->getStars()->setPanelNbStars( pNbStars );
 	
-	
 	//string pStr = getName().c_str();
 	pPanelName = new PanelText( (char*)getName().c_str(),	PanelText::LARGE_FONT, 0, 10 );
 	pPanelName->setAlign( PanelText::CENTER );
 	panelCamera->add( pPanelName );
-	
 
 	//panelCamera->setCanMove(false);
  	wm.add( panelCamera );
@@ -508,7 +506,7 @@ void Camera::threadExtractImg()
         
         if ( bExitThread )  break;
     }
-    logf((char*)"[THREAD] Camera::threadExtractImg()  stop %s", (char*)getName().c_str());
+    logf_thread((char*)"[THREAD] Camera::threadExtractImg()  stop %s", (char*)getName().c_str());
     bStartThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -807,8 +805,36 @@ void Camera::setColor( long color )
     panelCamera->setColor( color );
     panelControl->setColor( color );
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Compare les etoiles trouvées par le programme// aux etoiles du catalogue vizier
+// Affiche le resultat dans la console
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::compareStar()
+{
+   	log( (char*)"Camera::compareStar()");
 
+	starCompare.setStars(  panelCamera->getStars() );
+	starCompare.setVizier( &vizier);
 
+	starCompare.compareStar();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Compare les etoiles trouvées par le programme// aux etoiles du catalogue vizier
+// Affiche le resultat dans la console
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::saveCompareStar()
+{
+   	log( (char*)"PanelCapture::saveCompareStar()");
+
+	starCompare.setStars(  panelCamera->getStars() );
+	starCompare.setVizier( &vizier);
+
+	starCompare.saveCompareStar();
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

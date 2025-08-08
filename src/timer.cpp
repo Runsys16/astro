@@ -69,9 +69,9 @@ void Timer::Idle() {
 	}
 //	while(fElapsedTime < (1.0f/60));	// blocage du fps
 
-    ++TempFPS;	// Incrémentation du nombre de FPS
+    ++TempFPS;	// Incrementation du nombre de FPS
 
-	// Si il s'est écoulé plus d'une seconde, on affiche les FPS :
+	// Si il s'est ecoule plus d'une seconde, on affiche les FPS :
     if( fNewCurrentTime - fPreviousFPSTime > 1.0f ) {
 	    fPreviousFPSTime = fNewCurrentTime;
 		nFPS = TempFPS;
@@ -81,6 +81,13 @@ void Timer::Idle() {
 	fCurrentTime = fNewCurrentTime;	// On sauvegarde le temps actuel
 	fElapsedTime = fReelElapsedTime * fTimeCompress;
 	fHourTime += fReelElapsedTime/3600.0;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+float Timer::getGlutTime()
+{
+	return GETTIME();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

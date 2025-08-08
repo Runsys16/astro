@@ -23,7 +23,7 @@
 
 int lecture_arguments (int argc, char * argv [], struct sockaddr_in * adresse, char * protocole);
 
-int main (int argc, char * argv[])
+int main__3 (int argc, char * argv[])
 {
 	int                sock;
 	struct sockaddr_in adresse;

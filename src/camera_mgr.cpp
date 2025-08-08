@@ -89,6 +89,8 @@ void Camera_mgr::add( string sdev_name )
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+// Utiliser par la camera speciale pleiade
+//
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::add( Camera* p )
 {
@@ -110,7 +112,8 @@ void Camera_mgr::add( Camera* p )
     onBottom();
 	active( p );
     
-    //vizier.charge();
+    vizier.set_camera_reference();
+    
     log_tab(false);
     logf((char*)"Camera_mgr::add(Camera*) END" );
 }
@@ -647,6 +650,15 @@ void  Camera_mgr::cam_full_screen()
     
     // taille main.cpp
     pCurrent->fullSizePreview( width, height );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::compareStar()
+{   
+    if (pCurrent == NULL)                   { logf((char*)"pCurrent NULL"); return; }
+    
+    pCurrent->compareStar();    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

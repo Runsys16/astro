@@ -42,7 +42,6 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     this->add( pTelescope );
     
     #define SIZEY 14
-	//#define POLICE "fonts/grec.ttf"
 	#define POLICE "fonts/greek-wsi-regular.ttf"   	// 218 glyphe voir alpha ...
 
     int x = 90, y = SIZEY, deltax = 16;
@@ -68,7 +67,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     
     pVizier = NULL;
     
-    setExtraString( "PanelViewCapture" );
+    setExtraString( "PanelCapture" );
     setParentCliping( true );
     
 }
@@ -79,29 +78,6 @@ PanelCapture::~PanelCapture()
 {
     stars.setRB( NULL );
     stars.deleteAllStars();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::deleteAllStars()
-{
-    stars.setRB( pReadBgr );
-
-    stars.deleteAllStars();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::findAllStars()
-{
-	if ( stars.size() != 0 )				{
-		stars.affiche_position();
-		return;
-	}
-    stars.setView( this );
-    stars.setRB( pReadBgr );
-    stars.findAllStars();
-    return;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -213,13 +189,15 @@ void PanelCapture::updatePos()
 				&& 	v.y> vMin.y   &&	v.y < vMax.y  )
 			{
 #endif			
-		        pVizier->get(i)->setXScreen( v.x );
-		        pVizier->get(i)->setYScreen( v.y );
+		        pVizier->get(i)->setScreen( v );
 
 		        double r = 17.5 - 0.675*pVizier->get(i)->fMag;
 				p->setPos( v.x + ech*r*0.707,    v.y - ech*r*0.707 - 15.0 );
 				p->updatePos();
 				p->setAlpha(0.0);
+				
+				screen2tex(v);
+		        pVizier->get(i)->setTex( v );
 				
 		        if ( bNuit )        p->setColor( COLOR32(255,   0, 0, 255) );
 		        else                p->setColor( COLOR32(255, 178, 0, 255) );
@@ -229,8 +207,8 @@ void PanelCapture::updatePos()
 			}
 			else
 			{
-		        pVizier->get(i)->setXScreen( -1.0 );
-		        pVizier->get(i)->setYScreen( -1.0 );
+				vec2 v = vec2(-1.0,-1.0);
+		        pVizier->get(i)->setScreen( v );
 		        
 				p->setVisible(false);
 			}
@@ -394,7 +372,7 @@ void PanelCapture::displayTelescope()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::displayCatalog()
 {
-	//logf( (char*)"PanelCapture::displayCatalog() %d etoiles", vizier.size() );
+	//logf( (char*)"PanelCapture::displayCatalog() %d etoiles", pVizier->size() );
 	// Sauvegarde de l'ancienne couleur
 	unsigned color_old = getColor();
 	unsigned r  = 0xFF0000FF;
@@ -441,10 +419,14 @@ void PanelCapture::displayCatalog()
 		{
 			nbNonAff = n-nbAff;
 			dDebug5s = 0.0;
-			logf( (char*)"Etoiles affiches %d/%d", nbAff, n );
+			char pStrNbEtoiles[128];
+			//snprintf( pStrNbEtoiles, sizeof(pStrNbEtoiles), "Etoiles affiches %d/%d", nbAff, n );
+			//log( (char*)pStrNbEtoiles );
+			snprintf( pStrNbEtoiles, sizeof(pStrNbEtoiles), "%d/%d", nbAff, n );
+			pCapture->getNbVizier()->changeText( (char*)pStrNbEtoiles );
 		}
         
-    	pCapture->setNbVizier( 	pVizier->size() );
+    	//pCapture->setNbVizier( 	pVizier->size() );
         if ( bNuit )        pCapture->getNbVizier()->setColor( COLOR32(255,   0, 0, 255) );
         else                pCapture->getNbVizier()->setColor( COLOR32(255, 178, 0, 255) );
     }    
@@ -580,6 +562,7 @@ void PanelCapture::idle(float f)
 	if ( dTimeAnim>TIMEANIM )			dTimeAnim -= TIMEANIM;
     
 	if ( !bIcone   )	{
+		stars.setModeMag(1);
 		stars.setVisible(bAffStar);
 		stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
 		stars.idle();
@@ -622,41 +605,6 @@ void PanelCapture::idle(float f)
 			}
 		}
 	}
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::addStar(int xm, int ym)
-{
-    logf( (char*)"PanelCapture::addStar(%d,%d) ...", xm, ym );
-    stars.setView( this );
-    stars.setRB( pReadBgr );
-    //stars.addStar( xm, ym );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::clip(int& xm, int& ym)	{
-    Panel* p = getParent();
-
-    double ech = ech_user * ech_geo;
-
-    double max_x = ech*pReadBgr->w - p->getDX();
-    double max_y = ech*pReadBgr->h - p->getDY();
-    
-    double X1 = xm;
-    double Y1 = ym;
-    
-    if ( X1<0 )             X1 = 0.0;
-    else
-    if ( X1>max_x )         X1 = max_x;
-    
-    if ( Y1<0 )             Y1 = 0.0;
-    else
-    if ( Y1>max_y )         Y1 = max_y;
-    
-    xm = X1;
-    ym = Y1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1030,6 +978,7 @@ void PanelCapture::releaseMiddle(int xm, int ym)
     
     if ( !bHaveMove )
     {
+		stars.setModeMag(1);
         stars.setView( this );
         stars.setRB( pReadBgr );
         if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
@@ -1046,6 +995,99 @@ void PanelCapture::releaseMiddle(int xm, int ym)
 
     log_tab(false);
 	log( (char*)"---" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::findAllStars()
+{
+	if ( stars.size() != 0 )				{
+		stars.affiche_position();
+		return;
+	}
+	stars.setModeMag(1);
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    stars.findAllStars();
+    return;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::deleteAllStars()
+{
+    stars.setRB( pReadBgr );
+
+    stars.deleteAllStars();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::addStar(int xm, int ym)
+{
+    logf( (char*)"PanelCapture::addStar(%d,%d) ...", xm, ym );
+    stars.setView( this );
+    stars.setRB( pReadBgr );
+    //stars.addStar( xm, ym );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::clip(int& xm, int& ym)	{
+    Panel* p = getParent();
+
+    double ech = ech_user * ech_geo;
+
+    double max_x = ech*pReadBgr->w - p->getDX();
+    double max_y = ech*pReadBgr->h - p->getDY();
+    
+    double X1 = xm;
+    double Y1 = ym;
+    
+    if ( X1<0 )             X1 = 0.0;
+    else
+    if ( X1>max_x )         X1 = max_x;
+    
+    if ( Y1<0 )             Y1 = 0.0;
+    else
+    if ( Y1>max_y )         Y1 = max_y;
+    
+    xm = X1;
+    ym = Y1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Compare les etoiles trouvées par le programme// aux etoiles du catalogue vizier
+// Affiche le resultat dans la console
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::compareStar()
+{
+   	log( (char*)"PanelCapture::compareStar()");
+   	if ( stars.size() == 0 )		return;
+   	if ( pVizier == NULL || pVizier->size() == 0 )		return;
+
+	starCompare.setStars(&stars);
+	starCompare.setVizier(pVizier);
+
+	starCompare.compareStar();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Compare les etoiles trouvées par le programme// aux etoiles du catalogue vizier
+// Affiche le resultat dans la console
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::saveCompareStar()
+{
+   	log( (char*)"PanelCapture::saveCompareStar()");
+   	if ( stars.size() == 0 )							return;
+   	if ( pVizier == NULL || pVizier->size() == 0 )		return;
+
+	starCompare.setStars(&stars);
+	starCompare.setVizier(pVizier);
+
+	starCompare.saveCompareStar();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1268,7 +1310,16 @@ void PanelCapture::findGaiaDR3()
 	snprintf( (char*)coord, sizeof(coord), "-r %d% 0.8f %0.8f", (int)(rayon), vCentre.x, vCentre.y );
 	logf( (char*)"Requete Gaia DR3 : %s", coord );
 
-	vizier_load_stars( pVizier, string(coord) );
+	//vizier_load_stars( pVizier, string(coord) );	
+	vizier_capture_load_stars( pVizier, string(coord), this );	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::findGaiaDR3_end()
+{
+    logf( (char*)"PanelCapture::findGaiaDR3_end()" );
+	updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1371,16 +1422,15 @@ void PanelCapture::setInfoSouris(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::iconize()
 {
-	logf( (char*)"PanelCapture::iconize()" );
+	//logf( (char*)"PanelCapture::iconize()" );
 	bAffGrille = false;
 	bInfoSouris = false;
 	setInfoSouris( false );
 	bIcone = true;
 	
 	//updateEchelleGeo();
-	
-	logf( (char*)" setPos(%lfd, %lf)", (dx), (dy) );
-	logf( (char*)" ech_geo=%lf, ech_user=%lf)", ech_geo, ech_user );
+	//logf( (char*)"setPos(%lfd, %lf)", (dx), (dy) );
+	//logf( (char*)"ech_geo=%lf, ech_user=%lf)", ech_geo, ech_user );
 	setPos( dx, dy );
 }
 //--------------------------------------------------------------------------------------------------------------------

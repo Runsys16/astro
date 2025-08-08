@@ -1,0 +1,42 @@
+#!/bin/bash
+#-----------------------------------------------------------------------------
+# build_makefile
+#-----------------------------------------------------------------------------
+# this script run in src directory
+#-----------------------------------------------------------------------------
+cd /home/rene/programmes/opengl/video/astro/
+#echo $(pwd)
+#exit
+cat ./scripts/makefile.base >./Makefile
+echo "#-------------------------------------------------------------------------------------" >> ./Makefile
+echo "#        Scripts" >> ./Makefile
+echo "#        Fabrication des dependances de chaque fichier.o" >> ./Makefile
+echo "#-------------------------------------------------------------------------------------" >> ./Makefile
+echo "# depend.py, build_makefile" >> ./Makefile
+echo "#-------------------------------------------------------------------------------------" >> ./Makefile
+echo "# Recuperation des scripts (dans le repertoire src) :" >> ./Makefile
+echo "# $ cat ./Makefile | grep \"^#00#\" | sed -e \"s/^....\(.*\)/\1/g\" >depend.py" >> ./Makefile
+echo "# $ cat ./Makefile | grep \"^#01#\" | sed -e \"s/^....\(.*\)/\1/g\" >build_makefile" >> ./Makefile
+echo "#-------------------------------------------------------------------------------------" >> ./Makefile
+
+echo  >> ./Makefile
+echo  >> ./Makefile
+echo  >> ./Makefile
+
+cat ./scripts/depend.py | sed -e 's/.*/#00#\0/g' >> ./Makefile
+echo  >> ./Makefile
+echo  >> ./Makefile
+echo  >> ./Makefile
+echo  >> ./Makefile
+
+cat ./scripts/build_makefile | sed -e 's/.*/#01#\0/g' >> ./Makefile
+echo  >> ./Makefile
+echo  >> ./Makefile
+echo  >> ./Makefile
+echo  >> ./Makefile
+
+#cd lib
+./scripts/depend.py >>./Makefile
+#cd ..
+
+echo "# OK"  >>./Makefile

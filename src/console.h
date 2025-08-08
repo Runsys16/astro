@@ -24,6 +24,15 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 class Console : public PanelConsoleCallBack
 {
+
+protected:
+	std::string						option;
+
+	typedef void(Console::*ConsoleFonction)(void);
+	typedef std::map<std::string, ConsoleFonction> ConsoleFonctionMap;
+
+	ConsoleFonctionMap				FonctionMap;
+
 public:
     Console();
     
@@ -35,14 +44,6 @@ public:
 	void                            cmd_quit();
 	void                            cmd_clear();
 	bool                            commande(string);
-
-protected:
-	std::string						option;
-
-	typedef void(Console::*ConsoleFonction)(void);
-	typedef std::map<std::string, ConsoleFonction> ConsoleFonctionMap;
-
-	ConsoleFonctionMap				FonctionMap;
 
 };
 

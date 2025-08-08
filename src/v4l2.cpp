@@ -24,7 +24,7 @@ struct v4l2_querymenu querymenu;
 //--------------------------------------------------------------------------------------------------------------------
 Device_cam::Device_cam()
 {
-    logf((char*)"Constructeur Device_cam() -------------" );
+    logf( (char*)"Constructeur Device_cam() -------------" );
     dev_name        = "";
     io              = IO_METHOD_USERPTR;
     fd              = -1;
@@ -96,18 +96,18 @@ bool Device_cam::getIOCapability()
         name = "";
         return false;
     } else {
-        //logf("Name:\t\t '%s'", (char*)cap.card);
+        //logf_thread("Name:\t\t '%s'", (char*)cap.card);
         string s = (char*)cap.card;
         int n = s.find(':');
         if ( n>0 )      s[n] = 0;
-        //logf("n = %d", n );
+        //logf_thread("n = %d", n );
         name = string(s);
-        logf( (char*)"Device_cam::getIOCapability() Name: '%s'", name.c_str() );
+        logf_thread( (char*)"Device_cam::getIOCapability() Name: '%s'", name.c_str() );
         if ( cap.device_caps&V4L2_CAP_VIDEO_CAPTURE )	{
-	        logf( (char*)"  cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
+	        logf_thread( (char*)"  cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
 	    }
         else	{
-	        logf( (char*)"[Error] V4L2_CAP_VIDEO_CAPTURE  : cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
+	        logf_thread( (char*)"[Error] V4L2_CAP_VIDEO_CAPTURE  : cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
 	        return false;
         }
     }
@@ -129,7 +129,7 @@ void Device_cam::enumerate_menu(__u32 id)
          querymenu.index++) {
         if (0 == ioctl(fd, VIDIOC_QUERYMENU, &querymenu)) {
             //printf("  %d-%s\n", querymenu.index, querymenu.name);
-            logf((char*)"\t%d-%s", querymenu.index, querymenu.name);
+            logf_thread((char*)"\t%d-%s", querymenu.index, querymenu.name);
         }
     }
 }
@@ -139,7 +139,7 @@ void Device_cam::enumerate_menu(__u32 id)
 void Device_cam::capability_list( void )    {
     if (fd == -1)       return;
     
-    logf((char*)"Device_cam::capability_list()");
+    logf_thread((char*)"Device_cam::capability_list()");
     log_tab(true);
 
     memset(&queryctrl, 0, sizeof(queryctrl));
@@ -173,7 +173,7 @@ void Device_cam::capability_list( void )    {
 void Device_cam::capability_save( string filename )    {
     if (fd == -1)       return;
 
-    logf( (char*)"Sauvegarde des parametres de la camera dans '%s'", (char*)filename.c_str() );
+    logf_thread( (char*)"Sauvegarde des parametres de la camera dans '%s'", (char*)filename.c_str() );
 
     ofstream fichier;
     fichier.open(filename, ios_base::trunc);
@@ -181,7 +181,7 @@ void Device_cam::capability_save( string filename )    {
 
     if ( !fichier ) 
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        logf_thread( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
         return;
     }
 
@@ -189,7 +189,7 @@ void Device_cam::capability_save( string filename )    {
     int nb = pControl.size();
     for( int i=0; i<nb; i++ )
     {
-        logf( (char*)"%s %d", (char*)pControl[i]->getName().c_str(), pControl[i]->getValue() );
+        logf_thread( (char*)"%s %d", (char*)pControl[i]->getName().c_str(), pControl[i]->getValue() );
         fichier << pControl[i]->getName() << " : " <<  pControl[i]->getValue();
         fichier << "\n";
     }
@@ -204,14 +204,14 @@ void Device_cam::capability_save( string filename )    {
 void Device_cam::capability_load( string filename )    {
     if (fd == -1)       return;
 
-    logf( (char*)"Lecture des parametres de la camera dans '%s'", (char*)filename.c_str() );
+    logf_thread( (char*)"Lecture des parametres de la camera dans '%s'", (char*)filename.c_str() );
 
     ifstream fichier;
     fichier.open(filename, std::ios_base::app);
 
     if ( !fichier ) 
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        logf_thread( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
         return;
     }
 
@@ -235,16 +235,16 @@ void Device_cam::capability_load( string filename )    {
         if (fichier.eof())      break;
         
         int val = (int)stof((char*)s.c_str());
-        logf( (char*)" %d - %s = %d", nbLigne, (char*)sCtrl.c_str(), val );
+        logf_thread( (char*)" %d - %s = %d", nbLigne, (char*)sCtrl.c_str(), val );
         
         Control *   p = getControl( sCtrl );
         if ( p != NULL )            p->setValue( val );
-        else                        logf( (char*)"pControl NULL : line %d", __LINE__ );
+        else                        logf_thread( (char*)"pControl NULL : line %d", __LINE__ );
         
         nbLigne++;
     }    
 
-    logf( (char*)"Lecture de %d lignes", nbLigne );
+    logf_thread( (char*)"Lecture de %d lignes", nbLigne );
     
     fichier.close();
 }
@@ -263,10 +263,10 @@ void Device_cam::capability_save( void )    {
 void Device_cam::enum_format()
 {
     //-------------------------------------------        
-    logf((char*)"Device_cam::enum_format()");
+    logf_thread((char*)"Device_cam::enum_format()");
     log_tab(true);
 
-    logf( (char*)"ioctl =  VIDIOC_ENUM_FMT");
+    logf_thread( (char*)"ioctl =  VIDIOC_ENUM_FMT");
     struct v4l2_fmtdesc fmtdesc;
     CLEAR(fmtdesc);
     
@@ -276,9 +276,9 @@ void Device_cam::enum_format()
 
     while (-1 != xioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc))
     {
-        logf( (char*)"description = %s" , fmtdesc.description );
-        logf( (char*)"type = %08X   " , fmtdesc.type );
-        logf( (char*)"pixelformat = %08X   " , fmtdesc.pixelformat );
+        logf_thread( (char*)"description = %s" , fmtdesc.description );
+        logf_thread( (char*)"type = %08X   " , fmtdesc.type );
+        logf_thread( (char*)"pixelformat = %08X   " , fmtdesc.pixelformat );
         
         if ( fmtdesc.pixelformat == 0x47504A4D )       pixelformat = fmtdesc.pixelformat;
         
@@ -288,7 +288,7 @@ void Device_cam::enum_format()
         fmtdesc.index++;
     }
     log_tab(false);
-    logf((char*)"Device_cam::enum_format() ** END **");
+    logf_thread((char*)"Device_cam::enum_format() ** END **");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -296,10 +296,10 @@ void Device_cam::enum_format()
 void Device_cam::enum_format_size(int pf)
 {
     //-------------------------------------------        
-    logf((char*)"Device_cam::enum_format_size(%d)", pf);
+    logf_thread((char*)"Device_cam::enum_format_size(%d)", pf);
     log_tab(true);
 
-    logf( (char*)"ioctl = VIDIOC_ENUM_FRAMESIZES");
+    logf_thread( (char*)"ioctl = VIDIOC_ENUM_FRAMESIZES");
     struct v4l2_frmsizeenum frmsizeenum;
     
     CLEAR(frmsizeenum);
@@ -311,13 +311,13 @@ void Device_cam::enum_format_size(int pf)
     while (-1 != xioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum))
     {
         
-        //logf( (char*)"Type=%08X size=%dx%d" , frmsizeenum.type, frmsizeenum.discrete.width, frmsizeenum.discrete.height );
+        //logf_thread( (char*)"Type=%08X size=%dx%d" , frmsizeenum.type, frmsizeenum.discrete.width, frmsizeenum.discrete.height );
         
 
         //if (pixelformat != -1 ) {
-            //logf( (char*)"Format=%08X   \n" , pixelformat );
-            //logf( (char*)"Format=%08X   \n" , V4L2_PIX_FMT_BGR24 );
-            //logf( (char*)"Format=%08X   \n" , V4L2_PIX_FMT_RGB24 );
+            //logf_thread( (char*)"Format=%08X   \n" , pixelformat );
+            //logf_thread( (char*)"Format=%08X   \n" , V4L2_PIX_FMT_BGR24 );
+            //logf_thread( (char*)"Format=%08X   \n" , V4L2_PIX_FMT_RGB24 );
             if ( width == -1 )       width  = frmsizeenum.discrete.width;
             if ( height == -1 )      height = frmsizeenum.discrete.height;
             
@@ -339,7 +339,7 @@ void Device_cam::enum_format_size(int pf)
     // Determine le plus grand format
     int max = 0;
     for( int i=0; i<nSize; i++ )  {
-        logf( (char*)"%d- %dx%d",  i, tSize[i].width, tSize[i].height );
+        logf_thread( (char*)"%d- %dx%d",  i, tSize[i].width, tSize[i].height );
         if ( tSize[i].width > max )			max = tSize[i].width;
     }
     //--------------------------------------------------------------
@@ -349,10 +349,10 @@ void Device_cam::enum_format_size(int pf)
     }
 
 
-    logf( (char*)"Resolution courante %dx%d",  width, height );
+    logf_thread( (char*)"Resolution courante %dx%d",  width, height );
 
     log_tab(false);
-    logf((char*)"Device_cam::enum_format_size() ** END **");
+    logf_thread((char*)"Device_cam::enum_format_size() ** END **");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -385,7 +385,7 @@ void Device_cam::errno_exit(const char *s)
     sprintf(strErr, "%s error %d, %s", s, errno, strerror(errno));
     fprintf(stderr, "%s\n", strErr);
     
-    logf((char*)"%s", strErr);
+    logf_thread((char*)"%s", strErr);
     //exit(EXIT_FAILURE);
     close_device();
 }
@@ -429,19 +429,19 @@ void Device_cam::process_image(const void *p, int size)
     for( nm=0; nm<1000; nm++ )
     {
         sprintf(filename, "%s-%d.jpg", (char*)filenameRec.c_str(), nm);
-        //logf( (char*)filename );
+        //logf_thread( (char*)filename );
 
         if ( !fileExists(filename) )        break;
     }    
-    //logf( (char*)filename );
+    //logf_thread( (char*)filename );
     //return;
     if (nm>=1000)
     {
-        logf( (char*)"[Erreur] framme-1000.jpg atteind " );
+        logf_thread( (char*)"[Erreur] framme-1000.jpg atteind " );
     }
     frame_number++;
     
-    logf( (char*)"Enregistre : %s", filename);
+    logf_thread( (char*)"Enregistre : %s", filename);
     
     FILE *fp=fopen(filename,"wb");
     
@@ -458,7 +458,7 @@ int Device_cam::read_frame(void)
 {
     if (fd == -1)       return -1;
 
-	//logf((char*)"read_frame");
+	//logf_thread((char*)"read_frame");
 
     struct v4l2_buffer buf;
     unsigned int i;
@@ -534,7 +534,7 @@ int Device_cam::read_frame(void)
         if (-1 == xioctl(fd, VIDIOC_DQBUF, &buf)) {
             switch (errno) {
             case EAGAIN:
-                log((char*)"Erreur Device_cam::read_frame() EAGAIN");
+                log_thread((char*)"Erreur Device_cam::read_frame() EAGAIN");
                 return 0;
 
             case EIO:
@@ -543,7 +543,7 @@ int Device_cam::read_frame(void)
                 /* fall through */
 
             default:
-                log((char*)"Erreur Device_cam::read_frame()  default");
+                log_thread((char*)"Erreur Device_cam::read_frame()  default");
                 errno_exit("VIDIOC_DQBUF");
                 return -1;
             }
@@ -559,16 +559,16 @@ int Device_cam::read_frame(void)
         jpg_buffer = (unsigned char*)buf.m.userptr;
         jpg_size = buf.bytesused;
 
-        //log((char*)"Device_cam::read_frame() decompresse");
+        //log_thread((char*)"Device_cam::read_frame() decompresse");
 
         if ( bEnregistre )      
         {
-            logf( (char*)"Enregistre l'image lu" );
+            logf_thread( (char*)"Enregistre l'image lu" );
             process_image((void *)buf.m.userptr, buf.bytesused);
             bEnregistre = false;
         }
 
-        //logf( (char*)"lit image" );
+        //logf_thread( (char*)"lit image" );
 
         decompressJpeg();
         
@@ -637,7 +637,7 @@ void Device_cam::stop_capturing(void)
 
     bCapture = false;
 
-    logf( (char*)"-------------- Device_cam::stop_capturing %s------------------", dev_name.c_str() );
+    logf_thread( (char*)"-------------- Device_cam::stop_capturing %s------------------", dev_name.c_str() );
 
     enum v4l2_buf_type type;
 
@@ -663,7 +663,7 @@ void Device_cam::start_capturing(void)
 
     if ( bCapture ) return;
     
-    logf( (char*)"-------------- Device_cam::start_capturing %s------------------", dev_name.c_str() );
+    logf_thread( (char*)"-------------- Device_cam::start_capturing %s------------------", dev_name.c_str() );
     
     unsigned int i;
     enum v4l2_buf_type type;
@@ -893,7 +893,7 @@ void Device_cam::init_device(void)
 {
     if (fd == -1)       return;
 
-    logf( (char*)"Device_cam::init_device()" );
+    logf_thread( (char*)"Device_cam::init_device()" );
     log_tab(true);
 
 
@@ -1011,7 +1011,7 @@ void Device_cam::init_device(void)
         width  = fmt.fmt.pix.width       = tSize[sizeChoix].width;//width; //replace
         height = fmt.fmt.pix.height      = tSize[sizeChoix].height;//height; //replace
         
-        logf( (char*)"Force format MJPG   %dx%d",fmt.fmt.pix.width, fmt.fmt.pix.height );
+        logf_thread( (char*)"Force format MJPG   %dx%d",fmt.fmt.pix.width, fmt.fmt.pix.height );
         //fmt.fmt.pix.width       = width; //replace
         //fmt.fmt.pix.height      = height; //replace
 
@@ -1064,7 +1064,7 @@ void Device_cam::init_device(void)
 
 end:
     log_tab(false);
-    logf( (char*)"Device_cam::init_device" );
+    logf_thread( (char*)"Device_cam::init_device" );
         
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1084,7 +1084,7 @@ void Device_cam::close_device(void)
 int Device_cam::open_device(char * name)
 {
     if ( name == NULL )       { fd = -1; return(EXIT_FAILURE); }
-    logf((char*)"Device_cam::open_device(%s)", name );
+    logf_thread((char*)"Device_cam::open_device(%s)", name );
 
     dev_name = name;
     return open_device();
@@ -1095,7 +1095,7 @@ int Device_cam::open_device(char * name)
 int Device_cam::open_device()
 {
     struct stat st;
-    logf( (char*)"Device_cam::open_device() ... '%s'", dev_name.c_str());
+    logf_thread( (char*)"Device_cam::open_device() ... '%s'", dev_name.c_str());
 
     /*
     if ( dev_name.find("/dev/video1")!=string::npos )
@@ -1107,7 +1107,7 @@ int Device_cam::open_device()
     if (-1 == stat(dev_name.c_str(), &st)) {
         sprintf(strErr, "Cannot identify '%s': %d, %s", dev_name.c_str(), errno, strerror(errno));
         fprintf(stderr, "%s\n", strErr);
-        logf((char*)"%s", strErr);
+        logf_thread((char*)"%s", strErr);
         fd = -1;
         return(EXIT_FAILURE);
     }
@@ -1116,7 +1116,7 @@ int Device_cam::open_device()
         sprintf(strErr, "%s is no device", dev_name.c_str() );
         fprintf(stderr, "%s\n", strErr);
         fd = -1;
-        logf((char*)"%s", strErr);
+        logf_thread((char*)"%s", strErr);
         return(EXIT_FAILURE);
     }
 
@@ -1125,7 +1125,7 @@ int Device_cam::open_device()
     if (-1 == fd) {
         sprintf(strErr, "Cannot open '%s': %d, %s", dev_name.c_str(), errno, strerror(errno));
         fprintf(stderr, "%s\n", strErr);
-        logf((char*)"%s", strErr);
+        logf_thread((char*)"%s", strErr);
         fd = -1;
         return(EXIT_FAILURE);
     }
@@ -1202,7 +1202,7 @@ void Device_cam::change_value_abs(int V4L2_CID, int v)
 int Device_cam::change_value(int id, int value)
 {
     if (fd == -1)       return -1;
-	//logf( (char*)"Device_cam::change_value(%d, %d)", id, value );
+	//logf_thread( (char*)"Device_cam::change_value(%d, %d)", id, value );
 
     //struct v4l2_queryctrl   queryctrl;
     struct v4l2_control     control;
@@ -1286,7 +1286,7 @@ void jpeg_saver_error_exit (j_common_ptr cinfo)
     jpeg_saver_error_mgr* myerr = (jpeg_saver_error_mgr*) cinfo->err;
 
     //(*cinfo->err->output_message) (cinfo);
-    logf((char*)"Error Handler  %d images decode", nbJPG);
+    logf_thread((char*)"Error Handler  %d images decode", nbJPG);
     bReadError = true;
     longjmp(myerr->setjmp_buffer, 1);
 }
@@ -1296,8 +1296,8 @@ void jpeg_saver_error_exit (j_common_ptr cinfo)
 struct jpeg_error_mgr * my_jpeg_std_error(struct jpeg_error_mgr * jerr)
 {
 	if ( jerr->msg_code != JTRC_EOI )	{
-		logf( (char*)"Error handler my_jpeg_std_error()..code:%d", jerr->msg_code);
-		logf( (char*)"  voir /usr/inlcude/jerror.h  JTRC_EOI = %d", JTRC_EOI);
+		logf_thread( (char*)"Error handler my_jpeg_std_error()..code:%d", jerr->msg_code);
+		logf_thread( (char*)"  voir /usr/inlcude/jerror.h  JTRC_EOI = %d", JTRC_EOI);
 		bReadError = true;
 	}
     return jpeg_std_error(jerr);
@@ -1318,7 +1318,7 @@ void Device_cam::decompressJpeg() {
     readBgr.d   = -1;
     readBgr.bReadError = bReadError = false;
 
-	//logf((char*)"wBmp=%d hBmp=%d", wBmp, hBmp);
+	//logf_thread((char*)"wBmp=%d hBmp=%d", wBmp, hBmp);
 
 	//pixel_size = cinfo.output_components;
     // si le buffer n'est pas vide on le libere
@@ -1353,7 +1353,7 @@ void Device_cam::decompressJpeg() {
 	jpeg_create_decompress(&cinfo);
 	jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);
 
-	//logf((char*)"jpg_size=%d", jpg_size);
+	//logf_thread((char*)"jpg_size=%d", jpg_size);
 
 	rc = jpeg_read_header(&cinfo, TRUE);
 
@@ -1368,7 +1368,7 @@ void Device_cam::decompressJpeg() {
 	wBmp = cinfo.output_width;
 	hBmp = cinfo.output_height;
 
-	//logf((char*)"wBmp=%d hBmp=%d", wBmp, hBmp);
+	//logf_thread((char*)"wBmp=%d hBmp=%d", wBmp, hBmp);
 
 	pixel_size = cinfo.output_components;
     // si le buffer n'est pas vide on le libere
@@ -1423,7 +1423,7 @@ void Device_cam::enregistre()
 //--------------------------------------------------------------------------------------------------------------------
 void Device_cam::callback(bool b, int ii, char* str)
 {
-    logf( (char*)"Device_cam::callback( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
+    logf_thread( (char*)"Device_cam::callback( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
     
     //if ( b && ii == 1 )         bEnregistre = true;
 
@@ -1432,7 +1432,7 @@ void Device_cam::callback(bool b, int ii, char* str)
         callback_enregistre_cam( str );
         string filename = string(str);
         if ( filename.find(".cam")==string::npos )      filename += ".cam";
-        logf( (char*)"sauvegarde dans  \"%s\" )", (char*)filename.c_str() );
+        logf_thread( (char*)"sauvegarde dans  \"%s\" )", (char*)filename.c_str() );
         
         capability_save(filename);
     }

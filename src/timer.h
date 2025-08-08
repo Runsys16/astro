@@ -9,9 +9,10 @@
 
 SINGLETON_BEGIN( Timer )
 public:
-	void Start();
-	void Idle();
-
+	void				Start();
+	void				Idle();
+	float				getGlutTime();
+	
 	inline float		getCurrentTime()		const	{return fCurrentTime;}	// Temps courant
 	inline float		getElapsedTime()		const	{return (fElapsedTime);}	// Temps entre 2 frames
 	//inline float getElapsedTime()		const {return (fElapsedTime);}	// Temps entre 2 frames
@@ -28,9 +29,9 @@ protected:
 	Timer();
 
 private:
-	float				fStartTime;		// date du système lors de l'initialisation de la base de temps
+	float				fStartTime;		// date du systeme lors de l'initialisation de la base de temps
 	float				fTimeCompress;
-	float				fCurrentTime;	// Temps courant remis à jour à chaque frame
+	float				fCurrentTime;	// Temps courant remis a jour a chaque frame
 	float				fElapsedTime;
 	float				fReelElapsedTime;
 	int					nFPS;

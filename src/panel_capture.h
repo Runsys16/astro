@@ -11,6 +11,7 @@
 #include "stars.h"
 #include "catalog.h"
 #include "stars.h"
+#include "star_compare.h"
 #include "timer.h"
 
 
@@ -46,6 +47,7 @@ protected:
     
     rb_t *              pReadBgr;
     
+    StarCompare			starCompare;
     Stars               stars;
     Catalog*            pVizier;
     Capture*            pCapture;
@@ -70,6 +72,7 @@ protected:
     
     double				dDebug5s;
     int					nbNonAff;
+
 public:
     PanelCapture( rb_t *, Capture* );
     ~PanelCapture();    
@@ -110,6 +113,10 @@ public:
     void                addStar(int,int);
     void                clip(int&, int&);
 
+	void				compareStar();
+	void				saveCompareStar();
+
+
     void                setCent();
     void                setEchelle(double f);
     void                setCentX(double f);
@@ -124,6 +131,7 @@ public:
 
     void                printObjet();
     void				findGaiaDR3();
+    void				findGaiaDR3_end();
     void				eraseGaiaDR3();
     void				sendStellarium( int, int );
     

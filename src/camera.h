@@ -11,6 +11,7 @@
 #include <thread>
 #include <atomic>
 #include "button_callback.h"
+#include "star_compare.h"
 
 
 
@@ -47,6 +48,7 @@ protected:
     bool						bFullScreen;
     bool						bIconized;
 
+	StarCompare					starCompare;
     //Stars                       stars;
     
     
@@ -87,7 +89,7 @@ virtual void 					changeValueDouble( double val, void *p );
     
     void                        setVisible(bool b);
     void                        setControlVisible(bool b);
-    void                        togglePanel();
+	virtual void				togglePanel();
     
     
 
@@ -106,8 +108,11 @@ virtual void 					changeValueDouble( double val, void *p );
     
     void                        setColor(long);
 
+	void						compareStar();
+	void						saveCompareStar();
+	
 inline bool                     getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }
-inline PanelCamera *            getPanelCamera()                   { return panelCamera; }
+inline PanelCamera *            getPanelCamera()					{ return panelCamera; }
 inline PanelWindow *            getPanelControl()                   { return panelControl; }
 inline float                    getHertz()                          { return hz; }
 inline PanelText *              getPanelName()                      { return pPanelName; }

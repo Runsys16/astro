@@ -65,17 +65,17 @@ void Serveur_mgr::traite_connexion_init()
     while( traite_2 )
     {
         n = read(sock_ref,buffer,255);
-        logf( (char*)"Serveur_mgr::traite_connexion_init()" );
+        logf_thread( (char*)"Serveur_mgr::traite_connexion_init()" );
         log_tab(true);
 
         if (n <= 0)
         {
-            logf( (char*)"ERROR reading from socket");
+            logf_thread( (char*)"ERROR reading from socket (init)");
 	        log_tab(false);
             break;
         }
 
-        logf( (char*)"nb octet lu : %d", n);
+        logf_thread( (char*)"nb octet lu : %d", n);
 		//-------------------------------------------------
 		// recuperation des infos
         struct stellarium ss;
@@ -85,7 +85,7 @@ void Serveur_mgr::traite_connexion_init()
         double ra = com2rad(ss.ra);
         double dc = com2rad(ss.dc);
 
-        logf( (char*)"reception de ra=%0.10f, dc=%0.10f", ra, dc);
+        logf_thread( (char*)"reception de ra=%0.10f, dc=%0.10f", ra, dc);
 		change_ad_status( ra );
 		change_dc_status( dc );
 
@@ -93,20 +93,20 @@ void Serveur_mgr::traite_connexion_init()
 
         struct hms HMS;
         rad2hms( ra, HMS );
-        logf( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+        logf_thread( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( dc, DMS );
-        logf( (char*)"Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+        logf_thread( (char*)"Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );
 
 		//-------------------------------------------------
-        logf( (char*)"Envoi arduino : \"%s\"", cmd );
+        logf_thread( (char*)"Envoi arduino : \"%s\"", cmd );
         Serial::getInstance().write_string(cmd);
 		//-------------------------------------------------
-        logf( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
+        logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
 		Camera_mgr::getInstance().position(ra, dc);
         Captures::getInstance().position(ra, dc);
 		//-------------------------------------------------
@@ -118,7 +118,7 @@ void Serveur_mgr::traite_connexion_init()
 
     }
     
-    logf( (char*)"Fermeture du sock_ref %d", sock_ref );
+    logf_thread( (char*)"Deconnexion du sock_init %d", sock_ref );
     close(sock_ref);
 
     sock_ref = -1;
@@ -128,7 +128,7 @@ void Serveur_mgr::traite_connexion_init()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_init()
 {
-    logf( (char*)"Serveur_mgr::thread_listen_init()");
+    logf_thread( (char*)"Serveur_mgr::thread_listen_init()");
 
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
@@ -154,7 +154,7 @@ void Serveur_mgr::thread_listen_init()
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
 	if (bind(sock_2, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		logf( (char*) "[ERREUR] bind (sock_2)");
+		logf_thread( (char*) "[ERREUR] bind (sock_2)");
 		sock_2 = -1;
 		//exit(EXIT_FAILURE);
 		return;
@@ -162,7 +162,7 @@ void Serveur_mgr::thread_listen_init()
 	
 	longueur = sizeof(struct sockaddr_in);
 	if (getsockname(sock_2, (struct sockaddr *) & adresse, & longueur) < 0) {
-		logf( (char*) "[ERREUR] getsockname (sock_2)");
+		logf_thread( (char*) "[ERREUR] getsockname (sock_2)");
 		return;
 	}
 
@@ -170,16 +170,16 @@ void Serveur_mgr::thread_listen_init()
     int option = 1;
     if(setsockopt(sock_2,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-		logf( (char*) "[ERREUR] setsockopt (sock_2)");
+		logf_thread( (char*) "[ERREUR] setsockopt (sock_2)");
         close(sock_2);
 		return;
 
     }
 
 
-    //logf( (char*)"---------------------------------------------------------------");
-	logf( (char*)"  Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
-    //logf( (char*)"---------------------------------------------------------------");
+    //logf_thread( (char*)"---------------------------------------------------------------");
+	logf_thread( (char*)"  Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
+    //logf_thread( (char*)"---------------------------------------------------------------");
 
 	listen(sock_2, 5);
 	while (listen_2) {
@@ -191,12 +191,12 @@ void Serveur_mgr::thread_listen_init()
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
-		logf( (char*)"Serveur_mgr::thread_listen_init() connexion SOCKET 2" );
-		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_ref, some_addr, (int)adresse.sin_port );
+		logf_thread( (char*)"Serveur_mgr::thread_listen_init() connexion SOCKET 2" );
+		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_ref, some_addr, (int)adresse.sin_port );
 
 		traite_connexion_init();
 	}
-    logf( (char*)"Fermeture de sock_2 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
+    logf_thread( (char*)"Fermeture de sock_2 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_2);
 	sock_2 = -1;
 }
@@ -219,15 +219,17 @@ void Serveur_mgr::traite_connexion_deplacement()
     while( traite_1 )
     {
         n = read(sock_stellarium,buffer,255);
+        logf_thread( (char*)"Serveur_mgr::traite_connexion_deplacement()" );
+        log_tab( true );
 
         if (n <= 0)
         {
-            logf( (char*)"ERROR reading from socket");
+            logf_thread( (char*)"ERROR reading from socket (deplacement)");
+	        log_tab( false );
             break;  
         }
 
-        logf( (char*)"Serveur_mgr::traite_connexion_deplacement()" );
-        logf( (char*)"nb octet lu : %d", n);
+        logf_thread( (char*)"nb octet lu : %d", n);
 
         struct stellarium ss;
         decode( ss, buffer );
@@ -238,20 +240,21 @@ void Serveur_mgr::traite_connexion_deplacement()
 
         struct hms HMS;
         rad2hms( ra, HMS );
-        logf( (char*)"  AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+        logf_thread( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
         
         struct dms DMS;
         rad2dms( dc, DMS );
-        logf( (char*)"  DC : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+        logf_thread( (char*)"DC : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
         
         char cmd[255];
         sprintf( cmd, "A%f;D%f", RAD2DEG(ra), RAD2DEG(dc) );
-        logf( (char*)"  Envoi arduino : %s", cmd );
+        logf_thread( (char*)"Envoi arduino : %s", cmd );
         Serial::getInstance().write_string(cmd);
 
+        log_tab( false );
     }
     
-    logf( (char*)"Fermeture du sock_stellarium %d", sock_stellarium);
+    logf_thread( (char*)"Deconnexion du sock_deplacement %d", sock_stellarium);
     close(sock_stellarium);
 
     sock_stellarium = -1;
@@ -261,7 +264,7 @@ void Serveur_mgr::traite_connexion_deplacement()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_deplacement()
 {
-    logf( (char*)"Serveur_mgr::thread_listen_deplacement()");
+    logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement()");
     
 	struct sockaddr_in 	adresse;		memset(& adresse, 0, sizeof(struct sockaddr));
 	socklen_t          	longueur;
@@ -290,7 +293,7 @@ void Serveur_mgr::thread_listen_deplacement()
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
 	
 	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		logf( (char*) "[ERREUR] bind (sock_1)");
+		logf_thread( (char*) "[ERREUR] bind (sock_1)");
         //close(sock_1);
         goto sortie_deplacement;
 		return;
@@ -298,7 +301,7 @@ void Serveur_mgr::thread_listen_deplacement()
 	
 	longueur = sizeof(struct sockaddr_in);
 	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
-		logf( (char*) "[ERREUR] getsockname (sock_1)");
+		logf_thread( (char*) "[ERREUR] getsockname (sock_1)");
         //close(sock_1);
         goto sortie_deplacement;
 		return;
@@ -306,16 +309,16 @@ void Serveur_mgr::thread_listen_deplacement()
 
     if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-		logf( (char*) "[ERREUR] setsockopt (sock_1)");
+		logf_thread( (char*) "[ERREUR] setsockopt (sock_1)");
         //close(sock_1);
         goto sortie_deplacement;
 		return;
     }
 
 
-    //logf( (char*)"---------------------------------------------------------------");
-	logf( (char*)" Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
-    //logf( (char*)"---------------------------------------------------------------");
+    //logf_thread( (char*)"---------------------------------------------------------------");
+	logf_thread( (char*)" Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
+    //logf_thread( (char*)"---------------------------------------------------------------");
 
 	listen(sock_1, 5);
 	while ( listen_1 ) {
@@ -327,8 +330,8 @@ void Serveur_mgr::thread_listen_deplacement()
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
-		logf( (char*)"Serveur_mgr::thread_listen_deplacement() connexion SOCKET 1" );
-		logf( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
+		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion SOCKET 1" );
+		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
 
 		traite_connexion_deplacement();
 		
@@ -336,7 +339,7 @@ void Serveur_mgr::thread_listen_deplacement()
 	}
 
 sortie_deplacement:
-    logf( (char*)"Fermeture de sock_1 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
+    logf_thread( (char*)"Fermeture de sock_1 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_1);
 	sock_1 = -1;
 }
@@ -370,7 +373,7 @@ void Serveur_mgr::write_stellarium(char* s)
         	snprintf( (char*)trame, sizeof(trame), "%s %02X", t, c );
         
         }
-        logf( (char*)"Envoid a stellarium  %s", trame );
+        logf_thread( (char*)"Envoid a stellarium  %s", trame );
         #endif
     }
 }
@@ -450,10 +453,10 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
     	struct hms HMS;
     	struct dms DMS;
 		
-        logf( (char*)"Em Stellarium\tAd=%0.8f  \tDc=%0.8f", fa, fd );
+        logf_thread( (char*)"Em Stellarium\tAd=%0.8f  \tDc=%0.8f", fa, fd );
         deg2hms( fa, HMS );
         deg2dms( fd, DMS );
-        logf( (char*)"				\tAd=%0.0fh%0.0f\'%0.2f\"  \tDc=%0.0fd\%2.0f'%2.2f\"", HMS.h, HMS.m, HMS.s, DMS.d, DMS.m, DMS.s );
+        logf_thread( (char*)"				\tAd=%0.0fh%0.0f\'%0.2f\"  \tDc=%0.0fd\%2.0f'%2.2f\"", HMS.h, HMS.m, HMS.s, DMS.d, DMS.m, DMS.s );
     	#endif
     }
 }
@@ -463,7 +466,7 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::close_all()
 {
-    logf( (char*)"Fermeture de tous les sockets ..." );
+    logf_thread( (char*)"Fermeture de tous les sockets ..." );
     log_tab(true);
 
     listen_1 = false;
@@ -492,13 +495,13 @@ void Serveur_mgr::close_all()
 
     //sleep(1);
     /*
-    logf( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
+    logf_thread( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
     while( sock_1 != -1)	;
     while( sock_2!= -1)	;
     while( sock_stellarium != -1)	;
     while( sock_ref!= -1)	;
     */
-    logf( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
+    logf_thread( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
     log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------

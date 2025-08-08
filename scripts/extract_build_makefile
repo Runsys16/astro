@@ -1,0 +1,5 @@
+#!/bin/bash
+#cat ./makefile | grep "^#01#" | sed -e "s/^....\(.*\)/\1/g" >build_makefile
+cd /home/rene/programmes/opengl/video/astro/
+cat ./makefile | grep "^#01#" | sed -e "s/^....\(.*\)/\1/g"
+

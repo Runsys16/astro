@@ -243,7 +243,7 @@ void Stars::findAllStars()
                 int y_find = p->getY();
                 p->computeMag();
                 
-                if ( p->getMagnitude() < 11.0 )     
+                if ( p->getMagnitude() < 20.0 )     
                 {
                     p->updatePos(dx_view, dy_view, ech, ech);
                     if ( starExist(p->getXScreen(), p->getYScreen()) )            
@@ -403,12 +403,13 @@ void Stars::suivi(rb_t* p)
  
     nb = t.size();   
     //logf( (char*)" Erase NB %d ", nb );
-    
+    /*
     for (int i=0; i<nb; i++ )
     {
         logf( (char*)" Erase %d ", t[i] );
     }
-
+	*/
+	
     if ( t.size() != 0 )
     {
         char t[] = "00000000000";  
@@ -492,6 +493,16 @@ void Stars::selectStar( int xp, int yp)
         else
             v_tStars[n]->setSelect(false);
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::setModeMag( int n )
+{
+    for( int i=0; i<v_tStars.size(); i++ )
+    {
+        v_tStars[i]->setModeMag(n);
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

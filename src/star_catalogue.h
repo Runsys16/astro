@@ -15,6 +15,8 @@ class StarCatalog
 public :
         double          fXScreen;
         double          fYScreen;
+        double          fXTex;
+        double          fYTex;
         double          fRA;
         double          fDE;
         double          fMag;
@@ -31,6 +33,12 @@ public :
         
 inline  void            setXScreen(double d)    { fXScreen = d;}
 inline  void            setYScreen(double d)    { fYScreen = d;}
+inline  void			getScreen(vec2& v)		{ v.x = fXScreen; v.y = fYScreen; }
+inline  void			setScreen(vec2& v)		{ fXScreen = v.x; fYScreen = v.y; }
+
+inline  void            setTex(vec2& v)    		{ fXTex = v.x; fYTex = v.y; }
+inline  void			getTex(vec2& v)			{ v.x = fXTex; v.y = fYTex; }
+
 inline  double          getXScreen()            {return fXScreen;}
 inline  double          getYScreen()            {return fYScreen;}
 inline  double          getRA()                 {return fRA;}

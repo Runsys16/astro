@@ -33,6 +33,7 @@ public:
     void                            list();
     void							affiche_position();
     void							affiche_magnitude();
+    void							set_camera_reference();
     
 inline int                          size()                      { return stars.size(); }
 inline StarCatalog*                 get(int i)                  { return stars[i]; }

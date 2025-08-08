@@ -51,6 +51,23 @@ struct stellarium
 //--------------------------------------------------------------------------------------------------------------------
 SINGLETON_BEGIN( Serveur_mgr )
 
+protected:
+    std::thread                 th_1;
+    std::thread                 th_2;
+
+    std::thread                 connect_1;
+
+    int                         sock_stellarium;
+    int                         sock_ref;
+    
+    int                         sock_1;
+    int                         sock_2;
+
+    bool                        listen_1;
+    bool                        listen_2;
+    bool                        traite_1;
+    bool                        traite_2;
+
 public:
     Serveur_mgr();
     
@@ -76,23 +93,6 @@ inline bool                     is_running_2()                          { return
 inline bool                     isConnect()                             { return sock_stellarium!=-1; }
     
     
-protected:
-    std::thread                 th_1;
-    std::thread                 th_2;
-
-    std::thread                 connect_1;
-
-    int                         sock_stellarium;
-    int                         sock_ref;
-    
-    int                         sock_1;
-    int                         sock_2;
-
-    bool                        listen_1;
-    bool                        listen_2;
-    bool                        traite_1;
-    bool                        traite_2;
-
 SINGLETON_END()
 
 #endif

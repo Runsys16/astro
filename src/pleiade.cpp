@@ -110,13 +110,13 @@ void Pleiade::charge_background()
 //--------------------------------------------------------------------------------------------------------------------
 void Pleiade::change_background(void)
 {
-//#define CHANGE_BACKGROUND
     #ifdef CHANGE_BACKGROUND
     logf((char*)"Pleiade::change_background() %s", BOOL2STR(bCharging) );
     #endif
     
     if ( bCharging ) 
     {
+//#define CHANGE_BACKGROUND
         #ifdef CHANGE_BACKGROUND
         logf((char*)"Pleiade::change_background()");
         #endif
@@ -155,6 +155,8 @@ void Pleiade::change_background(void)
         
         pCamFilename->changeText( (char*)titre.c_str() );
         pCamFilename->setAlign( PanelText::LEFT );
+        pCamFilename->setVisible( true );
+        pCamFilename->setColor(0xffFFffFF );
 
         sPleiade = sPleiades + string(num) + ".png";
 
@@ -180,7 +182,7 @@ void Pleiade::change_background(void)
                 nb_images = 0;
             }
             #ifdef CHANGE_BACKGROUND
-            logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName() );
+            logf((char*)"Camera::change_background_camera()   Hz=%.0f %s", hz, getName().c_str() );
             #endif
         }
         else

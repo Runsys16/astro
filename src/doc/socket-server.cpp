@@ -58,7 +58,7 @@ void traite_connexion (int fd)
 }
 
 
-int main (void)
+int main_main (void)
 {
 	int                sock;
 	int                sock_2;

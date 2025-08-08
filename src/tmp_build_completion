@@ -1,0 +1,51 @@
+#
+# bash completion for
+#     mc command
+#
+
+_synchro() {
+    local cur prev opts
+
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+ 	case "${prev}" in
+ 	    synchro)
+			local opts
+			opts="vers depuis afpa ed help"
+			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+			return 0
+			;;
+		vers|depuis)
+			local opts
+			opts="-h -3d -f -D -p -ed -e -as"
+			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+			return 0
+			;;
+		-p)
+			local opts
+			opts="portable-rene portable-marie poste-000 poste-001 poste-002"
+			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+			return 0
+			;;
+		-d)
+			local opts
+			opts="ls -d */"
+			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+			return 0
+			;;
+		*)
+			local opts
+			opts="-h -3d -f -D -p -ed -e -c afpa"
+			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+			#COMPREPLY=( $(compgen -f ${cur}) )	
+			return 0
+			;;
+
+	esac
+	
+	return 0
+}	
+
+complete -F _synchro synchro

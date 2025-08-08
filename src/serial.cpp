@@ -68,7 +68,7 @@ int Serial::write_string( const char* str, bool bAff)
         {
             string s = string(str);
             tCommandes.push_back(s);
-            logf( (char*)"Cmd en attent: %s", (char*)s.c_str() );
+            logf_thread( (char*)"Cmd en attent: %s", (char*)s.c_str() );
             return 0;
         }
     }
@@ -79,7 +79,7 @@ int Serial::write_string( const char* str, bool bAff)
     
     if ( bAff )
     {
-        logf( (char*)"Arduino : %s", str );
+        logf_thread( (char*)"Arduino : %s", str );
         //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
         PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
         PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
@@ -141,14 +141,14 @@ void Serial::sound_thread()
 //--------------------------------------------------------------------------------------------------------------------
 void Serial::emet_commande()
 {
-    //logf((char*)"Serial::emet_commande()" );
+    //logf_thread((char*)"Serial::emet_commande()" );
     //log_tab(true);
     
     if (tCommandes.size()!=0 )
     {
         string s = tCommandes[0];
         
-        logf( (char*)"Lance la comande en attente : %s", (char*)s.c_str() );        
+        logf_thread( (char*)"Lance la comande en attente : %s", (char*)s.c_str() );        
         char* str = (char*)s.c_str();
         int len = strlen(str);
         int n = write(fd, str, len);
@@ -157,7 +157,7 @@ void Serial::emet_commande()
         PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
 
         if( n!=len ){
-            logf((char*)"[ERREUR]Il manque des caracteres !!" );
+            logf_thread((char*)"[ERREUR]Il manque des caracteres !!" );
             //log_tab(false);
             return;
         }
@@ -165,7 +165,7 @@ void Serial::emet_commande()
         n = write_byte('\n');
 
         if( n!=0 ){
-            logf((char*)"[ERREUR]Sur le retour chariot!!" );
+            logf_thread((char*)"[ERREUR]Sur le retour chariot!!" );
             //log_tab(false);
             return;
         }
@@ -173,7 +173,7 @@ void Serial::emet_commande()
         bFree = false;
     }
     else
-    logf( (char*)"Plus de commande en attente" );        
+    logf_thread( (char*)"Plus de commande en attente" );        
     
     //log_tab(false);
 }
@@ -184,12 +184,12 @@ void Serial::read_thread()
 {
     unsigned char b[1];
     int i=0;
-    logf( (char*)"START Serial::read_thread" );
+    logf_thread( (char*)"START Serial::read_thread" );
     VarManager& var= VarManager::getInstance();
     bConnect = true;
     
     // ne fonctionne pas     // don't say why ..
-    logf( (char*)"Envoi de la commande g" );
+    logf_thread( (char*)"Envoi de la commande g" );
     // write_string( "g\n", false );
     get_info_arduino();
     
@@ -209,7 +209,7 @@ void Serial::read_thread()
             continue;
         }
         //buf[i] = b[0]; i++;
-        if ( n>1 )          logf( (char*)"[ERREUR]Serial::read_thread() PERTE DE CARRACTERE nb=%d",  n );
+        if ( n>1 )          logf_thread( (char*)"[ERREUR]Serial::read_thread() PERTE DE CARRACTERE nb=%d",  n );
         char c = b[0];
         //if ( c==10)
         //printf( "%c", c);
@@ -235,8 +235,8 @@ void Serial::read_thread()
                 if ( test.find("=INFO STOP") != string::npos )
                 {
 					if ( bVersionArduino ) {		// pas de reception de version
-						logf((char*)"[ Erreur ] Mauvaise version Arduino" );
-						logf((char*)"[ Erreur ]   pas de version" );
+						logf_thread((char*)"[ Erreur ] Mauvaise version Arduino" );
+						logf_thread((char*)"[ Erreur ]   pas de version" );
 						bVersionArduino = false;
 					}
 						
@@ -276,12 +276,12 @@ void Serial::read_thread()
                 {
                     if ( test.find("OUI") != string::npos)
                     {
-                        //logf( (char*)"ARDUINO Rotation terre : OUI" );
+                        //logf_thread( (char*)"ARDUINO Rotation terre : OUI" );
                         changeSui( true );
                     }
                     else
                     {
-                        //logf( (char*)"ARDUINO Rotation terre : NON" );
+                        //logf_thread( (char*)"ARDUINO Rotation terre : NON" );
                         changeSui( false );
                     }
                 }
@@ -290,12 +290,12 @@ void Serial::read_thread()
                 {
                     if ( test.find("normal") != string::npos)
                     {
-                        //logf( (char*)"Declinaison : normale" );
+                        //logf_thread( (char*)"Declinaison : normale" );
                         changeDec( true );
                     }
                     else
                     {
-                        //logf( (char*)"Declinaison : inverse" );
+                        //logf_thread( (char*)"Declinaison : inverse" );
                         changeDec( false );
                     }
                 }
@@ -304,12 +304,12 @@ void Serial::read_thread()
                 {
                     if ( test.find("normal") != string::npos)
                     {
-                        //logf( (char*)"Asc Droite : normale" );
+                        //logf_thread( (char*)"Asc Droite : normale" );
                         changeAsc( true );
                     }
                     else
                     {
-                        //logf( (char*)"Asc Droite : inverse" );
+                        //logf_thread( (char*)"Asc Droite : inverse" );
                         changeAsc( false );
                     }
                 }
@@ -320,7 +320,7 @@ void Serial::read_thread()
                     string sPas = test.substr(n+11+3);
                     
                     pas_sideral = strtod(sPas.c_str(),NULL);
-                    //logf( (char*)"Pas sideral : %0.8f", pas_sideral );
+                    //logf_thread( (char*)"Pas sideral : %0.8f", pas_sideral );
                 }
                 else
                 if ( test.find("GOTO OK") != string::npos )
@@ -334,14 +334,14 @@ void Serial::read_thread()
                 if ( test.find("Version :") != string::npos )
                 {
 			        if ( bVersionArduino )		{
-			        	logf( (char*)"Test version Arduino (\"%s\")", buffer);
+			        	logf_thread( (char*)"Test version Arduino (\"%s\")", buffer);
 			        	bVersionArduino = false;					// une seule fois
 			        	if ( test.find( VER_ARDUINO ) == string::npos )	{
-			        		logf((char*)"[ Erreur ] Mauvaise version Arduino %s", buffer );
-			        		logf((char*)"[ Erreur ]   recherchée \"Version %s\"  | trouvée \"%s\"", VER_ARDUINO, buffer );
+			        		logf_thread((char*)"[ Erreur ] Mauvaise version Arduino %s", buffer );
+			        		logf_thread((char*)"[ Erreur ]   recherchée \"Version %s\"  | trouvée \"%s\"", VER_ARDUINO, buffer );
 			        	}
 			        	else {
-			        		logf((char*)"  Version OK" );
+			        		logf_thread((char*)"  Version OK" );
 			        	}
 			        }
 
@@ -351,7 +351,7 @@ void Serial::read_thread()
                 if ( bPrintInfo == true && bAffiche )
                 {
                     //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
-                    //logf( (char*)"Buffer : \"%s\"", (char*)buffer );
+                    //logf_thread( (char*)"Buffer : \"%s\"", (char*)buffer );
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
                 }
                 */   
@@ -388,7 +388,7 @@ void Serial::read_thread()
     changeAsc( true );
 	changeSui( false );
 	changeRetourPos( false );
-    logf( (char*)"FIN   Serial::read_thread" );
+    logf_thread( (char*)"FIN   Serial::read_thread" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -400,7 +400,7 @@ void Serial::start_thread()
         th_serial = std::thread(&Serial::read_thread, this);
         th_serial.detach();
     }
-    else                        logf( (char*)"Port deja ouvert !! " );
+    else                        logf_thread( (char*)"Port deja ouvert !! " );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

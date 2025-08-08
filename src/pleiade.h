@@ -37,6 +37,7 @@ public :
     virtual bool                haveNewFrame();
     virtual void                haveUseFrame(bool);
 
+	virtual void				togglePanel()			{};
 
 };
 

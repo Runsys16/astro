@@ -1,0 +1,42 @@
+GPP = g++
+
+OBJDIR = ./build/
+SRCDIR = ./src/
+
+SRC= $(wildcard $(SRCDIR)*.cpp)
+OBJ= $(wildcard $(OBJDIR)*.o)
+OBJ=$(SRC:$(SRCDIR)%.cpp=$(OBJDIR)%.o)
+
+CFLAGS_PYTHON = `pkg-config --cflags python3`
+CLIBS_PYTHON = `pkg-config --libs python3`
+
+INCS     =  -I"/usr/include" -I"/usr/include/freetype2" $(CFLAGS_PYTHON)
+CFLAGS   = $(INCS) -g -std=c++11 -O2 -fpermissive -mtune=core2 -Wno-deprecated -Wno-unused-result
+
+PATHLIBS = -L"/usr/local/lib" -L"/usr/lib"
+LIBS	 =  $(PATHLIBS) $(CLIBS_PYTHON) -lbluetooth -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW -lIL -lwmcgl -rdynamic -ljpeg
+
+BIN_NAME = astro
+
+
+
+.PHONY: all
+all: $(BIN_NAME)
+
+echo:
+	@echo ---------------- OBJ -------------------
+	@echo ${OBJ}
+	@echo ---------------- SRC -------------------
+	@echo ${SRC}
+
+clean:
+	rm -f $(OBJDIR)*.o
+	rm -f $(BIN_NAME)
+
+$(BIN_NAME): $(OBJ)
+	@echo -- Edition des liens -----
+	@$(GPP) $^ -o $(BIN_NAME) $(LIBS) 
+	@echo $(GPP) -o $(BIN_NAME) $(LIBS) 
+
+
+

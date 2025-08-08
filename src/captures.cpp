@@ -312,7 +312,7 @@ void Captures::resize_all()
 		    dx = width - dxIcon * (i/ny+1);
 			
             resize_icone( p, dx, y*dyIcon, dxIcon, dyIcon );
-	        logf( (char*)"Traitement dx=%d: i/ny=%d y=%d", dx, i/ny, y );
+	        //logf( (char*)"Traitement dx=%d: i/ny=%d y=%d", dx, i/ny, y );
 
             //y += DY;
         }        

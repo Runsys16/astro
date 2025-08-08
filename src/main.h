@@ -23,6 +23,7 @@
 
 #include "surveillance.h"
 #include "panel_courbe.h"
+//#include "panel_courbe.h"
 //#include "catalog.h"
 
 
@@ -35,6 +36,7 @@
 #define COLOR32(RR, GG, BB, AA)	    ((RR<<24)|(GG<<16)|(BB<<8)|(AA))
 
 class Catalog;
+class PanelCapture;
 
 
 using namespace std;
@@ -125,7 +127,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bInverseCouleur;
     extern double					fLimitCorrection0;
     extern double					fLimitCorrection1;
-    extern double                    fTimeMili;
+    extern double					fTimeMili;
     
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;
@@ -215,6 +217,7 @@ void                vizier_load_stars( string, double, double );
 void                vizier_load_stars( string );
 void                vizier_load_stars( Catalog*, string, double, double );
 void                vizier_load_stars( Catalog*, string );
+void				vizier_capture_load_stars( Catalog*, string, PanelCapture* );
 
 void 				get_info_arduino();
 string              get_basename(string);
@@ -355,7 +358,9 @@ void                changeRetourPos(bool);
 void                log_tab( bool );
 void                log( char *);
 void                logf( char *, ...);
-
+void                log_thread( char *);
+void                logf_thread( char *, ...);
+void				log_thread_aff();
 void                parse_option( int argc, char**argv );
 void                parse_option_size( int argc, char**argv );
 int                 main(int argc, char **argv);

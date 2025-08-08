@@ -49,7 +49,7 @@ Capture::Capture()
     bIconized = false;
     bFullScreen = false;
 
-    setExtraString( "Capture ..." );
+    setExtraString( "Capture" );
 	bAffInfoFits = false;
 
     create_preview();
@@ -109,7 +109,7 @@ Capture::Capture(string f )
     setExtraString( "Capture :"+basename );
 
 
-    setExtraString( "Capture ..." );
+    setExtraString( "Capture" );
 	bAffInfoFits = false;
 
     create_preview();
@@ -230,8 +230,8 @@ void Capture::updatePosIcones()
     pFermer->setPos(    dx - 20*3 -DX, 2 -DY);
     pMaximiser->setPos( dx - 20*2 -DX, 2 -DY);
     pIconiser->setPos(  dx - 20*1 -DX, 2 -DY);
-    pNbStars->setPos(	dx - 20*3 -DX, 2 -DY + 20);
-    pNbVizier->setPos(	dx - 20*3 -DX, 2 -DY + 40);
+    pNbStars->setPos(	dx - 20*5 -DX, 2 -DY + 20);
+    pNbVizier->setPos(	dx - 20*5 -DX, 2 -DY + 40);
 
 	pFermer->updatePos();
 	pIconiser->updatePos();
@@ -415,14 +415,14 @@ void Capture::create_preview()	{
 
 	add( pTitre );
 	//------------------------
-	pNbStars = new PanelText( (char*)"0",		PanelText::LARGE_FONT, getWidth()-50, 20 );
+	pNbStars = new PanelText( (char*)"",		PanelText::LARGE_FONT, getWidth()-50, 20 );
 	pNbStars->setExtraString( "PanelText NbStar" );
 	panelCapture->add( pNbStars );
 	panelCapture->getStars()->setPanelNbStars( pNbStars );
 	
  	wm.add( this );
 	//------------------------
-	pNbVizier = new PanelText( (char*)"20",		PanelText::LARGE_FONT, getWidth()-50, 20 );
+	pNbVizier = new PanelText( (char*)"",		PanelText::LARGE_FONT, getWidth()-50, 20 );
 	pNbVizier->setExtraString( "PanelText NbVizier" );
 
 	panelCapture->add( pNbVizier );
@@ -650,7 +650,7 @@ void Capture::afficheInfoFits(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::iconize( int dxIcon, int dyIcon)
 {
-	logf( (char*)"Capture::iconize()" );
+	logf( (char*)"Capture::iconize() %s", basename.c_str() );
 	log_tab(true);
 
     VarManager& 	var	= VarManager::getInstance();

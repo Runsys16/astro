@@ -61,14 +61,15 @@ public:
     virtual void        releaseLeft( int, int);
     virtual void        releaseMiddle( int, int);
     virtual void        motionRight( int, int);
+    virtual void        wheelUp( int, int);//                              {;};
+    virtual void        wheelDown( int, int);//                            {;};
 	//-----------------------------------------------------------------
     virtual void		updatePos();
 
 	void				clip(int&, int&);
 	void				compute_centre();
     void                compute_echelle();
-    virtual void        wheelUp( int, int);//                              {;};
-    virtual void        wheelDown( int, int);//                            {;};
+    void				computeColor();
 /*	//-----------------------------------------------------------------
     void                tex2screen(vec2&);
 

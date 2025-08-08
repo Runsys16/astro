@@ -4,7 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
-#include "Python.h"
+//#include "Python.h"
 
 #include "main.h"
 #include "v4l2.h"
@@ -34,6 +34,7 @@
 //#define DEBUG 1
 //#define IDLEGL
 //#define APPEL_IDLE // determine l'ordre d'appel des fonctions GL
+float timerAppelIdle;
 //-----------------------------------------------------------------
 #define COLOR_GREY			0x404040FF
 #define COLOR_WHITE			0xFFFFFFFF
@@ -59,9 +60,8 @@ vector<string> t_sHelp1 =
 	"---- MODE NORMAL ----",
 	"ctrl+TAB\t: camera suivante" ,
 	"TAB\t: Change l'affichage des fichiers" ,
-	"   b/B\t: Affiche les informations des fichiers fits",
 	" Alt+A\t: Arduino bavard",
-	"Ctrl+o\t: Ouvrir un fichier image",
+	"   b/B\t: Affiche les informations des fichiers fits",
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
@@ -75,11 +75,11 @@ vector<string> t_sHelp1 =
 	"     n\t: Interroge Vizier",
 	"     N\t: Efface les etoiles Vizier",
 	"     o\t: Ouvre/Ferme la fenetre pleiades",
+	"Ctrl+o\t: Ouvrir un fichier image",
 	"     p\t: Pause de l'affichage camera",
 	"     P\t: Image suivante",
-	"     q\t: Lance un ASI Studio",
-	"      \t: Lance VIZIER",
-	"     Q\t: Mise en station via polaris",
+	"     q\t: Lance Polaris",
+	"     Q\t: Lance ASI Studio",
 //	"     r\t: Test alert BOX",
 	"     W\t: Surveille un repertoire",
 	"     -\t: Toutes les images sont affichees en icones",
@@ -149,11 +149,13 @@ vector<string> t_sHelp3 =
 	"---- Vizier ----",
 	" Alt+e\t: Affiche catalog"   ,
 	" Alt+r\t: Affiche les etoiles"   ,
-	"   d/f\t: Rotation"   ,
-	"   a/z\t: Translation X"   ,
+	"   a/z\t: Rotation"   ,
+	"   w/x\t: Translation X"   ,
+	"   c/v\t: Zoom X"   ,
 	"   q/s\t: Translation Y"   ,
-	"   w/x\t: Zoom X"   ,
-	"   c/v\t: Zoom Y"   ,
+	"   d/f\t: Zoom Y"   ,
+	" Alt+n\t: Compare les etoiles avec le catalogue Vizier"   ,
+	" Alt+N\t: Compare les etoiles et  affiche la courbe"   ,
 	"",
 	"---- DEBUG ----",
 	" Alt+g\t: Info fits"   ,
@@ -172,7 +174,6 @@ string              currentDirectory = "/home/rene/Documents/astronomie/logiciel
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-//PanelConsole *      pConsoleSerial;
 PanelWindow *       panelHelp;
 PanelScrollY *      panelScrHelp;
 PanelWindow *       panelResultat;
@@ -191,23 +192,13 @@ PanelText*          pSuivi;
 PanelText*          pArduino;
 PanelText*          pStellarium;
 PanelText*          pPas;
-//PanelText*          pErr;
-//PanelText*          pUrg;
 PanelText*          pDeplacement;
 PanelText*          pAD;
 PanelText*          pDC;
-//PanelText*          pMode;
 PanelText*          pAsservi;
-/*
-PanelText*          pXMax;
-PanelText*          pXMin;
-PanelText*          pYMax;
-PanelText*          pYMin;
-*/
 
 PanelText*          pHertz;
 PanelText*          pFPS;
-//PanelText *         pStatus;
 
 Pleiade*            pPleiade = NULL;
 
@@ -215,15 +206,11 @@ double              ac;
 double              dc;
 int					appelIdle = 0;
 
-//Device_cam          camera      = Device_cam();
-
 char                background[]="frame-0.raw";
 double               prevTime    = -1.0f;
 
 int                 width  = 1600;
 int                 height = 900;
-//int                 width  = 950;
-//int                 height = 534;
 int                 widthScreen  = 0;
 int                 heightScreen = 0;
 
@@ -276,22 +263,20 @@ int                 wImg;
 int                 hImg;
 int                 nPlanesImg;
 
-//ivec2               vCameraSize;
-//GLubyte*            ptr;
 vector<string>      exclude;
 
 int                 _r[256];
 int                 _g[256];
 int                 _b[256];
 
-double               xSuivi;
-double               ySuivi;
-double               xSuivi1;
-double               ySuivi1;
-double				 fDiamSuivi1 = 83.0;
-double               xSuiviSvg;
-double               ySuiviSvg;
-double               filtre      = 10.0;
+double				xSuivi;
+double				ySuivi;
+double				xSuivi1;
+double				ySuivi1;
+double				fDiamSuivi1 = 83.0;
+double				xSuiviSvg;
+double				ySuiviSvg;
+double				filtre      = 10.0;
 int                 iDisplayCourbe  = 0;
 bool                bDisplayCourbeX = true;
 bool                bDisplayCourbeY = true;
@@ -300,13 +285,11 @@ int                 iDisplayfft = 0;
 bool                bDisplayfftX = true;
 bool                bDisplayfftY = true;
 
-double               fTimeMili;
+double				fTimeMili;
+vector<string>		logs_string;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
 //--------------------------------------------------------------------------------------------------------------------
-//double              rw;
-//double              rh;
-
 int                 xCam;
 int                 yCam;
 int                 dxCam;
@@ -320,8 +303,6 @@ ivec2               mouse;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-//vector<vec2>        t_vResultat;
-//vector<vec2>        t_vSauve;
 vector<vector<vec2> * >        t_vTrace;
 bool                bAffTrace = false;
 bool                bRecTrace = false;
@@ -334,8 +315,8 @@ struct etoile       electre = { 3, 44, 52.5368818, 24, 6, 48.011217 };
 int                 xClick;
 int                 yClick;
 
-double               pas = 4000;
-double               cAD;
+double				pas = 4000;
+double				cAD;
 ivec2               calibreMove[2];
 vec2                vRef;
 vec3                vecAD[2];
@@ -346,14 +327,12 @@ vec3                vOri;
 vec3                vTr;
 bool                bCorrection = false;
 double              fTimeCorrection = 3.0;
-double               fTimeCpt = 0.0;
+double				fTimeCpt = 0.0;
 double              fLimitCorrection0 = 80.0;
 double              pas_sideral;
 
-double               fpos_ad = -1.0;
-double               fpos_dc = -1.0;
-//double               err = 2.0;
-//#define err         err
+double				fpos_ad = -1.0;
+double				fpos_dc = -1.0;
 //--------------------------------------------------------------------------------------------------------------------
 string              sTab;
 int                 nb_tab = 0;
@@ -366,39 +345,32 @@ string              sAlert;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-double fTimer10s = 0.0;
-bool bAsc = true;
-bool bDec = true;
-bool bSui = false;
-bool bJoy = false;
-bool bRet = false;
-/*
+double				fTimer10s = 0.0;
+bool				bAsc = true;
+bool				bDec = true;
+bool				bSui = false;
+bool				bJoy = false;
+bool				bRet = false;
 //--------------------------------------------------------------------------------------------------------------------
-double Xref = -402.0;
-double Yref = -365.0;
-double Zref = 782.0;
-//
+double				Xref  = -1.0;
+double				Yref  = -1.0;
+double				ZrefX = -1.0;
+double				ZrefY = -1.0;
+double				Wref  = -1.0;
 //--------------------------------------------------------------------------------------------------------------------
-*/
-double Xref  = -1.0;
-double Yref  = -1.0;
-double ZrefX = -1.0;
-double ZrefY = -1.0;
-double Wref  = -1.0;
-//--------------------------------------------------------------------------------------------------------------------
-bool   bAffCatalog	= true;
-bool   bAffStar		= true;
-Catalog vizier = Catalog();
+bool				bAffCatalog	= true;
+bool				bAffStar		= true;
+Catalog				vizier = Catalog();
 
-int iGlutModifier = 0;
+int					iGlutModifier = 0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-string workDirCaptures = "/home/rene/Documents/astronomie/logiciel/script/images/";
-string workDirSauveCourbe = "/home/rene/.astropilot/";
-string workDirFileBrowser = "/home/rene/Documents/astronomie/logiciel/script/images/";
-string filenameSauve = "/home/rene/.astropilot/sauvegarde.txt";
-string workDirFits = "/home/rene/Documents/astronomie/fits/";
+string				workDirCaptures = 		"/home/rene/Documents/astronomie/logiciel/script/images/";
+string				workDirSauveCourbe =	"/home/rene/.astropilot/";
+string				workDirFileBrowser =	"/home/rene/Documents/astronomie/logiciel/script/images/";
+string				filenameSauve =			"/home/rene/.astropilot/sauvegarde.txt";
+string				workDirFits =			"/home/rene/Documents/astronomie/fits/";
 //--------------------------------------------------------------------------------------------------------------------
 CallbackSauveGuidage    cb_sguidage;
 CallbackChargeGuidage   cb_cguidage;
@@ -489,7 +461,7 @@ void commande_polaris()
 {
     VarManager&         var = VarManager::getInstance();
 
-    string filename = "/home/rene/Documents/astronomie/logiciel/python/polaris/polaris.py";
+    string filename = "/home/rene/Documents/astronomie/logiciel/python/polaris/polaris.py  >/dev/null 2>&1 &";
     string command = "";
 
     command = command + filename;
@@ -513,7 +485,7 @@ void commande_polaris()
 void commande_stellarium()
 {
     //VarManager&         var = VarManager::getInstance();
-    string command = "stellarium &";
+    string command = "stellarium >/dev/null 2>&1 &";
     logf( (char*) command.c_str() );
     int ret = system( (char*) command.c_str() );
 
@@ -531,7 +503,7 @@ void commande_stellarium()
 void commande_asi_studio()
 {
     //VarManager&         var = VarManager::getInstance();
-    string command = "/home/rene/programmes/shell/asi 2>&1 >/dev/null &";
+    string command = "/home/rene/programmes/shell/asi >/dev/null 2>&1 &";
     logf( (char*) command.c_str() );
     int ret = system( (char*) command.c_str() );
 
@@ -545,62 +517,110 @@ void commande_asi_studio()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//--------------------------------------------------------------------------------------------------------------------
+void commande_magnitude()
+{
+    //VarManager&         var = VarManager::getInstance();
+    string command = "/home/rene/.astropilot/gnuplot/magnitude.sh >/dev/null 2>&1 &";
+    logf( (char*) command.c_str() );
+    int ret = system( (char*) command.c_str() );
+
+    if ( ret != 0 )
+    {
+        string mes = "Erreur execution magnitude.sh : " +  to_string(ret);
+        alertBox(mes);
+        logf( (char*)mes.c_str() );
+    }
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
 /*
-    RA_ICRS (deg)   (F15.11) Barycentric right ascension (ICRS) at Ep=2015.5 (ra) [ucd=pos.eq.ra;meta.main]
-    e_RA_ICRS (mas) (F7.4)  Standard error of right ascension (e_RA*cosDE) (ra_error) [ucd=stat.error;pos.eq.ra]
-    DE_ICRS (deg)   (F15.11) Barycentric declination (ICRS) at Ep=2015.5 (dec) [ucd=pos.eq.dec;meta.main]
+    RA_ICRS (deg)   (F15.11) Right ascension (ICRS) at Ep=2016.0 (ra) [ucd=pos.eq.ra;meta.main]
+    DE_ICRS (deg)   (F15.11) Declination (ICRS) at Ep=2016.0 (dec) [ucd=pos.eq.dec;meta.main]
+    Source          (I19)   Unique source identifier (unique within a particular Data Release) (source_id) [ucd=meta.id;meta.main]
+    e_RA_ICRS (mas) (F7.4)  Standard error of right ascension (ra_error) [ucd=stat.error;pos.eq.ra]
     e_DE_ICRS (mas) (F7.4)  Standard error of declination (dec_error) [ucd=stat.error;pos.eq.dec]
-    Source          (I19)   Unique source identifier (unique within a particular Data Release) (source_id) (G2) [ucd=meta.id;meta.main]
-    Plx (mas)       (F10.4) ? Absolute stellar parallax (parallax) [ucd=pos.parallax]
-    e_Plx (mas)     (F7.4)  ? Standard error of parallax (parallax_error) [ucd=stat.error;pos.parallax]
-    pmRA (mas/yr)   (F9.3)  ? Proper motion in right ascension direction (pmRA*cosDE) (pmra) (3) [ucd=pos.pm;pos.eq.ra]
+    Plx (mas)       (F9.4)  ? Parallax (parallax) [ucd=pos.parallax.trig]
+    e_Plx (mas)     (F7.4)  ? Standard error of parallax (parallax_error) [ucd=stat.error;pos.parallax.trig]
+    PM (mas/yr)     (F9.3)  ? Total proper motion (pm) [ucd=pos.pm;pos.eq]
+    pmRA (mas/yr)   (F9.3)  ? Proper motion in right ascension direction, pmRA*cosDE (pmra) [ucd=pos.pm;pos.eq.ra]
     e_pmRA (mas/yr) (F6.3)  ? Standard error of proper motion in right ascension direction (pmra_error) [ucd=stat.error;pos.pm;pos.eq.ra]
-    pmDE (mas/yr)   (F9.3)  ? Proper motion in declination direction (pmdec) (4) [ucd=pos.pm;pos.eq.dec]
+    pmDE (mas/yr)   (F9.3)  ? Proper motion in declination direction (pmdec) [ucd=pos.pm;pos.eq.dec]
     e_pmDE (mas/yr) (F6.3)  ? Standard error of proper motion in declination direction (pmdec_error) [ucd=stat.error;pos.pm;pos.eq.dec]
-    Dup             (I1)    [0/1] Source with duplicate sources (duplicated_source) (21) [ucd=meta.code.status]
-    FG (e-/s)       (E11.4) G-band mean flux (phot_g_mean_flux) [ucd=phot.flux;stat.mean;em.opt]
-    e_FG (e-/s)     (E11.4) Error on G-band mean flux (phot_g_mean_flux_error) [ucd=stat.error;phot.flux;stat.mean]
-    Gmag (mag)      (F7.4)  G-band mean magnitude (Vega) (phot_g_mean_mag) (23) [ucd=phot.mag;stat.mean;em.opt]
-    e_Gmag (mag)    (F6.4)  Standard error of G-band mean magnitude (Vega) (added by CDS) (phot_g_mean_mag_error) (37) [ucd=stat.error;phot.mag;stat.mean]
-    FBP (e-/s)      (E11.4) ? Mean flux in the integrated BP band (phot_bp_mean_flux) [ucd=phot.flux;stat.mean;em.opt.B]
-    e_FBP (e-/s)    (E11.4) ? Error on the integrated BP mean flux (phot_bp_mean_flux_error) (25) [ucd=stat.error;phot.flux;stat.mean]
-    BPmag (mag)     (F7.4)  ? Integrated BP mean magnitude (Vega) (phot_bp_mean_mag) (26) [ucd=phot.mag;stat.mean;em.opt.B]
-    e_BPmag (mag)   (F6.4)  ? Standard error of BP mean magnitude (Vega) (added by CDS) (phot_bp_mean_mag_error) (37) [ucd=stat.error;phot.mag;stat.mean]
-    FRP (e-/s)      (E11.4) ? Mean flux in the integrated RP band (phot_rp_mean_flux) [ucd=phot.flux.density;em.opt.R]
-    e_FRP (e-/s)    (E11.4) ? Error on the integrated RP mean flux (phot_rp_mean_flux_error) (28) [ucd=stat.error;phot.flux;stat.mean]
-    RPmag (mag)     (F7.4)  ? Integrated RP mean magnitude (Vega) (phot_rp_mean_mag) (29) [ucd=phot.mag;stat.mean;em.opt.R]
-    e_RPmag (mag)   (F6.4)  ? Standard error of RP mean magnitude (Vega) (added by CDS) (phot_rp_mean_mag_error) (37) [ucd=stat.error;phot.mag;stat.mean]
-    BP-RP (mag)     (F7.4)  ? BP-RP colour (photBpMeanMag-photRMeanMag) (bp_rp) [ucd=phot.color;em.opt.B;em.opt.R]
-    RV (km/s)       (F7.2)  ? Spectroscopic radial velocity in the solar barycentric reference frame (radial_velocity) [ucd=spect.dopplerVeloc.opt;pos.barycenter]
-    e_RV (km/s)     (F5.2)  ? Radial velocity error (radial_velocity_error) (30) [ucd=stat.error;spect.dopplerVeloc.opt;pos.barycenter]
-    Teff (K)        (F7.2)  ? Stellar effective temperature (estimate from Apsis-Priam) (teff_val) [ucd=phys.temperature.effective]
-    AG (mag)        (F7.4)  ? Estimate of extinction in the G band from Apsis-Priam (a_g_val) [ucd=phys.absorption.gal]
-    E(BP-RP) (mag)  (F7.4)  ? Estimate of redenning E(BP-RP) from Apsis-Priam (e_bp_min_rp_val) [ucd=phot.color.excess]
-    Rad (solRad)    (F6.2)  ? Estimate of radius from Apsis-FLAME (radius_val) [ucd=phys.size.radius]
-    Lum (solLum)    (F9.3)  ? Esimate of luminosity from Apsis-FLAME (lum_val) [ucd=phys.luminosity]
-*/
+    RUWE            (F7.3)  ? Renormalised unit weight error (ruwe) [ucd=stat.error]
+    FG (e-/s)       (F16.5) ? G-band mean flux (phot_g_mean_flux) [ucd=phot.flux;em.opt]
+    e_FG (e-/s)     (E11.4) ? Error on G-band mean flux (phot_g_mean_flux_error) [ucd=stat.error;phot.flux;em.opt]
+    Gmag (mag)      (F9.6)  ? G-band mean magnitude (phot_g_mean_mag) [ucd=phot.mag;em.opt]
+    FBP (e-/s)      (E11.4) ? Integrated BP mean flux (phot_bp_mean_flux) [ucd=phot.flux;em.opt.B]
+    e_FBP (e-/s)    (E11.4) ? Error on the integrated BP mean flux (phot_bp_mean_flux_error) [ucd=stat.error;phot.flux;em.opt.B]
+    BPmag (mag)     (F9.6)  ? Integrated BP mean magnitude (phot_bp_mean_mag) [ucd=phot.mag;em.opt.B]
+    FRP (e-/s)      (E11.4) ? Integrated RP mean flux (phot_rp_mean_flux) [ucd=phot.flux;em.opt.R]
+    e_FRP (e-/s)    (E11.4) ? Error on the integrated RP mean flux (phot_rp_mean_flux_error) [ucd=stat.error;phot.flux;em.opt.R]
+    RPmag (mag)     (F9.6)  ? Integrated RP mean magnitude (phot_rp_mean_mag) [ucd=phot.mag;em.opt.R]
+    BP-RP (mag)     (F9.6)  ? BP-RP colour (bp_rp) [ucd=phot.color;em.opt.B;em.opt.R]
+    RV (km/s)       (F7.2)  ? Radial velocity (radial_velocity) [ucd=spect.dopplerVeloc.opt;em.opt.I]
+    e_RV (km/s)     (F5.2)  ? Radial velocity error (radial_velocity_error) [ucd=stat.error;spect.dopplerVeloc.opt;em.opt.I]
+    Vbroad (km/s)   (F8.4)  ? Spectral line broadening parameter (vbroad) [ucd=spect.dopplerVeloc.opt;em.opt.I]
+    GRVSmag (mag)   (F9.6)  ? Integrated Grvs magnitude (grvs_mag) [ucd=phot.mag;em.opt]
+    QSO             (I1)    [0/1] Flag indicating the availability of additional information in the QSO candidates table (in_qso_candidates) [ucd=meta.code.status]
+    Gal             (I1)    [0/1] Flag indicating the availability of additional information in the galaxy candidates table (in_galaxy_candidates) [ucd=meta.code.status]
+    NSS             (I1)    [0/7] Flag indicating the availability of additional information in the various Non-Single Star tables (non_single_star) [ucd=meta.code.status]
+    XPcont          (I1)    [0/1] Flag indicating the availability of mean BP/RP spectrum in continuous representation for this source (has_xp_continuous) [ucd=meta.code.status]
+    XPsamp          (I1)    [0/1] Flag indicating the availability of mean BP/RP spectrum in sampled form for this source (has_xp_sampled) [ucd=meta.code.status]
+    RVS             (I1)    [0/1] Flag indicating the availability of mean RVS spectrum for this source (has_rvs) [ucd=meta.code.status]
+    EpochPh         (I1)    [0/1] Flag indicating the availability of epoch photometry for this source (has_epoch_photometry) [ucd=meta.code.status]
+    EpochRV         (I1)    [0/1] Flag indicating the availability of epoch radial velocity for this source (has_epoch_rv) [ucd=meta.code.status]
+    MCMCGSP         (I1)    [0/1] Flag indicating the availability of GSP-Phot MCMC samples for this source (has_mcmc_gspphot) [ucd=meta.code.status]
+    MCMCMSC         (I1)    [0/1] Flag indicating the availability of MSC MCMC samples for this source (has_mcmc_msc) [ucd=meta.code.status]
+    And             (I1)    [0/1] Flag indicating that the source is present in the Gaia Andromeda Photometric Survey (GAPS) (in_andromeda_survey) [ucd=meta.code.status]
+    Teff (K)        (F7.1)  ? Effective temperature from GSP-Phot Aeneas best library using BP/RP spectra (teff_gspphot) [ucd=phys.temperature.effective]
+    logg ([cm/s2])  (F7.4)  ? Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra (logg_gspphot) [ucd=phys.gravity]
+    [Fe/H] ([-])    (F7.4)  ? Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra (mh_gspphot) [ucd=phys.abund.Z]
+    Dist (pc)       (F10.4) ? Distance from GSP-Phot Aeneas best library using BP/RP spectra (distance_gspphot) [ucd=pos.distance;pos.eq]
+    A0 (mag)        (F7.4)  ? Monochromatic extinction A_0 at 547.7nm from GSP-Phot Aeneas best library using BP/RP spectra (azero_gspphot) [ucd=phys.absorption;em.opt]
+    HIP             (I6)    ? HIP cross-id number, van Leeuwen, Cat. I/311 (hip_original_ext_source_id) [ucd=meta.number;phys.atmol.number]
+    PS1             (I18)   ? PS1 cross-id name, Chambers et al., Cat. II/349 (ps1_original_ext_source_id) [ucd=meta.id.cross]
+    SDSS13          (I19)   ? SDSS name, Albareti et al., 2017ApJS..233...25A (sdss13_ext_source_id) [ucd=meta.id.cross]
+    SKYM2           (I9)    ? SkyMapperDR2 cross-id name, Onken et al., 2019PASA...36...33O (skym2_original_ext_source_id) [ucd=meta.id.cross]
+    TYC2            (a12)   Tycho-2 cross-id name, Hog et al., Cat. I/259 (tyc2_original_ext_source_id) [ucd=meta.id.cross]
+    URAT1           (a15)   URAT1 name, Zacharias et al., Cat. I/329 (urat1_original_ext_source_id) [ucd=meta.id.cross]
+    AllWISE         (a19)   ALLWISE cross-id name, Cutri et al., Cat. II/328 (allwise_original_ext_source_id) [ucd=meta.id.cross]
+    APASS9          (I8)    ? APASS9 identification, Henden et al., Cat. II/336 (apass9_original_ext_source_id) [ucd=meta.id.cross]
+    GSC23           (a10)   GSC2.3 cross-id name, Lasker et al., Cat. I/305 (gsc23_original_ext_source_id) [ucd=meta.id.cross]
+    RAVE5           (a16)   RAVE DR5 cross-id name, Kunder et al., Cat. III/279 (rave5_original_ext_source_id) [ucd=meta.id.cross]
+    2MASS           (a17)   2MASS cross-id name, Cutri et al., Cat. II/246 (twomass_original_ext_source_id) [ucd=meta.id.cross]
+    RAVE6           (a21)   RAVE DR6 cross-id name, Steinmetz et al., Cat. III/283 (rave6_original_ext_source_id) [ucd=meta.id.cross]
+    RAJ2000 (deg)   (F15.11) Barycentric right ascension (ICRS) at Ep=2000.0 (added by CDS) (ra2000) [ucd=pos.eq.ra]
+    DEJ2000 (deg)   (F15.11) Barycentric declination (ICRS) at Ep=2000.0 (added by CDS) (dec2000) [ucd=pos.eq.dec]*/
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_parse_line( Catalog* pVizier, string & line )
 {
-    if ( line.size() < 294 )        return;
-
+    if ( line.size() < 58 )        return;
+/*
     double fRA = stod( line.substr(0,15), 0 );
     double fDE = stod( line.substr(16,15), 0 );
     string name = line.substr(34, 17);
     double fMag = stod( line.substr(167,15 ), 0 );
+*/ 
+    double fRA = stod( line.substr(0,15), 0 );
+    double fDE = stod( line.substr(16,15), 0 );
+    string name = line.substr(32, 19);
+    double fMag = stod( line.substr(52,6), 0 );
  
     StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
     pVizier->add(p);
     
-    logf( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
+    logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void vizier_thread( Catalog* pVizier, string s )
+#define ICRS
+void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_capture )
 {
-    logf( (char*)"main::vizier_thread()" );
+    logf_thread( (char*)"main::vizier_capture_thread()" );
     log_tab(true);
     string find;
     
@@ -608,10 +628,14 @@ void vizier_thread( Catalog* pVizier, string s )
         find = "find_gaia_dr3.py -r 10200 -m 3000 --Gmag=\"<8\" m45";
     }
     else    {
-        find = "find_gaia_dr3.py -m 6000 --Gmag=\"<17.58\" " + s;
+		#ifdef ICRS
+	        find = "find_gaia_dr3.py -m 6000 --add=\"RA_ICRS,DE_ICRS,Source,Gmag\" --Gmag=\"<17.58\" " + s;
+	    #else
+        	find = "find_gaia_dr3.py -m 6000 --add=\"RAJ2000,DEJ2000,Source,Gmag\" --Gmag=\"<17.58\" " + s;
+        #endif
     }
     
-    logf( (char*)"Lance la requete : %s", find.c_str() );
+    logf_thread( (char*)"Lance la requete : %s", find.c_str() );
 
     string rep = "/home/rene/Documents/astronomie/logiciel/python/cds.cdsclient/cdsclient/";
 
@@ -624,14 +648,19 @@ void vizier_thread( Catalog* pVizier, string s )
     if ((ptr = popen(cmd.c_str(), "r")) != NULL)    {
     
         while (fgets(buf1, BUFSIZ, ptr) != NULL)        {
+        	for( int i=0; i<BUFSIZ; i++ )	if (buf1[i]=='\n')	buf1[i]=0;
             string s = string( buf1 );
-            if ( s.find( "-----------" ) == 0 )            {
+			//log_thread( (char*)s.c_str() );
+			
+            if ( s.find( "---------------" ) == 0 )            {
+				//log_thread( (char*)"----" );
                 bRead = !bRead;
                 bEntete = true;
                 continue;
             }
 
             if ( s.find( "#END#" ) == 0 )            {
+				//log_thread( (char*)"END" );
                 bRead = true;
                 bEntete = false;
                 continue;
@@ -644,12 +673,19 @@ void vizier_thread( Catalog* pVizier, string s )
         fprintf(stderr, "Echec de popen\n");
         exit(1);
     }
-    logf( (char*)"%d etoiles trouvees", pVizier->size() );
+    logf_thread( (char*)"%d etoiles trouvees", pVizier->size() );
     log_tab(false);
-    logf( (char*)"main::vizier_thread()  FIN" );
+    logf_thread( (char*)"main::vizier_capture_thread()  FIN" );
 
  	if (bDesactiveLog)			bDesactiveLog = false;
+ 	//____________________________________
+ 	// On previens la fenetre capture
+ 	if ( p_panel_capture != NULL )
+ 	{
+ 		p_panel_capture->findGaiaDR3_end();
+ 	}
 }
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -657,9 +693,21 @@ void vizier_load_stars( Catalog* pVizier, string s, double ra, double de )
 {
     pVizier->efface();
 
-	bDesactiveLog = true;
-    thread( &vizier_thread, pVizier, s ).detach();
+	//bDesactiveLog = true;
+    PanelCapture* p_panel_capture = NULL;
+    thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
     Camera_mgr::getInstance().setRefCatalog( ra, de );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void vizier_capture_load_stars( Catalog* pVizier, string s, PanelCapture* p_panel_capture )
+{
+    pVizier->efface();
+
+	//bDesactiveLog = true;
+    thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
+    //Camera_mgr::getInstance().setRefCatalog( ra, de );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -668,8 +716,10 @@ void vizier_load_stars( Catalog* pVizier, string s )
 {
     pVizier->efface();
 
-	bDesactiveLog = true;
-    thread( &vizier_thread, pVizier, s ).detach();
+	//bDesactiveLog = true;
+    PanelCapture* p_panel_capture = NULL;
+    thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
+    //thread( &vizier_thread, pVizier, s ).detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1200,7 +1250,7 @@ void updatePanelResultat()
 static void displayGL(void)
 {
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f displayGL() clearBuffer()", ++appelIdle, Timer::getInstance().getReelElapsedTime()  );
+    logf( (char*)"%02d-%.4f displayGL() clearBuffer()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
 #endif
     //logf( (char*)"*** DISPLAY GL ***" );
 	WindowsManager::getInstance().clearBufferGL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1219,7 +1269,7 @@ static void displayGL(void)
 	WindowsManager::getInstance().displayGL();
 
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutSwapBuffers()", ++appelIdle, Timer::getInstance().getReelElapsedTime()  );
+    logf( (char*)"%02d-%.4f glutSwapBuffers()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
 #endif
 
 	glutSwapBuffers();
@@ -1594,9 +1644,10 @@ void getSuiviParameter(void)
 static void idleGL(void)
 {
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f idleGL", ++appelIdle, Timer::getInstance().getReelElapsedTime() );
+    logf( (char*)"%02d-%.4f idleGL", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
+	log_thread_aff();
     
 	Timer&          timer = Timer::getInstance();
 
@@ -1619,8 +1670,9 @@ static void idleGL(void)
 
 #ifdef APPEL_IDLE
 	appelIdle = 0;
+	timerAppelIdle = +Timer::getInstance().getGlutTime();
     log( (char*)"---------------------------------------------------------------" );
-    logf( (char*)"%02d-%.4f idleGL:timer", ++appelIdle, Timer::getInstance().getReelElapsedTime() );
+    logf( (char*)"%02d-%.4f idleGL:timer", ++appelIdle, +Timer::getInstance().getGlutTime() -timerAppelIdle  );
 #endif
 
 
@@ -1821,7 +1873,7 @@ static void idleGL(void)
     PanelConsoleSerial::getInstance().idleGL();
     WindowsManager::getInstance().idleGL( elapsedTime );
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f WindowsManager::idleGL()", ++appelIdle, Timer::getInstance().getReelElapsedTime());
+    logf( (char*)"%02d-%.4f WindowsManager::idleGL()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime());
 #endif
 
     
@@ -1830,7 +1882,7 @@ static void idleGL(void)
     //Camera_mgr::getInstance().idleGL();
 	glutPostRedisplay();
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutPostRedisplay", ++appelIdle, Timer::getInstance().getReelElapsedTime() );
+    logf( (char*)"%02d-%.4f glutPostRedisplay", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
 }
@@ -1960,7 +2012,7 @@ static void rotateVisible()
 static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 {
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardFuncCtrl", ++appelIdle, Timer::getInstance().getReelElapsedTime()  );
+    logf( (char*)"%02d-%.4f glutKeyboardFuncCtrl", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
 #endif
 
     WindowsManager&     wm      = WindowsManager::getInstance(); 
@@ -2095,7 +2147,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 {
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardFuncAlt", ++appelIdle, Timer::getInstance().getReelElapsedTime()  );
+    logf( (char*)"%02d-%.4f glutKeyboardFuncAlt", ++appelIdle, Timer::getInstance().getCurrentTime()  );
 #endif
 
     WindowsManager&     wm      = WindowsManager::getInstance(); 
@@ -2104,14 +2156,6 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
     bool bShift = (iGlutModifier & GLUT_ACTIVE_SHIFT ) ? true : false;
 	
 	switch(key){ 
-	//----------------------------------------------------------------------------
-	case 'a':
-	    {
-	        Xref -= 1.0;
-            var.set( "Xref",  (double)Xref );
-	        //logf( (char*)"Xref : %0.2f", (double)Xref );
-	    }
-	    break;
 	//----------------------------------------------------------------------------
     case 'A':
         {
@@ -2138,20 +2182,65 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 		}
 	    break;
 	//----------------------------------------------------------------------------
-	case 'c':
+	case 'n':
 	    {
-	        ZrefY -= 1.0;
-            var.set( "ZrefY", (double)ZrefY );
-	        //logf( (char*)"Zref : %0.2f", (double)Zref );
-	    }
+	        logf( (char*)"Alt+n : Compare les etoiles trouvees avec le CDS" );
+	        Panel* panel = wm.getCapture();
+
+	        if ( panel == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*panel) == typeid(PanelCapture)	) {
+	        	PanelCapture* pPanelCapture = dynamic_cast<PanelCapture*>( panel );
+	        	pPanelCapture->compareStar();
+	        }
+			else
+	        if ( typeid(*panel) == typeid(PanelCamera)	)
+	        {
+				Camera* p = Camera_mgr::getInstance().getCurrent();
+				if ( p!=NULL )
+				{
+					p->compareStar();
+				}
+			}
+			else
+				log( (char*)"Pas de fenetre valise sous la souris" );
+				//logf( (char*)"panel = \"%s\"", panel->getExtraString().c_str() );
+		}
 	    break;
 	//----------------------------------------------------------------------------
-	case 'd':
+	case 'N':
 	    {
-	        Wref -= 0.25;
-            var.set( "Wref",  (double)Wref );
-	        //logf( (char*)"Wref : %0.2f", (double)Wref );
-	    }
+	        logf( (char*)"Alt+N \t: Compare les etoiles trouvees avec le CDS " );
+	        logf( (char*)"      \t: voir le fichier ~/.astropilot/gnuplot/magnitude.png" );
+	        Panel* panel = wm.getCapture();
+
+	        if ( panel == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*panel) == typeid(PanelCapture)	)
+	        {
+	        	PanelCapture* pPanelCapture = dynamic_cast<PanelCapture*>( panel );
+	        	pPanelCapture->saveCompareStar();
+		        thread( &commande_magnitude).detach();
+	        }
+			else
+	        if ( typeid(*panel) == typeid(PanelCamera)	)
+			{
+				Camera* p = Camera_mgr::getInstance().getCurrent();
+				if ( p!=NULL )
+				{
+					p->saveCompareStar();
+			        thread( &commande_magnitude).detach();
+				}
+			}
+			else
+				log( (char*)"Pas de fenetre valise sous la souris" );
+		}
 	    break;
 	//----------------------------------------------------------------------------
 	case 'e':
@@ -2164,28 +2253,12 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	    }
 	    break;
 	//----------------------------------------------------------------------------
-	case 'f':
-	    {
-	        Wref += 0.25;
-            var.set( "Wref",  (double)Wref );
-	        //logf( (char*)"Wref : %0.2f", (double)Wref );
-	    }
-	    break;
-	//----------------------------------------------------------------------------
 	case 'g':
 	    {
 	        logf( (char*)"Affiche dic current" );
 	    	Capture* pCurrent = Captures::getInstance().getCurrentCapture();
 	    	if ( pCurrent == NULL )			break;
 	        pCurrent->afficheFitsDic();
-	    }
-	    break;
-	//----------------------------------------------------------------------------
-	case 'q':
-	    {
-	        Yref -= 1.0;
-            var.set( "Yref",  (double)Yref );
-	        //logf( (char*)"Yref : %0.2f", (double)Yref );
 	    }
 	    break;
 	//----------------------------------------------------------------------------
@@ -2197,6 +2270,46 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	    }
 	    break;
 	//----------------------------------------------------------------------------
+	case 'w':
+	    {
+	        Xref -= 1.0;
+            var.set( "Xref",  (double)Xref );
+	        //logf( (char*)"Xref : %0.2f", (double)Xref );
+	    }
+	    break;
+	//----------------------------------------------------------------------------
+	case 'x':
+	    {
+	        Xref += 1.0;
+            var.set( "Xref",  (double)Xref );
+	        //logf( (char*)"Xref : %0.2f", (double)Xref );
+	    }
+	    break;
+	//----------------------------------------------------------------------------
+	case 'c':
+	    {
+	        ZrefX -= 1.0;
+            var.set( "ZrefX", (double)ZrefX );
+	        //logf( (char*)"Zref : %0.2f", (double)Zref );
+	    }
+	    break;
+	//----------------------------------------------------------------------------
+	case 'v':
+	    {
+	        ZrefX += 1.0;
+            var.set( "ZrefX", (double)ZrefX );
+	        //logf( (char*)"Zref : %0.2f", (double)Zref );
+	    }
+	    break;
+	//----------------------------------------------------------------------------
+	case 'q':
+	    {
+	        Yref -= 1.0;
+            var.set( "Yref",  (double)Yref );
+	        //logf( (char*)"Yref : %0.2f", (double)Yref );
+	    }
+	    break;
+	//----------------------------------------------------------------------------
 	case 's':
 	    {
 	        Yref += 1.0;
@@ -2205,7 +2318,15 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	    }
 	    break;
 	//----------------------------------------------------------------------------
-	case 'v':
+	case 'd':
+	    {
+	        ZrefY -= 1.0;
+            var.set( "ZrefY", (double)ZrefY );
+	        //logf( (char*)"Zref : %0.2f", (double)Zref );
+	    }
+	    break;
+	//----------------------------------------------------------------------------
+	case 'f':
 	    {
 	        ZrefY += 1.0;
             var.set( "ZrefY", (double)ZrefY );
@@ -2213,27 +2334,19 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	    }
 	    break;
 	//----------------------------------------------------------------------------
-	case 'w':
+	case 'a':
 	    {
-	        ZrefX -= 1.0;
-            var.set( "ZrefX", (double)ZrefX );
-	        //logf( (char*)"Zref : %0.2f", (double)Zref );
-	    }
-	    break;
-	//----------------------------------------------------------------------------
-	case 'x':
-	    {
-	        ZrefX += 1.0;
-            var.set( "ZrefX", (double)ZrefX );
-	        //logf( (char*)"Zref : %0.2f", (double)Zref );
+	        Wref -= 0.25;
+            var.set( "Wref",  (double)Wref );
+	        //logf( (char*)"Wref : %0.2f", (double)Wref );
 	    }
 	    break;
 	//----------------------------------------------------------------------------
 	case 'z':
 	    {
-	        Xref += 1.0;
-            var.set( "Xref",  (double)Xref );
-	        //logf( (char*)"Xref : %0.2f", (double)Xref );
+	        Wref += 0.25;
+            var.set( "Wref",  (double)Wref );
+	        //logf( (char*)"Wref : %0.2f", (double)Wref );
 	    }
 	    break;
 	//----------------------------------------------------------------------------
@@ -2250,7 +2363,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardFunc", ++appelIdle, Timer::getInstance().getReelElapsedTime() );
+    logf( (char*)"%02d-%.4f glutKeyboardFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
     //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
@@ -2356,7 +2469,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	    bArretUrgence = true;
 	    }
         break;
-
+	//  touche ² 
     case 178:
     	{
             //Captures::getInstance().showIcones();
@@ -2874,7 +2987,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'Q':
         {
-        logf( (char*)"Key (q) : Lance ASI Studio");
+        logf( (char*)"Key (Q) : Lance ASI Studio");
         thread( &commande_asi_studio).detach();
 
         //Py_SetProgramName(argv[0]);  /* optional but recommended */
@@ -2903,12 +3016,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'q':
         {
+	        logf( (char*)"Key (polaris) : Polaris");
             thread( &commande_polaris).detach();
         }
         break;
     case 'r' :
         {
-            logf( (char*)"Key (Q) : Ouvre un fichier de suivi (.guid)");
+            logf( (char*)"Key (r) : Ouvre un fichier de suivi (.guid)");
             FileBrowser& fb = FileBrowser::getInstance();
             
             fb.setCallBack(&cb_cguidage);
@@ -3191,7 +3305,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardUpFunc", ++appelIdle, Timer::getInstance().getReelElapsedTime() );
+    logf( (char*)"%02d-%.4f glutKeyboardUpFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
 	WindowsManager::getInstance().keyboardUpFunc( key, x, y);
@@ -3202,8 +3316,9 @@ static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialFunc(int key, int x, int y)	{
-	appelIdle++;
-    logf( (char*)"%02d - glutSpecialFunc", appelIdle);
+#ifdef APPEL_IDLE
+    logf( (char*)"%02d-%.4f glutSpecialFunc", ++appelIdle, -timerAppelIdle + Timer::getInstance().getCurrentTime() );
+#endif
 
     Captures::getInstance().glutSpecialFunc(key, x, y);
     
@@ -3333,7 +3448,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialUpFunc(int key, int x, int y)	{
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutSpecialUpFunc", ++appelIdle, Timer::getInstance().getReelElapsedTime() );
+    logf( (char*)"%02d-%.4f glutSpecialUpFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 	WindowsManager::getInstance().keyboardSpecialUpFunc( key, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
@@ -3344,7 +3459,7 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutMouseFunc", ++appelIdle, Timer::getInstance().getReelElapsedTime() );
+    logf( (char*)"%02d-%.4f glutMouseFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
    	iGlutModifier = glutGetModifiers();
 
@@ -3492,7 +3607,7 @@ endglutMouseFunc:
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMotionFunc(int x, int y)	{	
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutMotionFunc(%d, %d)", ++appelIdle, Timer::getInstance().getReelElapsedTime(), x, y );
+    logf( (char*)"%02d-%.4f glutMotionFunc(%d, %d)", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime(), x, y );
 #endif
 
     mouse.x = x;
@@ -3509,7 +3624,7 @@ static void glutMotionFunc(int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 static void glutPassiveMotionFunc(int x, int y)	{
 #ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutPassiveMotionFunc(%d, %d)", ++appelIdle, Timer::getInstance().getReelElapsedTime(), x, y );
+    logf( (char*)"%02d-%.4f glutPassiveMotionFunc(%d, %d)", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime(), x, y );
 #endif
 
     mouse.x = x;
@@ -3759,7 +3874,7 @@ static void CreateHelp()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-#include "status.cpp"
+#include "status.inc"
 
 static void CreateStatus()	{
 	WindowsManager& wm = WindowsManager::getInstance();
@@ -3966,6 +4081,46 @@ void logf(char *fmt, ...)
     va_end( arglist );
     
     log((char*)chaine);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void log_thread_aff()
+{
+	if ( bDesactiveLog )		return;
+	
+	for( int i=0; i<logs_string.size(); i++ )
+	{
+		log( (char*)logs_string[i].c_str() );
+	}
+	
+    logs_string.clear();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void log_thread( char* chaine )
+{
+	if ( bDesactiveLog)		return;
+
+    string aff = sTab + string(chaine);
+
+    logs_string.push_back( aff );
+    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void logf_thread(char *fmt, ...)
+{
+    char chaine[1024];
+    va_list arglist;
+
+    va_start( arglist, fmt );
+    vsnprintf( chaine, sizeof(chaine), fmt, arglist );
+    va_end( arglist );
+    
+    log_thread((char*)chaine);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

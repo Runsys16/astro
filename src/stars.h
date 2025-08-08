@@ -34,6 +34,7 @@ public:
     void                    updateRB(rb_t*);
     vec2*                   getSuivi();
 
+	void					setModeMag(int n);
     void                    update_stars(int, int, PanelSimple*, rb_t*);
     void                    update_stars(int, int, PanelSimple*, rb_t*, float ech_usr);
     

@@ -31,27 +31,9 @@ using namespace std;
 #include "Singleton.h"
 
 SINGLETON_BEGIN( BluetoothManager )
-    
 public:
     enum Fct                { FCT_CENTRAGE, FCT_COMMAND, FCT_NOP };
-    BluetoothManager();
-    
-    void                    start();
-    void                    scan();
 
-    void                    fct_switch();
-    void                    fct_centrage();
-    void                    fct_command();
-    void                    fct_nop();
-
-    void                    centre_joystick();
-
-    void                    connect_hc05();
-    void                    th_read_hc05();
-    void                    th_write_hc05();
-    void                    write_hc05(string);
-    void                    disconnect_hc05();
-    inline void             disconnect()        { disconnect_hc05(); }
 private:
     thread                  th_scan;
     thread                  th_write;
@@ -76,6 +58,27 @@ private:
     
     enum Fct                FCT;
     bool                    bLogArduino;
+    
+public:
+    BluetoothManager();
+    
+    void                    start();
+    void                    scan();
+
+    void                    fct_switch();
+    void                    fct_centrage();
+    void                    fct_command();
+    void                    fct_nop();
+
+    void                    centre_joystick();
+
+    void                    connect_hc05();
+    void                    th_read_hc05();
+    void                    th_write_hc05();
+    void                    write_hc05(string);
+    void                    disconnect_hc05();
+    inline void             disconnect()        { disconnect_hc05(); }
+
     
     
 SINGLETON_END()

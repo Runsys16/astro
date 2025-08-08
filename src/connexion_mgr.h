@@ -30,6 +30,15 @@ using namespace std;
 #include "Singleton.h"
 
 SINGLETON_BEGIN( Connexion_mgr )
+   
+private:
+    std::thread                 th_poll_connexion;
+    vector<string>              t_port_polling;
+    vector<string>              t_port_current;
+    
+    bool                        bStart;
+    atomic<bool>				bExitThread;  
+    
 
 public:
     Connexion_mgr();
@@ -44,15 +53,6 @@ public:
     
     void                        print_list();
     void						stopThread()					{ bExitThread = true; }
-    
-   
-private:
-    std::thread                 th_poll_connexion;
-    vector<string>              t_port_polling;
-    vector<string>              t_port_current;
-    
-    bool                        bStart;
-    atomic<bool>				bExitThread;  
     
 SINGLETON_END()
 

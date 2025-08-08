@@ -2,8 +2,7 @@
 #include <malloc.h>
 //--------------------------------------------------------------------------------------------------------------------
 //#define AFF_CONTRUCTEUR
-#ifdef AFF_CONTRUCTEUR
-#endif
+//#define DEBUG
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -98,6 +97,8 @@ void Star::init(int xx, int yy)
     
     dx_screen   = 0.0;
     dy_screen   = 0.0;
+    
+    modeMag		= 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -241,19 +242,29 @@ void Star::computeMag()
     double A = (x0-x1) / (log(y0)-log(y1));
     double B = x0 - (A* log(y0));
 
-    magnitude = (A * log( ponderation )) + B;
-
+	if ( modeMag == 0 )
+	{
+		// pleiades
+		magnitude = (A * log( ponderation +1500 )) + B +0.3;
+	}
+	else
+	{
+		// NGC2392
+		magnitude = (A * log( ponderation +200 )) + B + 7.4;
+	}
+	//modeMag = 1;
+	
     double mag = -(log( ponderation ) / log(2.0)) + 17.0;
     //magnitude = mag;
 
-    if ( bSuivi )
+    if ( !bSuivi )
         //snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
     else
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f", magnitude );
     
     //snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
-    snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
+    //snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
     //logf( "Star::computeMag() '%s' m = %0.2f ponderation = %0.2f", p_sInfo, mag, ponderation );
     
     if ( haveCoord() )
@@ -279,11 +290,9 @@ void Star::computeMag()
 //--------------------------------------------------------------------------------------------------------------------
 float Star::computeRayon()
 {
-    double r = ( 30.0 - 1.5*(magnitude+8) ) ;
-	/*
-    float r = (15.0 - magnitude)*1.5 - 8.0;
-    if ( r<0.0 )    r = 0.0;
-    */
+    //double r = ( 30.0 - 1.5*(magnitude) ) ;
+    double r = 17.5 - 0.675*(magnitude);
+
     return r;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -593,28 +602,15 @@ void Star::getFWHMLine( int xx, int yy, int size)
     if ( max >= width )             return;
     if ( yy < 0)                    return;
     if ( yy >= height )             return;
-    /*
-    size_t size_ptr;
-    try
-    {
-        size_ptr = malloc_usable_size ( (void*) ptr);
-    }
-    catch(std::exception const& e)
-    {
-        cerr << "ERREUR : " << e.what() << endl;
-    }
-    */
-     
+
     //--------------------------------------------------    
     for( int X=min; X<max; X++) 
     {
         int offset = getOffset(X,yy);
         if ( offset < 0 )              continue;
 
-        //float l = getLumLimit( offset, 20.0 );
         float l = getLum( offset );
 
-        //if ( l<limitLum )       l = 0.0;
         if ( l>maxLum )         maxLum = l;
         
         vFWHM.x     += l * (float)X;
@@ -629,7 +625,7 @@ void Star::getFWHM( int xx, int yy, int size)
 {
     int min;
     int max;
-
+	//-------------------------------------------------------------
     vFWHM.x         = 0.0;
     vFWHM.y         = 0.0;
     ponderation     = 0.0;
@@ -639,7 +635,6 @@ void Star::getFWHM( int xx, int yy, int size)
     min = yy - size;
     max = yy + size;
     
-
     for(int Y=min; Y<max; Y ++)        getFWHMLine(xx, Y, size);
 
     vFWHM.x     /= ponderation;
@@ -651,22 +646,25 @@ void Star::getFWHM( int xx, int yy, int size)
     min = yy - size;
     max = yy + size;
 
+	//-------------------------------------------------------------
     vFWHM.x         = 0.0;
     vFWHM.y         = 0.0;
     ponderation     = 0.0;
-    limitLum = maxLum / 2.0;
+    limitLum		= maxLum / 2.0;
     //limitLum = 20.0;
     size = computeRayon();
     if ( size < 10 )            size = 10;
     
     for(int Y=min; Y<max; Y ++)        getFWHMLine(xx, Y, size);
+
+	//-------------------------------------------------------------
     limitLum = 20.0;
     
     computeMag();
     
 #ifdef DEBUG
-    logf( (char*)"Pond : %0.2f mag=%0.2f max=%0.2f limit=%0.2f", ponderation, magnitude, maxLum, limitLum );
-    logf( (char*)" pt (%0.2f,%0.2f)", vFWHM.x/ponderation, vFWHM.y/ponderation );
+    logf( (char*)"Pond : %0.2f mag=%0.2f maxLum=%0.2f limit=%0.2f", ponderation, magnitude, maxLum, limitLum );
+    logf( (char*)" pt (%0.2f,%0.2f) size = %d", vFWHM.x/ponderation, vFWHM.y/ponderation, size );
 #endif
 
     vFWHM.x     /= ponderation;

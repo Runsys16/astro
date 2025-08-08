@@ -18,6 +18,14 @@
 #include "Singleton.h"
 
 SINGLETON_BEGIN( Camera_mgr )
+	
+private:
+    vector<Camera*>             pCameras;
+    Camera*                     pCurrent;
+    
+    int                         nActive;
+    vec2                        vSuivi;
+    
 
 public:
     Camera_mgr();
@@ -84,13 +92,9 @@ public:
    
 	void						stopAllCameras();
 	void						cam_full_screen();
-private:
-    vector<Camera*>             pCameras;
-    Camera*                     pCurrent;
-    
-    int                         nActive;
-    vec2                        vSuivi;
-    
+	
+	void						compareStar();
+	
     
 SINGLETON_END()
 
