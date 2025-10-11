@@ -26,10 +26,10 @@ bool Surveillance::isImage(string name)
        //*/
     )
     {
-        logf( (char*)"  %s est une image", name.c_str() );
+        logf_thread( (char*)"  %s est une image", name.c_str() );
         return true;
     }        
-    logf( (char*)"  %s n\'est pas une image", name.c_str() );
+    logf_thread( (char*)"  %s n\'est pas une image", name.c_str() );
 
     return false;
 }
@@ -91,7 +91,7 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
 
 
     if (i->len > 0)                 
-        logf( (char*)"wd=%2d; %s name = %s iState=%d", i->wd, (char*)slog.c_str(), i->name, iState );
+        logf_thread( (char*)"wd=%2d; %s name = %s iState=%d", i->wd, (char*)slog.c_str(), i->name, iState );
 
 
 
@@ -103,7 +103,7 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
     {
         iState = 2;
         
-        logf( (char*)"  Notification : file ecrit \"%s\"",i->name );
+        logf_thread( (char*)"  Notification : file ecrit \"%s\"",i->name );
         string f = string(i->name);
         vector<string> vff = split( f, "/" );
         
@@ -119,14 +119,14 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
 
         filename = dirname + basename;
 
-        logf( (char*)"  fichier : %s", (char*)filename.c_str() );
+        logf_thread( (char*)"  fichier : %s", (char*)filename.c_str() );
 
         sleep(1);
         if (   isImage(basename) )
         {
 		    basename_charge.push_back( basename );
 		    dirname_charge.push_back( dirname );
-	        logf( (char*)"  push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
+	        logf_thread( (char*)"  push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
  			bCharge = true;
  			basename = "";
  			//dirname = "";
@@ -142,7 +142,7 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
 //--------------------------------------------------------------------------------------------------------------------
 void Surveillance::thread_surveille( string dir )
 {
-    logf( (char*)"Surveillance::thread_surveille()" );
+    logf_thread( (char*)"Surveillance::thread_surveille()" );
     
     int j;
     char buf[BUF_LEN] __attribute__ ((aligned(8)));
@@ -154,20 +154,19 @@ void Surveillance::thread_surveille( string dir )
     inotifyFd = inotify_init1(IN_CLOEXEC);                 /* Create inotify instance */
     
 
-    if (inotifyFd == -1)        logf( (char*)"[ERREUR] inotify_init");
+    if (inotifyFd == -1)        logf_thread( (char*)"[ERREUR] inotify_init");
 
     /* For each command-line argument, add a watch for all events */
 
     wd = inotify_add_watch(inotifyFd, (char*)dir.c_str(), IN_ALL_EVENTS);
-    if (wd == -1)               logf( (char*)"[ERREUR] inotify_add_watch");
+    if (wd == -1)               logf_thread( (char*)"[ERREUR] inotify_add_watch");
 
-    logf( (char*)"[INFO]  Watching '%s' using wd = %d", (char*)dir.c_str(), wd);
-    //dirname = string( dir );
+    logf_thread( (char*)"[INFO]  Watching '%s' using wd = %d", (char*)dir.c_str(), wd);
 
     while(bRun) {                                  /* Read events forever */
         numRead = read(inotifyFd, buf, BUF_LEN);
-        if (numRead == 0)           logf( (char*)"read() from inotify fd returned 0!");
-        if (numRead == -1)          logf( (char*)"[ERREUR] read");
+        if (numRead == 0)           logf_thread( (char*)"read() from inotify fd returned 0!");
+        if (numRead == -1)          logf_thread( (char*)"[ERREUR] read");
 
         for (p = buf; p < buf + numRead; ) {
             event = (struct inotify_event *) p;
@@ -179,7 +178,7 @@ void Surveillance::thread_surveille( string dir )
     
     inotify_rm_watch(inotifyFd, wd);
     close(inotifyFd);
-    logf( (char*)"[INFO] Arret du thread de  surveillance de repertoire" );
+    logf_thread( (char*)"[INFO] Arret du thread de  surveillance de repertoire" );
     bThread = false;
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -99,7 +99,8 @@ typedef struct readBackground       rb_t;
     extern bool                     bCentrageSuivi;
     extern bool                     bPanelResultat;
     extern bool                     bDesactiveLog;
-
+	extern bool						bAffColimation;
+	
     extern int                      width;
     extern int                      height;
     //extern vector<vec2>             t_vResultat;

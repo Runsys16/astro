@@ -23,7 +23,7 @@ protected:
     bool                        bIconized;
     bool                        bFullScreen;
     bool                        bFits;
-    bool						bAffInfoFits;
+    bool						bAfficheInfoFits;
     bool						bAfficheInfoSouris;
     bool						bAfficheGrille;
     bool						bAfficheCorrectionFits;
@@ -67,6 +67,8 @@ public :
     void                        resize(int,int);
     void                        resize(int,int,int,int);
     void                        fullscreen();
+    void						iconize(int, int);
+	void						restaure();
 
     void                        onTop();
     void                        addStar(int,int);
@@ -80,9 +82,6 @@ public :
     void                        afficheFits();
     void                        afficheInfoFits();
     void                        afficheInfoFits(bool);
-    void						iconize(int, int);
-	void						restaure(bool bInfo, bool bGrille, bool bSouris );
-    bool                        getAfficheInfoFits()						{ return bAffInfoFits; }
 
 	void						export_stars();
 	void						export_vizier();
@@ -106,7 +105,7 @@ inline string                   getDirname()                                { re
 inline PanelCapture*            getPreview()                                { return panelCapture; }
 inline PanelText*	            getNbVizier()                               { return pNbVizier; }
 
-	   void                     setIconized(bool b);
+//	   void                     setIconized(bool b);
 inline bool                     getIconezed()                               { return bIconized; }
 inline bool                     isIconized()                                { return bIconized; }
 
@@ -115,6 +114,14 @@ inline bool                     getFullScreen()                             { re
 
 inline bool                     isFits()                                    { return bFits; }
 inline Fits*                    getFits()                                   { return fits; }
+
+inline void						setAfficheGrille(bool b)					{ bAfficheGrille = b; }
+inline void						setAfficheInfoSouris(bool b)				{ bAfficheInfoSouris = b; }
+inline void						setAfficheInfoFits(bool b)					{ bAfficheInfoFits = b; }
+
+inline bool						getAfficheGrille()							{ return bAfficheGrille; }
+inline bool						getAfficheInfoSouris()						{ return bAfficheInfoSouris; }
+inline bool						getAfficheInfoFits()						{ return bAfficheInfoFits; }
 };
 
 

@@ -57,7 +57,7 @@
 #define RADIANS(a)	((a)*M_PIDIV180)
 #define DEGRES(a)	((a)*M_180DIVPI)
 
-
+#define LUM(__r, __g, __b) (0.3333 * (double)__r + 0.5 * (double)__g  + 0.1667 * (double)__b)
 //const double INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
 const double INV_RAND_MAX = 1.0 / (RAND_MAX );
 inline double random(double max=1.0) { return max * rand() * INV_RAND_MAX; }

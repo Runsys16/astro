@@ -337,7 +337,7 @@ float Star::getLumLimit(int offset, float limit )
         return -1;
     }
 
-    float l = 0.33 * r + 0.5 * g  + 0.16 * b;
+    float l = LUM(r,g,b);
     if ( bInverseCouleur )   l = 255.0 - l;
     
     if ( l<limit )       l = 0.0;

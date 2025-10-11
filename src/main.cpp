@@ -83,7 +83,7 @@ vector<string> t_sHelp1 =
 //	"     r\t: Test alert BOX",
 	"     W\t: Surveille un repertoire",
 	"     -\t: Toutes les images sont affichees en icones",
-	" alt+b\t: Suivi au centre de l'ecran",
+	"Alt+C \t: Affiche le deuxieme cercle (collimation)",
 };
 vector<string> t_sHelp2 = 
 {
@@ -134,6 +134,7 @@ vector<string> t_sHelp3 =
 	"   t/T\t: change le temps de correction",
     "     U\t: Affichage du centre de la camera on/off",
     "     u\t: Affichage du suivi on/off",
+	" alt+u\t: Suivi au centre de l'ecran",
 	"     V\t: Initialise les coordonnees de suivi",
 	"     v\t: Sauvegarde fichier de suivi (.guid)",
 	"     r\t: Charge ficher de suivi (.guid)",
@@ -258,6 +259,7 @@ bool                bInverseCouleur		= false;
 bool                bCentrageSuivi		= false;
 bool                bFirstStart			= true;
 bool				bDesactiveLog		= false;
+bool				bAffColimation		= false;
 
 int                 wImg;
 int                 hImg;
@@ -603,15 +605,18 @@ void vizier_parse_line( Catalog* pVizier, string & line )
     string name = line.substr(34, 17);
     double fMag = stod( line.substr(167,15 ), 0 );
 */ 
-    double fRA = stod( line.substr(0,15), 0 );
-    double fDE = stod( line.substr(16,15), 0 );
+    double fRA	= stod( line.substr(0,15), 0 );
+    double fDE	= stod( line.substr(16,15), 0 );
     string name = line.substr(32, 19);
     double fMag = stod( line.substr(52,6), 0 );
+    //int    iHip = stoi( line.substr(59,6), 0, 10 );
  
     StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
     pVizier->add(p);
     
+    //logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f  HIP%06d", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag, (unsigned)iHip );
     logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
+    //logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'", (char*)line.c_str() );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1311,9 +1316,10 @@ static void reshapeGL(int newWidth, int newHeight)
         height = getScreenDY();
     }
     Camera_mgr::getInstance().resize( newWidth, newHeight );
+    Captures::getInstance().reshapeGL( newWidth, newHeight );
     //cout << "reshapeGL("<< newWidth <<" "<< newHeight <<")"<< endl;
     log_tab(false);
-    logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
+    //logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2169,18 +2175,14 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
         }
         break;
 	//----------------------------------------------------------------------------
-	case 'b':
-	    {
-	        logf( (char*)"Alt+b : Recentrage suivi " );
-	        Camera* p = Camera_mgr::getInstance().getCurrent();
-	        if ( p!=NULL )
-	        {
-	        	p->recentreSuivi();
-	        }
-	        else
-		        logf( (char*)"Pas de camera" );
-		}
-	    break;
+    case 'C':
+        {
+	        logf( (char*)"Alt+c : AffColimation %s", BOOL2STR(!bAffColimation) );
+
+			bAffColimation = !bAffColimation;
+       		var.set("bAffColimation", bAffColimation);
+        }
+        break;
 	//----------------------------------------------------------------------------
 	case 'n':
 	    {
@@ -2269,6 +2271,20 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	        logf( (char*)"Affiche oui/non etoiles : %s", BOOL2STR(bAffStar) );
 	    }
 	    break;
+	//----------------------------------------------------------------------------
+	case 'u':
+	    {
+	        logf( (char*)"Alt+b : Recentrage suivi " );
+	        Camera* p = Camera_mgr::getInstance().getCurrent();
+	        if ( p!=NULL )
+	        {
+	        	p->recentreSuivi();
+	        }
+	        else
+		        logf( (char*)"Pas de camera" );
+		}
+	    break;
+
 	//----------------------------------------------------------------------------
 	case 'w':
 	    {
@@ -2926,6 +2942,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	if ( p && p->isFits() )	{
         		p->getPreview()->findGaiaDR3();
         	}
+        	else
+		        logf( (char*)"[Warning]Fenetre non valable");
         }
         break;
 
@@ -3331,13 +3349,13 @@ static void glutSpecialFunc(int key, int x, int y)	{
         var.set("bPanelHelp", bPanelHelp);
         panelHelp->setVisible(bPanelHelp);
         if ( bPanelHelp )       WindowsManager::getInstance().onTop(panelHelp);
-        log( (char*)"Toggle panelHelp !!!" );
+        logf( (char*)"Key 1: Toggle panelHelp %s", BOOL2STR(bPanelHelp) );
         }
         break;
 	case GLUT_KEY_F2:
         {
         Camera_mgr::getInstance().togglePanel();
-        log( (char*)"Toggle panelCamera !!!" );
+        log( (char*)"Key F2: Toggle panelCamera " );
         }
         break;
     case GLUT_KEY_F3:
@@ -3346,7 +3364,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         var.set("bPanelResultat", bPanelResultat);
         panelResultat->setVisible(bPanelResultat);
         if ( bPanelResultat )       WindowsManager::getInstance().onTop(panelResultat);
-        logf( (char*)"Toggle panelResultat !!! %d", (int)bPanelResultat );
+        logf( (char*)"Key F3: Toggle panelResultat %s", BOOL2STR(bPanelResultat) );
         }
         break;
     case GLUT_KEY_F4:
@@ -3358,7 +3376,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         set_courbe();
         
         if ( bPanelCourbe )       WindowsManager::getInstance().onTop(panelCourbe);
-        log( (char*)"Toggle panelCourbe !!!" );
+        logf( (char*)"Key F4: Toggle panelCourbe %s", BOOL2STR(bPanelCourbe) );
         }
         break;
     case GLUT_KEY_F5:
@@ -3367,7 +3385,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
         var.set("bPanelStdOut", bPanelStdOut);
         panelStdOut->setVisible(bPanelStdOut);
         if ( bPanelStdOut )       WindowsManager::getInstance().onTop(panelStdOut);
-        //log( (char*)"Toggle panelStdOut !!!" );
+        
+        logf( (char*)"Key F5: Toggle panelStdOut %s", BOOL2STR(bPanelStdOut) );
         }
         break;
     case GLUT_KEY_F6:
@@ -3375,14 +3394,14 @@ static void glutSpecialFunc(int key, int x, int y)	{
         bPanelSerial = !bPanelSerial;
         var.set("bPanelSerial", bPanelSerial);
         PanelConsoleSerial::getInstance().setVisible(bPanelSerial);
-        logf( (char*)"Toggle serial (%s)", BOOL2STR(bPanelSerial) );
+        logf( (char*)"Key F6: Toggle serial (%s)", BOOL2STR(bPanelSerial) );
         }
         break;
     case GLUT_KEY_F7:
         {
-        logf( (char*)"Key (n) : Affiche/cache les capture");
         bAffIconeCapture = !bAffIconeCapture;
-        logf( (char*)"  bAffIconeCapture = %s", BOOL2STR(bAffIconeCapture) );
+        logf( (char*)"Key F7: Affiche/cache les capture %s", BOOL2STR(bAffIconeCapture));
+        //logf( (char*)"  bAffIconeCapture = %s", BOOL2STR(bAffIconeCapture) );
         Captures::getInstance().switchAffIcones();
         }
         break;
@@ -3391,6 +3410,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
             if ( panelApn == NULL )         panelApn = new PanelApn();
             else
                 panelApn->setVisible( !panelApn->getVisible() );
+
+	        logf( (char*)"Key F8: Toggle panelAPN", BOOL2STR(panelApn->getVisible()) );
         }
         break;
 
@@ -3961,11 +3982,11 @@ static void CreateStdOut()	{
 static void CreateAllWindows()	{
     //CreatePreview();
     //CreateControl();
+    CreateStdOut();
     CreateHelp();
     CreateResultat();
     CreateStatus();
     CreateCourbe();
-    CreateStdOut();
     panelApn = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4559,6 +4580,12 @@ void charge_var()
 
     if ( !var.existe("bPleiade")) 			var.set("bPleiade", false );
     bPleiade = var.getb("bPleiade" );
+
+    if ( !var.existe("bAffColimation"))		var.set("bAffColimation", false );
+    bAffColimation = var.getb("bAffColimation" );
+
+
+
     if ( bPleiade )
     {
         pPleiade = new Pleiade();

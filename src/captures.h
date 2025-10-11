@@ -22,7 +22,6 @@ private:
     bool                        bIcones;
     bool                        bShowIcones;
     bool                        bFullPreview;
-    bool                        bShowPreview;
     bool						bAfficheInfoSouris;
     bool						bAfficheInfoFits;
     bool						bAfficheGrille;
@@ -44,6 +43,7 @@ public:
     void                        resize_icone( Capture*, int, int, int, int );
     void                        resize_normal( Capture*, int, int );
     void                        resize_all();
+    void                        reshapeGL(int, int);
     
     void                        glutSpecialFunc(int key, int x, int y);
     void                        ajoute();

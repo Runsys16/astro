@@ -1012,7 +1012,7 @@ void Fits::afficheInfoFits()
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::afficheInfoFits(bool b)
 {
-	logf( (char*)"Fits::afficheInfoFits(%s)", BOOL2STR(b) );
+	//logf( (char*)"Fits::afficheInfoFits(%s)", BOOL2STR(b) );
 	if( pPanelFits != NULL )		
 	{
 		pPanelFits->setVisible( b );

@@ -50,7 +50,7 @@ Capture::Capture()
     bFullScreen = false;
 
     setExtraString( "Capture" );
-	bAffInfoFits = false;
+	bAfficheInfoFits = false;
 
     create_preview();
 
@@ -75,7 +75,7 @@ Capture::Capture(string dirname, string name)
     logf( (char*)"image : %s", filename.c_str() );
 
     setExtraString( "Capture :"+basename );
-	bAffInfoFits = false;
+	bAfficheInfoFits = false;
 
     create_preview();
 
@@ -110,7 +110,7 @@ Capture::Capture(string f )
 
 
     setExtraString( "Capture" );
-	bAffInfoFits = false;
+	bAfficheInfoFits = false;
 
     create_preview();
 
@@ -284,12 +284,14 @@ void Capture::releaseLeft(int xm, int ym)
        logf( (char*)"Capture::releaseLeft() Iconiser" );
        iconize( getDX(), getDY());
        Captures::getInstance().rotate_capture_plus(true);
+       if ( bFits )	fits->afficheInfoFits(true);
     }
-
+	/*
     if ( bFits )	{
-		if ( !bIconized && bAffInfoFits )			fits->afficheInfoFits(true);
-		else										fits->afficheInfoFits(false);
+		if ( !bIconized && bAfficheInfoFits )			fits->afficheInfoFits(true);
+		else											fits->afficheInfoFits(false);
 	}
+	*/
 
     log_tab(false);
     logf( (char*)"Capture::releaseLeft(...)   ------END---------" );
@@ -349,8 +351,16 @@ void Capture::create_preview()	{
 	// struct readBackground   (main.h)
 	// ------ readBackground.ptr = pointeur sur le tableau de couleur
 	//
-	panelCapture = new PanelCapture(NULL, this);
     bFits = false;
+    if ( 	filename.find( ".fits" ) != std::string::npos  
+    	||	filename.find( ".fit" ) != std::string::npos
+    		)
+    {
+        bFits = true;
+	}
+
+	panelCapture = new PanelCapture(NULL, this);
+    //bFits = false;
     if ( 	filename.find( ".fits" ) != std::string::npos  
     	||	filename.find( ".fit" ) != std::string::npos
     		)
@@ -363,9 +373,8 @@ void Capture::create_preview()	{
 
         fits->chargeFits();
         fits->getPanelFits()->setParent(panelCapture);
-        fits->getPanelCorrectionFits()->setParent();
+        //fits->getPanelCorrectionFits()->setParent();
         fits->getRB(&readBgr);
-        bFits = true;
         log_tab(false);
     }
     else
@@ -386,7 +395,7 @@ void Capture::create_preview()	{
     else
     {
 	    logf( (char*)"setBackground( ..., %d, %d, %d)", readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
-        panelCapture->setBackground( readBgr.ptr, readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
+        panelCapture->setBackground( readBgr.ptr.load(), readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
         panelCapture->setRB( &readBgr );
     }
 
@@ -525,14 +534,15 @@ void Capture::resize(int x, int y, int w, int h )
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::fullscreen()
 {
+	logf( (char*)"Capture::fullscreen() %s", basename.c_str() );
     int dx = WindowsManager::getInstance().getWidth();
     int dy = WindowsManager::getInstance().getHeight();
-    logf((char*)"Capture::fullscreen()  dx=%d dy=%d", dx, dy );
+    //logf((char*)"Capture::fullscreen()  dx=%d dy=%d", dx, dy );
 
-    logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
+    //logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
     setPosAndSize(0, 0, dx, dy);
     updatePos();
-    logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
+    //logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
     
     int X=0, Y=0;
     if ( panelCapture->getDX() > dx ) {
@@ -548,8 +558,55 @@ void Capture::fullscreen()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Capture::iconize( int dxIcon, int dyIcon)
+{
+	if ( bIconized )	return;
+	logf( (char*)"Capture::iconize() %s", basename.c_str() );
+	log_tab(true);
+
+    VarManager& 	var	= VarManager::getInstance();
+	if ( var.getb("bShowIcones")	)			setVisible( true );
+	else										setVisible( false );
+
+	bIconized = true;
+	bFullScreen = false;
+
+	setSize( dxIcon, dyIcon );
+	
+	panelCapture->iconize();
+
+
+	if ( bFits )	{
+		fits->getPanelFits()->setVisible(false);
+		fits->getPanelCorrectionFits()->setVisible(false);
+	}
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::restaure()
+{
+	logf( (char*)"Capture::restaure() %s", basename.c_str() );
+	bIconized 				= false;
+    /*
+    bAfficheInfoFits		= bInfo;
+    bAfficheInfoSouris		= bGrille;
+    bAfficheGrille			= bSouris;
+
+	if ( bFits )	{
+		fits->restaure( bAfficheInfoFits );
+	}
+	*/
+	panelCapture->restaure();
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Capture::onTop()
 {
+	logf( (char*)"Capture::onTop() %s", basename.c_str() );
     WindowsManager& wm	= WindowsManager::getInstance();
     VarManager& 	var	= VarManager::getInstance();
 
@@ -558,12 +615,6 @@ void Capture::onTop()
 		wm.onTop( fits->getPanelFits() );
 		wm.onTop( fits->getPanelCorrectionFits() );
 
-		if ( var.getb("bAffFitsCorrection") )	{
-			fits->getPanelCorrectionFits()->setVisible(true);
-		}
-		else {
-			fits->getPanelCorrectionFits()->setVisible(false);
-		}
 	}	
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -615,11 +666,11 @@ void Capture::afficheFitsDic()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::afficheFits()
 {
-	return;
+	//return;
     if (bFits)
     {
-        fits->afficheDic();
-        fits->afficheDatas();
+		if ( bAfficheInfoFits && !bIconized )			fits->afficheInfoFits(true);
+		else											fits->afficheInfoFits(false);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -629,9 +680,9 @@ void Capture::afficheInfoFits()
 {
     if (bFits)
     {
-    	bAffInfoFits = !bAffInfoFits;
-        if ( !bIconized && bAffInfoFits )			fits->afficheInfoFits(true);
-        else										fits->afficheInfoFits(false);
+    	bAfficheInfoFits = !bAfficheInfoFits;
+        if ( !bIconized && bAfficheInfoFits )			fits->afficheInfoFits(true);
+        else											fits->afficheInfoFits(false);
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -644,57 +695,6 @@ void Capture::afficheInfoFits(bool b)
     {
         fits->afficheInfoFits( b );
     }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Capture::iconize( int dxIcon, int dyIcon)
-{
-	logf( (char*)"Capture::iconize() %s", basename.c_str() );
-	log_tab(true);
-
-    VarManager& 	var	= VarManager::getInstance();
-	if ( var.getb("bShowIcones")	)			setVisible( true );
-	else										setVisible( false );
-
-	bIconized = true;
-	bFullScreen = false;
-
-
-	/*
-	Captures& captures = Captures::getInstance();
-
-	int dxIcon = captures.getDXIcon();
-	int dyIcon = captures.getDYIcon();
-	*/
-	setSize( dxIcon, dyIcon );
-	
-	panelCapture->iconize();
-
-
-	if ( bFits )	{
-
-		fits->getPanelFits()->setVisible(false);
-		fits->getPanelCorrectionFits()->setVisible(false);
-	}
-	log_tab(false);
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Capture::restaure(bool bInfo, bool bGrille, bool bSouris )
-{
-	logf( (char*)"Capture::restaure(bInfo=%s, bGrille=%s, bSouris=%s)", BOOL2STR(bInfo), BOOL2STR(bGrille), BOOL2STR(bSouris) );
-	bIconized 				= false;
-    bAffInfoFits			= bInfo;
-    bAfficheInfoSouris		= bGrille;
-    bAfficheGrille			= bSouris;
-	
-	panelCapture->restaure( bGrille, bSouris );
-
-	if ( bFits )	{
-		fits->restaure( bAffInfoFits );
-	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

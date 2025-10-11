@@ -346,7 +346,7 @@ void PanelCamera::wheelUp(int xm, int ym)
     setPos( -X1, -Y1 );
     updatePos();
     
-    logf( (char*)"+Nouvelle echelle %.2f", (float)echelle );
+    logf( (char*)"Nouvelle echelle %.2f  geo=%0.2f user=%0.2f", (float)echelle, (float)ech_geo, (float)ech_user );
     log_tab(false);
     
 }
@@ -378,7 +378,7 @@ void PanelCamera::wheelDown(int xm, int ym)
     setPos( -X1, -Y1 );
     updatePos();    
 
-    logf( (char*)"+Nouvelle echelle %.2f", (float)echelle );
+    logf( (char*)"Nouvelle echelle %.2f  geo=%0.2f user=%0.2f", (float)echelle, (float)ech_geo, (float)ech_user );
     log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -808,20 +808,23 @@ void PanelCamera::displaySuivi()
     }
     
     //----- Cercle de correction --------------------------------------------------
-    if ( !bCorrection )
-    {
-        glLineStipple(2, 0xFF00);
-        glEnable(GL_LINE_STIPPLE);    
-    }
-    else
-        glColor4fv( cRoug );
-
 	glLineWidth( SIZE_CERCLE_COLLIMATION );
+
+
+    glLineStipple(2, 0xFF00);
+    glEnable(GL_LINE_STIPPLE);    
+
+    if ( bAffColimation )
+    {
+    	glColor4fv( cRoug );
+	    glCercle( vSuiviScr, echelle*(fDiamSuivi1) );
+	}
+
+    if ( !bCorrection )			glEnable(GL_LINE_STIPPLE);    
+    else						glDisable(GL_LINE_STIPPLE);    
+
     glColor4fv( color );
     glCercle( vSuiviScr, echelle*(fLimitCorrection0) );
-    
-    glColor4fv( cRoug );
-    glCercle( vSuiviScr, echelle*(fDiamSuivi1) );
     
     glColor4fv( color );
 	glLineWidth( 1 );
@@ -845,6 +848,7 @@ void PanelCamera::displaySuivi()
     {
                                                     glColor4f( 1.0,   1.0,  0.0, f );
     }
+    
     if ( bCentrageSuivi )
     {
         vec2 u = vec2(xSuiviSvg, ySuiviSvg);

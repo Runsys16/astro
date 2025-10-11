@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <algorithm>
 
+#include "MathlibD.h"
 #include <WindowsManager.h>
 #include "main.h"
 #include "var_mgr.h"
@@ -36,10 +37,9 @@ protected:
     double              dx;
     double              dy;
 
-    bool                bIcone;
+    //bool                bIcone;
     bool                bHaveMove;
-    bool                bInfoSouris;
-    bool				bAffGrille;
+    //bool                bInfoSouris;
     bool				bAffCatalogPosition;
     
     int                 xm_old;
@@ -137,7 +137,7 @@ public:
     
 	void             	setInfoSouris(bool);
 	void				iconize();
-	void				restaure(bool bGril, bool bbSour );
+	void				restaure();
 
 	void				change_ad( double );
 	void				change_dc( double );
@@ -160,11 +160,11 @@ inline double           getEchelle()                                    { return
 inline double           getCentX()                                      { return dx; }
 inline double           getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
-inline void             setIcone(bool b)                                { bIcone = b; }
-inline bool             getIcone()                                      { return bIcone; }
-inline void             setAffGrille(bool b)                           	{ bAffGrille = b; }
-inline bool             getAffGrille()                           		{ return bAffGrille; }
-inline bool             getInfoSouris()                                 { return bInfoSouris; }
+//inline void             setIcone(bool b)                                { bIcone = b; }
+//inline bool             getIcone()                                      { return bIcone; }
+//inline void             setAffGrille(bool b)                           	{ bAffGrille = b; }
+//inline bool             getAffGrille()                           		{ return bAffGrille; }
+//inline bool             getInfoSouris()                                 { return bInfoSouris; }
 inline void             setVecteurAD(vec2 v)                            { vAD = v; }
 inline void             setVecteurDE(vec2 v)                            { vDE = v; }
 inline Catalog*			getCatalog()									{ return pVizier; }
