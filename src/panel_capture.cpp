@@ -871,6 +871,10 @@ void PanelCapture::releaseLeft(int xm, int ym)
 		sendStellarium( xm, ym );
     }
     else
+    if ( pCapture->isFits() && iGlutModifier == GLUT_ACTIVE_ALT)    {
+		sendStellarium( xm, ym );
+    }
+    else
     {
 		double e = (double)getDX() / (double)pReadBgr->w; 
 		
@@ -1501,7 +1505,7 @@ void PanelCapture::setInfoSouris(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::iconize()
 {
-	//logf( (char*)"PanelCapture::iconize()" );
+	logf( (char*)"PanelCapture::iconize()" );
 	/*
 	bAffGrille = false;
 	bInfoSouris = false;
@@ -1512,6 +1516,7 @@ void PanelCapture::iconize()
 	//logf( (char*)"setPos(%lfd, %lf)", (dx), (dy) );
 	//logf( (char*)"ech_geo=%lf, ech_user=%lf)", ech_geo, ech_user );
 	setPos( dx, dy );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1549,6 +1554,7 @@ void PanelCapture::change_ad( double ad )
 	tex2screen( vTelescopeScreen );
 	tex2panel( vTelescopePanel );
 
+	/*
 	if ( Captures::getInstance().isCurrent( pCapture ) )
 	{
 		logf( (char*)"PanelCapture::change_ad()  ech=%lf", ech );
@@ -1556,7 +1562,8 @@ void PanelCapture::change_ad( double ad )
 		logf( (char*)"     Tex             (%lf, %lf)", vTelescopeTex.x, vTelescopeTex.y );
 		logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
 		//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
-	}	
+	}
+	*/	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1572,6 +1579,7 @@ void PanelCapture::change_dc( double dc )
 	tex2screen( vTelescopeScreen );
 	tex2panel( vTelescopePanel );
 
+	/*
 	if ( Captures::getInstance().isCurrent( pCapture ) )
 	{
 		logf( (char*)"PanelCapture::change_dc()  ech=%lf", ech );
@@ -1580,6 +1588,7 @@ void PanelCapture::change_dc( double dc )
 		logf( (char*)"     Screen          (%lf, %lf)", vTelescopeScreen.x, vTelescopeScreen.y );
 		//logf( (char*)"     Panel           (%lf, %lf)", vTelescopeJ2000.x, vTelescopeJ2000.y );
 	}	
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

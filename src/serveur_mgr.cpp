@@ -12,7 +12,8 @@ Serveur_mgr::Serveur_mgr()
     traite_1 = true;
     traite_2 = true;
 
-    sock_stellarium = -1;
+    sock_ref		= -1;
+    sock_stellarium	= -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -191,6 +192,8 @@ void Serveur_mgr::thread_listen_init()
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
+		sIPref = string( some_addr );
+	
 		logf_thread( (char*)"Serveur_mgr::thread_listen_init() connexion SOCKET 2" );
 		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_ref, some_addr, (int)adresse.sin_port );
 
@@ -329,6 +332,8 @@ void Serveur_mgr::thread_listen_deplacement()
 		
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+
+		sIPstellarium = string( some_addr );
 
 		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion SOCKET 1" );
 		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port );
@@ -504,6 +509,19 @@ void Serveur_mgr::close_all()
     logf_thread( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
     log_tab(false);
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::print_list()
+{
+    logf( (char*)"---- Serveur_mgr::print_list()" );
+
+	if ( sock_ref != -1 )				logf( (char*)"  Init : %s", sIPref.c_str() );
+	else								logf( (char*)"  Init listen" );
+
+	if ( sock_stellarium != -1 )		logf( (char*)"  Bellatrix : %s", sIPstellarium.c_str() );
+	else								logf( (char*)"  Bellatrix listen" );
+}    
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

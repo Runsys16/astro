@@ -58,10 +58,17 @@ Fits::Fits(string filename, PanelCapture* p)
     pPanelCorrectionFits = new PanelCorrectionFits();
     pPanelCorrectionFits->setPos( 150, 150 );
     
-    pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
-    pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
-    pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
-    pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
+    //pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
+    //pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
+    //pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
+    //pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
+
+    pPanelCorrectionFits->getCDELT1()->set_val( vCDELT.x );
+    pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&(vCDELT.x) );
+    
+    pPanelCorrectionFits->getCDELT2()->set_val( vCDELT.y );
+    pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&(vCDELT.y) );
+    
 	pPanelCorrectionFits->setVisible( var.getb("bAffFitsCorrection") );
     wm.add( pPanelCorrectionFits );
 
@@ -93,7 +100,7 @@ void Fits::chargeFits()
 	bEOF = false;
 	while( !bEOF )    {
 		chargeHDU(n++);
-		if ( n>3 )	{
+		if ( n>10)	{
 			logf( (char*)"[Erreur} Chargement de 3 FDU" );
 			logf( (char*)"  %s", _filename.c_str() );
 			return;
@@ -200,19 +207,25 @@ void Fits::chargeHDU(int n)
 	if ( nBITPIX == -32 )			nBITPIX = 32;
 	
 	//--------------------------------------------------------------------
-	// corrction CDELT1
+	// correction CDELT1
 	// https://danmoser.github.io/notes/gai_fits-imgs.html#fits-header-example
 	//
 	// https://www.atnf.csiro.au/computing/software/miriad/progguide/node33.html    : Table 2.8
 	//
-	dCDELT1 =  dCDELT1 / cos( DEG2RAD(dCRVAL2) );
+	//dCDELT1 =  dCDELT1 / cos( DEG2RAD(dCRVAL2) );
+	//
+	//voir void Fits::J2000_2_tex(vec2 j, vec2& s )
+	//voir void Fits::tex_2_J2000(vec2 j, vec2& s )
 	
 	vCRPIX =  vec2( dCRPIX1, dCRPIX2 );
 	vCRVAL =  vec2( dCRVAL1, dCRVAL2 );
 	vCDELT =  vec2( dCDELT1, dCDELT2 );
 
-
-	pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
+    pPanelCorrectionFits->getCDELT1()->set_val( vCDELT.x );
+    pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&(vCDELT.x) );
+    
+    pPanelCorrectionFits->getCDELT2()->set_val( vCDELT.y );
+    pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&(vCDELT.y) );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1036,6 +1049,9 @@ void Fits::tex_2_J2000( vec2& v )
 void Fits::tex_2_J2000(vec2 s, vec2& j )
 {
 //#define DEBUG
+	double x = vCDELT.x;
+	vCDELT.x =  vCDELT.x / cos( DEG2RAD(vCRVAL.y) );
+
 	#ifdef DEBUG
 		char STR[255];
 		r.to_str(STR);
@@ -1056,6 +1072,8 @@ void Fits::tex_2_J2000(vec2 s, vec2& j )
 		log_tab( false );
 	#endif
 #undef DEBUG
+
+	vCDELT.x = x;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1071,6 +1089,10 @@ void Fits::J2000_2_tex( vec2& v )
 void Fits::J2000_2_tex(vec2 j, vec2& s )
 {
 //#define DEBUG
+	double x = vCDELT.x;
+	vCDELT.x =  vCDELT.x / cos( DEG2RAD(vCRVAL.y) );
+
+
 	#ifdef DEBUG
 		char str1[255];
 		char str2[255];
@@ -1094,6 +1116,8 @@ void Fits::J2000_2_tex(vec2 j, vec2& s )
 		log_tab( false );
 	#endif
 #undef DEBUG
+
+	vCDELT.x = x;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -70,6 +70,8 @@ void Camera::init()
 {
     logf((char*)"Camera::init() -------------");
 
+	hz					= 0.0;
+
     bCharging			= true;
     bExitThread			= false;
     vCameraSize.x		= -1;

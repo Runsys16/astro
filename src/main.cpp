@@ -1398,8 +1398,12 @@ void change_ad_status(double ad)
     deg2hms( ad, HMS);
     
     char    buff[255];
-    sprintf( buff, "= %02dh %02dm %0.2lfs", (int)HMS.h, (int)HMS.m, HMS.s );
-    logf( (char*)"main::change_ad_status %s", buff );
+    if ( HMS.s < 10.0 )	
+	    sprintf( buff, "= %02dh %02dm 0%02.2lfs", (int)HMS.h, (int)HMS.m, HMS.s );
+	else
+	    sprintf( buff, "= %02dh %02dm %02.2lfs", (int)HMS.h, (int)HMS.m, HMS.s );
+    
+    //logf( (char*)"main::change_ad_status %s", buff );
     
     pAD->changeText( buff );
 }
@@ -1425,8 +1429,12 @@ void change_dc_status(double dc)
     if ( dc <0.0 )		signe[0] = '-';
     else				signe[0] = 0;
     
-    sprintf( buff, "= %02d %02d\' %0.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
-    logf( (char*)"main::change_dc_status %s", buff );
+    if ( DMS.s < 10.0 )	
+	    sprintf( buff, "= %02d %02d\' 0%02.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
+	else
+	    sprintf( buff, "= %02d %02d\' %02.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
+    
+    //logf( (char*)"main::change_dc_status %s", buff );
     
     pDC->changeText( buff );
 
@@ -2866,6 +2874,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'l':
         {            
         logf( (char*)"Key (l) : Affiche les connexions" );
+        Serveur_mgr::getInstance().print_list();
         Connexion_mgr::getInstance().print_list();
         Camera_mgr::getInstance().print_list();
         Captures::getInstance().print_list();
@@ -3918,8 +3927,9 @@ static void CreateStatus()	{
     pFPS = new PanelText( (char*)"0",		            PanelText::NORMAL_FONT, width-100, 2 );
 	panelStatus->add( pFPS );
 
-    pHertz = new PanelText( (char*)"0",		            PanelText::NORMAL_FONT, width-150, 2 );
+    pHertz = new PanelText( (char*)"0Hz",		            PanelText::NORMAL_FONT, width-150, 2 );
 	panelStatus->add( pHertz );
+	//change_hertz( 0.0 );
 
     pArduino = new PanelText( (char*)"Arduino",		    PanelText::NORMAL_FONT, width-280, 2 );
     pArduino->setColor(COLOR_GREY);
@@ -4702,8 +4712,8 @@ int main(int argc, char **argv)
     if ( var.getb("bNuit") )    panelStdOut->setColor( 0xff0000ff );
     else                        panelStdOut->setColor( COLOR_WHITE );
     
-    double gris = 0.2;
-    glClearColor( gris, gris, gris,1.0);
+    double clearColor = 0.0;
+    glClearColor( clearColor, clearColor, clearColor,1.0);
     
     // Pre-Charge la texture pour eviter un bug
     WindowsManager::getInstance().loadResourceImage( "images/file.png" );

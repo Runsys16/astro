@@ -63,14 +63,14 @@ void Connexion_mgr::add_port()
             sleep( 1 );
             if ( t_port_polling[i].find("video") != string::npos )
             {
-                logf( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
+                logf_thread( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
                 //if ( !isExclude(t_port_polling[i])  )
                 Camera_mgr::getInstance().add( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
             }
             else if ( t_port_polling[i].find("ttyACM") != string::npos )
             {
-                logf( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
+                logf_thread( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
                 Serial::getInstance().init( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
                 change_arduino(true);
@@ -103,13 +103,13 @@ void Connexion_mgr::sup_port()
         {
             if ( t_port_current[i].find("video") != string::npos )
             {
-                logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
+                logf_thread( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
                 Camera_mgr::getInstance().sup( t_port_current[i] );
                 t_port_current.erase(  t_port_current.begin() + i );
             }
             else if ( t_port_current[i].find("ttyACM") != string::npos )
             {
-                logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
+                logf_thread( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
                 Serial::getInstance().sclose();
                 t_port_current.erase(  t_port_current.begin() + i );
                 change_arduino(false);

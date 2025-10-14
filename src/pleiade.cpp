@@ -28,7 +28,7 @@ Pleiade::Pleiade()
     bFirst          = true;
     //bCharged        =false;
     bCharging       = false;
-    count_png       = 0;
+    count_png       = 64;
     plus            = 1;
     bNewBackground  = false; 
 

@@ -201,6 +201,7 @@ void Camera_mgr::change_background_camera( void )
         pCameras[i]->change_background();
     }
     if ( pCurrent )         change_hertz( pCurrent->getHertz() );
+    else					change_hertz( 0.0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

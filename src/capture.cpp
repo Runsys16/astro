@@ -214,8 +214,23 @@ void Capture::update()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::updatePos()
 {
+    //logf( (char*)"Capture::updatePos() ... %s", basename.c_str() );
     Panel::updatePos();
     updatePosIcones();
+    
+    if ( bIconized )	
+    {
+    	pNbStars->setVisible( false);
+    	pNbVizier->setVisible( false);
+    }
+    else
+    {
+    	if ( panelCapture->getStars() && panelCapture->getStars()->size() != 0 )    pNbStars->setVisible( true );
+    	else																    	pNbStars->setVisible( false );
+    	if ( panelCapture->getCatalog() && panelCapture->getCatalog()->size() != 0 )    pNbVizier->setVisible( true );
+    	else																    		pNbVizier->setVisible( false );
+
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

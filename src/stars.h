@@ -59,6 +59,7 @@ public:
 inline bool					getVisible()				{ return bVisible; }
 inline Star*				get(int i)					{ return v_tStars[i]; }
 inline int					size()						{ return v_tStars.size(); }
+inline PanelText*			getPanelNbStars()			{ return pNbStars; }
 
 private:
     vector<Star*>           v_tStars;
