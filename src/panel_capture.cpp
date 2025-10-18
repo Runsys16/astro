@@ -111,31 +111,21 @@ void PanelCapture::updateEchelleGeo()
     
     if ( coef != ech_geo )
     {
-    	/*
-        logf( (char*)"PanelCapture::updateEchelleGeo() Changement d'echelle" );
-        log_tab(true);
-        logf( (char*)"%s", pCapture!=NULL? (char*)pCapture->getBasename().c_str() : (char*)"" );
-		logf( (char*)"ech_geo=%0.2lf ech_user=%0.2lf", coef, ech_user );
-		*/
-        
+        // Ancienne valeur
         ech = ech_user * ech_geo;
         dx /= ech;
         dy /= ech;
 
+		// Nouvelle valeur
         ech_geo = coef;
 
         ech = ech_user * ech_geo;
-
         dx *= ech;
         dy *= ech;
-        
+		
+		//----------------------        
         setPos(dx, dy);
 		setSize( (double)pReadBgr->w * ech, (double)pReadBgr->h * ech );
-        /*
-        logf( (char*)"dx=%0.2lf dy=%0.2lf", dx, dy );
-        log_tab(false);
-		log( (char*)"---" );
-		*/
     }
 
     if ( coef != ech_geo )    {
@@ -758,10 +748,14 @@ void PanelCapture::wheelDown(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::passiveMotionFunc(int xm, int ym)
 {
+	//logf( (char*)"PanelCapture::passiveMotionFunc( %d, %d ) %s", xm, ym, pCapture->getBasename().c_str() );
+	//logf( (char*)"  ech_user = %0.2f, ech_geo = %0.2f )", (float)ech_user, (float)ech_geo );
+	//log_tab(true);
+
 	//if ( !bInfoSouris || bIcone ) 			{ return; }
 	if ( !pCapture->getAfficheInfoSouris() || pCapture->isIconized() )		
 	{
-		pFondCoord->setVisible(false);
+		if ( pFondCoord )	pFondCoord->setVisible(false);
 		return;
 	}
 	
@@ -769,8 +763,6 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	static char coord_lum[80];
 	static char coord_ad[80];
 	static char coord_dc[80];
-	//logf( (char*)"PanelCapture::passiveMotionFunc( %d, %d )", xm, yy );
-	//log_tab(true);
 
 	// Coordonne fenetre 
 	long x = Screen2x(xm);
@@ -793,15 +785,16 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	if ( ptr == NULL )		logf( (char*)"Erreur ptr NULL %s", __LINE__ );
 	// Calcul de l'offset dans le buffer
 	long idx = 3 * (w * YY + XX);
-	
+		
+	// Affichage du resultat
+	//float l = 0.33 * (float)r + 0.5 * (float)g  + 0.16 * (float)b;
 	// Recuperation de la couleur du pixel
 	r = ptr[ idx + 0 ];
 	g = ptr[ idx + 1 ];
 	b = ptr[ idx + 2 ];
 	
-	// Affichage du resultat
-	//float l = 0.33 * (float)r + 0.5 * (float)g  + 0.16 * (float)b;
 	float l = LUM(r,g,b);
+	//
 	snprintf( (char*)coord_lum, sizeof(coord_lum), "rvb=(%d, %d, %d)   lum=%0.1f", (int)r, (int)g, (int)b, l );
 	pColor->changeText( (char*)coord_lum);
 	pColor->setChangeText(true);
@@ -1528,16 +1521,11 @@ void PanelCapture::restaure()
 	//dTimeAnim = 0.0;
 	if ( !pCapture->isIconized() && pCapture->getAfficheInfoSouris() )
 	{
-		logf( (char*)"PanelCapture::restaure()   passiveMotionFunc(%d,%d)", mouse.x, mouse.y );
+		//logf( (char*)"passiveMotionFunc(%d,%d)", mouse.x, mouse.y );
+		log_tab(true);
 		passiveMotionFunc( mouse.x, mouse.y );
+		log_tab(false);
 	}
-	/*
-	bIcone = false;
-	bAffGrille = bGril;
-	bInfoSouris = bbSour;
-	setInfoSouris( bbSour );
-	*/
-	//setPos(dx, dy);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

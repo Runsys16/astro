@@ -260,8 +260,8 @@ void Captures::resize_all()
 
     //if ( m<=0 )      { log_tab(false); return; }
     if ( n<=1 )      { 
-		log_tab(false);    
-		logf( (char*)"Captures::resize_all() ---------END--------" );
+		//log_tab(false);    
+		//logf( (char*)"Captures::resize_all() ---------END--------" );
     }
 
 	/*
@@ -306,7 +306,8 @@ void Captures::resize_all()
 				Capture* p = captures[current_capture];
 				
 				p->show();
-			    dx = width - dxIcon * ((int)(n/N_ICON)+1);
+			    //dx = width - dxIcon * ((int)(n/N_ICON)+1);
+			    dx = width - dxIcon * ((int)(1.0/N_ICON)+1);
 				
 				if 		( bFullPreview )            p->fullscreen();
 				else if ( !bIcones )				resize_normal( p, dx, dy);
@@ -331,7 +332,6 @@ void Captures::resize_all()
 void Captures::reshapeGL(int width, int height)
 {
     logf( (char*)"Captures::reshapeGL()" );
-    log_tab(true);    
     dxIcon				= (float)(width  / N_ICON);
     dxIcon				= (float)(width -((N_ICON)*2*BORDER_ICON))  / N_ICON;
     float ratio = (float)width/(float)height;
@@ -339,6 +339,7 @@ void Captures::reshapeGL(int width, int height)
     dyIcon				= dxIcon / ratio;
     dyIcon				= (float)(height -((N_ICON)*2*BORDER_ICON))  / N_ICON;
     logf( (char*)"dxIcon = %d dyIcon = %d", dxIcon, dyIcon );
+    log_tab(true);    
     resize_all();
     log_tab(false);    
 }

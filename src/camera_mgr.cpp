@@ -8,7 +8,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Camera_mgr::Camera_mgr()
 {
-    logf((char*)"Constructeur Camera_mgr() -------------" );
+    logf_thread((char*)"Constructeur Camera_mgr() -------------" );
     pCurrent = NULL;
     nActive = 0;
 }
@@ -21,7 +21,7 @@ bool Camera_mgr::camera_exist( string sdev )
     for( int i=0; i<nb; i++ )
     {
 
-        //logf( (char*)"    [%d/%d] %s compare %s", i, nb, pCameras[i]->getDevName(), sdev.c_str() );
+        //logf_thread( (char*)"    [%d/%d] %s compare %s", i, nb, pCameras[i]->getDevName(), sdev.c_str() );
         
         if ( sdev.find( (char*)pCameras[i]->getDevName() ) != std::string::npos )
         {
@@ -36,14 +36,15 @@ bool Camera_mgr::camera_exist( string sdev )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::add( string sdev_name )
 {
+//#define INTERN_CAM
 
-    logf((char*)"Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
+    logf_thread((char*)"Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
     if ( camera_exist( sdev_name ) )            return;
 
 	log_tab(true);
 
 
-    //logf( (char*)"    Not Exist" );
+    //logf_thread( (char*)"    Not Exist" );
 
     Camera *        pCamera = new Camera(1600,900);
     //pCameras.push_back( pCamera );
@@ -54,17 +55,21 @@ void Camera_mgr::add( string sdev_name )
     pCamera->open_device();
     if ( !pCamera->getIOCapability() ) {
     	delete pCamera;
+	    logf_thread((char*)"[Warning] Delete( \"%s\" ) device commande", sdev_name.c_str());
 	    log_tab(false);
-	    logf((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
+	    logf_thread((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
     	return;
     }
+#ifndef INTERN_CAM
     if ( pCamera->getName().find( "USB Camera" ) == 0 )
     {
     	delete pCamera;
+	    logf_thread((char*)"[Warning] Delete( \"%s\" )  camera interne", sdev_name.c_str());
 	    log_tab(false);
-	    logf((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
+	    logf_thread((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
 	    return;
     }
+#endif
 
     
     pCamera->init_device();
@@ -85,7 +90,7 @@ void Camera_mgr::add( string sdev_name )
 	//bDesactiveLog = false;
 
 	log_tab(false);
-    logf((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
+    logf_thread((char*)"Camera_mgr::add( \"%s\" ) END", sdev_name.c_str());
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -94,7 +99,7 @@ void Camera_mgr::add( string sdev_name )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::add( Camera* p )
 {
-    logf((char*)"Camera_mgr::add(Camera *)"	 );
+    logf_thread((char*)"Camera_mgr::add(Camera *)"	 );
     log_tab(true);
 
 
@@ -106,7 +111,7 @@ void Camera_mgr::add( Camera* p )
     if ( p->getFd() == -1 ) 
     {
         p->setControlVisible(false);
-        logf( (char*)"Ce n'est pas une camera" );
+        logf_thread( (char*)"Ce n'est pas une camera" );
     }
 
     onBottom();
@@ -115,14 +120,14 @@ void Camera_mgr::add( Camera* p )
     vizier.set_camera_reference();
     
     log_tab(false);
-    logf((char*)"Camera_mgr::add(Camera*) END" );
+    logf_thread((char*)"Camera_mgr::add(Camera*) END" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::addImages( Camera* p )
 {
-    logf((char*)"Camera_mgr::addImages() -------------" );
+    logf_thread((char*)"Camera_mgr::addImages() -------------" );
 
 
     pCameras.push_back( p );
@@ -134,7 +139,7 @@ void Camera_mgr::addImages( Camera* p )
     if ( p->getFd() == -1 ) 
     {
         p->setControlVisible(false);
-        logf( (char*)"Ce n'est pas une camera" );
+        logf_thread( (char*)"Ce n'est pas une camera" );
     }
 
     active();
@@ -146,7 +151,7 @@ void Camera_mgr::addImages( Camera* p )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::sup( string name )
 {
-    logf((char*)"Camera_mgr::sup( \"%s\" ) curent = \"%s\"", name.c_str(), pCurrent->getDevName() );
+    logf_thread((char*)"Camera_mgr::sup( \"%s\" ) curent = \"%s\"", name.c_str(), pCurrent->getDevName() );
 
     Camera* pCamera = getCamera( name );
 
@@ -154,10 +159,10 @@ void Camera_mgr::sup( string name )
 
     if ( pCamera )
     {   
-        logf((char*)"  Camera_mgr::sup() %s", pCamera->getDevName() );
+        logf_thread((char*)"  Camera_mgr::sup() %s", pCamera->getDevName() );
         int i = getNum( pCamera );
         pCameras.erase(pCameras.begin()+i);
-        logf((char*)"  Camera_mgr::sup() %s OK", pCamera->getDevName() );
+        logf_thread((char*)"  Camera_mgr::sup() %s OK", pCamera->getDevName() );
         delete pCamera;
     }
 
@@ -171,7 +176,7 @@ void Camera_mgr::sup( string name )
 void Camera_mgr::sup( Camera * p )
 {
 	if ( p == NULL )			return;
-    logf((char*)"Camera_mgr::sup(%s)", p->getDevName() );
+    logf_thread((char*)"Camera_mgr::sup(%s)", p->getDevName() );
 	if ( pCameras.size() == 0 )	return;
 
 
@@ -181,7 +186,7 @@ void Camera_mgr::sup( Camera * p )
         {
             int i = getNum( p );
             pCameras.erase(pCameras.begin()+i);
-            logf((char*)"  Camera_mgr::sup() %s OK", p->getDevName() );
+            logf_thread((char*)"  Camera_mgr::sup() %s OK", p->getDevName() );
             delete p;
         }
     }
@@ -194,7 +199,7 @@ void Camera_mgr::sup( Camera * p )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::change_background_camera( void )
 {
-    //logf((char*)"Camera_mgr::change_background_camera() -------------");
+    //logf_thread((char*)"Camera_mgr::change_background_camera() -------------");
     
     for( int i=0; i<pCameras.size(); i++ )
     {
@@ -208,7 +213,7 @@ void Camera_mgr::change_background_camera( void )
 //--------------------------------------------------------------------------------------------------------------------
 bool Camera_mgr::keyboard( char key )
 {
-    //logf((char*)"Camera_mgr::change_background_camera() -------------");
+    //logf_thread((char*)"Camera_mgr::change_background_camera() -------------");
     if ( pCurrent )                 return pCurrent->keyboard( key );
     return false;
 }
@@ -217,7 +222,7 @@ bool Camera_mgr::keyboard( char key )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::resize(int width, int height)
 {
-    logf((char*)"Camera_mgr::resize(%d, %d) -------------", width, height);
+    logf_thread((char*)"Camera_mgr::resize(%d, %d) -------------", width, height);
     for( int i=0; i<pCameras.size(); i++ )
     {
         pCameras[i]->resizeControl( width, height );
@@ -280,7 +285,7 @@ void Camera_mgr::update()
 void Camera_mgr::active()
 {
 	// Si la camera est connecte au demarrage => Plantage
-    //logf((char*)"Camera_mgr::active() -------------" );
+    //logf_thread((char*)"Camera_mgr::active() -------------" );
 
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
@@ -305,7 +310,7 @@ void Camera_mgr::active()
 void Camera_mgr::active( Camera* pCamera)
 {
 	// Si la camera est connecte au demarrage => Plantage
-    //logf((char*)"Camera_mgr::active() -------------" );
+    //logf_thread((char*)"Camera_mgr::active() -------------" );
     if ( pCamera == NULL )			return;
 
     int w = WindowsManager::getInstance().getWidth();
@@ -319,7 +324,7 @@ void Camera_mgr::active( Camera* pCamera)
 	{
 		if ( pCameras[i] == pCamera )		nActive = i;
 	}
-	if ( nActive == -1 )			logf( (char*)"[Erreur] Camera_mgr::active(Camera*) nAtive = -1" );
+	if ( nActive == -1 )			logf_thread( (char*)"[Erreur] Camera_mgr::active(Camera*) nAtive = -1" );
 
     pCurrent = pCamera;
     
@@ -333,7 +338,7 @@ void Camera_mgr::active( Camera* pCamera)
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::reOrder()
 {
-    logf((char*)"Camera_mgr::reOrder() -------------" );
+    logf_thread((char*)"Camera_mgr::reOrder() -------------" );
     int nb = pCameras.size();
 
     for( int i=0, a=0; i<nb; i++, a++ )
@@ -455,15 +460,15 @@ Camera* Camera_mgr::getCamera( string name )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::print_list()
 {
-    logf( (char*)"---- Camera_mgr::print_list()" );
+    logf_thread( (char*)"---- Camera_mgr::print_list()" );
 
     int nb0 = pCameras.size();
     
  
-    logf( (char*)"  pCameras : " );
+    logf_thread( (char*)"  pCameras : " );
     for( int i=0; i<nb0; i++ )
     {
-        logf( (char*)"    %s", pCameras[i]->getName().c_str() );
+        logf_thread( (char*)"    %s", pCameras[i]->getName().c_str() );
     }
 
 }    
@@ -499,7 +504,7 @@ void Camera_mgr::deleteAllStars()
     if (pCurrent == NULL)                   return;
     if (pCurrent->getRB() == NULL)          return;
     
-    logf( (char*)"Camera_mgr::findAllStars()" );
+    logf_thread( (char*)"Camera_mgr::findAllStars()" );
     
     pCurrent->getPanelCamera()->getStars()->deleteAllStars();
 }
@@ -511,7 +516,7 @@ void Camera_mgr::findAllStars()
     if (pCurrent == NULL)                   return;
     if (pCurrent->getRB() == NULL)          return;
     
-    logf( (char*)"Camera_mgr::findAllStars()" );
+    logf_thread( (char*)"Camera_mgr::findAllStars()" );
     
     pCurrent->getPanelCamera()->getStars()->setView( pCurrent->getPanelCamera() );
     pCurrent->getPanelCamera()->getStars()->setRB( pCurrent->getRB() );
@@ -536,7 +541,7 @@ void Camera_mgr::suivi()
     
     if ( getRB() != NULL )
     {
-        //logf( (char*)"Camera_mgr::suivi()" );
+        //logf_thread( (char*)"Camera_mgr::suivi()" );
         Panel * pView= pCurrent->getPanelCamera();
         pCurrent->getPanelCamera()->getStars()->setView( (PanelSimple*)pView );
         pCurrent->getPanelCamera()->getStars()->suivi( getRB() );
@@ -554,7 +559,7 @@ void Camera_mgr::position(double ra, double dc)
     if ( getRB() != NULL )
     {
     	if ( typeid(Pleiade) == typeid(*pCurrent) )	{
-    		logf( (char*)"Camera_mgr::position() pCurrent = objet<pleiade>" );
+    		logf_thread( (char*)"Camera_mgr::position() pCurrent = objet<pleiade>" );
     	}
     	else {
 	        pCurrent->getPanelCamera()->getStars()->position(ra, dc);
@@ -628,7 +633,7 @@ void  Camera_mgr::add_catalogue(StarCatalog* p)
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::setRefCatalog(double _0, double _1)
 {   
-    if (pCurrent == NULL)                   { logf((char*)"pCurrent NULL"); return; }
+    if (pCurrent == NULL)                   { logf_thread((char*)"pCurrent NULL"); return; }
     pCurrent->setRefCatalog(_0, _1);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -657,7 +662,7 @@ void  Camera_mgr::cam_full_screen()
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::compareStar()
 {   
-    if (pCurrent == NULL)                   { logf((char*)"pCurrent NULL"); return; }
+    if (pCurrent == NULL)                   { logf_thread((char*)"pCurrent NULL"); return; }
     
     pCurrent->compareStar();    
 }

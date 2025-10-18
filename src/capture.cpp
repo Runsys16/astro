@@ -464,6 +464,8 @@ void Capture::create_preview()	{
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::resize(int w, int h )
 {
+    logf((char*)"Capture::resize( %d,%d )   (%d)", w, h, __LINE__ );
+    
     int x, y, dx, dy;
 
     dx = w ;
@@ -507,6 +509,8 @@ void Capture::resize(int w, int h )
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::resize(int x, int y, int w, int h )
 {
+    logf((char*)"Capture::resize( %d, %d, %d, %d )   (%d)", x, y, w, h, __LINE__ );
+
     int dx, dy;
 
     dx = w;
@@ -608,11 +612,11 @@ void Capture::restaure()
     bAfficheInfoFits		= bInfo;
     bAfficheInfoSouris		= bGrille;
     bAfficheGrille			= bSouris;
+	*/
 
 	if ( bFits )	{
 		fits->restaure( bAfficheInfoFits );
 	}
-	*/
 	panelCapture->restaure();
 
 }

@@ -27,7 +27,7 @@ StarCompare::~StarCompare()
 //--------------------------------------------------------------------------------------------------------------------
 void StarCompare::init( Stars* pS, Catalog* pC )
 {
-    logf( (char*)"StarCompare::init()" );
+    //logf( (char*)"StarCompare::init()" );
     pStars  = pS;
     pVizier = pC;
 }

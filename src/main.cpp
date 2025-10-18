@@ -4423,6 +4423,9 @@ void init_var()
     var.set("dyPanelStdOut", panelStdOut->getDY() );
     */
     //if ( panelStdOut->getX() == 0 )    bAlert = true;
+    mouse.x = 400;
+    mouse.y = 400;
+
 
 }
 //--------------------------------------------------------------------------------------------------------------------

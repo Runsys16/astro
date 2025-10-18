@@ -983,8 +983,8 @@ void PanelCamera::displayGL()
 		}
 		
     }
-    else
-    	log( (char*)"Pleiade ss not current" );
+    //else
+    //	log( (char*)"Pleiade ss not current" );
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 

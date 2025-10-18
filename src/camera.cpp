@@ -8,14 +8,15 @@
 //--------------------------------------------------------------------------------------------------------------------
 Camera::~Camera()
 {
-    logf( (char*)"Destructeur ~Camera() -----------" );
+    logf_thread( (char*)"Destructeur ~Camera() -----------" );
+    log_tab(true);
     bCharging = false;
 
 
-    logf( (char*)"  fermeture thread join()" );
+    logf_thread( (char*)"fermeture thread (lecture image) join()" );
     bExitThread = true;
     while( bStartThread );
-    logf( (char*)"  join() OK" );
+    logf_thread( (char*)"join() OK" );
 
     close_device();
     
@@ -32,13 +33,14 @@ Camera::~Camera()
 		vm.sup( panelControl );
 		delete panelControl;
 	}
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Camera::Camera()
 {
-    logf((char*)"Constructeur Camera() -------------" );
+    logf_thread((char*)"Constructeur Camera() -------------" );
     log_tab(true);
     //Device_cam();
 
@@ -46,14 +48,14 @@ Camera::Camera()
 
     //CreatePreview();
     log_tab(false);
-    logf((char*)"Constructeur Camera() -------------" );
+    //logf_thread((char*)"Constructeur Camera() ---- END ----" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Camera::Camera(int w, int h)
 {
-    logf((char*)"Constructeur Camera(%d, %d) -------------", w, h);
+    logf_thread((char*)"Constructeur Camera(%d, %d) -------------", w, h);
     log_tab(true);
     //Device_cam();
     
@@ -61,14 +63,14 @@ Camera::Camera(int w, int h)
     //setWidth(w);
     //setHeight(h);
     log_tab(false);
-    logf((char*)"Constructeur Camera(%d, %d) -------------", w, h);
+    //logf_thread((char*)"Constructeur Camera(%d, %d) ---- END ----", w, h);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::init()
 {
-    logf((char*)"Camera::init() -------------");
+    //logf_thread((char*)"Camera::init() -------------");
 
 	hz					= 0.0;
 
@@ -104,7 +106,7 @@ int Camera::addControlName( const string& sName, int xt, int yt )	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 int Camera::addControl()	{
-    logf((char*)"Camera::addControl() ---------------");
+    logf_thread((char*)"Camera::addControl() ---------------");
     log_tab(true);
  
     int xt  = 10;
@@ -133,7 +135,7 @@ int Camera::addControl()	{
     int dy = ++n*dyt;
     panelControl->setSize( 200+150, dy);
     
-    logf( (char*)"dy=%d", dy);
+    logf_thread( (char*)"dy=%d", dy);
     log_tab(false);
     
     return dy;
@@ -175,7 +177,7 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
         pSET->set_val( pControl->getValue() );
         p->add(pSET);
 
-	    logf( (char*)"Ajout de '%s'  %.2f>%.2f/%.2f = %.2f", str, (float)min, (float)max, (float)step, (float)pControl->getValue() );
+	    logf_thread( (char*)"Ajout de '%s'  %.2f>%.2f/%.2f = %.2f", str, (float)min, (float)max, (float)step, (float)pControl->getValue() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -205,7 +207,7 @@ void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{
         pSET->set_val( pControl->getValue() );
         p->add(pSET);
 
-	    logf( (char*)"Ajout de '%s'  %.2f>%.2f/%.2f = %.2f", str0, (float)min, (float)max, (float)step, (float)pControl->getValue() );
+	    logf_thread( (char*)"Ajout de '%s'  %.2f>%.2f/%.2f = %.2f", str0, (float)min, (float)max, (float)step, (float)pControl->getValue() );
 
 		char str1[256];
 		snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t\ %.0lf", min, max, step );
@@ -221,12 +223,12 @@ void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreateControl()	{
-    logf((char*)"Camera::CreateControl() --------------- %s", getDevName() );
+    logf_thread((char*)"Camera::CreateControl() --------------- %s", getDevName() );
     log_tab(true);
     
     if ( getFd() == -1 )
     {
-        logf((char*)"Le materiel n'est pas encore ouvert");
+        logf_thread((char*)"Le materiel n'est pas encore ouvert");
     }
 
     panelControl = new PanelWindow();
@@ -255,7 +257,7 @@ void Camera::CreateControl()	{
     resizeControlFirst(wsc, hsc, dx, dy);
 
     log_tab(false);
-    logf((char*)"Camera::CreateControl() --------------- %s", getDevName() );
+    logf_thread((char*)"Camera::CreateControl() --------------- %s", getDevName() );
     panelControl->setVisible(false);
     //logf((char*)"panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
 }
@@ -266,18 +268,17 @@ void Camera::start_thread()
 {
     if ( !bStartThread )
     {
-	    logf((char*)"[THREAD] Camera::start_thread() start %s", (char*)getName().c_str());
+	    logf_thread((char*)"[THREAD] Camera::start_thread() start %s", (char*)getName().c_str());
         thread_chargement = thread(&Camera::threadExtractImg, this);
         thread_chargement.detach();
 
-        bStartThread = true;
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::CreatePreview()	{
-    logf((char*)"Camera::CreatePreview ------------- %s", getName().c_str() );
+    logf_thread((char*)"Camera::CreatePreview ------------- %s", getName().c_str() );
     log_tab(true);
 
 	WindowsManager& wm = WindowsManager::getInstance();
@@ -309,12 +310,12 @@ void Camera::CreatePreview()	{
 	//panelCamera->setCanMove(false);
  	wm.add( panelCamera );
 
-    logf((char*)"    name    %s ", getName().c_str() );
-    logf((char*)"    devname %s ", getDevName() );
-    logf((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
+    logf_thread((char*)"    name    %s ", getName().c_str() );
+    logf_thread((char*)"    devname %s ", getDevName() );
+    logf_thread((char*)"    %d,%d %dx%d", 0, 0, getWidth(), getHeight());
 
     log_tab(false);
-    logf((char*)"Camera::CreatePreview ------------- %s", getName().c_str() );
+    logf_thread((char*)"Camera::CreatePreview ------------- %s", getName().c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -496,6 +497,7 @@ void charge_camera()
 void Camera::threadExtractImg()
 {
 
+    bStartThread = true;
     while( true )
     {
         
@@ -809,7 +811,8 @@ void Camera::setColor( long color )
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
-// Compare les etoiles trouvées par le programme// aux etoiles du catalogue vizier
+// Compare les etoiles trouvées par le programme
+// aux etoiles du catalogue vizier
 // Affiche le resultat dans la console
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -824,7 +827,8 @@ void Camera::compareStar()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
-// Compare les etoiles trouvées par le programme// aux etoiles du catalogue vizier
+// Compare les etoiles trouvées par le programme
+// aux etoiles du catalogue vizier
 // Affiche le resultat dans la console
 //
 //--------------------------------------------------------------------------------------------------------------------

@@ -64,9 +64,12 @@ void Connexion_mgr::add_port()
             if ( t_port_polling[i].find("video") != string::npos )
             {
                 logf_thread( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
+                log_tab(true);
                 //if ( !isExclude(t_port_polling[i])  )
                 Camera_mgr::getInstance().add( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
+                log_tab(false);
+                logf_thread( (char*)"Connexion_mgr::add_port()  %s  END", t_port_polling[i].c_str() );
             }
             else if ( t_port_polling[i].find("ttyACM") != string::npos )
             {

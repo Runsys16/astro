@@ -24,7 +24,7 @@ struct v4l2_querymenu querymenu;
 //--------------------------------------------------------------------------------------------------------------------
 Device_cam::Device_cam()
 {
-    logf( (char*)"Constructeur Device_cam() -------------" );
+    logf_thread( (char*)"Constructeur Device_cam() -------------" );
     dev_name        = "";
     io              = IO_METHOD_USERPTR;
     fd              = -1;
@@ -81,9 +81,12 @@ bool Device_cam::isDevice( int u )
 //--------------------------------------------------------------------------------------------------------------------
 bool Device_cam::getIOCapability()
 {
+    logf_thread( (char*)"Device_cam::getIOCapability()" );
+    log_tab(true);
     if (fd == -1)
     {
         name = "";
+	    log_tab(false);
         return false;
     }
 
@@ -94,6 +97,7 @@ bool Device_cam::getIOCapability()
     {
         perror("cam_info: Can't get capabilities");
         name = "";
+	    log_tab(false);
         return false;
     } else {
         //logf_thread("Name:\t\t '%s'", (char*)cap.card);
@@ -102,15 +106,18 @@ bool Device_cam::getIOCapability()
         if ( n>0 )      s[n] = 0;
         //logf_thread("n = %d", n );
         name = string(s);
-        logf_thread( (char*)"Device_cam::getIOCapability() Name: '%s'", name.c_str() );
-        if ( cap.device_caps&V4L2_CAP_VIDEO_CAPTURE )	{
-	        logf_thread( (char*)"  cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
+        logf_thread( (char*)"Device Name: '%s'", name.c_str() );
+        
+        if ( cap.device_caps & V4L2_CAP_VIDEO_CAPTURE )	{
+	        logf_thread( (char*)"Device capture : cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
 	    }
         else	{
-	        logf_thread( (char*)"[Error] V4L2_CAP_VIDEO_CAPTURE  : cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
+	        logf_thread( (char*)"Device commande : cap.capabilities 0x%08x", (uint32_t)cap.device_caps );
+		    log_tab(false);
 	        return false;
         }
     }
+    log_tab(false);
     return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1022,6 +1029,8 @@ void Device_cam::init_device(void)
         fmt.fmt.pix.field       = V4L2_FIELD_ANY;
 
         if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))           errno_exit("VIDIOC_S_FMT");
+
+        logf_thread( (char*)"Force format MJPG   OK" );
         break;
 
     default:
