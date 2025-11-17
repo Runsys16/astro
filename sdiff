@@ -1,0 +1,6 @@
+#!/bin/bash
+cd /home/rene/programmes/opengl/video/astro
+
+scp $(git diff --name-only| grep src) rene@portable-marie:$(pwd)/src
+
+

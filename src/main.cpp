@@ -16,6 +16,7 @@
 #include "panel_console_serial.h"
 //#include "panel_spin_edit_text.h"
 #include "serveur_mgr.h"
+#include "lx200.h"
 #include "capture.h"
 #include "var_mgr.h"
 #include "alert_box.h"
@@ -65,7 +66,7 @@ vector<string> t_sHelp1 =
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
-	"     J\t: Lance Stellarium",	
+	"     J\t: Lance ASI Studio",
 	"     j\t: Affichage info fits",
 	"     k\t: Active/desactive le son",
 	"     K\t: Lance un carree de recherche",
@@ -79,7 +80,7 @@ vector<string> t_sHelp1 =
 	"     p\t: Pause de l'affichage camera",
 	"     P\t: Image suivante",
 	"     q\t: Lance Polaris",
-	"     Q\t: Lance ASI Studio",
+	"     Q\t: Lance Stellarium",	
 //	"     r\t: Test alert BOX",
 	"     W\t: Surveille un repertoire",
 	"     -\t: Toutes les images sont affichees en icones",
@@ -95,8 +96,9 @@ vector<string> t_sHelp2 =
 	"     O\t: Mode souris / mode suivi",
 	"     y\t: Affiche les vecteurs",
 	"",
-	"  Depl. souris :\tclick gauche positionne la reference",
-	"\t\t\tclick milieu positionne le deplacement",
+	"Depl. souris :",
+	"\tclick gauche positionne la reference",
+	"\tclick et maintient milieu positionne le deplacement",
 	"",
 	"---- TRACES ----",
 	"     C\t: Lance/arrete l\'enregistrement de trace",
@@ -113,17 +115,17 @@ vector<string> t_sHelp2 =
 	"     h\t: Enregistre une image de la camera courante",
 	"     l\t: Liste les controles",
     "" ,    
-    "!!!!! OBSOLETE !!!!!",
-	"\t  Brightness\t\t\tB/b" ,
-	"\t  Contrast\t\t\tC/c" ,
-	"\t  Saturation\t\t\tS/s" ,
-	"\t  Hue\t\t\t\tH/h" ,
-	"\t  Gamma\t\t\tG/g" ,
-	"\t  Sharpness\t\t\tZ/z" ,
-	"\t  Exposure\t\t\tE/e" ,
-	"\t  Exposure auto\t\tD/d" ,
-	"\t  White balance\t\tW/w" ,
-	"\t  White balance auto\tX/x" ,
+    "---- !!OBSOLETE!! ----",
+	"\tBrightness\tB/b" ,
+	"\tContrast\tC/c" ,
+	"\tSaturation\tS/s" ,
+	"\tHue\tH/h" ,
+	"\tGamma\tG/g" ,
+	"\tSharpness\tZ/z" ,
+	"\tExposure\tE/e" ,
+	"\tExposure auto\tD/d" ,
+	"\tWhite balance\tW/w" ,
+	"\tWhite balance auto\tX/x" ,
 };
 vector<string> t_sHelp3 = 
 {
@@ -206,9 +208,9 @@ Pleiade*            pPleiade = NULL;
 double              ac;
 double              dc;
 int					appelIdle = 0;
-
+int					posStatusX = 0;
 char                background[]="frame-0.raw";
-double               prevTime    = -1.0f;
+double				prevTime    = -1.0f;
 
 int                 width  = 1600;
 int                 height = 900;
@@ -258,7 +260,7 @@ bool                bSound				= true;
 bool                bInverseCouleur		= false;
 bool                bCentrageSuivi		= false;
 bool                bFirstStart			= true;
-bool				bDesactiveLog		= false;
+bool				bDesactiveLog		= true;
 bool				bAffColimation		= false;
 
 int                 wImg;
@@ -282,6 +284,7 @@ double				filtre      = 10.0;
 int                 iDisplayCourbe  = 0;
 bool                bDisplayCourbeX = true;
 bool                bDisplayCourbeY = true;
+double				dErr;
 
 int                 iDisplayfft = 0;
 bool                bDisplayfftX = true;
@@ -333,11 +336,13 @@ double				fTimeCpt = 0.0;
 double              fLimitCorrection0 = 80.0;
 double              pas_sideral;
 
-double				fpos_ad = -1.0;
-double				fpos_dc = -1.0;
+double				d_deg_ad = -1.0;
+double				d_deg_dc = -1.0;
 //--------------------------------------------------------------------------------------------------------------------
 string              sTab;
 int                 nb_tab = 0;
+//vector<int>			tTab;
+//bool				bChangeTab = false;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -381,7 +386,7 @@ CallbackFits            cb_fits;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-static const char short_options[] = "d:hfs:lpe:";
+static const char short_options[] = "d:hfs:Llope:";
 static const struct option
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -392,6 +397,8 @@ long_options[] = {
         { "format", no_argument,       NULL, 'f' },
         { "size",   required_argument, NULL, 's' },
         { "log",    no_argument,       NULL, 'l' },
+        { "LOG",    no_argument,       NULL, 'L' },
+        { "out",    no_argument,       NULL, 'o' },
         { "pleiade",no_argument,       NULL, 'p' },
         { "exclude",required_argument, NULL, 'e' },
         { 0, 0, 0, 0 }
@@ -420,6 +427,8 @@ static void usage(FILE *fp, int argc, char **argv)
                  "-h | --help          Print this message\n"
                  "-f | --full          Full size windows\n"
                  "-l | --log           Affiche les logs\n"
+                 "-L | --LOG           Affiche les logs ds le programme\n"
+                 "-o | --out           Affiche les logs ds la fenetre log\n"
                  "-e | --exc           Exclude device\n"
                  "",
                  argv[0] );
@@ -682,7 +691,6 @@ void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_ca
     log_tab(false);
     logf_thread( (char*)"main::vizier_capture_thread()  FIN" );
 
- 	if (bDesactiveLog)			bDesactiveLog = false;
  	//____________________________________
  	// On previens la fenetre capture
  	if ( p_panel_capture != NULL )
@@ -698,7 +706,6 @@ void vizier_load_stars( Catalog* pVizier, string s, double ra, double de )
 {
     pVizier->efface();
 
-	//bDesactiveLog = true;
     PanelCapture* p_panel_capture = NULL;
     thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
     Camera_mgr::getInstance().setRefCatalog( ra, de );
@@ -710,9 +717,7 @@ void vizier_capture_load_stars( Catalog* pVizier, string s, PanelCapture* p_pane
 {
     pVizier->efface();
 
-	//bDesactiveLog = true;
     thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
-    //Camera_mgr::getInstance().setRefCatalog( ra, de );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -721,10 +726,8 @@ void vizier_load_stars( Catalog* pVizier, string s )
 {
     pVizier->efface();
 
-	//bDesactiveLog = true;
     PanelCapture* p_panel_capture = NULL;
     thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
-    //thread( &vizier_thread, pVizier, s ).detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1139,16 +1142,37 @@ void rad2hms(double r, struct hms& HMS)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+char* deg2str_hms(double r, char* str, int len)
+{
+	struct hms 			HMS;
+	
+    if ( r<0.0 )	r = 360.0 + r;
+    
+    double h = (r / 360.0 * 24.0);
+    int H = h;
+    HMS.h = H;
+    
+    double m = (h-H) * 60.0;
+    int M = m;
+    HMS.m = M;
+    
+    double s = (m-M) * 60.0;
+    HMS.s = s;
+    
+	snprintf( (char*)str, len, "%02.0lfh %02.0lf' %02.2lf\"", HMS.h, HMS.m, HMS.s );
+
+    return str;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void rad2dms(double v, struct dms& DMS)
 {
     double sign = 1.0;
-    if ( v<0.0 )
-    {
-        sign = -1.0;
-        v *=-1.0;
-    }
 
-    double d = v / M_PI * 180.0;
+    if ( v<0.0 )        sign = -1.0;
+
+    double d = abs(v) / M_PI * 180.0;
     int D = d;
     DMS.d = D;
     
@@ -1162,6 +1186,38 @@ void rad2dms(double v, struct dms& DMS)
 
     DMS.d *= sign;
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+char* deg2str_dms(double d, char* str, int len)
+{
+ 	struct dms 			DMS;
+ 	
+    double sign = 1.0;
+
+    if ( d<0.0 )
+    {
+        sign = -1.0;
+        d *=-1.0;
+    }
+
+    int D = d;
+    DMS.d = D;
+    
+    double m = (d-D) * 60.0;
+    //if ( d < 0.0 )  m *= -1.0;
+    int M = m;
+    DMS.m = M;
+    
+    double s = (m-M) * 60.0;
+    DMS.s = s;
+
+    DMS.d *= sign;
+    
+	snprintf( (char*)str, len, "%02.0lf° %02.0lf' %02.2lf\"", DMS.d, DMS.m, DMS.s );
+	return str;
+}
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1279,8 +1335,6 @@ static void displayGL(void)
 
 	glutSwapBuffers();
 
-    bStdOut = true;
-
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1385,13 +1439,13 @@ void change_joy(double x, double y)
 //--------------------------------------------------------------------------------------------------------------------
 void change_ad_status(double ad)
 {
-    if ( fpos_ad == ad)			return;
+    if ( d_deg_ad == ad)			return;
 
 	Captures::getInstance().change_ad( ad );
     VarManager& var = VarManager::getInstance();
 
-	var.set("fpos_ad", ad);
-    fpos_ad = ad;
+	var.set("d_deg_ad", ad);
+    d_deg_ad = ad;
 
     //ad = DEG2RAD(ad);
     struct hms HMS;
@@ -1412,13 +1466,13 @@ void change_ad_status(double ad)
 //--------------------------------------------------------------------------------------------------------------------
 void change_dc_status(double dc)
 {
-    if ( fpos_dc == dc)					return;
+    if ( d_deg_dc == dc)					return;
 
 	Captures::getInstance().change_dc( dc );
     VarManager& var = VarManager::getInstance();
 
-    var.set("fpos_dc", dc);
-    fpos_dc == dc;
+    var.set("d_deg_dc", dc);
+    d_deg_dc == dc;
     
     //dc = DEG2RAD(dc);
     struct dms DMS;
@@ -1430,9 +1484,9 @@ void change_dc_status(double dc)
     else				signe[0] = 0;
     
     if ( DMS.s < 10.0 )	
-	    sprintf( buff, "= %02d %02d\' 0%02.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
+	    sprintf( buff, "= %02d° %02d\' 0%02.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
 	else
-	    sprintf( buff, "= %02d %02d\' %02.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
+	    sprintf( buff, "= %02d° %02d\' %02.2lf\"",  (int)DMS.d, (int)DMS.m, DMS.s );
     
     //logf( (char*)"main::change_dc_status %s", buff );
     
@@ -1716,7 +1770,7 @@ static void idleGL(void)
     // Gestion de la sauvegarde des coordonnees
     // ecran des differentes fenetres
     //-----------------------------------------------------------------------
-    if ( panelStdOut->getHaveMove() )
+    if ( panelStdOut && panelStdOut->getHaveMove() )
     {
         panelStdOut->resetHaveMove();
 
@@ -1725,7 +1779,6 @@ static void idleGL(void)
         var.set("dxPanelStdOut", panelStdOut->getDX() );
         var.set("dyPanelStdOut", panelStdOut->getDY() );
         
-        //if ( panelStdOut->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
 
     if ( panelHelp->getHaveMove() )
@@ -1738,7 +1791,6 @@ static void idleGL(void)
         var.set("dxPanelHelp", panelHelp->getDX() );
         var.set("dyPanelHelp", panelHelp->getDY() );
         
-        //if ( panelStdOut->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
 
     if ( panelCourbe->getHaveMove() )
@@ -1751,7 +1803,6 @@ static void idleGL(void)
         var.set("dxPanelCourbe", panelCourbe->getDX() );
         var.set("dyPanelCourbe", panelCourbe->getDY() );
         
-        //if ( panelStdOut->getX() != 0 )    alertBox("xPanelStdOut != 0");
     }
     //-----------------------------------------------------------------------
     // Mise a jour des buffers de la camera
@@ -1931,6 +1982,7 @@ static void quit(void)
 	bStdOut = false;
     logf( (char*)"exit_handler()" );
 
+    LX200::getInstance().close_all();
     Serveur_mgr::getInstance().close_all();
 	Camera_mgr::getInstance().stopAllCameras();
 	Connexion_mgr::getInstance().stopThread();
@@ -2171,6 +2223,145 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	
 	switch(key){ 
 	//----------------------------------------------------------------------------
+    case 'o':
+        {
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvC() );
+					d *= 1.1;
+					p->getStars()->setC( d );
+					logf( (char*)"C = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
+    case 'p':
+        {
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvC() );
+					d /= 1.1;
+					p->getStars()->setC( d );
+					logf( (char*)"C = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
+    case 'l':
+        {
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvA() );
+					d *= 1.1;
+					p->getStars()->setA( d );
+					logf( (char*)"A = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
+    case 'm':
+        {
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvA() );
+					d /= 1.1;
+					p->getStars()->setA( d );
+					logf( (char*)"A = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
+    case 'j':
+        {
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvB() );
+					d += 0.1;
+					p->getStars()->setB( d );
+					logf( (char*)"B = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
+    case 'k':
+        {
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvB() );
+					d -= 0.1;
+					p->getStars()->setB( d );
+					logf( (char*)"B = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
+	//----------------------------------------------------------------------------
     case 'A':
         {
         	if ( var.existe("bVerboseArduino") )    {
@@ -2376,8 +2567,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	//----------------------------------------------------------------------------
     default:
 		{
-		    cout << "Default..." << endl;
-		    logf( (char*)"glutKeyboardFuncAlt  key=%c", (char)key );
+		    //cout << "Default..." << endl;
+		    logf( (char*)"glutKeyboardFuncAlt  default key=%c", (char)key );
         }
         break;
     }		
@@ -2815,7 +3006,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 	case 'J':
 		{
-            thread( &commande_stellarium).detach();
+		    logf( (char*)"Key (Q) : Lance ASI Studio");
+		    thread( &commande_asi_studio).detach();
         }
 		break;
 	case 'j':
@@ -3014,8 +3206,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'Q':
         {
-        logf( (char*)"Key (Q) : Lance ASI Studio");
-        thread( &commande_asi_studio).detach();
+        	logf( (char*)"Lance Stellarium ..." );
+            thread( &commande_stellarium).detach();
 
         //Py_SetProgramName(argv[0]);  /* optional but recommended */
         //vizier_load_stars(string(""), 56.0, 24.0);
@@ -3043,7 +3235,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'q':
         {
-	        logf( (char*)"Key (polaris) : Polaris");
+	        logf( (char*)"Lance Polaris ...");
             thread( &commande_polaris).detach();
         }
         break;
@@ -3392,8 +3584,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
         {
         bPanelStdOut = !bPanelStdOut;
         var.set("bPanelStdOut", bPanelStdOut);
-        panelStdOut->setVisible(bPanelStdOut);
-        if ( bPanelStdOut )       WindowsManager::getInstance().onTop(panelStdOut);
+        if ( panelStdOut )		panelStdOut->setVisible(bPanelStdOut);
+        if ( panelStdOut )		WindowsManager::getInstance().onTop(panelStdOut);
         
         logf( (char*)"Key F5: Toggle panelStdOut %s", BOOL2STR(bPanelStdOut) );
         }
@@ -3678,7 +3870,7 @@ void setColor()
 
     PanelConsoleSerial::getInstance().getConsole()->setColor(color);
 
-    panelStdOut->setColor(color);
+    if ( panelStdOut )				panelStdOut->setColor(color);
     panelHelp->setColor(color);
     panelScrHelp->setColor(color);
     panelCourbe->setColor(color);
@@ -3697,7 +3889,7 @@ void onTop()
 {
     WindowsManager& wm = WindowsManager::getInstance();
     Captures::getInstance().onTop();
-    wm.onTop(panelStdOut);
+    if ( panelStdOut )			wm.onTop(panelStdOut);
     wm.onTop(panelStatus);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3786,7 +3978,9 @@ static void CreateResultat()	{
 	pRef   = new PanelText( (char*)"Reference ",  PanelText::NORMAL_FONT, x0, y0+16*l++  );
 	pEtoile = new PanelText( (char*)"Etoile ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
 	pEcart = new PanelText( (char*)"Ecart ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	pRef->razTabSize();
 	pRef->setTabSize(80);
+	pEtoile->razTabSize();
 	pEtoile->setTabSize(80);
 	panelResultat->add( pRef ); 
 	panelResultat->add( pEtoile ); 
@@ -3800,13 +3994,18 @@ static void CreateResultat()	{
 //--------------------------------------------------------------------------------------------------------------------
 int x_help = 0;
 int y_help = 0;
+#define TAB_SIZE_HELP 60
 static void addString1( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
-    PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help );
-    //PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::UBUNTU_B, x_help, y_help );
-    p->setTabSize(40);
+    //PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help, y_help );
+    PanelText* p = new PanelText( (char*)"",  		PanelText::NORMAL_FONT, x_help, y_help );
+
+    p->razTabSize();
+    p->setTabSize(TAB_SIZE_HELP);
+    p->changeText( (char*)s.c_str() );
 	panelScrHelp->add( p );
+
 	y_help += 15;
 }	
 //--------------------------------------------------------------------------------------------------------------------
@@ -3815,9 +4014,14 @@ static void addString1( string s )
 static void addString2( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
-    PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help+400, y_help );
-    p->setTabSize(40);
+    PanelText* p = new PanelText( (char*)"",  		PanelText::NORMAL_FONT, x_help+400, y_help );
+
+    p->razTabSize();
+    p->setTabSize(TAB_SIZE_HELP);
+    p->setTabSize(140);
+    p->changeText( (char*)s.c_str() );
 	panelScrHelp->add( p );
+
 	y_help += 15;
 }	
 //--------------------------------------------------------------------------------------------------------------------
@@ -3826,9 +4030,13 @@ static void addString2( string s )
 static void addString3( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
-    PanelText* p = new PanelText( (char*)s.c_str(),  		PanelText::NORMAL_FONT, x_help+800, y_help );
-    p->setTabSize(40);
+    PanelText* p = new PanelText( (char*)"",  		PanelText::NORMAL_FONT, x_help+800, y_help );
+
+    p->razTabSize();
+    p->setTabSize(TAB_SIZE_HELP);
+    p->changeText( (char*)s.c_str() );
 	panelScrHelp->add( p );
+
 	y_help += 15;
 }	
 //--------------------------------------------------------------------------------------------------------------------
@@ -3950,32 +4158,36 @@ static void CreateStatus()	{
 	//-------------------------------------------------------------------------------------------
 
     pAD = new PanelText( (char*)"",		            PanelText::NORMAL_FONT, 60+10, 2 );
-    change_ad_status( fpos_ad );
+    change_ad_status( d_deg_ad );
 	panelStatus->add( pAD );
     
     pDC = new PanelText( (char*)"",		            PanelText::NORMAL_FONT, 200+10, 2 );
-    change_dc_status( fpos_dc );
+    change_dc_status( d_deg_dc );
 	panelStatus->add( pDC );
-
-	_x = 760,
-    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, _x + 00, 2 );
-	panelStatus->add( pAsservi );
-
-    pSuivi = new PanelText( (char*)"Suivi",		        PanelText::NORMAL_FONT, _x + 35, 2 );
-	panelStatus->add( pSuivi );
-
-    pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, _x + 70, 2 );
-	panelStatus->add( pCoordSuivi );
-
-
-
 
 	string sErr = "Status !!!";
 
+	//-------------------------------------------------------------------------------------------
  	wm.add( panelStatus );
  	panelStatus->setBackground((char*)"images/background.tga");
  	
  	create_windows_button();
+
+	_x = posStatusX+50;
+
+    pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, _x, 2 );
+	panelStatus->add( pAsservi );
+
+	_x += 35;
+    pSuivi = new PanelText( (char*)"Suivi",		        PanelText::NORMAL_FONT, _x, 2 );
+	panelStatus->add( pSuivi );
+
+	_x += 40;
+    pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, _x, 2 );
+	panelStatus->add( pCoordSuivi );
+
+
+
 
 
     logf((char*)"** CreateStatus()  panelSatuts  %d,%d %dx%d", x, y, dx, dy);
@@ -3992,7 +4204,7 @@ static void CreateStdOut()	{
 static void CreateAllWindows()	{
     //CreatePreview();
     //CreateControl();
-    CreateStdOut();
+    if ( bStdOut)		CreateStdOut();
     CreateHelp();
     CreateResultat();
     CreateStatus();
@@ -4091,12 +4303,13 @@ void log_tab( bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void log( char* chaine )
 {
+
     string aff = sTab + string(chaine);
+    
 
-    printf( "log : %s\n", aff.c_str() );
-	if ( bDesactiveLog)		return;
+	if ( !bDesactiveLog)					printf( "log : %s\n", aff.c_str() );
 
-    if ( panelStdOut && bStdOut )          panelStdOut->affiche( (char*)aff.c_str() );
+    if ( panelStdOut && bStdOut )			panelStdOut->affiche( (char*)aff.c_str() );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4118,8 +4331,6 @@ void logf(char *fmt, ...)
 //--------------------------------------------------------------------------------------------------------------------
 void log_thread_aff()
 {
-	if ( bDesactiveLog )		return;
-	
 	for( int i=0; i<logs_string.size(); i++ )
 	{
 		log( (char*)logs_string[i].c_str() );
@@ -4132,8 +4343,6 @@ void log_thread_aff()
 //--------------------------------------------------------------------------------------------------------------------
 void log_thread( char* chaine )
 {
-	if ( bDesactiveLog)		return;
-
     string aff = sTab + string(chaine);
 
     logs_string.push_back( aff );
@@ -4163,7 +4372,7 @@ void parse_size( string s )
     
     if (found!=std::string::npos)
     {
-        std::cout << "Period found at: " << found << '\n';
+        logf_thread( (char*)"Period found at: %d ", found );
 
         char buff[100];
         sprintf( buff, "%s", s.c_str() );
@@ -4176,7 +4385,7 @@ void parse_size( string s )
         width  = atoi(sWidth);
         height = atoi(sHeight);
         
-        std::cout<<"Parse "<< sWidth <<"x"<< sHeight << '\n';
+        logf_thread( (char*) "Parse %dx%d", sWidth, sHeight );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4184,19 +4393,9 @@ void parse_size( string s )
 //--------------------------------------------------------------------------------------------------------------------
 void parse_option( int argc, char**argv )
 {
-    bool bOK = false;
-    /*
-    for(int i=0; i<20; i++ )    {
-        if (camera.isDevice(i))    {
-            cout <<"Camera sur /dev/video"<< i << endl;
-            bOK = true;
-            break;
-        }
-    }
-    */
-    
-    //if (!bOK)           cout <<"Pas de camera !!!" << endl;
+	logf_thread( (char*)"main::parse_option()\n" );
 
+    bool bOK = false;
     char        cSize[100];
 
     for (;;) {
@@ -4205,8 +4404,11 @@ void parse_option( int argc, char**argv )
 
             c = getopt_long(argc, argv, short_options, long_options, &idx);
 
-            if (-1 == c)
-                    break;
+			if (c == -1)
+			{
+           		//printf( "[Erreur] parse option\n" );
+				break;
+			}
 
             switch (c) {
             case 0: /* getopt_long() flag */
@@ -4234,48 +4436,33 @@ void parse_option( int argc, char**argv )
                     height = heightScreen;
                     break;
 
-            case 's':
-                    strncpy( cSize, optarg, sizeof(cSize) );
-
-                    //string      sSize=string((const char*)cSize);
-                    printf( "%s\n", cSize );
-                    parse_size(cSize);
-                    break;
-            /*
-            case 'p':
-                {
-                pPleiade = new Pleiade();
-                //bOneFrame = true;
-                Camera_mgr::getInstance().add( pPleiade );
-                bPleiade = true;
-				var.set("bPleiade", bPleiade );
-                }
-                break;
-    
-            case 'm':
-                    io = IO_METHOD_MMAP;
+            case 'l':
+            		bDesactiveLog = false;
+            		bStdOut = true;
+            		logf_thread( (char*)"option -l\n" );
                     break;
 
-            case 'r':
-                    io = IO_METHOD_READ;
-                    break;
-
-            case 'u':
-                    io = IO_METHOD_USERPTR;
+            case 'L':
+            		bDesactiveLog = true;
+            		bStdOut = true;
+            		logf_thread( (char*)"option -L\n" );
                     break;
 
             case 'o':
-                    out_buf++;
+            		bDesactiveLog = false;
+            		bStdOut = false;
+            		logf_thread( (char*)"option -o\n" );
+            		//printf( (char*)"option -o\n" );
                     break;
 
 
-            case 'c':
-                    errno = 0;
-                    frame_count = strtol(optarg, NULL, 0);
-                    if (errno)
-                            errno_exit(optarg);
+            case 's':
+                    strncpy( cSize, optarg, sizeof(cSize) );
+
+                    logf_thread( (char*)"%s", cSize );
+                    parse_size(cSize);
                     break;
-            */
+
             default:
                     usage(stderr, argc, argv);
                     exit(EXIT_FAILURE);
@@ -4328,12 +4515,14 @@ void getX11Screen()
     // return the number of available screens
     int count_screens = ScreenCount(display);
 
-    printf("Total count screens: %d\n", count_screens);
+	logf_thread( (char*)"Total count screens: %d", count_screens);
 
 
     for (int i = 0; i < count_screens; ++i) {
         screen = ScreenOfDisplay(display, i);
-        printf("Screen %d: %dX%d\n", i + 1, screen->width, screen->height);
+        
+        logf_thread( (char*)"Screen %d: %dX%d\n", i + 1, screen->width, screen->height);
+        
         widthScreen = screen->width;
         heightScreen = screen->height;
     }
@@ -4354,14 +4543,14 @@ void getX11Screen()
     //0 to get the first monitor   
     crtc_info = XRRGetCrtcInfo (dpy, scr, scr->crtcs[0]);         
 
-    cout << "Nb crtc   : " << scr->ncrtc << endl;         
-    cout << "Nb Output : " << scr->noutput << endl;         
-    cout << "N  mode   : " << scr->nmode << endl;    
+    logf_thread( (char*)"Nb crtc   : %d", scr->ncrtc );         
+    logf_thread( (char*)"Nb Output : %d", scr->noutput );         
+    logf_thread( (char*)"N  mode   : %d", scr->nmode );    
     
     for( int i=0; i<scr->ncrtc; i++ )
     {
         crtc_info = XRRGetCrtcInfo (dpy, scr, scr->crtcs[i]);
-        cout << i <<" - " << crtc_info->width <<"x"<< crtc_info->height << endl;
+        logf_thread( (char*)"%d - %dx%d", i, crtc_info->width, crtc_info->height );
         if ( i == 0 )
         {
             widthScreen  = crtc_info->width;
@@ -4555,11 +4744,13 @@ void charge_var()
     if ( !var.existe("filtre"))             var.set("filtre", 14);
     filtre          = var.geti("filtre");
 
-    if ( !var.existe("fpos_ad"))            var.set("fpos_ad", 5.0);
-    fpos_ad         = var.getf("fpos_ad");
+    if ( !var.existe("d_deg_ad"))            var.set("d_deg_ad", 5.0);
+    d_deg_ad         = var.getf("d_deg_ad");
+    change_ad_status( d_deg_ad );
     
-    if ( !var.existe("fpos_dc"))            var.set("fpos_dc", 5.0);
-    fpos_dc         = var.getf("fpos_dc");
+    if ( !var.existe("d_deg_dc"))            var.set("d_deg_dc", 5.0);
+    d_deg_dc         = var.getf("d_deg_dc");
+    change_dc_status( d_deg_dc );
     
     if ( !var.existe("Xref"))               var.set("Xref", 5.0);
     Xref            = var.getf("Xref");
@@ -4586,7 +4777,8 @@ void charge_var()
 
     if ( !var.existe("bAffFitsCorrection")) var.set("bAffFitsCorrection", true );
 
-    if ( !var.existe("err")) 				var.set("err", 0.63 );
+    if ( !var.existe("err")) 				var.set("err", (float)0.63 );
+    dErr = var.getf("err" );
 
     if ( !var.existe("fDiamSuivi1")) 		var.set("fDiamSuivi1", 63.0 );
     fDiamSuivi1 = var.getf("fDiamSuivi1" );
@@ -4597,6 +4789,8 @@ void charge_var()
     if ( !var.existe("bAffColimation"))		var.set("bAffColimation", false );
     bAffColimation = var.getb("bAffColimation" );
 
+    if ( !var.existe("fTimeCorrection"))		var.set("fTimeCorrection", 3.0 );
+    fTimeCorrection = var.getf("fTimeCorrection" );
 
 
     if ( bPleiade )
@@ -4612,6 +4806,7 @@ void exit_handler()
 {
     //BluetoothManager::getInstance().disconnect();
     Serveur_mgr::getInstance().close_all();
+    LX200::getInstance().close_all();
     cout <<"exit_handler()"<< endl;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4621,14 +4816,8 @@ int main(int argc, char **argv)
 {
     //var.setSauve();
     //init_var();
+    parse_option(argc, argv);
     atexit(exit_handler);
-    //parse_option_size(argc, argv);
-    
-    //vCameraSize.x = 1280;
-    //vCameraSize.y = 720;
-
-    //vCameraSize.x = 1920;
-    //vCameraSize.y = 1080;
     
     xCam = 0;
     yCam = 0;
@@ -4646,7 +4835,7 @@ int main(int argc, char **argv)
     height = getScreenDY();
 
     
-    cout <<"Screen size "<< width <<"x"<< height << endl;
+    logf_thread( (char*)"Screen size %dx%d", width, height );
 
 	//xPos = 1200 + (getScreenDX()-width)/2;
 	xPos = 0.0;//(getScreenDX()-width)/2;
@@ -4666,8 +4855,7 @@ int main(int argc, char **argv)
 	glutIdleFunc(idleGL);
 
 	
-	cout << "Ecran   wxh " << width << "x" << height << endl;
-	cout << "Fenetre x,y wxh "<< xPos <<","<< yPos <<" " << width << "x" << height << endl;
+	logf_thread( (char*)"Fenetre %d,%d %dx%d ", xPos, yPos, width, height );
 
 	glutKeyboardFunc(glutKeyboardFunc);
 	glutKeyboardUpFunc(glutKeyboardUpFunc);
@@ -4691,9 +4879,8 @@ int main(int argc, char **argv)
     panelCourbe->get_vOrigine().y = ySuivi;
     panelCourbe->get_vOrigine().z = 0.0;
     change_joy( xSuivi, ySuivi );
-    
-    parse_option(argc, argv);
-    
+    // status.inc
+    change_perr( &dErr );
     
     logf ((char*)"############## START MANAGER ###################");
     
@@ -4708,13 +4895,17 @@ int main(int argc, char **argv)
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
     Serveur_mgr::getInstance().start_init();
     Serveur_mgr::getInstance().start_deplacement();
+    LX200::getInstance().start_lx200();
 
     init_var();
     var.setSauve();
     
-    if ( var.getb("bNuit") )    panelStdOut->setColor( 0xff0000ff );
-    else                        panelStdOut->setColor( COLOR_WHITE );
-    
+    if ( panelStdOut )
+    {
+		if ( var.getb("bNuit") )    panelStdOut->setColor( 0xff0000ff );
+		else                        panelStdOut->setColor( COLOR_WHITE );
+	}
+	    
     double clearColor = 0.0;
     glClearColor( clearColor, clearColor, clearColor,1.0);
     

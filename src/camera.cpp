@@ -212,6 +212,7 @@ void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{
 		char str1[256];
 		snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t\ %.0lf", min, max, step );
 		PanelText* pp = new PanelText( (char*)"  ", PanelText::NORMAL_FONT, x + 150, y );
+		pp->razTabSize();
 		pp->setTabSize(85);
 		pp->setColor(0x808080ff);
 		pp->changeText( (char*)str1 );

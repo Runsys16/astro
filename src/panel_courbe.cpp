@@ -25,6 +25,39 @@ bool f_exist(const char *name)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+PanelCourbe::~PanelCourbe()
+{
+    logf( (char*)"Destructeur  PanelCourbe::~PanelCourbe()" );
+    // Effacement des unites
+    int nb = unites.size();
+    if (nb != 0)
+    {
+        for( int i=0; i<nb; i++ )
+        {
+            sup(unites[i].pText);
+            delete unites[i].pText;
+        }
+        unites.clear();
+    }
+
+    delete pFilename;
+    sup( pFilename );
+    
+    sup( pFiltreVal );
+    delete pFiltreVal;
+
+    sup( pXMax );
+    delete pXMax;
+
+    sup( pXMin );
+    delete pXMin;
+    
+    //pYMax
+    //pYMin
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 PanelCourbe::PanelCourbe()
 {
     logf( (char*)" Constructeur  PanelCourbe::PanelCourbe()" );
@@ -247,24 +280,6 @@ void PanelCourbe::init_panel()
     add( pFiltreVal );
     
     
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-PanelCourbe::~PanelCourbe()
-{
-    // Effacement des unites
-    int nb = unites.size();
-    if (nb != 0)
-    {
-        for( int i=0; i<nb; i++ )
-        {
-            sup(unites[i].pText);
-            delete unites[i].pText;
-            //unites[i] = 0;
-        }
-        unites.clear();
-    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1017,15 +1032,19 @@ void PanelCourbe::build_unites_text()
 
         if ( idx == unites.size() )         { 
             u.pText = new PanelText((char*)s.c_str(),PanelText::NORMAL_FONT); 
+            if ( bNuit)					u.pText->setColor( COLOR32(255,0,0,255) );
+            else						u.pText->setColor( COLOR32(255,255,255,255) );
             u.x = x;
             u.y = y;
             unites.push_back( u ); 
 
             add( unites[idx].pText );
+            unites[idx].pText->razTabSize();
             unites[idx].pText->setTabSize(40);
         }
         else {
             unites[idx].pText->changeText( (char*)s.c_str(), true );
+            unites[idx].pText->razTabSize();
             unites[idx].pText->setTabSize(40);
         }
         unites[idx].pText->setPos(25, y-8);
@@ -1201,7 +1220,6 @@ void PanelCourbe::updatePos()
     else                            pAffFFTY->setColor( (unsigned long)0x808080ff );
     //--------------------------------------------------------------    
     filtre = (float)nb / dVal;
-    //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
     
     if ( filtre_old != filtre )
     {
@@ -1209,10 +1227,15 @@ void PanelCourbe::updatePos()
         pAffFiltre->changeText( s, true );
 
         VarManager::getInstance().set( "filtre", filtre );
-        //logf( (char*)"PanelCourbe::updatePos() filtre %0.2f", filtre );
     }
     //--------------------------------------------------------------    
-    //logf( (char*)"filtre %0.2f nb %d  dVal %0.2f)", filtre, nb, dVal );
+    err = dErr;
+    if ( err != err_old )
+    {
+	    err_old = err;
+	    update_err();
+    }
+    //--------------------------------------------------------------    
 
     bDisplayPt_old = bDisplayPt;
 
@@ -1506,6 +1529,27 @@ void PanelCourbe::sinusoide_fft3(CArray& x, float* t)
     {
         t[nb-1-i] = real(x[i]);
     }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::setColor(long l)
+{
+	PanelWindow::setColor(l);
+	
+    VarManager& var = VarManager::getInstance();
+
+	if ( bNuit )
+	{
+		if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xff0000ff );
+		else                            pAffPt->setColor( (unsigned long)0x800000ff );
+		
+	}
+	else
+	{
+		if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
+		else                            pAffPt->setColor( (unsigned long)0x808080ff );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

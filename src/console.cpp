@@ -17,7 +17,7 @@ string tHelp[] =
 "      \t: ('p' arduino)",
 "    c \t: Efface la console",
 "    I \t: La monture attend les coordonnees de reference",
-"        via Stellarium Ctrl+1",
+"      \t  via Stellarium Ctrl+1",
 "    B \t: Change la couleur du fond",
 "    C \t: Spirale de recherche autour de la position actuelle",
 "",

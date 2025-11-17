@@ -18,6 +18,11 @@ class PanelStdOut : public PanelWindow
 
 protected:
     PanelScrollText*                pScroll;
+    vector<int>						tTabOld;
+    vector<int>						tTabNew;
+	bool							bChangeTab;// = false;
+
+    
 
 public:
     ~PanelStdOut();
@@ -28,6 +33,9 @@ virtual     void                    updatePos();
     
     void                            setColor(unsigned long);
     void                            affiche(char*);
+    void                            change_tab_size();
+    void							add_tab_size(int);
+    void                            restaure_tab_size();
 };
 
 

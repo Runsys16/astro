@@ -41,6 +41,7 @@ PanelConsoleSerial::PanelConsoleSerial()
 	pc->setPrompt( "No connect> " );
 
     pc->setCallBackCmd( cb );
+    pc->razTabSize();
     pc->setTabSize( 60 );
     
     pc->setBackground((char*)"images/background.tga");

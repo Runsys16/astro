@@ -96,7 +96,8 @@ private:
     int                 ym_svg;
     
     int                 xStartAxe = 70.0;
-    double              err = 2.0;
+    double              err 	= 2.0;
+    double              err_old = 2.0;
 
     PanelText*          pXMax;
     PanelText*          pXMin;
@@ -158,13 +159,13 @@ private:
 public :
 static bool             bDebug;
 
-
+    ~PanelCourbe();
     PanelCourbe();
+
     PanelTextOmbre*     init_text_ombre( int, int, char* );
     PanelText*          init_text( int, int, char* );
     PanelCheckBox*      init_check_box( int, int );
     void                init_panel();
-    ~PanelCourbe();
     
     void                init_var();
     void                create_guidage(char*);
@@ -211,9 +212,9 @@ virtual void            releaseMiddle( int, int);
     void                ifft3( CArray& );
     void                build_fft3();
     void                sinusoide_fft3(CArray&, float*);
+    void         		setColor(long );
 
     
-inline     void         setColor(long l)            { PanelWindow::setColor(l); }
 inline     float        get_offset_x()              { return offset_x; }   
 inline     float        get_offset_y()              { return offset_y; }   
 inline     float        get_courbe1()               { return courbe1; }   
@@ -244,7 +245,7 @@ inline     void         set_xCam(int n)                 { xCam = n; }
 inline     void         set_yCam(int n)                 { yCam = n; }   
 inline     void         set_dxCam(int n)                { dxCam = n; }   
 inline     void         set_dyCam(int n)                { dyCam = n; }   
-inline     void         set_err(float f)                { err = f; }   
+inline     void         set_err(double f)               { err = f; }   
 
 };
 //--------------------------------------------------------------------------------------------------------------------

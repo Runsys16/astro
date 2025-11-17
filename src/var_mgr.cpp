@@ -166,12 +166,13 @@ void VarManager::charge()
         
         fichier >> output;
         string key = string(output);
-        cout<<" "<<key;// << endl;;
+        //cout<<" "<<key;// << endl;;
         
         fichier >> output;
         fichier >> output;
         string val = string(output);
-        cout<<" = "<< val << endl;;
+        //cout<<" = "<< val << endl;;
+        logf_thread( (char*)"%s\t = %s", key.c_str(), val.c_str() );
         
         if ( type.find("float") != string::npos )
         {
@@ -190,10 +191,19 @@ void VarManager::charge()
         {
             int deb = val.find("\"");
             int fin = val.find("\"", deb+1 );
-            cout << val <<"deb :"<< deb <<" fin :"<< fin  << endl;
+
+            //cout << val <<"deb :"<< deb <<" fin :"<< fin  << endl;
+
+
             string S = val.substr(deb+1, fin-1);
             set( key, S );
-            cout << key <<" : "<< S << endl;
+
+            //cout << key <<" : "<< S << endl;
+
+			//bDesactiveLog = false;
+			logf( (char*)"%s=\"%s\"  deb=%d, fin=%d", key.c_str(), val.c_str(), deb, fin );
+			//bDesactiveLog = true;
+			
         }
         
     }

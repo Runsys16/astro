@@ -1,5 +1,5 @@
-#ifndef SERVEUR_MGR_H
-#define SERVEUR_MGR_H  1
+#ifndef LX200_MGR_H
+#define LX200_MGR_H  1
 
 
 //#include "camera.h"
@@ -29,7 +29,6 @@
 
 #include "main.h"
 #include "serial.h"
-#include "serveur_mgr.h"
 
 using namespace std;
 
@@ -40,50 +39,34 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-struct stellarium
-{
-    long long   tz;
-    int         ra;
-    int         dc;
-};
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-SINGLETON_BEGIN( Serveur_mgr )
+SINGLETON_BEGIN( LX200 )
 
 protected:
     std::thread                 th_1;
-    std::thread                 th_2;
 
     std::thread                 connect_1;
 
-    int                         sock_stellarium;
     int                         sock_ref;
     
     int                         sock_1;
-    int                         sock_2;
 
     bool                        listen_1;
-    bool                        listen_2;
     bool                        traite_1;
-    bool                        traite_2;
     
-    string						sIP_init;
-    string						sIP_depl;
+    string						sIP_lx200;
 
 public:
-    Serveur_mgr();
+							    LX200();
     
     float                       com2rad( int);
     void                        decode(struct stellarium& ss, unsigned char* buffer);
 
-    void                        traite_connexion_deplacement();
-    void                        thread_listen_deplacement();
-    void                        start_deplacement();
-
-    void                        traite_connexion_init();
-    void                        thread_listen_init();
-    void                        start_init();
+    void                        traite_connexion_lx200();
+    void                        thread_listen_lx200();
+    void                        start_lx200();
    
     void                        write_stellarium( char* s);
     void                        write_stellarium( int, char* s, int);
@@ -94,10 +77,8 @@ public:
 
     void                        print_list();
 
-inline bool                     is_running_1()                          { return sock_1 != -1; }
-inline bool                     is_running_2()                          { return sock_2 != -1; }
+inline bool                     is_connect()                          { return sock_1 != -1; }
     
-inline bool                     isConnect()                             { return sock_stellarium!=-1; }
     
     
 SINGLETON_END()

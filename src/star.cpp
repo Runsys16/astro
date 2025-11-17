@@ -98,7 +98,10 @@ void Star::init(int xx, int yy)
     dx_screen   = 0.0;
     dy_screen   = 0.0;
     
-    modeMag		= 0;
+    modeMag		= 0.0;
+    dCoefA		= 2196;
+    dCoefB		= 33.8;
+    dCoefC		= 1.46;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -232,7 +235,7 @@ void Star::tex2screen( int& x, int& y )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Star::computeMag()
+void Star::calculMag()
 {
 	//log ( (char*)"Star::computeMag()" );
     double x0=2.77, y0=17995.92;
@@ -245,24 +248,33 @@ void Star::computeMag()
 	if ( modeMag == 0 )
 	{
 		// pleiades
-		magnitude = (A * log( ponderation +1500 )) + B +0.3;
+		magnitude = (A * log( ponderation +1500 )) + B;
 	}
 	else
 	{
 		// NGC2392
-		magnitude = (A * log( ponderation +200 )) + B + 7.4;
+		magnitude = (A * dCoefC * log( ponderation + dCoefA )) + dCoefB ;
 	}
-	//modeMag = 1;
 	
     double mag = -(log( ponderation ) / log(2.0)) + 17.0;
-    //magnitude = mag;
 
+	/*
     if ( !bSuivi )
-        //snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
     else
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f", magnitude );
-    
+	*/
+    snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
+    pInfo->changeText( p_sInfo );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::computeMag()
+{
+
+	calculMag();
+	
     //snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f (%0.2f, %0.2f)", magnitude, pos.x, pos.y );
     //snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
     //logf( "Star::computeMag() '%s' m = %0.2f ponderation = %0.2f", p_sInfo, mag, ponderation );
@@ -274,16 +286,16 @@ void Star::computeMag()
         
         struct dms DMS;
         deg2dms( de, DMS );
-        snprintf( sDEC, sizeof(sDEC)-1, "DC=%02dd %02d\' %0.2f\"", (int)DMS.d, (int)DMS.m, DMS.s );
+        snprintf( sDEC, sizeof(sDEC)-1, "DC=%02d° %02d\' %0.2f\"", (int)DMS.d, (int)DMS.m, DMS.s );
 
         struct hms HMS;
         deg2hms( ad, HMS );
         snprintf( sRA,  sizeof(sRA)-1, "AD=%02dh %02d\' %0.2f\"", (int)HMS.h, (int)HMS.m, HMS.s );
 
         snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f %s %s", magnitude, (char*)sRA, (char*)sDEC );
+	    pInfo->changeText( p_sInfo );
     }
 
-    pInfo->changeText( p_sInfo );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -292,6 +304,7 @@ float Star::computeRayon()
 {
     //double r = ( 30.0 - 1.5*(magnitude) ) ;
     double r = 17.5 - 0.675*(magnitude);
+    //double r = 27.5 - 0.275*(magnitude);
 
     return r;
 }
@@ -316,20 +329,7 @@ float Star::getLumLimit(int offset, float limit )
         r = ptr[offset+0]; 
         g = ptr[offset+1]; 
         b = ptr[offset+2]; 
-        /*
-        if ( bInverseCouleur )
-        {
-            r = 255.0-ptr[offset+0]; 
-            g = 255.0-ptr[offset+1]; 
-            b = 255.0-ptr[offset+2]; 
-        }
-        else
-        {
-            r = ptr[offset+0]; 
-            g = ptr[offset+1]; 
-            b = ptr[offset+2]; 
-        }
-        */
+
     }
     catch ( const std::exception& e )
     {
@@ -1033,7 +1033,7 @@ void Star::affiche_position( bool b )
         
         struct dms DMS;
         deg2dms( de, DMS );
-        snprintf( sDEC, sizeof(sDEC)-1, "DE=%02dd %02d\' %0.2f\"", (int)DMS.d, (int)DMS.m, DMS.s );
+        snprintf( sDEC, sizeof(sDEC)-1, "DE=%02d° %02d\' %0.2f\"", (int)DMS.d, (int)DMS.m, DMS.s );
 
         struct hms HMS;
         deg2hms( ad, HMS );

@@ -29,7 +29,9 @@ public:
     void                            efface();
     void                            add( StarCatalog* );
     void                            sauve();
-    void                            charge();
+    void                            sauve(string);
+    bool                            charge( string );
+    bool                            charge();
     void                            list();
     void							affiche_position();
     void							affiche_magnitude();

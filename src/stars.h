@@ -56,10 +56,18 @@ public:
 
 	void					affiche_position();
 
+	void					setA(double d);
+	void					setB(double d);
+	void					setC(double d);
+
 inline bool					getVisible()				{ return bVisible; }
 inline Star*				get(int i)					{ return v_tStars[i]; }
 inline int					size()						{ return v_tStars.size(); }
 inline PanelText*			getPanelNbStars()			{ return pNbStars; }
+
+inline double*				getvA()						{ return &dCoefA; }
+inline double*				getvB()						{ return &dCoefB; }
+inline double*				getvC()						{ return &dCoefC; }
 
 private:
     vector<Star*>           v_tStars;
@@ -73,6 +81,11 @@ private:
     float                   ech;
 	bool					bVisible;
 	bool					bAffPosition;
+
+    int						uModeMag;
+    double					dCoefA;
+    double					dCoefB;
+    double					dCoefC;
 };
 
 

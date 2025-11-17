@@ -4,7 +4,7 @@
 #include "camera.h"
 #include <dirent.h>
 #include <algorithm>
-
+//----------------------------------------------------------------------------------------------
 #include "MathlibD.h"
 #include <WindowsManager.h>
 #include "main.h"
@@ -14,18 +14,41 @@
 #include "stars.h"
 #include "star_compare.h"
 #include "timer.h"
-
-
-
+#include "panel_graph.h"
+//----------------------------------------------------------------------------------------------
 class Capture;
 class Captures;
 class Fits;
-
+//----------------------------------------------------------------------------------------------
 using namespace std;
-
+//----------------------------------------------------------------------------------------------
+enum pin_mode 
+{
+    HAUT,
+    DROITE,
+    BAS,
+    GAUCHE
+};
+//----------------------------------------------------------------------------------------------
+struct coord_line
+{
+    vec2		p1;
+    vec2		p2;
+    pin_mode	pin;
+    PanelText*	pTextCoord;
+    bool		bContinue;
+    bool		bBreak;
+};
+//----------------------------------------------------------------------------------------------
 class PanelCapture : public PanelSimple
 {
+
 protected:
+	vec2				vHG;
+	vec2				vHD;
+	vec2				vBG;
+	vec2				vBD;
+
 	vec2				vTelescopeScreen;
 	vec2				vTelescopeTex;
 	vec2				vTelescopeJ2000;
@@ -47,11 +70,13 @@ protected:
     
     rb_t *              pReadBgr;
     
+    Capture*            pCapture;
+
     StarCompare			starCompare;
     Stars               stars;
     Catalog*            pVizier;
-    Capture*            pCapture;
     
+    PanelGraph*			pGraph;
     PanelSimple*		pTelescope;
     PanelSimple*		pFondCoord;
     PanelText*			pColor;
@@ -61,9 +86,15 @@ protected:
     PanelText*			pJ2000_alpha;
     PanelText*			pJ2000_delta;
     
+    /*
     vector<vec2>		p1;
     vector<vec2>		p2;
     vector<PanelText*>	pTextEch;
+    */
+    
+    vector<coord_line>	tAD;
+    vector<coord_line>	tDE;
+    
     vec2				vAD;
     vec2				vDE;
     double				dAngleAD;
@@ -72,6 +103,9 @@ protected:
     
     double				dDebug5s;
     int					nbNonAff;
+    bool				bFits;
+    int					maxAD;
+    int					maxDC;
 
 public:
     PanelCapture( rb_t *, Capture* );
@@ -122,13 +156,20 @@ public:
     void                setCentX(double f);
     void                setCentY(double f);
 
-    void                screen2tex( vec2& );
-    void                screen2panel( vec2& );
-    void                tex2screen( vec2& );
-    void                tex2panel( vec2& );
-    void                panel2tex( vec2& );
-    void                panel2screen( vec2& );
+    void                screen_2_tex( vec2& );
+    void                screen_2_panel( vec2& );
+    void                tex_2_screen( vec2& );
+    void                tex_2_panel( vec2& );
+    void                panel_2_tex( vec2& );
+    void                panel_2_screen( vec2& );
+    void				parent_2_J2000( vec2& );
+	void				parent_2_str_ad_str_dc(vec2&, char*, char*, int );
+	char*				J2000_2_str_ad(vec2&, char*, int );
+	char*				J2000_2_str_dc(vec2&, char*, int );
+	void				J2000_2_str_ad_str_dc(vec2&, char*, char*, int );
+    void				J2000_2_parent( vec2& );
 
+	void				print_echelle_coordonnees();
     void                printObjet();
     void				findGaiaDR3();
     void				findGaiaDR3_end();
@@ -143,28 +184,21 @@ public:
 	void				change_dc( double );
 
 	void				setEchelleVisible(bool);
-	void				computeIntersectionHau(vec2&, vec2, vec2);
-	void				computeIntersectionBas(vec2&, vec2, vec2);
-	void				computeIntersectionGau(vec2&, vec2, vec2);
-	void				computeEchAD_00(int, vec2);
-	void				computeEchDE_00(int, vec2);
-	void				computeRepere_00();
-	void				computeRepereAxe_01(int);
-	void				computeRepere_01();
-	void				computeRepere_02();
+	void				clear_AD_DE();
+	char*				pin_mode_2_str( pin_mode );
+	void				compute_points( pin_mode, struct coord_line&, double );
+	void				compute_lines( bool, pin_mode, double, double );
+	void				computeRepere_03();
 	void				computeRepere();
-	void             	addP1P2(vec2 , vec2);
+	
+	double				compute_div(double);
+	void				compute_angle();
 
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
 inline double           getEchelle()                                    { return ech_user; }
 inline double           getCentX()                                      { return dx; }
 inline double           getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }
-//inline void             setIcone(bool b)                                { bIcone = b; }
-//inline bool             getIcone()                                      { return bIcone; }
-//inline void             setAffGrille(bool b)                           	{ bAffGrille = b; }
-//inline bool             getAffGrille()                           		{ return bAffGrille; }
-//inline bool             getInfoSouris()                                 { return bInfoSouris; }
 inline void             setVecteurAD(vec2 v)                            { vAD = v; }
 inline void             setVecteurDE(vec2 v)                            { vDE = v; }
 inline Catalog*			getCatalog()									{ return pVizier; }

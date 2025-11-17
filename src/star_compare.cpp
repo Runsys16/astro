@@ -156,12 +156,12 @@ void StarCompare::compareStar( bool bSave )
 		float l = 0.0;
 		if ( idx != -1 )	   			l = getDst(v, idx);
 
-   		if ( idx != -1 )
+   		if ( idx != -1 && l<0.5)
    		{
-	   		logf( (char*)"Etoile[%02d]  (%04.2f, %04.2f) = %04.2f   \tidx = %02d   \t%.0f %.2f~%.2f  ", 
-	   				i, (float)v.x, (float)v.y, l, idx, (float)pStars->get(i)->getPonderation(), (float)pStars->get(i)->getMagnitude(), (float)pVizier->get(idx)->getMag() );
+	   		logf( (char*)"Etoile[%02d]  (%04.2f, %04.2f) = %04.2f   \tidx = %02d/%02d   \t%.0f %.2f~%.2f  ", 
+	   				i, (float)v.x, (float)v.y, l, i, idx, (float)pStars->get(i)->getPonderation(), (float)pStars->get(i)->getMagnitude(), (float)pVizier->get(idx)->getMag() );
 	   		
-	   		if ( bSave )
+	   		if ( bSave  )
 	   		{
 		   		//--------------------------
 		   		// Ecriture dans le fichier

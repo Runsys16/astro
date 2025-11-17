@@ -26,6 +26,7 @@ PanelCheckBox *     pButtonDeplac;
 PanelSpinEditText*  pCercleAsserv;
 PanelSpinEditText*  pCercleErr;
 PanelSpinEditText*  pCercleSuivi1;
+PanelSpinEditText*  pCercleTemps;
 
 PanelButtonAsservissement *       pFlecheHaut;
 PanelButtonAsservissement *       pFlecheBas;
@@ -73,9 +74,6 @@ void set_asservissement(void)
 
 
 
-    if (bCorrection)            pAsservi->setColor(0xFFFFFFFF);
-    else                        pAsservi->setColor(0X404040FF);
-   
     pButtonAsserv->setVal(bCorrection);
     
     logf( (char*)"set_asservissement() bCorrection = %s", bCorrection?(char*)"true":(char*)"false" );
@@ -536,31 +534,34 @@ void click_left_cercle_asserv( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 void release_left_cercle_asserv( int xm, int ym ) 
 {
-    logf((char*)"release_left_cercle_asserv( %d, %d)", xm, ym );
+    logf((char*)"release_left_cercle_asserv( %d, %d)  val = %0.2f", xm, ym, (float)fLimitCorrection0 );
     //logf((char*)"val = %lf",  fLimitCorrection0 );
     var.set( "fLimitCorrection0", fLimitCorrection0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void cb_motion(int,int);
 void click_left_cercle_err( int xm, int ym ) 
 {
     logf((char*)"click_left_cercle_err( %d, %d)", xm, ym );
     //pCercleAsserv->setPosAndSize( 200, -200, 180, 20 );
     xAsserv =     pCercleErr->getPosX();
     yAsserv =     pCercleErr->getPosY();
-    //pCercleErr->setPos( xAsserv, yAsserv-100-8 );
+    pCercleErr->setMotion( cb_motion );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void release_left_cercle_err( int xm, int ym ) 
 {
-    logf((char*)"release_left_cercle_err( %d, %d)", xm, ym );
-    //pCercleErr->setPos( xAsserv, yAsserv );
-	double* pErr = panelCourbe->get_perr();
-	logf( (char*)"err=%0.2f", *pErr );
-    var.set( "err", *pErr );
+	dErr = pCercleErr->get_val();
+	
+	panelCourbe->set_err( dErr );
+	panelCourbe->update_err();
+	
+    logf((char*)"release_left_cercle_err( %d, %d)  val = %0.2f", xm, ym, (float)dErr );
+    var.set( "err", (float)dErr );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -578,24 +579,41 @@ void click_left_cercle_suivi1( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 void release_left_cercle_suivi1( int xm, int ym ) 
 {
-    logf((char*)"release_left_cercle_suivi1( %d, %d)", xm, ym );
+    logf((char*)"release_left_cercle_suivi1( %d, %d)  val = %0.2f", xm, ym, (float)fDiamSuivi1 );
     var.set( "fDiamSuivi1", (float)fDiamSuivi1 );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void release_left_cercle_temps( int xm, int ym ) 
+{
+    logf((char*)"release_left_cercle_temps( %d, %d)  val = %0.2f", xm, ym, (float)fTimeCorrection );
+    var.set( "fTimeCorrection", (float)fTimeCorrection );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void cb_motion( int xm, int ym ) 
 {
-    //logf((char*)"cb_motion( %d, %d)", xm, ym );
+    logf((char*)"cb_motion( %d, %d)", xm, ym );
+    if ( panelCourbe == NULL )			return;
 	char s[20];
-    float err;
     
     
-    if ( panelCourbe )		err = panelCourbe->get_err();
-    snprintf( s, sizeof(s), "%0.2f", err );
+    if ( panelCourbe )		dErr = panelCourbe->get_err();
+    dErr = pCercleErr->get_val();			// callback sur deplacement de la souris
+
+    snprintf( s, sizeof(s), "%0.2f", (float)dErr );
     pCercleErr->changeText( s );
-	setPanelCourbeErr(err);
-	var.set( "err", (float)err );
+	setPanelCourbeErr(dErr);
+	var.set( "err", (float)dErr );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void change_perr( double* pDouble ) 
+{
+	pCercleErr->set_pVal( pDouble );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -629,34 +647,40 @@ void create_windows_button()
     
     pButtonPause    = create_window_check_box( "pause", 10 );		pButtonPause->setExtraString( string("Button Pause") );
 
-	int X = pos*18 + 325;
 
 	//--------------------------------------------------------
+	int X = ++pos*18 + 325;
     create_fleches( X, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pFlecheHaut, pFlecheBas);
-    create_fleches( X+50, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
+	//--------------------------------------------------------
+	//			pCercleErr
 	//--------------------------------------------------------
 	pCercleErr = new PanelSpinEditText();
-    pCercleErr->setPosAndSize( X+12, 2, 40, 20 );
-    pCercleErr->setClickLeft( click_left_cercle_err );
-    pCercleErr->setReleaseLeft( release_left_cercle_err );
+	X += 12;    pCercleErr->setPosAndSize( X, 2, 40, 20 );
+	
 
     sprintf( s,"%0.2f", var.getf("err")  );
     pCercleErr->changeText( s );
 
     pCercleErr->set( 0.0, 5.0, 2, 4 );
     pCercleErr->set_ndecimal( 2 );
-    //pCercleErr->set_delta( 0, 0 );
     pCercleErr->set_val( 0.0 );					// initialisation à zero l'objet panelCourbe n'est pas encore créé
-    //pCercleErr->set_pVal( NULL );
     
-    pCercleErr->setMotion( cb_motion );			// callback sur deplacement de la souris
+    pCercleErr->setClickLeft( click_left_cercle_err );
+    pCercleErr->setReleaseLeft( release_left_cercle_err );
+    pCercleErr->setMotion( (motion_cb_t) cb_motion );			// callback sur deplacement de la souris
 
     panelStatus->add( pCercleErr );
     pCercleErr->setExtraString( string("SpinEdit Err") );
 	//--------------------------------------------------------
+	//     pCercleAsserv
+	//--------------------------------------------------------
+    X += 35;
+    create_fleches( X, (char*)"images/fleche_haut.tga", (char*)"images/fleche_bas.tga", pUrgentUp, pUrgentDown);
+
 	pCercleAsserv = new PanelSpinEditText();
-    pCercleAsserv->setPosAndSize( X+62, 2, 40, 20 );
-    pCercleAsserv->setClickLeft( click_left_cercle_asserv );
+	X += 12;    pCercleAsserv->setPosAndSize( X, 2, 40, 20 );
+	
+    //pCercleAsserv->setClickLeft( click_left_cercle_asserv );
     pCercleAsserv->setReleaseLeft( release_left_cercle_asserv );
 
     sprintf( s,"%0.0f", fLimitCorrection0 );
@@ -672,10 +696,12 @@ void create_windows_button()
     panelStatus->add( pCercleAsserv );
     pCercleAsserv->setExtraString( string("SpinEdit Asservi") );
 	//--------------------------------------------------------
+	//		pCercleSuivi1
 	//--------------------------------------------------------
 	pCercleSuivi1 = new PanelSpinEditText();
-    pCercleSuivi1->setPosAndSize( X+62+30, 2, 40, 20 );
-    pCercleSuivi1->setClickLeft( click_left_cercle_suivi1 );
+	X += 35;    pCercleSuivi1->setPosAndSize( X, 2, 40, 20 );
+	
+    //pCercleSuivi1->setClickLeft( click_left_cercle_suivi1 );
     pCercleSuivi1->setReleaseLeft( release_left_cercle_suivi1 );
 
     sprintf( s,"%0.0f", fDiamSuivi1 );
@@ -690,6 +716,29 @@ void create_windows_button()
 
     panelStatus->add( pCercleSuivi1 );
     pCercleSuivi1->setExtraString( string("SpinEdit fDiamSuivi1") );
+	//--------------------------------------------------------
+	//		pCercleTemps
+	//--------------------------------------------------------
+	pCercleTemps = new PanelSpinEditText();
+	X += 35;    pCercleTemps->setPosAndSize( X, 2, 40, 20 );
+	
+    //pCercleTemps->setClickLeft( click_left_cercle_suivi1 );
+    pCercleTemps->setReleaseLeft( release_left_cercle_temps );
+
+    sprintf( s,"%0.2f", (float)(fTimeCorrection)  );
+    pCercleTemps->changeText( s );
+
+    //  Valeur de l'edition dimension de la
+    pCercleTemps->set( 0.0, 20.0, 4, 4 );
+    pCercleTemps->set_ndecimal( 2 );
+
+    pCercleTemps->set_val( fTimeCorrection );
+    pCercleTemps->set_pVal( &fTimeCorrection );
+
+    panelStatus->add( pCercleTemps );
+    pCercleTemps->setExtraString( string("SpinEdit fTimeCorrection") );
+	//--------------------------------------------------------
+    posStatusX = X+35;
 	//--------------------------------------------------------
 	//#define POLICE "usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf",
 	//#define POLICE "usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf",
@@ -729,19 +778,6 @@ void idleStatus()
     // Gestion des connexions logiciel /dev/:
     // arduino et stellarium
     //-----------------------------------------------------------------------
-    if ( Serveur_mgr::getInstance().isConnect() )
-    {
-       bStellarium = true;
-       //pStellarium->changeText( (char*)"Stellarium" );
-       pStellarium->setColor(0xFFFFFFFF);
-    }
-    else
-    {
-       bStellarium = false;
-       //pStellarium->changeText( (char*)"----" );
-       pStellarium->setColor(0x404040FF);
-    }
-    
     if ( pas_sideral != oldPas )
     {
         char str[255];
@@ -790,7 +826,6 @@ void idleStatus()
     }    if ( bSuivi )           pSuivi->setColor(COLOR_WHITE);
     else                    pSuivi->setColor(COLOR_GREY);
 
-    */
 	if (bMouseDeplace)              				pDeplacement->setColor(COLOR_WHITE);
     else                            				pDeplacement->setColor(COLOR_GREY);
 
@@ -802,6 +837,10 @@ void idleStatus()
 
     if ( bSuivi )                   				pSuivi->setColor(COLOR_WHITE);
     else                            				pSuivi->setColor(COLOR_GREY);
+    */ 
+    
+    if ( !bNuit )		status_nuit( COLOR_WHITE );
+    else				status_nuit( COLOR32(255, 0, 0, 255) );
     
     if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
 
@@ -830,15 +869,40 @@ void status_nuit(unsigned long color )
 {
 	pCercleAsserv->setColor( color );
 	pCercleErr->setColor( color );
+	pCercleTemps->setColor( color );
+	pCercleSuivi1->setColor( color );
 
 	pFlecheHaut->setColor( color );
 	pFlecheBas->setColor( color );
 
 	pUrgentUp->setColor( color );
 	pUrgentDown->setColor( color );
+	
+	unsigned long 		color_light = COLOR_GREY;
+	
+	if ( bNuit )		color_light = COLOR32(128, 0, 0, 255);
 
+
+    if (bCorrection)								pAsservi->setColor(color);
+    else											pAsservi->setColor(color_light);
+
+	if (bMouseDeplace)              				pDeplacement->setColor(color);
+    else                            				pDeplacement->setColor(color_light);
+
+    if (bCorrection)                				pAsservi->setColor(color);
+    else                            				pAsservi->setColor(color_light);
+
+    if ( bSuivi )                   				pSuivi->setColor(color);
+    else                            				pSuivi->setColor(color_light);
+    
+    if ( Serial::getInstance().isConnect() )        pArduino->setColor(color);
+    else                                            pArduino->setColor(color_light);
+
+    if ( Serveur_mgr::getInstance().isConnect() )	pStellarium->setColor(color);
+    else                            				pStellarium->setColor(color_light);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+
 

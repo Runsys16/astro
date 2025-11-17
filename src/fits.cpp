@@ -73,7 +73,7 @@ Fits::Fits(string filename, PanelCapture* p)
     wm.add( pPanelCorrectionFits );
 
     pPanelFits = new PanelFits();
-    pPanelFits->setPosAndSize( 10, 10, 695, 250 );
+    pPanelFits->setPosAndSize( 10, 10, 760, 250 );
     pPanelFits->setVisible( false );
 
 	//------------------------------------------------------------------------
@@ -153,7 +153,7 @@ void Fits::chargeHDU(int n)
             v = v + buffer[i*80+j];
         }
 
-        logf( (char*)"Fits::chargeHDU()         '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
+        //logf( (char*)"Fits::chargeHDU()         '%s' : '%s'", (char*)k.c_str() ,(char*)v.c_str() );
         
         
              if ( k.find("BITPIX") == 0 )				readBITPIX(v);
@@ -367,6 +367,8 @@ void Fits::sauveMatrice()
     r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 
+	/*
+
 	//-----------------------------------------------------------------
 	// Grille de coordonnee
 	
@@ -439,17 +441,17 @@ void Fits::sauveMatrice()
 
 	}
 
-	/*
+	
 	//-----------------------------------------------------------------
 	p1N = vec2( 00, 00 );			p2N = vec2( 00, -50 );
 	pp1N = mMat * p1N;				pp2N = mMat * p2N;
 	pp1N += c;						pp2N += c;
-	*/
+	
 
 	//-----------------------------------------------------------------
 
 
-	/*
+	
 	vv = v1 = vec2( 00, 00 );
 	ww = v2 = vec2( 50, 00 );
 	pPanelCapture->addP1P2( v1+c, v2+c );

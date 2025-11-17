@@ -1,4 +1,4 @@
-#include "serveur_mgr.h"
+#include "lx200.h"
 #include "camera_mgr.h"
 #include "captures.h"
 #include "var_mgr.h"
@@ -11,31 +11,26 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-Serveur_mgr::Serveur_mgr()
+LX200::LX200()
 {
-    logf((char*)"----------- Constructeur Serveur_mgr() -------------" );
+    logf((char*)"----------- Constructeur LX200() -------------" );
     listen_1 = true;
-    listen_2 = true;
     traite_1 = true;
-    traite_2 = true;
 
     sock_ref		= -1;
-    sock_stellarium	= -1;
 
 	#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
 
-    if ( !var.existe("IP_INIT"))		var.set("IP_INIT", "127.0.0.1" );
-    sIP_init = *var.gets("IP_INIT" );
+    if ( !var.existe("IP_LX200"))		var.set("IP_LX200", "127.0.0.1" );
+    sIP_lx200 = *var.gets("IP_LX200" );
 
-    if ( !var.existe("IP_DEPL"))		var.set("IP_DEPL", "127.0.0.1" );
-    sIP_depl = *var.gets("IP_DEPL" );
 	#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float Serveur_mgr::com2rad( int ra_int )
+float LX200::com2rad( int ra_int )
 {
     float ad_rad = ra_int;
     ad_rad = ((ad_rad-0.5) * M_PI )/  (float)(2147483648.0) ;
@@ -44,7 +39,7 @@ float Serveur_mgr::com2rad( int ra_int )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::decode( struct stellarium& ss, unsigned char* buffer )
+void LX200::decode( struct stellarium& ss, unsigned char* buffer )
 {
     long long tz = 0;
     tz |= (unsigned long)buffer[4];
@@ -75,15 +70,15 @@ void Serveur_mgr::decode( struct stellarium& ss, unsigned char* buffer )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::traite_connexion_init()
+void LX200::traite_connexion_lx200()
 {
     unsigned char buffer[255];
     int n;
 
-    while( traite_2 )
+    while( traite_1 )
     {
         n = read(sock_ref, buffer, 255);
-        //logf_thread( (char*)"Serveur_mgr::traite_connexion_init()" );
+        //logf_thread( (char*)"LX200::traite_connexion_init()" );
         log_tab(true);
 
         if (n <= 0)
@@ -95,6 +90,253 @@ void Serveur_mgr::traite_connexion_init()
 
 		buffer[n] = 0;
         //logf_thread( (char*)"Init nb octet lu : %d   \"%s\"", n, (char*)buffer );
+
+		if ( buffer[0] == '#' )			
+		{ 
+			if ( buffer[0] == '#' && buffer[1] == '#' )
+			{
+				write_stellarium( sock_ref, (char*)"##", 2 );	
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( buffer[0] == '#' && buffer[1] == 0x6 )
+			{
+				write_stellarium( sock_ref, (char*)"P", 1 );	
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GVP#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Get Telescope NAME", buffer );
+				write_stellarium( sock_ref, (char*)"EQ5_DRIVE#", 10, true );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GVN#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Get Firmware Version", buffer );
+				write_stellarium( sock_ref, (char*)"00.7#", 5, true );	
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GVD#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Get Firmware Date", buffer );
+				write_stellarium( sock_ref, (char*)"NOV 17 2025#", 12, true );	
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GVT#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Get Firmware Heure", buffer );
+				write_stellarium( sock_ref, (char*)"15:03:25#", 9, true );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:Gg#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Get Longiture", buffer );
+				write_stellarium( sock_ref, (char*)"s000*00#", 8, true );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:Gt#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Get Lattitude", buffer );
+				write_stellarium( sock_ref, (char*)"s45*53#", 7, true );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GC#" ) == 0 )
+			{
+				char 			sTime[30];
+				struct timeval	tv;
+				struct tm*		tm;
+
+				gettimeofday( &tv, NULL );
+				tm=localtime(&tv.tv_sec);
+				
+				snprintf( (char*)sTime, sizeof(sTime),"%02d/%02d/%02d#", tm->tm_mon+1, tm->tm_mday, tm->tm_year-100 );
+
+				logf_thread( (char*)"%s Get Local Date  : %s", buffer, sTime );
+				write_stellarium( sock_ref, (char*)sTime, strlen(sTime), true );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GL#" ) == 0 )
+			{
+				char 			sTime[20];
+				struct timeval	tv;
+				struct tm*		tm;
+
+				gettimeofday( &tv, NULL );
+				tm=localtime(&tv.tv_sec);
+				
+				snprintf( (char*)sTime, sizeof(sTime),"%02d:%02d:%02d#", tm->tm_hour, tm->tm_min, tm->tm_sec );
+
+				logf_thread( (char*)"%s Get Local Time   %s", buffer, sTime );
+				write_stellarium( sock_ref, sTime, strlen(sTime), true );	
+
+				log_tab(false);
+				continue;
+			}
+			///------------------------------------------------------
+			else
+			if ( strcmp( (char*)buffer, "#:GD#" ) == 0 )
+			{
+				//logf_thread( (char*)"%s Get Telescope DEC", buffer );
+				struct dms	DMS;
+				char		s[80];
+				char		sign[2];
+				
+				deg2dms( d_deg_dc, DMS );
+				if ( DMS.d >= 0 )		sign[0] = '+';
+				else					sign[0] = '-';
+				sign[1] = 0;
+				
+				DMS.d = abs(DMS.d);
+				snprintf( s, sizeof(s), "%s%02d*%02d\'%02d#", sign, (int)DMS.d, (int)DMS.m, (int)DMS.s );
+
+
+				write_stellarium( sock_ref, s, strlen(s), false );	
+				log_tab(false);
+				continue;
+			}
+			///------------------------------------------------------
+			else
+			if ( strcmp( (char*)buffer, "#:GR#" ) == 0 )
+			{
+				//logf_thread( (char*)"%s Get Telescope RA", buffer );
+
+				struct hms	HMS;
+				char		s[80];
+				
+				deg2hms( d_deg_ad, HMS );
+				snprintf( s, sizeof(s), "%02d:%02d:%02d#", (int)HMS.h, (int)HMS.m, (int)HMS.s );
+
+				write_stellarium( sock_ref, (char*)s, strlen(s), false );	
+				log_tab(false);
+				continue;
+			}
+			///------------------------------------------------------
+			else
+			if ( strcmp( (char*)buffer, "#:D#" ) == 0 )
+			{
+				//logf_thread( (char*)"Distance Bars" );
+				write_stellarium( sock_ref, (char*)"s#", 2, false );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GW#" ) == 0 )
+			{
+				//logf_thread( (char*)"%s Get Scope Alignment Status", buffer );
+				write_stellarium( sock_ref, (char*)"PN3#", 4, false );	
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:GG#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Get UTC offset time", buffer );
+				write_stellarium( sock_ref, (char*)"-01#", 4, true );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:Q#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Abort", buffer );
+				log_tab(false);
+				continue;
+			}
+			else
+			if (	buffer[0] == '#' &&
+					buffer[1] == ':' &&
+					buffer[2] == 'S' &&
+					buffer[3] == 'r' )
+			{
+				logf_thread( (char*)"%s Set target object RA", buffer );
+				write_stellarium( sock_ref, (char*)"1", 1, true );	
+				
+				struct hms	 HMS;
+				HMS.h = (buffer[4]-'0') * 10 + (buffer[5]-'0');
+				HMS.m = (buffer[7]-'0') * 10 + (buffer[8]-'0');
+				HMS.s = (buffer[10]-'0') * 10 + (buffer[11]-'0');
+				
+				double ra = hms2rad(HMS);
+				change_ad_status( RAD2DEG(ra) );
+				
+				log_tab(false);
+				continue;
+			}
+			else
+			if (	buffer[0] == '#' &&
+					buffer[1] == ':' &&
+					buffer[2] == 'S' &&
+					buffer[3] == 'd' )
+			{
+				logf_thread( (char*)"%s Set target object DEC", buffer );
+				write_stellarium( sock_ref, (char*)"1", 1, true );	
+				
+				struct dms	 DMS;
+				int sign;
+
+				if ( buffer[4] == '+' )		sign = 1;
+				else						sign = -1;
+				DMS.d = sign * (buffer[5]-'0') * 10 + (buffer[6]-'0');
+				DMS.m = (buffer[8]-'0') * 10 + (buffer[9]-'0');
+				DMS.s = (buffer[11]-'0') * 10 + (buffer[12]-'0');
+				
+				double dc = dms2rad(DMS);
+				change_dc_status( RAD2DEG(dc) );
+				
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:MS#" ) == 0 )
+			{
+				logf_thread( (char*)"%s Slew to Target Object", buffer );
+				write_stellarium( sock_ref, (char*)"0", 1, true );	
+				log_tab(false);
+				continue;
+			}
+			/*
+			else
+			if ( strcmp( (char*)buffer, "#:D#" ) == 0 )
+			{
+				write_stellarium( sock_ref, (char*)"s#", 2 );	
+				logf_thread( (char*)"Distnace Bars" );
+				log_tab(false);
+				continue;
+			}
+			else
+			if ( strcmp( (char*)buffer, "#:D#" ) == 0 )
+			{
+				write_stellarium( sock_ref, (char*)"s#", 2 );	
+				logf_thread( (char*)"Distnace Bars" );
+				log_tab(false);
+				continue;
+			}
+			*/
+			else
+			{
+				logf_thread( (char*)"--[WARNING] \"%s\" Commande inconnue", buffer );
+			}
+			
+			log_tab(false);
+			continue;
+		}
 
 		//-------------------------------------------------
 		// recuperation des infos
@@ -151,21 +393,21 @@ void Serveur_mgr::traite_connexion_init()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::thread_listen_init()
+void LX200::thread_listen_lx200()
 {
-    logf_thread( (char*)"Serveur_mgr::thread_listen_init()");
+    logf_thread( (char*)"LX200::thread_listen_lx200()");
 
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
 
 
-	if ((sock_2 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((sock_1 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
 
     int enable = 1;
-    if (setsockopt(sock_2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    if (setsockopt(sock_1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
         perror("setsockopt(SO_REUSEADDR) failed");
 		exit(EXIT_FAILURE);
@@ -174,11 +416,11 @@ void Serveur_mgr::thread_listen_init()
 	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
 	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
-	adresse.sin_port = htons(10002);
+	adresse.sin_port = htons(10003);
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
-	inet_aton( sIP_init.c_str(), &adresse.sin_addr ); 
+	inet_aton( sIP_lx200.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -186,25 +428,25 @@ void Serveur_mgr::thread_listen_init()
 #endif
 
 
-	if (bind(sock_2, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		logf_thread( (char*) "[ERREUR] bind (sock_2)");
-		sock_2 = -1;
+	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
+		logf_thread( (char*) "[ERREUR] bind (sock_1)");
+		sock_1 = -1;
 		//exit(EXIT_FAILURE);
 		return;
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
-	if (getsockname(sock_2, (struct sockaddr *) & adresse, & longueur) < 0) {
-		logf_thread( (char*) "[ERREUR] getsockname (sock_2)");
+	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
+		logf_thread( (char*) "[ERREUR] getsockname (sock_1)");
 		return;
 	}
 
 
     int option = 1;
-    if(setsockopt(sock_2,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
+    if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-		logf_thread( (char*) "[ERREUR] setsockopt (sock_2)");
-        close(sock_2);
+		logf_thread( (char*) "[ERREUR] setsockopt (sock_1)");
+        close(sock_1);
 		return;
 
     }
@@ -214,10 +456,10 @@ void Serveur_mgr::thread_listen_init()
 	logf_thread( (char*)"Init  Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf_thread( (char*)"---------------------------------------------------------------");
 
-	listen(sock_2, 5);
-	while (listen_2) {
+	listen(sock_1, 5);
+	while (listen_1) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_ref = accept(sock_2, (struct sockaddr *) & adresse, & longueur);
+		sock_ref = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
 
 		if (sock_ref < 0)			continue;
 		
@@ -226,165 +468,11 @@ void Serveur_mgr::thread_listen_init()
 
 		//sIP_init = string( some_addr );
 	
-		logf_thread( (char*)"Serveur_mgr::thread_listen_init() connexion SOCKET 2" );
-		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d sur %s", sock_1, sock_ref, some_addr, (int)adresse.sin_port, sIP_init.c_str() );
+		logf_thread( (char*)"LX200::thread_listen_lx200() connexion SOCKET 2" );
+		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d sur %s", sock_1, sock_ref, some_addr, (int)adresse.sin_port, sIP_lx200.c_str() );
 
-		traite_connexion_init();
+		traite_connexion_lx200();
 	}
-    logf_thread( (char*)"Fermeture de sock_2 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
-	close(sock_2);
-	sock_2 = -1;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::start_init()
-{
-    th_2 = std::thread(&Serveur_mgr::thread_listen_init, this);
-    th_2.detach();
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::traite_connexion_deplacement()
-{
-    unsigned char buffer[255];
-    int n;
-
-    while( traite_1 )
-    {
-        n = read(sock_stellarium,buffer,255);
-        logf_thread( (char*)"Serveur_mgr::traite_connexion_deplacement()" );
-        log_tab( true );
-
-        if (n <= 0)
-        {
-            logf_thread( (char*)"ERROR reading from socket (deplacement)");
-	        log_tab( false );
-            break;  
-        }
-
-		buffer[n] = 0;
-        logf_thread( (char*)"Deplacement nb octet lu : %d   \"%s\"", n, (char*)buffer );
-
-		if ( n == 2 )			{ log_tab(false); continue; }
-
-        struct stellarium ss;
-        decode( ss, buffer );
-
-        float ra = com2rad(ss.ra);
-        float dc = com2rad(ss.dc);
-
-
-        struct hms HMS;
-        rad2hms( ra, HMS );
-        logf_thread( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
-        
-        struct dms DMS;
-        rad2dms( dc, DMS );
-        logf_thread( (char*)"DC : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
-        
-        char cmd[255];
-        sprintf( cmd, "A%f;D%f", RAD2DEG(ra), RAD2DEG(dc) );
-        logf_thread( (char*)"Envoi arduino : %s", cmd );
-        Serial::getInstance().write_string(cmd);
-
-        log_tab( false );
-    }
-    
-    logf_thread( (char*)"Deconnexion du sock_deplacement %d", sock_stellarium);
-    close(sock_stellarium);
-
-    sock_stellarium = -1;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::thread_listen_deplacement()
-{
-    logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement()");
-    
-	struct sockaddr_in 	adresse;		memset(& adresse, 0, sizeof(struct sockaddr));
-	socklen_t          	longueur;
-	adresse.sin_family = AF_INET;
-    int option = 1;
-    int enable = 1;
-
-
-	if ((sock_1 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		perror("socket");
-        //close(sock_1);
-        goto sortie_deplacement;
-		exit(EXIT_FAILURE);
-	}
-	
-    if (setsockopt(sock_1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-    {
-        perror("setsockopt(SO_REUSEADDR) failed");
-        //close(sock_1);
-        goto sortie_deplacement;
-		exit(EXIT_FAILURE);
-    }
-
-	adresse.sin_port = htons(10001);
-	
-#ifdef VAR_GLOBAL
-	//sIP_depl = VarManager::getInstance().gets("IP_DEPL");
-	inet_aton( sIP_depl.c_str(), &adresse.sin_addr ); 
-#else
-#ifdef LOCALHOST
-	inet_aton("127.0.0.1", &adresse.sin_addr ); 
-#endif
-#endif
-
-	
-	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		logf_thread( (char*) "[ERREUR] bind (sock_1)");
-        //close(sock_1);
-        goto sortie_deplacement;
-		return;
-	}
-	
-	longueur = sizeof(struct sockaddr_in);
-	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
-		logf_thread( (char*) "[ERREUR] getsockname (sock_1)");
-        //close(sock_1);
-        goto sortie_deplacement;
-		return;
-	}
-
-    if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
-    {
-		logf_thread( (char*) "[ERREUR] setsockopt (sock_1)");
-        //close(sock_1);
-        goto sortie_deplacement;
-		return;
-    }
-
-
-    logf_thread( (char*)"---------------------------------------------------------------");
-	logf_thread( (char*)"Deplacement Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
-    logf_thread( (char*)"---------------------------------------------------------------");
-
-	listen(sock_1, 5);
-	while ( listen_1 ) {
-		longueur = sizeof(struct sockaddr_in);
-		sock_stellarium = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
-
-		if (sock_stellarium < 0)			continue;
-		
-		char *some_addr;
-        some_addr = inet_ntoa( adresse.sin_addr);
-
-		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion SOCKET 1" );
-		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d sur %s", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port, sIP_depl.c_str() );
-
-		traite_connexion_deplacement();
-		
-		
-	}
-
-sortie_deplacement:
     logf_thread( (char*)"Fermeture de sock_1 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_1);
 	sock_1 = -1;
@@ -392,20 +480,20 @@ sortie_deplacement:
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::start_deplacement()
+void LX200::start_lx200()
 {
-    th_1 = std::thread(&Serveur_mgr::thread_listen_deplacement, this);
+    th_1 = std::thread(&LX200::thread_listen_lx200, this);
     th_1.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::write_stellarium(char* s)
+void LX200::write_stellarium(char* s)
 {
 //#define LOG
-    if ( sock_stellarium != -1 )
+    if ( sock_ref != -1 )
     {
-        write( sock_stellarium, s, 24 );
+        write( sock_ref, s, 24 );
 
         #ifdef LOG
         char trame[24*4+80]  = "";
@@ -419,21 +507,21 @@ void Serveur_mgr::write_stellarium(char* s)
         	snprintf( (char*)trame, sizeof(trame), "%s %02X", t, c );
         
         }
-        logf_thread( (char*)"Envoid a stellarium  %s", trame );
+        logf_thread( (char*)"Envoid a lx200  %s", trame );
         #endif
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::write_stellarium(int socket, char* s, int len)
+void LX200::write_stellarium(int socket, char* s, int len)
 {
 	write_stellarium( socket, s, len, true );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::write_stellarium(int socket, char* s, int len, bool bLog)
+void LX200::write_stellarium(int socket, char* s, int len, bool bLog)
 {
 #define __LOG
     if ( socket != -1 )
@@ -453,7 +541,7 @@ void Serveur_mgr::write_stellarium(int socket, char* s, int len, bool bLog)
         
         }
         if ( bLog )
-	        logf_thread( (char*)"  | Envoi a stellarium  \"%s\" - %s",s,  trame );
+	        logf_thread( (char*)"  | Envoi a lx200  \"%s\" - %s",s,  trame );
         #endif
     }
 #undef __LOG
@@ -470,7 +558,7 @@ void Serveur_mgr::write_stellarium(int socket, char* s, int len, bool bLog)
 //			12..15	= AD(rad) / M_PI * 2147483648
 //			16..19	= DC(rad) / M_PI * 2147483648
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::write_stellarium(double ad, double dc)
+void LX200::write_stellarium(double ad, double dc)
 {
     unsigned char buff[24];
     memset( buff, 0, 24);
@@ -545,58 +633,52 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::close_all()
+void LX200::close_all()
 {
     logf_thread( (char*)"Fermeture de tous les sockets ..." );
     log_tab(true);
 
     listen_1 = false;
-    listen_2 = false;
     traite_1 = false;
-    traite_2 = false;
 
 	//close(sock_1);
-	//close(sock_2);
+	//close(sock_1);
     //sleep(1);
 
-    if ( sock_stellarium!= -1 )         shutdown(sock_stellarium, 2);
     if ( sock_ref!= -1 )                shutdown(sock_ref, 2);
 
     
     if ( sock_1!= -1 )                  shutdown(sock_1, 2);
-    if ( sock_2!= -1 )                  shutdown(sock_2, 2);
     //sleep(1);
     
     /*
     sock_1          = -1;
-    sock_2          = -1;
+    sock_1          = -1;
     sock_stellarium = -1;
     sock_ref        = -1;
     */
 
     //sleep(1);
     /*
-    logf_thread( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
+    logf_thread( (char*)"sock_1=%d sock_1=%d", sock_1, sock_1 );
     while( sock_1 != -1)	;
-    while( sock_2!= -1)	;
+    while( sock_1!= -1)	;
     while( sock_stellarium != -1)	;
     while( sock_ref!= -1)	;
     */
-    logf_thread( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
+    logf_thread( (char*)"sock_1=%d sock_1=%d", sock_1, sock_1 );
     log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Serveur_mgr::print_list()
+void LX200::print_list()
 {
-    logf( (char*)"---- Serveur_mgr::print_list()" );
+    logf( (char*)"---- LX200::print_list()" );
 
-	if ( sock_ref != -1 )				logf( (char*)"  Init : %s", sIP_init.c_str() );
+	if ( sock_ref != -1 )				logf( (char*)"  Init : %s", sIP_lx200.c_str() );
 	else								logf( (char*)"  Init listen" );
 
-	if ( sock_stellarium != -1 )		logf( (char*)"  Bellatrix : %s", sIP_depl.c_str() );
-	else								logf( (char*)"  Bellatrix listen" );
 }    
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -224,7 +224,7 @@ void Connexion_mgr::pooling()
 //--------------------------------------------------------------------------------------------------------------------
 void Connexion_mgr::threadPooling()
 {
-    logf( (char*)"[WARNING] Demarrage du thread Connexion_mgr::threadPooling()" );
+    logf_thread( (char*)"[WARNING] Demarrage du thread Connexion_mgr::threadPooling()" );
     bExitThread = false;
 
     while( 1 )
@@ -233,7 +233,7 @@ void Connexion_mgr::threadPooling()
         if ( bExitThread.load() )		break;
     }
     bStart = false;
-    logf( (char*)"[WARNING] Fin du thread Connexion_mgr::threadPooling()" );
+    logf_thread( (char*)"[WARNING] Fin du thread Connexion_mgr::threadPooling()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -28,6 +28,7 @@ public:
     void                setView(PanelSimple*);
 
     int                 getOffset(int,int);
+    void                calculMag();
     void                computeMag();
     float               computeRayon();
 
@@ -111,6 +112,12 @@ public:
     inline void         resetNotFound()                                 { nbNotFound = 0; }
 	inline void			setModeMag(int n)								{ modeMag = n; }
 
+	inline void			setA(double d)									{ dCoefA = d; }
+	inline void			setB(double d)									{ dCoefB = d; }
+	inline void			setC(double d)									{ dCoefC = d; }
+	inline double*		getvA()											{ return &dCoefA; }
+	inline double*		getvB()											{ return &dCoefB; }
+	inline double*		getvC()											{ return &dCoefC; }
     
 private:
     vec2                pos;
@@ -157,6 +164,10 @@ private:
     bool                bSuivi;
     bool                bZoom;
     bool				bVisible;
+    
+    double				dCoefA;
+    double				dCoefB;
+    double				dCoefC;
     
     PanelZoom*          panelZoom;
     PanelSimple*        pView;

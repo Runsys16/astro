@@ -9,10 +9,13 @@
 Stars::Stars()
 {
     logf( (char*)"Constructeur Stars() ------------------" );
-    RB       = NULL;
-    pView    = NULL;
-    pNbStars = NULL;
-	bAffPosition = false;
+    RB				= NULL;
+    pView			= NULL;
+    pNbStars		= NULL;
+	bAffPosition	= false;
+    dCoefA			= 2196;
+    dCoefB			= 33.8;
+    dCoefC			= 1.46;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -105,6 +108,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
 
     Star * pp = new Star((int) X, (int) Y);
+    pp->setModeMag( uModeMag );
     pp->setPtr( RB->ptr );
     pp->setWidth( RB->w );
     pp->setHeight( RB->h );
@@ -224,6 +228,7 @@ void Stars::findAllStars()
 
     Star *      p = new Star();
     
+    p->setModeMag( uModeMag );
     p->setPtr( RB->ptr );
     p->setWidth( RB->w );
     p->setHeight( RB->h );
@@ -258,6 +263,7 @@ void Stars::findAllStars()
                     pp->setWidth( RB->w );
                     pp->setHeight( RB->h );
                     */
+				    pp->setModeMag( uModeMag );
                     pp->setRB( RB );
                     pp->setXY( x_find, y_find );
                     pp->find();
@@ -499,6 +505,7 @@ void Stars::selectStar( int xp, int yp)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::setModeMag( int n )
 {
+	uModeMag = n;
     for( int i=0; i<v_tStars.size(); i++ )
     {
         v_tStars[i]->setModeMag(n);
@@ -813,6 +820,48 @@ void Stars::affiche_position()
     for( int i=0; i<nb; i++ )
     {
         v_tStars[i]->affiche_position(bAffPosition);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::setA(double d)
+{
+	logf( (char*)"Stars::setA()" );
+	dCoefA = d;
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        v_tStars[i]->setA(d);
+        v_tStars[i]->calculMag();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::setB(double d)
+{
+	logf( (char*)"Stars::setB()" );
+	dCoefB = d;
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        v_tStars[i]->setB(d);
+        v_tStars[i]->calculMag();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::setC(double d)
+{
+	logf( (char*)"Stars::setC()" );
+	dCoefC = d;
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        v_tStars[i]->setC(d);
+        v_tStars[i]->calculMag();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

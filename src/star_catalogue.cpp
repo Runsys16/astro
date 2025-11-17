@@ -33,7 +33,7 @@ StarCatalog::StarCatalog( double ra, double de, double mag, string n )
     struct dms DMS;
     deg2hms( ra, HMS );
     deg2dms( de, DMS );
-    sprintf((char*)p_sInfo, "m=%0.2f %02dh %02d' %2.2f\" %02dd %02d' %02.2f\"", (float)mag, (int)HMS.h, (int)HMS.m, HMS.s, (int)DMS.d, (int)DMS.m,  DMS.s   );
+    sprintf((char*)p_sInfo, "m=%0.2f %02dh %02d' %2.2f\" %02d° %02d' %02.2f\"", (float)mag, (int)HMS.h, (int)HMS.m, HMS.s, (int)DMS.d, (int)DMS.m,  DMS.s   );
     //sprintf((char*)p_sInfo, "m=%0.4f %2f %f", (float)mag, ra, de   );
 #else    
     //sprintf((char*)p_sInfo, "m=%0.4f", (float)mag );
@@ -59,7 +59,7 @@ void StarCatalog::affiche_position()
     struct dms DMS;
     deg2hms( fRA, HMS );
     deg2dms( fDE, DMS );
-    sprintf((char*)p_sInfo, "%0.2f AD=%02dh %02d' %2.2f\" DE=%02dd %02d' %02.2f\"", (float)fMag, (int)HMS.h, (int)HMS.m, HMS.s, (int)DMS.d, (int)DMS.m,  DMS.s   );
+    sprintf((char*)p_sInfo, "%0.2f AD=%02dh %02d' %2.2f\" DE=%02d° %02d' %02.2f\"", (float)fMag, (int)HMS.h, (int)HMS.m, HMS.s, (int)DMS.d, (int)DMS.m,  DMS.s   );
 
     pInfo->changeText( (char*)p_sInfo );
     

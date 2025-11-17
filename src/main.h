@@ -37,6 +37,7 @@
 
 class Catalog;
 class PanelCapture;
+class PanelStdOut;
 
 
 using namespace std;
@@ -135,6 +136,11 @@ typedef struct readBackground       rb_t;
     extern PanelWindow*             panelResultat;
     #endif
     
+    #ifndef PANEL_STDOUT_CPP
+	extern PanelStdOut *	       panelStdOut;
+	#endif
+
+    
     extern ivec2					mouse;
     extern vec3                     vecAD[2];
     extern vec3                     vecDC[2];
@@ -151,8 +157,9 @@ typedef struct readBackground       rb_t;
     extern int                      iDisplayCourbe;
     extern bool                     bDisplayCourbeX;
     extern bool                     bDisplayCourbeY;
+    extern double                   dErr;
 
-    extern double                    filtre;
+    extern double                   filtre;
 
     extern double                   Xref;
     extern double                   Yref;
@@ -173,6 +180,10 @@ typedef struct readBackground       rb_t;
 
 	extern bool						bArduino;
 	extern int						iGlutModifier;
+	
+	extern double					d_deg_ad;
+	extern double					d_deg_dc;
+	
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -253,7 +264,9 @@ int                 getHeight();
 
 vector<string>&     getExclude();
 double               hms2rad( struct hms& );
+char*				 deg2str_hms(double, char*, int);
 double               dms2rad( struct dms& );
+char*				 deg2str_dms(double, char*, int);
 
 void                rad2hms( struct hms&, double );
 void                rad2dms( struct dms&, double );

@@ -5,7 +5,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Catalog::Catalog()
 {
-    sFilename = "/home/rene/.astropilot/vizier.cat";
+    sFilename = "/home/rene/.astropilot/vizier/vizier.cat";
 
     sName = "";
     charge();
@@ -18,7 +18,7 @@ Catalog::Catalog()
 //--------------------------------------------------------------------------------------------------------------------
 Catalog::Catalog(bool b)
 {
-    sFilename = "/home/rene/.astropilot/vizier.cat";
+    sFilename = "/home/rene/.astropilot/vizier/vizier.cat";
     sName = "";
     bSauve = b;
 }
@@ -87,10 +87,11 @@ void Catalog::sauve()
     if ( sFilename == "" )        	return;
     
     std::ofstream fichier;
-    fichier.open(sFilename);
+    fichier.open(sFilename, std::ofstream::out | std::ofstream::trunc);
     if ( !fichier ) 
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)sFilename.c_str() );
+        logf_thread( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)sFilename.c_str() );
+        return;
     }
 
     for(int i=0; i<stars.size(); i++)
@@ -109,10 +110,48 @@ void Catalog::sauve()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Catalog::charge()
+void Catalog::sauve( string flnm )
+{
+    logf_thread( (char*)"Catalog::sauve( %s )", flnm.c_str() );
+
+	sFilename = flnm;
+	
+    if ( sFilename == "" )
+    {
+        logf_thread( (char*)"[ERROR]impossble d'ouvrir : ''" );
+		return;
+    }
+	bSauve = true;
+	sauve();
+	bSauve = false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool Catalog::charge( string flnm )
+{
+    logf_thread( (char*)"Catalog::charge( %s )", flnm.c_str() );
+
+	sFilename = flnm;
+    if ( sFilename == "" )
+    {
+        logf_thread( (char*)"[ERROR]impossble d'ouvrir : ''" );
+		return false;
+    }
+	bSauve = true;
+	bool ret = charge();
+	bSauve = false;
+	
+	return ret;
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool Catalog::charge()
 {
     //return;
-    logf( (char*)"Catalog::charge() Lecture du ficher '%s'", (char*)sFilename.c_str() );
+    logf( (char*)"Catalog::charge() Lecture du ficher filename = '%s'", (char*)sFilename.c_str() );
 
     stars.clear();
     
@@ -122,10 +161,11 @@ void Catalog::charge()
     if ( !fichier ) 
     {
         logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)sFilename.c_str() );
-        return;
+        return false;
     }
     
     char output[255];
+    int	 nb = 0;
     while (!fichier.eof()) {
         fichier >> output;
         fichier >> output;
@@ -150,6 +190,7 @@ void Catalog::charge()
         string name = string(output);
         
         StarCatalog* p = new StarCatalog(fRA, fDE, fMag, name);
+        nb++;
         
         //logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );
         stars.push_back(p);
@@ -167,6 +208,10 @@ void Catalog::charge()
     }
 
     fichier.close();
+	
+	logf( (char*)"Catalog::charge() %d etoiles", nb );
+
+    return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
