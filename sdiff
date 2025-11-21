@@ -6,13 +6,18 @@ cd /home/rene/programmes/opengl/video/astro
 #-------------------------------------------------------------------------------------------
 #
 #-------------------------------------------------------------------------------------------
-if [ "$(uname -n)" == "poste-002" ]
-then
-	POSTE="portable-marie"
-elif [ "$(uname -n)" == "portable-marie" ]
-then
-	POSTE="poste-002"
-fi
+case $(uname -n) in
+	poste-002)
+		POSTE="portable-marie"
+		;;
+	portable-marie)
+		POSTE="poste-002"
+		;;
+	*)
+		echo Erreur nom de poste
+		exit 1
+		;;
+esac
 #-------------------------------------------------------------------------------------------
 #echo $POSTE
 #FILES=$(git status | grep src | sed -e "s_.*\(src/.*\)_\1_g")

@@ -43,42 +43,63 @@ LX200::LX200()
 //--------------------------------------------------------------------------------------------------------------------
 void LX200::traite_command_G( char* buffer, int n)
 {
+	///------------------------------------------------------
+	// Get Telescope NAME
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GVP#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Get Telescope NAME", buffer );
 		write_lx200( sock_lx200, (char*)"EQ5_DRIVE#", 10, true );
 	}
 	else
+	///------------------------------------------------------
+	// Get Firmware Version
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GVN#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Get Firmware Version", buffer );
 		write_lx200( sock_lx200, (char*)"00.7#", 5, true );	
 	}
 	else
+	///------------------------------------------------------
+	// Get Firmware Date
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GVD#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Get Firmware Date", buffer );
 		write_lx200( sock_lx200, (char*)"NOV 17 2025#", 12, true );	
 	}
 	else
+	///------------------------------------------------------
+	// Get Firmware Heure
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GVT#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Get Firmware Heure", buffer );
 		write_lx200( sock_lx200, (char*)"15:03:25#", 9, true );
 	}
 	else
+	///------------------------------------------------------
+	// Get Longiture
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:Gg#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Get Longiture", buffer );
 		write_lx200( sock_lx200, (char*)"s000*00#", 8, true );
 	}
 	else
+	///------------------------------------------------------
+	// Get Lattitude
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:Gt#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Get Lattitude", buffer );
 		write_lx200( sock_lx200, (char*)"s45*53#", 7, true );
 	}
 	else
+	///------------------------------------------------------
+	// Get Local Date
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GC#" ) == 0 )
 	{
 		char 			sTime[30];
@@ -94,6 +115,9 @@ void LX200::traite_command_G( char* buffer, int n)
 		write_lx200( sock_lx200, (char*)sTime, strlen(sTime), true );
 	}
 	else
+	///------------------------------------------------------
+	// Get Local Time
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GL#" ) == 0 )
 	{
 		char 			sTime[20];
@@ -108,8 +132,10 @@ void LX200::traite_command_G( char* buffer, int n)
 		logf_thread( (char*)"%s Get Local Time   %s", buffer, sTime );
 		write_lx200( sock_lx200, sTime, strlen(sTime), true );	
 	}
-	///------------------------------------------------------
 	else
+	///------------------------------------------------------
+	// Get Telescope DEC
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GD#" ) == 0 )
 	{
 		//logf_thread( (char*)"%s Get Telescope DEC", buffer );
@@ -133,8 +159,10 @@ void LX200::traite_command_G( char* buffer, int n)
 
 		write_lx200( sock_lx200, s, strlen(s), false );	
 	}
-	///------------------------------------------------------
 	else
+	///------------------------------------------------------
+	// Get Telescope RA
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GR#" ) == 0 )
 	{
 		//logf_thread( (char*)"%s Get Telescope RA", buffer );
@@ -153,17 +181,26 @@ void LX200::traite_command_G( char* buffer, int n)
 		write_lx200( sock_lx200, (char*)s, strlen(s), false );	
 	}
 	else
+	///------------------------------------------------------
+	// Get Scope Alignment Status
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GW#" ) == 0 )
 	{
 		//logf_thread( (char*)"%s Get Scope Alignment Status", buffer );
 		write_lx200( sock_lx200, (char*)"GN3#", 4, false );	
 	}
 	else
+	///------------------------------------------------------
+	// Get UTC offset time
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GG#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Get UTC offset time", buffer );
 		write_lx200( sock_lx200, (char*)"-01#", 4, true );
 	}
+	///------------------------------------------------------
+	// Commande inconnue
+	///------------------------------------------------------
 	else
 	{
 		logf_thread( (char*)"--[WARNING] \"%s\" Commande G inconnue", buffer );
@@ -178,6 +215,9 @@ void LX200::traite_command_M( char* buffer, int n)
 {
 	Serial& arduino = Serial::getInstance();
 
+	///------------------------------------------------------
+	// Move Telescope West at current slew rate
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Mw", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope West at current slew rate", buffer );
@@ -186,6 +226,9 @@ void LX200::traite_command_M( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Move Telescope Est at current slew rate
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Me", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope Est at current slew rate", buffer );
@@ -194,6 +237,9 @@ void LX200::traite_command_M( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Move Telescope North at current slew rate
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Mn", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope North at current slew rate", buffer );
@@ -202,6 +248,9 @@ void LX200::traite_command_M( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Move Telescope South at current slew rate
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Ms", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope South at current slew rate", buffer );
@@ -210,6 +259,9 @@ void LX200::traite_command_M( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Slew to Target Object
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:MS#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Slew to Target Object", buffer );
@@ -225,6 +277,9 @@ void LX200::traite_command_M( char* buffer, int n)
 		/*
 		*/
 	}
+	///------------------------------------------------------
+	// Commande inconnue
+	///------------------------------------------------------
 	else
 	{
 		logf_thread( (char*)"--[WARNING] \"%s\" Commande M inconnue", buffer );
@@ -240,30 +295,42 @@ void LX200::traite_command_Q( char* buffer, int n)
 {
 	Serial& arduino = Serial::getInstance();
 
+	///------------------------------------------------------
+	// Halt southward Slews
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Qw", 4 ) == 0 )
 	{
-		logf_thread( (char*)"%s Halt southward Slews", buffer );
+		logf_thread( (char*)"%s Halt westward Slews", buffer );
 		char cmd[] = "x0;y=0";
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Halt estward Slews
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Qe", 4 ) == 0 )
 	{
-		logf_thread( (char*)"%s Halt southward Slews", buffer );
+		logf_thread( (char*)"%s Halt estward Slews", buffer );
 		char cmd[] = "x0;y=0";
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Halt northward Slews
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Qn", 4 ) == 0 )
 	{
-		logf_thread( (char*)"%s Halt southward Slews", buffer );
+		logf_thread( (char*)"%s Halt northward Slews", buffer );
 		char cmd[] = "x0;y=0";
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Halt southward Slews
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Qs", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Halt southward Slews", buffer );
@@ -272,6 +339,9 @@ void LX200::traite_command_Q( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Halt all current slewing
+	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:Q#" ) == 0 )
 	{
 		logf_thread( (char*)"%s Abort", buffer );
@@ -282,6 +352,9 @@ void LX200::traite_command_Q( char* buffer, int n)
 		arduino.write_string(cmd);
 		*/
 	}
+	///------------------------------------------------------
+	// Command inconnue
+	///------------------------------------------------------
 	else
 	{
 		logf_thread( (char*)"--[WARNING] \"%s\" Commande Q inconnue", buffer );
@@ -297,6 +370,9 @@ void LX200::traite_command_R( char* buffer, int n)
 {
 	Serial& arduino = Serial::getInstance();
 
+	///------------------------------------------------------
+	// Set Slew rate to Centering rate more Slowest
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:RG", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Slew rate to Centering rate more Slowest", buffer );
@@ -305,6 +381,9 @@ void LX200::traite_command_R( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Set Slew rate to Centering rate Slowest
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:RC", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Slew rate to Centering rate Slowest", buffer );
@@ -313,6 +392,9 @@ void LX200::traite_command_R( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Set Slew rate to Centering rate Fastest
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:RM", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Slew rate to Centering rate Fastest", buffer );
@@ -321,6 +403,9 @@ void LX200::traite_command_R( char* buffer, int n)
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
 	else
+	///------------------------------------------------------
+	// Set Slew rate to Centering rate more Fastest
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:RS", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Slew rate to Centering rate more Fastest", buffer );
@@ -328,11 +413,9 @@ void LX200::traite_command_R( char* buffer, int n)
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
-	else
-	if ( strcmp( (char*)buffer, "#:Q#" ) == 0 )
-	{
-		logf_thread( (char*)"%s Abort", buffer );
-	}
+	///------------------------------------------------------
+	// Command inconnue
+	///------------------------------------------------------
 	else
 	{
 		logf_thread( (char*)"--[WARNING] \"%s\" Commande Q inconnue", buffer );
@@ -346,36 +429,54 @@ void LX200::traite_command_R( char* buffer, int n)
 //--------------------------------------------------------------------------------------------------------------------
 void LX200::traite_command_S( char* buffer, int n)
 {
+	///------------------------------------------------------
+	// Set Offset UTC
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:SG", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Offset UTC", buffer );
 		write_lx200( sock_lx200, (char*)"1", 1, true );	
 	}
 	else
+	///------------------------------------------------------
+	// Set Lattitude
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:St", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Lattitude", buffer );
 		write_lx200( sock_lx200, (char*)"1", 1, true );	
 	}
 	else
+	///------------------------------------------------------
+	// Set Longitude
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Sg", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Longitude", buffer );
 		write_lx200( sock_lx200, (char*)"1", 1, true );	
 	}
 	else
+	///------------------------------------------------------
+	// Set local Time
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:SL", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Local time", buffer );
 		write_lx200( sock_lx200, (char*)"1", 1, true );	
 	}
 	else
+	///------------------------------------------------------
+	// Set local date
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:SC", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set Local date", buffer );
 		write_lx200( sock_lx200, (char*)"1", 1, true );	
 	}
 	else
+	///------------------------------------------------------
+	// Set target object DEC
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Sd", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set target object DEC", buffer );
@@ -393,6 +494,9 @@ void LX200::traite_command_S( char* buffer, int n)
 		dDC = dms2rad(DMS);
 	}
 	else
+	///------------------------------------------------------
+	// Set target object RA
+	///------------------------------------------------------
 	if ( strncmp( (char*)buffer, "#:Sr", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Set target object RA", buffer );
@@ -406,6 +510,9 @@ void LX200::traite_command_S( char* buffer, int n)
 		dRA = hms2rad(HMS);
 		if ( dRA > M_PI )		dRA = -2.0*M_PI + dRA;
 	}
+	///------------------------------------------------------
+	// Commande inconnue
+	///------------------------------------------------------
 	else
 	{
 		logf_thread( (char*)"--[WARNING] \"%s\" Commande S inconnue", buffer );

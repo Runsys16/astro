@@ -17,7 +17,7 @@ PanelDebug::PanelDebug() : PanelWindow()
 	wm.add( this );
 	idx = 0;
 	setVisible(false);
-	setBackground( (char*)"textures/background.tga" );
+	setBackground( (char*)"images/background.tga" );
 	tab_size = 50;
 	if ( bNuit )		uColor = 0xff0000ff;
 	else				uColor = 0xffFFffFF;

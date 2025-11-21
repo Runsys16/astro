@@ -1,4 +1,5 @@
 #include "serial.h"    /* Standard input/output definitions */
+#include "serveur_mgr.h"    /* Standard input/output definitions */
 #include "panel_console_serial.h"    
 #include "var_mgr.h"
 #include <unistd.h>
@@ -223,6 +224,8 @@ void Serial::read_thread()
 {
     unsigned char b[1];
     int i=0;
+    int bPremiereConnexion = true;
+    
     logf_thread( (char*)"START Serial::read_thread" );
     VarManager& var= VarManager::getInstance();
     bConnect = false;
@@ -281,6 +284,11 @@ void Serial::read_thread()
 						
                     bPrintInfo = true;
                     bAffiche = false;
+					
+					// Initialise les coordonnées
+					if ( bPremiereConnexion )
+						Serveur_mgr::getInstance()._sync( DEG2RAD(d_deg_ad), DEG2RAD(d_deg_dc) );
+					bPremiereConnexion = false;
                 }
                 else
                 if ( test.find("Change joy ...NOK") != string::npos )

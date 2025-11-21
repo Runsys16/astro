@@ -4904,7 +4904,7 @@ int main(int argc, char **argv)
     // status.inc
     change_perr( &dErr );
     
-    logf ((char*)"############## START MANAGER ###################");
+    logf ((char*)"############## START CAMERA MANAGER ###################");
     
     Camera_mgr& cam_mgr = Camera_mgr::getInstance();
 
