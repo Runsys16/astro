@@ -529,10 +529,15 @@ void commande_asi_studio()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void commande_magnitude()
+void commande_magnitude( string filename )
 {
     //VarManager&         var = VarManager::getInstance();
-    string command = "/home/rene/.astropilot/gnuplot/magnitude.sh >/dev/null 2>&1 &";
+	string command;
+    if ( filename == "" )
+	    command = "/home/rene/.astropilot/gnuplot/magnitude.sh magnitude.png >/dev/null 2>&1 &";
+	else
+	    command = "/home/rene/.astropilot/gnuplot/magnitude.sh magnitude_" +filename+ ".png >/dev/null 2>&1 &";
+
     logf( (char*) command.c_str() );
     int ret = system( (char*) command.c_str() );
 
@@ -1110,7 +1115,9 @@ double hms2rad(struct hms& HMS)
 //--------------------------------------------------------------------------------------------------------------------
 double dms2rad(struct dms& DMS)
 {
-    return (DMS.d + DMS.m/60.0 + DMS.s/3600.0) / 180.0*M_PI;
+	double signe = 1.0;
+	if ( DMS.d < 0.0 )		signe = -1.0;		
+    return signe*(abs(DMS.d) + DMS.m/60.0 + DMS.s/3600.0) / 180.0*M_PI;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1343,12 +1350,11 @@ static void reshapeGL(int newWidth, int newHeight)
 {
     logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
     log_tab(true);
+    bDesactiveLog = true;
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( newWidth, newHeight );
 
-    //resizePreview(newWidth, newHeight);
-    //resizeControl(newWidth, newHeight);
     resizeHelp(newWidth, newHeight);
     resizeCourbe(newWidth, newHeight);
 
@@ -1358,7 +1364,6 @@ static void reshapeGL(int newWidth, int newHeight)
 
 	glViewport(0, 0, (GLint)newWidth, (GLint)newHeight);
 
-	//change_fov();
 	if ( !bFull )
     {
 	    width = newWidth;
@@ -1371,9 +1376,9 @@ static void reshapeGL(int newWidth, int newHeight)
     }
     Camera_mgr::getInstance().resize( newWidth, newHeight );
     Captures::getInstance().reshapeGL( newWidth, newHeight );
-    //cout << "reshapeGL("<< newWidth <<" "<< newHeight <<")"<< endl;
+
+    bDesactiveLog = false;
     log_tab(false);
-    //logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1472,7 +1477,7 @@ void change_dc_status(double dc)
     VarManager& var = VarManager::getInstance();
 
     var.set("d_deg_dc", dc);
-    d_deg_dc == dc;
+    d_deg_dc = dc;
     
     //dc = DEG2RAD(dc);
     struct dms DMS;
@@ -1714,7 +1719,7 @@ static void idleGL(void)
 #ifdef APPEL_IDLE
     logf( (char*)"%02d-%.4f idleGL", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
-
+	setColor();
 	log_thread_aff();
     
 	Timer&          timer = Timer::getInstance();
@@ -1862,13 +1867,8 @@ static void idleGL(void)
 	    if ( fTimer10s >= 10.0 )
 	    {
 	        fTimer10s -= 10.0;
-		    //logf( (char*)"Timer 10s %0.2f", fTimer10s );
-            
-            char cmd[255];
-            sprintf( cmd, "g" );
-            Serial::getInstance().write_string(cmd, false);
+            Serial::getInstance().write_g();
 	    }
-	    //logf( (char*)"%0.2f", fTimer );
 	}
     //------------------------------------------------------
     //------------------------------------------------------
@@ -2427,7 +2427,12 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	        {
 	        	PanelCapture* pPanelCapture = dynamic_cast<PanelCapture*>( panel );
 	        	pPanelCapture->saveCompareStar();
-		        thread( &commande_magnitude).detach();
+	        	Capture*	p = pPanelCapture->getCapture();
+	        	
+	        	string filename;
+	        	if ( p )		filename = string( p->getBasename() );
+	        	else			filename = string( "" );
+		        thread( &commande_magnitude, filename ).detach();
 	        }
 			else
 	        if ( typeid(*panel) == typeid(PanelCamera)	)
@@ -2436,7 +2441,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 				if ( p!=NULL )
 				{
 					p->saveCompareStar();
-			        thread( &commande_magnitude).detach();
+			        thread( &commande_magnitude, "pleiades" ).detach();
 				}
 			}
 			else
@@ -3066,6 +3071,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'l':
         {            
         logf( (char*)"Key (l) : Affiche les connexions" );
+        LX200::getInstance().print_list();
         Serveur_mgr::getInstance().print_list();
         Connexion_mgr::getInstance().print_list();
         Camera_mgr::getInstance().print_list();
@@ -3586,7 +3592,11 @@ static void glutSpecialFunc(int key, int x, int y)	{
         var.set("bPanelStdOut", bPanelStdOut);
         if ( panelStdOut )		panelStdOut->setVisible(bPanelStdOut);
         if ( panelStdOut )		WindowsManager::getInstance().onTop(panelStdOut);
-        
+
+		LX200& lx200 = LX200::getInstance();
+		//if ( lx200.is_connect() )	lx200.affiche_trace(bPanelStdOut);
+		//else						lx200.affiche_trace(false);
+		
         logf( (char*)"Key F5: Toggle panelStdOut %s", BOOL2STR(bPanelStdOut) );
         }
         break;
@@ -3862,7 +3872,7 @@ static void glutPassiveMotionFunc(int x, int y)	{
 void status_nuit( unsigned long );
 void setColor()	
 {
-    logf( (char*)"main::setColor()" );
+    //logf( (char*)"main::setColor()" );
 
     uint32_t color;
     if (bNuit)                  color = 0xFF0000FF;
@@ -3881,6 +3891,9 @@ void setColor()
     FileBrowser::getInstance().setColor(color);
     PanelConsoleSerial::getInstance().setColor(color);
     status_nuit(color);
+#ifdef PANEL_LX200_DEBUG
+    LX200::getInstance().setColor(color);
+#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -3889,7 +3902,13 @@ void onTop()
 {
     WindowsManager& wm = WindowsManager::getInstance();
     Captures::getInstance().onTop();
-    if ( panelStdOut )			wm.onTop(panelStdOut);
+#ifdef PANEL_LX200_DEBUG
+    LX200& lx200 = LX200::getInstance();
+    if ( lx200.is_connect() && bPanelStdOut )		wm.onTop(lx200.getPanel());
+#endif
+    
+    if ( panelStdOut )								wm.onTop(panelStdOut);
+
     wm.onTop(panelStatus);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4156,13 +4175,16 @@ static void CreateStatus()	{
 	panelStatus->add( pDeplacement );
 
 	//-------------------------------------------------------------------------------------------
+    double d;
 
     pAD = new PanelText( (char*)"",		            PanelText::NORMAL_FONT, 60+10, 2 );
-    change_ad_status( d_deg_ad );
+    d = d_deg_ad; d_deg_ad = -1.0;
+    change_ad_status( d );
 	panelStatus->add( pAD );
     
     pDC = new PanelText( (char*)"",		            PanelText::NORMAL_FONT, 200+10, 2 );
-    change_dc_status( d_deg_dc );
+    d = d_deg_dc; d_deg_dc = -1.0;
+    change_dc_status( d );
 	panelStatus->add( pDC );
 
 	string sErr = "Status !!!";
@@ -4393,7 +4415,7 @@ void parse_size( string s )
 //--------------------------------------------------------------------------------------------------------------------
 void parse_option( int argc, char**argv )
 {
-	logf_thread( (char*)"main::parse_option()\n" );
+	logf_thread( (char*)"main::parse_option()" );
 
     bool bOK = false;
     char        cSize[100];
@@ -4439,19 +4461,19 @@ void parse_option( int argc, char**argv )
             case 'l':
             		bDesactiveLog = false;
             		bStdOut = true;
-            		logf_thread( (char*)"option -l\n" );
+            		logf_thread( (char*)"option -l" );
                     break;
 
             case 'L':
             		bDesactiveLog = true;
             		bStdOut = true;
-            		logf_thread( (char*)"option -L\n" );
+            		logf_thread( (char*)"option -L" );
                     break;
 
             case 'o':
             		bDesactiveLog = false;
             		bStdOut = false;
-            		logf_thread( (char*)"option -o\n" );
+            		logf_thread( (char*)"option -o" );
             		//printf( (char*)"option -o\n" );
                     break;
 
@@ -4521,7 +4543,7 @@ void getX11Screen()
     for (int i = 0; i < count_screens; ++i) {
         screen = ScreenOfDisplay(display, i);
         
-        logf_thread( (char*)"Screen %d: %dX%d\n", i + 1, screen->width, screen->height);
+        logf_thread( (char*)"main.c::getX11Screen() Screen %d: %dX%d", i + 1, screen->width, screen->height);
         
         widthScreen = screen->width;
         heightScreen = screen->height;

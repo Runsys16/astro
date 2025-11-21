@@ -2,6 +2,7 @@
 #include "camera_mgr.h"
 #include "captures.h"
 #include "var_mgr.h"
+#include "serveur_mgr.h"
 #include <sys/time.h>
 #include <time.h>
 //#include "MathlibD.h"
@@ -17,55 +18,399 @@ LX200::LX200()
     listen_1 = true;
     traite_1 = true;
 
-    sock_ref		= -1;
+    sock_lx200		= -1;
 
-	#ifdef VAR_GLOBAL
+#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
 
     if ( !var.existe("IP_LX200"))		var.set("IP_LX200", "127.0.0.1" );
     sIP_lx200 = *var.gets("IP_LX200" );
 
-	#endif
+#endif
+
+#ifdef PANEL_LX200_DEBUG
+	panel_debug.setPosAndSize( 5, 5, 130, 20);
+	panel_debug.setBackground((char*)"images/background.tga");
+	panel_debug.setColor( 0xffFFffFF );
+	WindowsManager::getInstance().add( &panel_debug );
+	WindowsManager::getInstance().onTop( &panel_debug );
+#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//				G – Get Telescope Information
+//
 //--------------------------------------------------------------------------------------------------------------------
-float LX200::com2rad( int ra_int )
+void LX200::traite_command_G( char* buffer, int n)
 {
-    float ad_rad = ra_int;
-    ad_rad = ((ad_rad-0.5) * M_PI )/  (float)(2147483648.0) ;
-    return ad_rad;
+	if ( strcmp( (char*)buffer, "#:GVP#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Get Telescope NAME", buffer );
+		write_lx200( sock_lx200, (char*)"EQ5_DRIVE#", 10, true );
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:GVN#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Get Firmware Version", buffer );
+		write_lx200( sock_lx200, (char*)"00.7#", 5, true );	
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:GVD#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Get Firmware Date", buffer );
+		write_lx200( sock_lx200, (char*)"NOV 17 2025#", 12, true );	
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:GVT#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Get Firmware Heure", buffer );
+		write_lx200( sock_lx200, (char*)"15:03:25#", 9, true );
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:Gg#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Get Longiture", buffer );
+		write_lx200( sock_lx200, (char*)"s000*00#", 8, true );
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:Gt#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Get Lattitude", buffer );
+		write_lx200( sock_lx200, (char*)"s45*53#", 7, true );
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:GC#" ) == 0 )
+	{
+		char 			sTime[30];
+		struct timeval	tv;
+		struct tm*		tm;
+
+		gettimeofday( &tv, NULL );
+		tm=localtime(&tv.tv_sec);
+		
+		snprintf( (char*)sTime, sizeof(sTime),"%02d/%02d/%02d#", tm->tm_mon+1, tm->tm_mday, tm->tm_year-100 );
+
+		logf_thread( (char*)"%s Get Local Date  : %s", buffer, sTime );
+		write_lx200( sock_lx200, (char*)sTime, strlen(sTime), true );
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:GL#" ) == 0 )
+	{
+		char 			sTime[20];
+		struct timeval	tv;
+		struct tm*		tm;
+
+		gettimeofday( &tv, NULL );
+		tm=localtime(&tv.tv_sec);
+		
+		snprintf( (char*)sTime, sizeof(sTime),"%02d:%02d:%02d#", tm->tm_hour, tm->tm_min, tm->tm_sec );
+
+		logf_thread( (char*)"%s Get Local Time   %s", buffer, sTime );
+		write_lx200( sock_lx200, sTime, strlen(sTime), true );	
+	}
+	///------------------------------------------------------
+	else
+	if ( strcmp( (char*)buffer, "#:GD#" ) == 0 )
+	{
+		//logf_thread( (char*)"%s Get Telescope DEC", buffer );
+		struct dms	DMS;
+		char		s[80];
+		char		sign[2];
+		double  	d = d_deg_dc;
+		
+		deg2dms( d_deg_dc, DMS );
+		if ( DMS.d >= 0 )		sign[0] = '+';
+		else					sign[0] = '-';
+		sign[1] = 0;
+		
+		DMS.d = abs(DMS.d);
+		snprintf( s, sizeof(s), "%s%02d*%02d\'%02d#", sign, (int)DMS.d, (int)DMS.m, (int)DMS.s );
+
+		#ifdef PANEL_LX200_DEBUG
+			//panel_debug.add_textf( (char*)"GD :\t%s %lf", s,  d_deg_dc );
+			panel_debug.add_textf( (char*)"GD :\t%s", s );
+		#endif
+
+		write_lx200( sock_lx200, s, strlen(s), false );	
+	}
+	///------------------------------------------------------
+	else
+	if ( strcmp( (char*)buffer, "#:GR#" ) == 0 )
+	{
+		//logf_thread( (char*)"%s Get Telescope RA", buffer );
+
+		struct hms	HMS;
+		char		s[80];
+		
+		deg2hms( d_deg_ad, HMS );
+		snprintf( s, sizeof(s), "%02d:%02d:%02d#", (int)HMS.h, (int)HMS.m, (int)HMS.s );
+
+		#ifdef PANEL_LX200_DEBUG
+			//panel_debug.add_textf( (char*)"GR :\t%s %lf", s, d_deg_ad );
+			panel_debug.add_textf( (char*)"GR :\t%s", s );
+		#endif
+
+		write_lx200( sock_lx200, (char*)s, strlen(s), false );	
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:GW#" ) == 0 )
+	{
+		//logf_thread( (char*)"%s Get Scope Alignment Status", buffer );
+		write_lx200( sock_lx200, (char*)"GN3#", 4, false );	
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:GG#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Get UTC offset time", buffer );
+		write_lx200( sock_lx200, (char*)"-01#", 4, true );
+	}
+	else
+	{
+		logf_thread( (char*)"--[WARNING] \"%s\" Commande G inconnue", buffer );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//				M – Telescope Movement Commands
+//
 //--------------------------------------------------------------------------------------------------------------------
-void LX200::decode( struct stellarium& ss, unsigned char* buffer )
+void LX200::traite_command_M( char* buffer, int n)
 {
-    long long tz = 0;
-    tz |= (unsigned long)buffer[4];
-    tz |= (unsigned long)buffer[5]<<8;
-    tz |= (unsigned long)buffer[6]<<16;
-    tz |= (unsigned long)buffer[7]<<24;
-    tz |= (unsigned long)buffer[8]<<32;
-    tz |= (unsigned long)buffer[9]<<40;
-    tz |= (unsigned long)buffer[10]<<48;
-    tz |= (unsigned long)buffer[11]<<56;
-    ss.tz = tz;
+	Serial& arduino = Serial::getInstance();
 
-    int l;
-    l = 0;
-    l |= buffer[12];
-    l |= buffer[13]<<8;
-    l |= buffer[14]<<16;
-    l |= buffer[15]<<24;
-    ss.ra = l;
+	if ( strncmp( (char*)buffer, "#:Mw", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Move Telescope West at current slew rate", buffer );
+		char cmd[] = "x100";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Me", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Move Telescope Est at current slew rate", buffer );
+		char cmd[] = "x-100";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Mn", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Move Telescope North at current slew rate", buffer );
+		char cmd[] = "y100";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Ms", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Move Telescope South at current slew rate", buffer );
+		char cmd[] = "y-100";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:MS#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Slew to Target Object", buffer );
+		write_lx200( sock_lx200, (char*)"0", 1, true );	
+		
+		Serveur_mgr::getInstance()._goto( dRA, dDC );
 
-    l = 0;
-    l |= buffer[16];
-    l |= buffer[17]<<8;
-    l |= buffer[18]<<16;
-    l |= buffer[19]<<24;
-    ss.dc = l;
+		if ( !Serial::getInstance().isConnect() )
+		{
+			change_ad_status( RAD2DEG(dRA) );
+			change_dc_status( RAD2DEG(dDC) );
+		}
+		/*
+		*/
+	}
+	else
+	{
+		logf_thread( (char*)"--[WARNING] \"%s\" Commande M inconnue", buffer );
+	}
+		
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//				Q – Movement Commands
+//
+//--------------------------------------------------------------------------------------------------------------------
+void LX200::traite_command_Q( char* buffer, int n)
+{
+	Serial& arduino = Serial::getInstance();
+
+	if ( strncmp( (char*)buffer, "#:Qw", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Halt southward Slews", buffer );
+		char cmd[] = "x0;y=0";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Qe", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Halt southward Slews", buffer );
+		char cmd[] = "x0;y=0";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Qn", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Halt southward Slews", buffer );
+		char cmd[] = "x0;y=0";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Qs", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Halt southward Slews", buffer );
+		char cmd[] = "x0;y=0";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:Q#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Abort", buffer );
+		/*
+		Serial& arduino = Serial::getInstance();
+		char cmd[] = "n";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		arduino.write_string(cmd);
+		*/
+	}
+	else
+	{
+		logf_thread( (char*)"--[WARNING] \"%s\" Commande Q inconnue", buffer );
+	}
+		
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//				R – Slew Rate Commands
+//
+//--------------------------------------------------------------------------------------------------------------------
+void LX200::traite_command_R( char* buffer, int n)
+{
+	Serial& arduino = Serial::getInstance();
+
+	if ( strncmp( (char*)buffer, "#:RG", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Slew rate to Centering rate more Slowest", buffer );
+		char cmd[] = "z4";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:RC", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Slew rate to Centering rate Slowest", buffer );
+		char cmd[] = "z3";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:RM", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Slew rate to Centering rate Fastest", buffer );
+		char cmd[] = "z2";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:RS", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Slew rate to Centering rate more Fastest", buffer );
+		char cmd[] = "z1";
+		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
+		if ( arduino.isConnect() )		arduino.write_string(cmd);
+	}
+	else
+	if ( strcmp( (char*)buffer, "#:Q#" ) == 0 )
+	{
+		logf_thread( (char*)"%s Abort", buffer );
+	}
+	else
+	{
+		logf_thread( (char*)"--[WARNING] \"%s\" Commande Q inconnue", buffer );
+	}
+		
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//			S – Telescope Set Commands
+//
+//--------------------------------------------------------------------------------------------------------------------
+void LX200::traite_command_S( char* buffer, int n)
+{
+	if ( strncmp( (char*)buffer, "#:SG", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Offset UTC", buffer );
+		write_lx200( sock_lx200, (char*)"1", 1, true );	
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:St", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Lattitude", buffer );
+		write_lx200( sock_lx200, (char*)"1", 1, true );	
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Sg", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Longitude", buffer );
+		write_lx200( sock_lx200, (char*)"1", 1, true );	
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:SL", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Local time", buffer );
+		write_lx200( sock_lx200, (char*)"1", 1, true );	
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:SC", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set Local date", buffer );
+		write_lx200( sock_lx200, (char*)"1", 1, true );	
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Sd", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set target object DEC", buffer );
+		write_lx200( sock_lx200, (char*)"1", 1, true );	
+		
+		struct dms	 DMS;
+		int sign;
+
+		if ( buffer[4] == '+' )		sign = 1;
+		else						sign = -1;
+		DMS.d = sign * ((buffer[5]-'0') * 10 + (buffer[6]-'0'));
+		DMS.m = (buffer[8]-'0') * 10 + (buffer[9]-'0');
+		DMS.s = (buffer[11]-'0') * 10 + (buffer[12]-'0');
+		
+		dDC = dms2rad(DMS);
+	}
+	else
+	if ( strncmp( (char*)buffer, "#:Sr", 4 ) == 0 )
+	{
+		logf_thread( (char*)"%s Set target object RA", buffer );
+		write_lx200( sock_lx200, (char*)"1", 1, true );	
+		
+		struct hms	 HMS;
+		HMS.h = (buffer[4]-'0') * 10 + (buffer[5]-'0');
+		HMS.m = (buffer[7]-'0') * 10 + (buffer[8]-'0');
+		HMS.s = (buffer[10]-'0') * 10 + (buffer[11]-'0');
+		
+		dRA = hms2rad(HMS);
+		if ( dRA > M_PI )		dRA = -2.0*M_PI + dRA;
+	}
+	else
+	{
+		logf_thread( (char*)"--[WARNING] \"%s\" Commande S inconnue", buffer );
+	}
+		
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -77,337 +422,125 @@ void LX200::traite_connexion_lx200()
 
     while( traite_1 )
     {
-        n = read(sock_ref, buffer, 255);
+		#ifdef PANEL_LX200_DEBUG
+			panel_debug.setVisible(bPanelStdOut);
+		#endif
+    
+        n = read(sock_lx200, buffer, 255);
         //logf_thread( (char*)"LX200::traite_connexion_init()" );
         log_tab(true);
 
         if (n <= 0)
         {
-            logf_thread( (char*)"ERROR reading from socket (init)");
+            logf_thread( (char*)"[Error] reading from socket (lx200)");
 	        log_tab(false);
             break;
         }
 
 		buffer[n] = 0;
-        //logf_thread( (char*)"Init nb octet lu : %d   \"%s\"", n, (char*)buffer );
+        //logf_thread( (char*)"lx200 :  \"%s\"", (char*)buffer );
 
 		if ( buffer[0] == '#' )			
 		{ 
 			if ( buffer[0] == '#' && buffer[1] == '#' )
 			{
-				write_stellarium( sock_ref, (char*)"##", 2 );	
-				log_tab(false);
-				continue;
+				logf_thread( (char*)"%s START", buffer );
+				write_lx200( sock_lx200, (char*)"##", 2 );	
 			}
 			else
 			if ( buffer[0] == '#' && buffer[1] == 0x6 )
 			{
-				write_stellarium( sock_ref, (char*)"P", 1 );	
-				log_tab(false);
-				continue;
+				logf_thread( (char*)"%s ACK", buffer );
+				write_lx200( sock_lx200, (char*)"P", 1 );		// Polar mode
 			}
 			else
-			if ( strcmp( (char*)buffer, "#:GVP#" ) == 0 )
+			//------------------------------------------------------
+			if ( strncmp( (char*)buffer, "#:G", 3 ) == 0 )
 			{
-				logf_thread( (char*)"%s Get Telescope NAME", buffer );
-				write_stellarium( sock_ref, (char*)"EQ5_DRIVE#", 10, true );
-				log_tab(false);
-				continue;
+				traite_command_G( (char*)buffer, n );
 			}
 			else
-			if ( strcmp( (char*)buffer, "#:GVN#" ) == 0 )
+			if ( strncmp( (char*)buffer, "#:M", 3 ) == 0 )
 			{
-				logf_thread( (char*)"%s Get Firmware Version", buffer );
-				write_stellarium( sock_ref, (char*)"00.7#", 5, true );	
-				log_tab(false);
-				continue;
+				traite_command_M( (char*)buffer, n );
 			}
 			else
-			if ( strcmp( (char*)buffer, "#:GVD#" ) == 0 )
+			if ( strncmp( (char*)buffer, "#:Q", 3 ) == 0 )
 			{
-				logf_thread( (char*)"%s Get Firmware Date", buffer );
-				write_stellarium( sock_ref, (char*)"NOV 17 2025#", 12, true );	
-				log_tab(false);
-				continue;
+				traite_command_Q( (char*)buffer, n );
 			}
 			else
-			if ( strcmp( (char*)buffer, "#:GVT#" ) == 0 )
+			if ( strncmp( (char*)buffer, "#:R", 3 ) == 0 )
 			{
-				logf_thread( (char*)"%s Get Firmware Heure", buffer );
-				write_stellarium( sock_ref, (char*)"15:03:25#", 9, true );
-				log_tab(false);
-				continue;
+				traite_command_R( (char*)buffer, n );
 			}
 			else
-			if ( strcmp( (char*)buffer, "#:Gg#" ) == 0 )
+			if ( strncmp( (char*)buffer, "#:S", 3 ) == 0 )
 			{
-				logf_thread( (char*)"%s Get Longiture", buffer );
-				write_stellarium( sock_ref, (char*)"s000*00#", 8, true );
-				log_tab(false);
-				continue;
+				traite_command_S( (char*)buffer, n );
 			}
-			else
-			if ( strcmp( (char*)buffer, "#:Gt#" ) == 0 )
-			{
-				logf_thread( (char*)"%s Get Lattitude", buffer );
-				write_stellarium( sock_ref, (char*)"s45*53#", 7, true );
-				log_tab(false);
-				continue;
-			}
-			else
-			if ( strcmp( (char*)buffer, "#:GC#" ) == 0 )
-			{
-				char 			sTime[30];
-				struct timeval	tv;
-				struct tm*		tm;
-
-				gettimeofday( &tv, NULL );
-				tm=localtime(&tv.tv_sec);
-				
-				snprintf( (char*)sTime, sizeof(sTime),"%02d/%02d/%02d#", tm->tm_mon+1, tm->tm_mday, tm->tm_year-100 );
-
-				logf_thread( (char*)"%s Get Local Date  : %s", buffer, sTime );
-				write_stellarium( sock_ref, (char*)sTime, strlen(sTime), true );
-				log_tab(false);
-				continue;
-			}
-			else
-			if ( strcmp( (char*)buffer, "#:GL#" ) == 0 )
-			{
-				char 			sTime[20];
-				struct timeval	tv;
-				struct tm*		tm;
-
-				gettimeofday( &tv, NULL );
-				tm=localtime(&tv.tv_sec);
-				
-				snprintf( (char*)sTime, sizeof(sTime),"%02d:%02d:%02d#", tm->tm_hour, tm->tm_min, tm->tm_sec );
-
-				logf_thread( (char*)"%s Get Local Time   %s", buffer, sTime );
-				write_stellarium( sock_ref, sTime, strlen(sTime), true );	
-
-				log_tab(false);
-				continue;
-			}
-			///------------------------------------------------------
-			else
-			if ( strcmp( (char*)buffer, "#:GD#" ) == 0 )
-			{
-				//logf_thread( (char*)"%s Get Telescope DEC", buffer );
-				struct dms	DMS;
-				char		s[80];
-				char		sign[2];
-				
-				deg2dms( d_deg_dc, DMS );
-				if ( DMS.d >= 0 )		sign[0] = '+';
-				else					sign[0] = '-';
-				sign[1] = 0;
-				
-				DMS.d = abs(DMS.d);
-				snprintf( s, sizeof(s), "%s%02d*%02d\'%02d#", sign, (int)DMS.d, (int)DMS.m, (int)DMS.s );
-
-
-				write_stellarium( sock_ref, s, strlen(s), false );	
-				log_tab(false);
-				continue;
-			}
-			///------------------------------------------------------
-			else
-			if ( strcmp( (char*)buffer, "#:GR#" ) == 0 )
-			{
-				//logf_thread( (char*)"%s Get Telescope RA", buffer );
-
-				struct hms	HMS;
-				char		s[80];
-				
-				deg2hms( d_deg_ad, HMS );
-				snprintf( s, sizeof(s), "%02d:%02d:%02d#", (int)HMS.h, (int)HMS.m, (int)HMS.s );
-
-				write_stellarium( sock_ref, (char*)s, strlen(s), false );	
-				log_tab(false);
-				continue;
-			}
-			///------------------------------------------------------
+			//------------------------------------------------------
 			else
 			if ( strcmp( (char*)buffer, "#:D#" ) == 0 )
 			{
 				//logf_thread( (char*)"Distance Bars" );
-				write_stellarium( sock_ref, (char*)"s#", 2, false );
-				log_tab(false);
-				continue;
+				write_lx200( sock_lx200, (char*)"s#", 2, false );
+				#ifdef PANEL_LX200_DEBUG
+					panel_debug.reset_list();
+				#endif
 			}
 			else
-			if ( strcmp( (char*)buffer, "#:GW#" ) == 0 )
+			if ( strcmp( (char*)buffer, "#:CM#" ) == 0 )
 			{
-				//logf_thread( (char*)"%s Get Scope Alignment Status", buffer );
-				write_stellarium( sock_ref, (char*)"PN3#", 4, false );	
-				log_tab(false);
-				continue;
-			}
-			else
-			if ( strcmp( (char*)buffer, "#:GG#" ) == 0 )
-			{
-				logf_thread( (char*)"%s Get UTC offset time", buffer );
-				write_stellarium( sock_ref, (char*)"-01#", 4, true );
-				log_tab(false);
-				continue;
-			}
-			else
-			if ( strcmp( (char*)buffer, "#:Q#" ) == 0 )
-			{
-				logf_thread( (char*)"%s Abort", buffer );
-				log_tab(false);
-				continue;
-			}
-			else
-			if (	buffer[0] == '#' &&
-					buffer[1] == ':' &&
-					buffer[2] == 'S' &&
-					buffer[3] == 'r' )
-			{
-				logf_thread( (char*)"%s Set target object RA", buffer );
-				write_stellarium( sock_ref, (char*)"1", 1, true );	
-				
-				struct hms	 HMS;
-				HMS.h = (buffer[4]-'0') * 10 + (buffer[5]-'0');
-				HMS.m = (buffer[7]-'0') * 10 + (buffer[8]-'0');
-				HMS.s = (buffer[10]-'0') * 10 + (buffer[11]-'0');
-				
-				double ra = hms2rad(HMS);
-				change_ad_status( RAD2DEG(ra) );
-				
-				log_tab(false);
-				continue;
-			}
-			else
-			if (	buffer[0] == '#' &&
-					buffer[1] == ':' &&
-					buffer[2] == 'S' &&
-					buffer[3] == 'd' )
-			{
-				logf_thread( (char*)"%s Set target object DEC", buffer );
-				write_stellarium( sock_ref, (char*)"1", 1, true );	
-				
-				struct dms	 DMS;
-				int sign;
+				logf_thread( (char*)"%s Sync", buffer );
+				write_lx200( sock_lx200, (char*)"#", 1, false );
 
-				if ( buffer[4] == '+' )		sign = 1;
-				else						sign = -1;
-				DMS.d = sign * (buffer[5]-'0') * 10 + (buffer[6]-'0');
-				DMS.m = (buffer[8]-'0') * 10 + (buffer[9]-'0');
-				DMS.s = (buffer[11]-'0') * 10 + (buffer[12]-'0');
-				
-				double dc = dms2rad(DMS);
-				change_dc_status( RAD2DEG(dc) );
-				
-				log_tab(false);
-				continue;
+				Serveur_mgr::getInstance()._sync( dRA, dDC );
+				if ( Serial::getInstance().isConnect() )
+				{
+					change_ad_status( RAD2DEG(dRA) );
+					change_dc_status( RAD2DEG(dDC) );
+				}
+				/*
+				*/
 			}
-			else
-			if ( strcmp( (char*)buffer, "#:MS#" ) == 0 )
-			{
-				logf_thread( (char*)"%s Slew to Target Object", buffer );
-				write_stellarium( sock_ref, (char*)"0", 1, true );	
-				log_tab(false);
-				continue;
-			}
-			/*
-			else
-			if ( strcmp( (char*)buffer, "#:D#" ) == 0 )
-			{
-				write_stellarium( sock_ref, (char*)"s#", 2 );	
-				logf_thread( (char*)"Distnace Bars" );
-				log_tab(false);
-				continue;
-			}
-			else
-			if ( strcmp( (char*)buffer, "#:D#" ) == 0 )
-			{
-				write_stellarium( sock_ref, (char*)"s#", 2 );	
-				logf_thread( (char*)"Distnace Bars" );
-				log_tab(false);
-				continue;
-			}
-			*/
 			else
 			{
 				logf_thread( (char*)"--[WARNING] \"%s\" Commande inconnue", buffer );
 			}
 			
 			log_tab(false);
-			continue;
 		}
 
-		//-------------------------------------------------
-		// recuperation des infos
-        struct stellarium ss;
-        decode( ss, buffer );
-		//-------------------------------------------------
-
-        double ra = com2rad(ss.ra);
-        double dc = com2rad(ss.dc);
-
-        logf_thread( (char*)"reception de ra=%0.10f, dc=%0.10f", ra, dc);
-        
-        if ( !Serial::getInstance().isConnect() )
-        {
-        	write_stellarium( RAD2DEG(ra), RAD2DEG(dc) );
-			change_ad_status( RAD2DEG(ra) );
-			change_dc_status( RAD2DEG(dc) );
-        }
-
-
-
-        struct hms HMS;
-        rad2hms( ra, HMS );
-        logf_thread( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
-        
-        struct dms DMS;
-        rad2dms( dc, DMS );
-        logf_thread( (char*)"Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
-        
-        char cmd[255];
-        sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );
-
-		//-------------------------------------------------
-        logf_thread( (char*)"Envoi arduino : \"%s\"", cmd );
-        Serial::getInstance().write_string(cmd);
-		//-------------------------------------------------
-        logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
-		Camera_mgr::getInstance().position(ra, dc);
-        Captures::getInstance().position(ra, dc);
-		//-------------------------------------------------
-
-        Xref = 0.0;
-        Yref = 0.0;
-        //Zref = 0.0;
-        log_tab(false);
 
     }
     
-    logf_thread( (char*)"Deconnexion du sock_init %d", sock_ref );
-    close(sock_ref);
+    logf_thread( (char*)"Deconnexion du sock_lx200 %d", sock_lx200 );
+    close(sock_lx200);
 
-    sock_ref = -1;
+#ifdef PANEL_LX200_DEBUG
+	panel_debug.setVisible(false);
+#endif
+    sock_lx200 = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void LX200::thread_listen_lx200()
 {
-    logf_thread( (char*)"LX200::thread_listen_lx200()");
+    //logf_thread( (char*)"LX200::thread_listen_lx200()");
 
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
 
 
-	if ((sock_1 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((sock_listen_lx200 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
 
     int enable = 1;
-    if (setsockopt(sock_1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    if (setsockopt(sock_listen_lx200, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
         perror("setsockopt(SO_REUSEADDR) failed");
 		exit(EXIT_FAILURE);
@@ -428,100 +561,112 @@ void LX200::thread_listen_lx200()
 #endif
 
 
-	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		logf_thread( (char*) "[ERREUR] bind (sock_1)");
-		sock_1 = -1;
+	if (bind(sock_listen_lx200, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
+		logf_thread( (char*) "[Error] bind (sock_listen_lx200)");
+		sock_listen_lx200 = -1;
 		//exit(EXIT_FAILURE);
 		return;
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
-	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
-		logf_thread( (char*) "[ERREUR] getsockname (sock_1)");
+	if (getsockname(sock_listen_lx200, (struct sockaddr *) & adresse, & longueur) < 0) {
+		logf_thread( (char*) "[Error] getsockname (sock_listen_lx200)");
 		return;
 	}
 
 
     int option = 1;
-    if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
+    if(setsockopt(sock_listen_lx200,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-		logf_thread( (char*) "[ERREUR] setsockopt (sock_1)");
-        close(sock_1);
+		logf_thread( (char*) "[Error] setsockopt (sock_listen_lx200)");
+        close(sock_listen_lx200);
 		return;
 
     }
 
 
     logf_thread( (char*)"---------------------------------------------------------------");
-	logf_thread( (char*)"Init  Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
+	logf_thread( (char*)"Ecoute sur IP = %s, Port = %u (Lx200)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf_thread( (char*)"---------------------------------------------------------------");
 
-	listen(sock_1, 5);
+	listen(sock_listen_lx200, 5);
 	while (listen_1) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_ref = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
+		int sock = accept(sock_listen_lx200, (struct sockaddr *) & adresse, & longueur);
 
-		if (sock_ref < 0)			continue;
+		if (sock < 0)			continue;
+		if ( sock_lx200 != -1 )
+		{
+			close( sock );
+			char *some_addr;
+		    some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+			logf_thread( (char*)"[Warning] lx200 tentative de connection %s", some_addr );
+			continue;
+		}
 		
+		sock_lx200 = sock;
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
 		//sIP_init = string( some_addr );
 	
 		logf_thread( (char*)"LX200::thread_listen_lx200() connexion SOCKET 2" );
-		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d sur %s", sock_1, sock_ref, some_addr, (int)adresse.sin_port, sIP_lx200.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_lx200 = %d  IP = %s:%d sur %s", sock_listen_lx200, sock_lx200, some_addr, (int)adresse.sin_port, sIP_lx200.c_str() );
 
+		//panel_win.setVisible(bPanelStdOut);
+		//PANEL_LX200_DEBUG.setVisible(bPanelStdOut);
 		traite_connexion_lx200();
 	}
-    logf_thread( (char*)"Fermeture de sock_1 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
-	close(sock_1);
-	sock_1 = -1;
+    logf_thread( (char*)"Fermeture de sock_listen_lx200 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
+	close(sock_listen_lx200);
+	sock_listen_lx200 = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void LX200::start_lx200()
 {
-    th_1 = std::thread(&LX200::thread_listen_lx200, this);
-    th_1.detach();
+    th_lx200_listen = std::thread(&LX200::thread_listen_lx200, this);
+    th_lx200_listen.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void LX200::write_stellarium(char* s)
+void LX200::write_lx200(char* s)
 {
-//#define LOG
-    if ( sock_ref != -1 )
+#define LOG
+    if ( sock_lx200 != -1 )
     {
-        write( sock_ref, s, 24 );
+        write( sock_lx200, s, strlen(s) );
 
         #ifdef LOG
-        char trame[24*4+80]  = "";
-        char t[24*4+80] = "";
+        char t[25*4+80] = "";
         
-        trame[0] = 0;
+      	strcpy( t, s );
+      	char* ptr = t + strlen(s);
         
-        for (int i=0; i<24; i++ )	{
-        	strcpy( t, trame );
-        	unsigned char c = s[i];
-        	snprintf( (char*)trame, sizeof(trame), "%s %02X", t, c );
+        for (int i=0; i<strlen(s); i++ )	{
+        	sprintf( (char*)ptr, " %02X", (unsigned char)s[i] );
+        	ptr += 3;
         
         }
-        logf_thread( (char*)"Envoid a lx200  %s", trame );
+
+        logf_thread( (char*)"Envoi a lx200  %s", t );
         #endif
     }
+#undef LOG
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void LX200::write_stellarium(int socket, char* s, int len)
+void LX200::write_lx200(int socket, char* s, int len)
 {
-	write_stellarium( socket, s, len, true );
+	write_lx200( socket, s, len, true );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void LX200::write_stellarium(int socket, char* s, int len, bool bLog)
+void LX200::write_lx200(int socket, char* s, int len, bool bLog)
 {
 #define __LOG
     if ( socket != -1 )
@@ -529,107 +674,22 @@ void LX200::write_stellarium(int socket, char* s, int len, bool bLog)
         write( socket, s, len );
 
         #ifdef __LOG
-        char trame[24*4+80]  = "";
-        char t[24*4+80] = "";
+        char t[255]		= "";
         
-        trame[0] = 0;
+      	strcpy( t, s );
+      	char* ptr = t + strlen(s);
         
-        for (int i=0; i<len; i++ )	{
-        	strcpy( t, trame );
-        	unsigned char c = s[i];
-        	snprintf( (char*)trame, sizeof(trame), "%s %02X", t, c );
-        
+        for (int i=0; i<strlen(s); i++ )	{
+        	sprintf( (char*)ptr, " %02X", (unsigned char)s[i] );
+        	ptr += 3;
         }
+        
         if ( bLog )
-	        logf_thread( (char*)"  | Envoi a lx200  \"%s\" - %s",s,  trame );
+	        logf_thread( (char*)"  | Envoi a lx200  \"%s\" - %s", s, t );
         #endif
     }
 #undef __LOG
 }
-//--------------------------------------------------------------------------------------------------------------------
-//
-// Envoi a stellarium la position du telescope
-//
-// Octet 	0 		= 24
-//			1 		= 0
-//			2 		= 0
-//			3		= 0
-//			4..11	= Heure (time(0) )
-//			12..15	= AD(rad) / M_PI * 2147483648
-//			16..19	= DC(rad) / M_PI * 2147483648
-//--------------------------------------------------------------------------------------------------------------------
-void LX200::write_stellarium(double ad, double dc)
-{
-    unsigned char buff[24];
-    memset( buff, 0, 24);
-    //--------------------------------------------------------
-    buff[0] = 24;
-    //--------------------------------------------------------
-    time_t 			t 		= time(0);
-    long long 		tl 		= (unsigned long long)t;
-    unsigned char* 	conv 	= (unsigned char*)&tl;
-    
-    buff[4] = conv[0];
-    buff[5] = conv[1];
-    buff[6] = conv[2];
-    buff[7] = conv[3];
-    buff[8] = conv[4];
-    buff[9] = conv[5];
-    buff[10] = conv[6];
-    buff[11] = conv[7];
-    //--------------------------------------------------------
-    float fa, fd;
-    
-    fa = ad;// / M_PI * 2147483648;
-    fd = dc;//) / M_PI * 2147483648;
-
-    if ( fa <0.0 )    {      
-        fa = 180.0 + fa;
-        fd = 180.0 - fd;
-    }
-    if ( fa >180.0 )    {      
-        fa = fa - 360.0;
-    }
-    
-    if ( fd >180.0)    {      
-        fd = -fd + 180.0;
-        if ( fa < 180.0 )       fa = -180.0 + fa;
-    }
-    
-    float rfa = DEG2RAD(fa) / M_PI * 2147483648;
-    float rfd = DEG2RAD(fd) / M_PI * 2147483648;
-
-    int a = rfa;
-    int d = rfd;
-    //--------------------------------------------------------
-    conv = (unsigned char*)&a;
-    buff[12] = conv[0];
-    buff[13] = conv[1];
-    buff[14] = conv[2];
-    buff[15] = conv[3];
-    //--------------------------------------------------------
-    conv = (unsigned char*)&d;
-    buff[16] = conv[0];
-    buff[17] = conv[1];
-    buff[18] = conv[2];
-    buff[19] = conv[3];
-    //--------------------------------------------------------
-    if ( ad!=0.0 && dc!=0.0 )
-    {
-		write_stellarium( (char*)buff );
-
-        #ifdef LOG
-    	struct hms HMS;
-    	struct dms DMS;
-		
-        logf_thread( (char*)"Em Stellarium\tAd=%0.8f  \tDc=%0.8f", fa, fd );
-        deg2hms( fa, HMS );
-        deg2dms( fd, DMS );
-        logf_thread( (char*)"				\tAd=%0.0fh%0.0f\'%0.2f\"  \tDc=%0.0fd\%2.0f'%2.2f\"", HMS.h, HMS.m, HMS.s, DMS.d, DMS.m, DMS.s );
-    	#endif
-    }
-}
-//--------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -641,32 +701,32 @@ void LX200::close_all()
     listen_1 = false;
     traite_1 = false;
 
-	//close(sock_1);
-	//close(sock_1);
+	//close(sock_listen_lx200);
+	//close(sock_listen_lx200);
     //sleep(1);
 
-    if ( sock_ref!= -1 )                shutdown(sock_ref, 2);
+    if ( sock_lx200!= -1 )                shutdown(sock_lx200, 2);
 
     
-    if ( sock_1!= -1 )                  shutdown(sock_1, 2);
+    if ( sock_listen_lx200!= -1 )         shutdown(sock_listen_lx200, 2);
     //sleep(1);
     
     /*
-    sock_1          = -1;
-    sock_1          = -1;
+    sock_listen_lx200          = -1;
+    sock_listen_lx200          = -1;
     sock_stellarium = -1;
-    sock_ref        = -1;
+    sock_lx200        = -1;
     */
 
     //sleep(1);
     /*
-    logf_thread( (char*)"sock_1=%d sock_1=%d", sock_1, sock_1 );
-    while( sock_1 != -1)	;
-    while( sock_1!= -1)	;
+    logf_thread( (char*)"sock_listen_lx200=%d sock_listen_lx200=%d", sock_listen_lx200, sock_listen_lx200 );
+    while( sock_listen_lx200 != -1)	;
+    while( sock_listen_lx200!= -1)	;
     while( sock_stellarium != -1)	;
-    while( sock_ref!= -1)	;
+    while( sock_lx200!= -1)	;
     */
-    logf_thread( (char*)"sock_1=%d sock_1=%d", sock_1, sock_1 );
+    logf_thread( (char*)"sock_listen_lx200=%d sock_listen_lx200=%d", sock_listen_lx200, sock_listen_lx200 );
     log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -676,10 +736,20 @@ void LX200::print_list()
 {
     logf( (char*)"---- LX200::print_list()" );
 
-	if ( sock_ref != -1 )				logf( (char*)"  Init : %s", sIP_lx200.c_str() );
-	else								logf( (char*)"  Init listen" );
+	if ( sock_lx200 != -1 )				logf( (char*)"  LX200 : %s", sIP_lx200.c_str() );
+	else								logf( (char*)"  LX200 listen" );
 
 }    
+#ifdef PANEL_LX200_DEBUG
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void LX200::setColor( uint32_t  c)
+{
+	panel_debug.setColor( c );
+}
+#endif
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

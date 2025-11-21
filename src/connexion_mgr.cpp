@@ -224,7 +224,7 @@ void Connexion_mgr::pooling()
 //--------------------------------------------------------------------------------------------------------------------
 void Connexion_mgr::threadPooling()
 {
-    logf_thread( (char*)"[WARNING] Demarrage du thread Connexion_mgr::threadPooling()" );
+    logf_thread( (char*)"Demarrage du thread Connexion_mgr::threadPooling()" );
     bExitThread = false;
 
     while( 1 )

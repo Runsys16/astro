@@ -19,14 +19,14 @@ Serveur_mgr::Serveur_mgr()
     traite_1 = true;
     traite_2 = true;
 
-    sock_ref		= -1;
-    sock_stellarium	= -1;
+    sock_init		= -1;
+    sock_deplacement	= -1;
 
 	#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
 
     if ( !var.existe("IP_INIT"))		var.set("IP_INIT", "127.0.0.1" );
-    sIP_init = *var.gets("IP_INIT" );
+    sIP_init = *(var.gets("IP_INIT"));
 
     if ( !var.existe("IP_DEPL"))		var.set("IP_DEPL", "127.0.0.1" );
     sIP_depl = *var.gets("IP_DEPL" );
@@ -35,10 +35,10 @@ Serveur_mgr::Serveur_mgr()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-float Serveur_mgr::com2rad( int ra_int )
+double Serveur_mgr::com2rad( int ra_int )
 {
-    float ad_rad = ra_int;
-    ad_rad = ((ad_rad-0.5) * M_PI )/  (float)(2147483648.0) ;
+    double ad_rad = ra_int;
+    ad_rad = ((ad_rad-0.5) * M_PI )/  (double)(2147483648.0) ;
     return ad_rad;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -82,19 +82,18 @@ void Serveur_mgr::traite_connexion_init()
 
     while( traite_2 )
     {
-        n = read(sock_ref, buffer, 255);
+        n = read(sock_init, buffer, 255);
         //logf_thread( (char*)"Serveur_mgr::traite_connexion_init()" );
         log_tab(true);
 
         if (n <= 0)
         {
-            logf_thread( (char*)"ERROR reading from socket (init)");
+            logf_thread( (char*)"[ERROR] Reading from socket (init)");
 	        log_tab(false);
             break;
         }
 
 		buffer[n] = 0;
-        //logf_thread( (char*)"Init nb octet lu : %d   \"%s\"", n, (char*)buffer );
 
 		//-------------------------------------------------
 		// recuperation des infos
@@ -105,67 +104,40 @@ void Serveur_mgr::traite_connexion_init()
         double ra = com2rad(ss.ra);
         double dc = com2rad(ss.dc);
 
-        logf_thread( (char*)"reception de ra=%0.10f, dc=%0.10f", ra, dc);
+        logf_thread( (char*)"Init reception de ra=%0.10lf, dc=%0.10lf", ra, dc);
         
-        if ( !Serial::getInstance().isConnect() )
-        {
-        	write_stellarium( RAD2DEG(ra), RAD2DEG(dc) );
-			change_ad_status( RAD2DEG(ra) );
-			change_dc_status( RAD2DEG(dc) );
-        }
-
-
-
-        struct hms HMS;
-        rad2hms( ra, HMS );
-        logf_thread( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
-        
-        struct dms DMS;
-        rad2dms( dc, DMS );
-        logf_thread( (char*)"Dc : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
-        
-        char cmd[255];
-        sprintf( cmd, "ia%f;id%f", RAD2DEG(ra), RAD2DEG(dc) );
-
-		//-------------------------------------------------
-        logf_thread( (char*)"Envoi arduino : \"%s\"", cmd );
-        Serial::getInstance().write_string(cmd);
-		//-------------------------------------------------
-        logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
-		Camera_mgr::getInstance().position(ra, dc);
-        Captures::getInstance().position(ra, dc);
-		//-------------------------------------------------
+		_sync( ra, dc );
 
         Xref = 0.0;
         Yref = 0.0;
-        //Zref = 0.0;
+
         log_tab(false);
 
     }
     
-    logf_thread( (char*)"Deconnexion du sock_init %d", sock_ref );
-    close(sock_ref);
+    logf_thread( (char*)"Init Deconnexion du sock_init %d", sock_init );
+    close(sock_init);
 
-    sock_ref = -1;
+    sock_init = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_init()
 {
-    logf_thread( (char*)"Serveur_mgr::thread_listen_init()");
+    //logf_thread( (char*)"Serveur_mgr::thread_listen_init()");
 
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
 
 
-	if ((sock_2 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((sock_listen_init = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
 
     int enable = 1;
-    if (setsockopt(sock_2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    if (setsockopt(sock_listen_init, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
         perror("setsockopt(SO_REUSEADDR) failed");
 		exit(EXIT_FAILURE);
@@ -186,54 +158,64 @@ void Serveur_mgr::thread_listen_init()
 #endif
 
 
-	if (bind(sock_2, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		logf_thread( (char*) "[ERREUR] bind (sock_2)");
-		sock_2 = -1;
+	if (bind(sock_listen_init, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
+		logf_thread( (char*) "[ERREUR] bind (sock_listen_init)Init ");
+		sock_listen_init = -1;
 		//exit(EXIT_FAILURE);
 		return;
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
-	if (getsockname(sock_2, (struct sockaddr *) & adresse, & longueur) < 0) {
-		logf_thread( (char*) "[ERREUR] getsockname (sock_2)");
+	if (getsockname(sock_listen_init, (struct sockaddr *) & adresse, & longueur) < 0) {
+		logf_thread( (char*) "[ERREUR] getsockname (sock_listen_init) Init ");
 		return;
 	}
 
 
     int option = 1;
-    if(setsockopt(sock_2,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
+    if(setsockopt(sock_listen_init,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-		logf_thread( (char*) "[ERREUR] setsockopt (sock_2)");
-        close(sock_2);
+		logf_thread( (char*) "[ERREUR] setsockopt (sock_listen_init Init )");
+        close(sock_listen_init);
 		return;
 
     }
 
 
     logf_thread( (char*)"---------------------------------------------------------------");
-	logf_thread( (char*)"Init  Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
+	logf_thread( (char*)"Ecoute sur IP = %s, Port = %u (Init)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf_thread( (char*)"---------------------------------------------------------------");
 
-	listen(sock_2, 5);
+	listen(sock_listen_init, 5);
 	while (listen_2) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_ref = accept(sock_2, (struct sockaddr *) & adresse, & longueur);
+		int sock = accept(sock_listen_init, (struct sockaddr *) & adresse, & longueur);
 
-		if (sock_ref < 0)			continue;
+		if (sock < 0)			continue;
+		if ( sock_init != -1 )
+		{
+			close( sock );
+			char *some_addr;
+		    some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+			logf_thread( (char*)"[Warning] lx200 tentative de connection %s", some_addr );
+			continue;
+		}
 		
+		sock_init = sock;
+
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
 
 		//sIP_init = string( some_addr );
 	
-		logf_thread( (char*)"Serveur_mgr::thread_listen_init() connexion SOCKET 2" );
-		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d sur %s", sock_1, sock_ref, some_addr, (int)adresse.sin_port, sIP_init.c_str() );
+		logf_thread( (char*)"Serveur_mgr::thread_listen_init() connexion" );
+		logf_thread( (char*)"  sock = %d  sock_listen_init = %d  IP = %s:%d sur %s", sock_listen_init, sock_init, some_addr, (int)adresse.sin_port, sIP_init.c_str() );
 
 		traite_connexion_init();
 	}
-    logf_thread( (char*)"Fermeture de sock_2 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
-	close(sock_2);
-	sock_2 = -1;
+    logf_thread( (char*)"Fermeture de sock_listen_init (%s:%u) Init ", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
+	close(sock_listen_init);
+	sock_listen_init = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -253,7 +235,7 @@ void Serveur_mgr::traite_connexion_deplacement()
 
     while( traite_1 )
     {
-        n = read(sock_stellarium,buffer,255);
+        n = read(sock_deplacement,buffer,255);
         logf_thread( (char*)"Serveur_mgr::traite_connexion_deplacement()" );
         log_tab( true );
 
@@ -272,56 +254,45 @@ void Serveur_mgr::traite_connexion_deplacement()
         struct stellarium ss;
         decode( ss, buffer );
 
-        float ra = com2rad(ss.ra);
-        float dc = com2rad(ss.dc);
+        double ra = com2rad(ss.ra);
+        double dc = com2rad(ss.dc);
 
-
-        struct hms HMS;
-        rad2hms( ra, HMS );
-        logf_thread( (char*)"AD : %02dh%02dm%0.2fs (%0.8f)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
-        
-        struct dms DMS;
-        rad2dms( dc, DMS );
-        logf_thread( (char*)"DC : %02dd%02d\'%0.2f\" (%0.8f)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
-        
-        char cmd[255];
-        sprintf( cmd, "A%f;D%f", RAD2DEG(ra), RAD2DEG(dc) );
-        logf_thread( (char*)"Envoi arduino : %s", cmd );
-        Serial::getInstance().write_string(cmd);
+		_goto( ra, dc );
 
         log_tab( false );
     }
     
-    logf_thread( (char*)"Deconnexion du sock_deplacement %d", sock_stellarium);
-    close(sock_stellarium);
+    logf_thread( (char*)"Depl Deconnexion du sock_deplacement %d", sock_deplacement);
+    close(sock_deplacement);
 
-    sock_stellarium = -1;
+    sock_deplacement = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::thread_listen_deplacement()
 {
-    logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement()");
+    //logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement()");
     
-	struct sockaddr_in 	adresse;		memset(& adresse, 0, sizeof(struct sockaddr));
+	struct sockaddr_in 	adresse;		
 	socklen_t          	longueur;
+    int					option = 1;
+    int					enable = 1;
+
+	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
-    int option = 1;
-    int enable = 1;
 
-
-	if ((sock_1 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((sock_listen_deplacement = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
-        //close(sock_1);
+        //close(sock_listen_deplacement);
         goto sortie_deplacement;
 		exit(EXIT_FAILURE);
 	}
 	
-    if (setsockopt(sock_1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    if (setsockopt(sock_listen_deplacement, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
         perror("setsockopt(SO_REUSEADDR) failed");
-        //close(sock_1);
+        //close(sock_listen_deplacement);
         goto sortie_deplacement;
 		exit(EXIT_FAILURE);
     }
@@ -338,46 +309,56 @@ void Serveur_mgr::thread_listen_deplacement()
 #endif
 
 	
-	if (bind(sock_1, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
-		logf_thread( (char*) "[ERREUR] bind (sock_1)");
-        //close(sock_1);
+	if (bind(sock_listen_deplacement, (struct sockaddr *) & adresse, sizeof(adresse)) < 0) {
+		logf_thread( (char*) "[ERREUR] bind (sock_listen_deplacement) Depl ");
+        //close(sock_listen_deplacement);
         goto sortie_deplacement;
 		return;
 	}
 	
 	longueur = sizeof(struct sockaddr_in);
-	if (getsockname(sock_1, (struct sockaddr *) & adresse, & longueur) < 0) {
-		logf_thread( (char*) "[ERREUR] getsockname (sock_1)");
-        //close(sock_1);
+	if (getsockname(sock_listen_deplacement, (struct sockaddr *) & adresse, & longueur) < 0) {
+		logf_thread( (char*) "[ERREUR] getsockname (sock_listen_deplacement) Depl ");
+        //close(sock_listen_deplacement);
         goto sortie_deplacement;
 		return;
 	}
 
-    if(setsockopt(sock_1,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
+    if(setsockopt(sock_listen_deplacement,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
     {
-		logf_thread( (char*) "[ERREUR] setsockopt (sock_1)");
-        //close(sock_1);
+		logf_thread( (char*) "[ERREUR] setsockopt (sock_listen_deplacement) Depl ");
+        //close(sock_listen_deplacement);
         goto sortie_deplacement;
 		return;
     }
 
 
     logf_thread( (char*)"---------------------------------------------------------------");
-	logf_thread( (char*)"Deplacement Ecoute de IP = %s, Port = %u", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
+	logf_thread( (char*)"Ecoute sur IP = %s, Port = %u (Deplacement)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port));
     logf_thread( (char*)"---------------------------------------------------------------");
 
-	listen(sock_1, 5);
+	listen(sock_listen_deplacement, 5);
 	while ( listen_1 ) {
 		longueur = sizeof(struct sockaddr_in);
-		sock_stellarium = accept(sock_1, (struct sockaddr *) & adresse, & longueur);
+		int sock = accept(sock_listen_deplacement, (struct sockaddr *) & adresse, & longueur);
 
-		if (sock_stellarium < 0)			continue;
+		if (sock < 0)			continue;
+		if ( sock_deplacement != -1 )
+		{
+			close( sock );
+			char *some_addr;
+		    some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+			logf_thread( (char*)"[Warning] lx200 tentative de connection %s", some_addr );
+			continue;
+		}
+		
+		sock_deplacement = sock;
 		
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr);
 
-		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion SOCKET 1" );
-		logf_thread( (char*)"  sock = %d  sock_1 = %d  IP = %s:%d sur %s", sock_1, sock_stellarium, some_addr, (int)adresse.sin_port, sIP_depl.c_str() );
+		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion" );
+		logf_thread( (char*)"  sock = %d  sock_listen_deplacement = %d  IP = %s:%d sur %s", sock_listen_deplacement, sock_deplacement, some_addr, (int)adresse.sin_port, sIP_depl.c_str() );
 
 		traite_connexion_deplacement();
 		
@@ -385,9 +366,9 @@ void Serveur_mgr::thread_listen_deplacement()
 	}
 
 sortie_deplacement:
-    logf_thread( (char*)"Fermeture de sock_1 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
-	close(sock_1);
-	sock_1 = -1;
+    logf_thread( (char*)"Fermeture de Depl  (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
+	close(sock_listen_deplacement);
+	sock_listen_deplacement = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -403,9 +384,9 @@ void Serveur_mgr::start_deplacement()
 void Serveur_mgr::write_stellarium(char* s)
 {
 //#define LOG
-    if ( sock_stellarium != -1 )
+    if ( sock_deplacement != -1 )
     {
-        write( sock_stellarium, s, 24 );
+        write( sock_deplacement, s, 24 );
 
         #ifdef LOG
         char trame[24*4+80]  = "";
@@ -422,6 +403,7 @@ void Serveur_mgr::write_stellarium(char* s)
         logf_thread( (char*)"Envoid a stellarium  %s", trame );
         #endif
     }
+//#undef LOG
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -442,7 +424,7 @@ void Serveur_mgr::write_stellarium(int socket, char* s, int len, bool bLog)
 
         #ifdef __LOG
         char trame[24*4+80]  = "";
-        char t[24*4+80] = "";
+        char t[23*4+80] = "";
         
         trame[0] = 0;
         
@@ -490,7 +472,7 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
     buff[10] = conv[6];
     buff[11] = conv[7];
     //--------------------------------------------------------
-    float fa, fd;
+    double fa, fd;
     
     fa = ad;// / M_PI * 2147483648;
     fd = dc;//) / M_PI * 2147483648;
@@ -508,8 +490,8 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
         if ( fa < 180.0 )       fa = -180.0 + fa;
     }
     
-    float rfa = DEG2RAD(fa) / M_PI * 2147483648;
-    float rfd = DEG2RAD(fd) / M_PI * 2147483648;
+    double rfa = DEG2RAD(fa) / M_PI * 2147483648;
+    double rfd = DEG2RAD(fd) / M_PI * 2147483648;
 
     int a = rfa;
     int d = rfd;
@@ -534,14 +516,69 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
     	struct hms HMS;
     	struct dms DMS;
 		
-        logf_thread( (char*)"Em Stellarium\tAd=%0.8f  \tDc=%0.8f", fa, fd );
+        logf_thread( (char*)"Em Stellarium\tAd=%0.8lf  \tDc=%0.8lf", fa, fd );
         deg2hms( fa, HMS );
         deg2dms( fd, DMS );
-        logf_thread( (char*)"				\tAd=%0.0fh%0.0f\'%0.2f\"  \tDc=%0.0fd\%2.0f'%2.2f\"", HMS.h, HMS.m, HMS.s, DMS.d, DMS.m, DMS.s );
+        logf_thread( (char*)"				\tAd=%0.0lfh%0.0lf\'%0.2lf\"  \tDc=%0.0lfd\%2.0lf'%2.2lf\"", HMS.h, HMS.m, HMS.s, DMS.d, DMS.m, DMS.s );
     	#endif
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::_goto( double ra, double dc )
+{
+    struct hms HMS;
+    rad2hms( ra, HMS );
+    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+    
+    struct dms DMS;
+    rad2dms( dc, DMS );
+    logf_thread( (char*)"DC : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+    
+    char cmd[255];
+    sprintf( cmd, "A%lf;D%lf", RAD2DEG(ra), RAD2DEG(dc) );
+    logf_thread( (char*)"Serveur_mgr::_goto() envoi arduino : %s", cmd );
+ 
+    if ( Serial::getInstance().write_string(cmd) != 0 )
+    {
+	    logf_thread( (char*)"[ERROR] Serial" );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::_sync( double ra, double dc )
+{
+    logf_thread( (char*)"Serveur_mgr::_sync(( %lf, %lf )", ra, dc );
+    if ( !Serial::getInstance().isConnect() )
+    {
+    	write_stellarium( RAD2DEG(ra), RAD2DEG(dc) );
+		change_ad_status( RAD2DEG(ra) );
+		change_dc_status( RAD2DEG(dc) );
+    }
+
+    struct hms HMS;
+    rad2hms( ra, HMS );
+    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+    
+    struct dms DMS;
+    rad2dms( dc, DMS );
+    logf_thread( (char*)"Dc : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+    
+    char cmd[255];
+    sprintf( cmd, "ia%lf;id%lf", RAD2DEG(ra), RAD2DEG(dc) );
+
+	//-------------------------------------------------
+    logf_thread( (char*)"Envoi arduino : \"%s\"", cmd );
+    Serial::getInstance().write_string(cmd);
+	//-------------------------------------------------
+    logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
+	Camera_mgr::getInstance().position(ra, dc);
+    Captures::getInstance().position(ra, dc);
+	//-------------------------------------------------
+
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -555,34 +592,14 @@ void Serveur_mgr::close_all()
     traite_1 = false;
     traite_2 = false;
 
-	//close(sock_1);
-	//close(sock_2);
-    //sleep(1);
-
-    if ( sock_stellarium!= -1 )         shutdown(sock_stellarium, 2);
-    if ( sock_ref!= -1 )                shutdown(sock_ref, 2);
+    if ( sock_deplacement!= -1 )         shutdown(sock_deplacement, 2);
+    if ( sock_init!= -1 )                shutdown(sock_init, 2);
 
     
-    if ( sock_1!= -1 )                  shutdown(sock_1, 2);
-    if ( sock_2!= -1 )                  shutdown(sock_2, 2);
-    //sleep(1);
-    
-    /*
-    sock_1          = -1;
-    sock_2          = -1;
-    sock_stellarium = -1;
-    sock_ref        = -1;
-    */
+    if ( sock_listen_deplacement!= -1 )           shutdown(sock_listen_deplacement, 2);
+    if ( sock_listen_init!= -1 )                  shutdown(sock_listen_init, 2);
 
-    //sleep(1);
-    /*
-    logf_thread( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
-    while( sock_1 != -1)	;
-    while( sock_2!= -1)	;
-    while( sock_stellarium != -1)	;
-    while( sock_ref!= -1)	;
-    */
-    logf_thread( (char*)"sock_1=%d sock_2=%d", sock_1, sock_2 );
+    logf_thread( (char*)"sock_listen_deplacement=%d sock_listen_init=%d", sock_listen_deplacement, sock_listen_init );
     log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -592,10 +609,10 @@ void Serveur_mgr::print_list()
 {
     logf( (char*)"---- Serveur_mgr::print_list()" );
 
-	if ( sock_ref != -1 )				logf( (char*)"  Init : %s", sIP_init.c_str() );
+	if ( sock_init != -1 )				logf( (char*)"  Init : %s", sIP_init.c_str() );
 	else								logf( (char*)"  Init listen" );
 
-	if ( sock_stellarium != -1 )		logf( (char*)"  Bellatrix : %s", sIP_depl.c_str() );
+	if ( sock_deplacement != -1 )		logf( (char*)"  Bellatrix : %s", sIP_depl.c_str() );
 	else								logf( (char*)"  Bellatrix listen" );
 }    
 //--------------------------------------------------------------------------------------------------------------------

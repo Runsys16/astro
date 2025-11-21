@@ -748,17 +748,21 @@ void create_windows_button()
 	pAlpha = new PanelText( 	(char*)"a", (char*)POLICE , 60, 0, 14, 0xFFFFFFFF );
 	pDelta = new PanelText( 	(char*)"d", (char*)POLICE , 200, 0, 14, 0xFFFFFFFF );
 	
+	/*
     //pAD = new PanelText( (char*)"=\ --h --\' --\"",		            PanelText::NORMAL_FONT, 60+10, 2 );
-    char strAD[] = "= --h --\' --\"";
-    char strDC[] = "= --  --\' --\"";
-    strDC[4] = 176;		// caractere degre °
+    //char strAD[] = "= --h --\' --\"";
+    //char strDC[] = "= --  --\' --\"";
+    char strAD[] = "=";
+    char strDC[] = "=";
+    //strDC[4] = 176;		// caractere degre °
     
     pAD = new PanelText( (char*)strAD,		PanelText::NORMAL_FONT, 60+10, 2 );
     pDC = new PanelText( (char*)strDC,		PanelText::NORMAL_FONT, 200+10, 2 );
-
+	
 	panelStatus->add( pAD );
 	panelStatus->add( pDC );
-
+	*/
+	
     pAlpha->setPos( 60-2,  2);
     pDelta->setPos( 200-2, 1);
     /*
@@ -786,7 +790,7 @@ void idleStatus()
         oldPas = pas_sideral;
     }
     //-----------------------------------------------------------------------
-    // Gestion de apause
+    // Gestion de la pause
     //-----------------------------------------------------------------------
     //if (!bPause || bOneFrame )    {
         Camera_mgr::getInstance().change_background_camera();
@@ -808,36 +812,7 @@ void idleStatus()
     pButtonPause->setVal( bPause );
     pButtonDeplac->setVal( bMouseDeplace );
 
-    /*
-    if (err_old != panelCourbe->get_err() )
-    {
-        err_old = panelCourbe->get_err();
-        char str[255];
-        sprintf( str, "%0.2f", err_old );
-        pErr->changeText( (char*)str );
-    }
-
-    if (urg_old != fLimitCorrection0 )
-    {
-        urg_old = fLimitCorrection0;
-        char str[255];
-        sprintf( str, "%0.2f", urg_old );
-        pUrg->changeText( (char*)str );
-    }    if ( bSuivi )           pSuivi->setColor(COLOR_WHITE);
-    else                    pSuivi->setColor(COLOR_GREY);
-
-	if (bMouseDeplace)              				pDeplacement->setColor(COLOR_WHITE);
-    else                            				pDeplacement->setColor(COLOR_GREY);
-
-    if (bCorrection)                				pAsservi->setColor(COLOR_WHITE);
-    else                            				pAsservi->setColor(COLOR_GREY);
-
-    if ( Serial::getInstance().isConnect() )        pArduino->setColor(COLOR_WHITE);
-    else                                            pArduino->setColor(COLOR_GREY);
-
-    if ( bSuivi )                   				pSuivi->setColor(COLOR_WHITE);
-    else                            				pSuivi->setColor(COLOR_GREY);
-    */ 
+	//-----------------------------------------------------------------------
     
     if ( !bNuit )		status_nuit( COLOR_WHITE );
     else				status_nuit( COLOR32(255, 0, 0, 255) );

@@ -54,8 +54,17 @@ int Serial::write_string( const char* str, bool bAff)
 {
     //return -1;
     
-    if ( fd ==-1 )                          return -1;
-    if ( (fTimeMili - fTimeOut) < 1.0 )     return -1;
+    if ( fd ==-1 )
+    {
+    	log_thread( (char*)"[Error] Serial::write_string() Fichier -1" );
+    	return -1;
+    }
+
+    if ( (fTimeMili - fTimeOut) < 1.0 )     
+    {
+    	log_thread( (char*)"[Error] Serial::write_string() TimeOut" );
+    	return -1;
+    }
     
 
     if ( str[0] == 'a' || str[0] == 'd' )
@@ -89,12 +98,20 @@ int Serial::write_string( const char* str, bool bAff)
     
 
     int len = strlen(str);
+
     int n = write(fd, str, len);
     if( n!=len ) 
+    {
+        logf_thread( (char*)"Envoi %d/%d", n, len );
         return -1;
+    }
+
     n = write_byte('\n');
-    if( n!=len ) 
+    if( n!=0 ) 
+    {
+        logf_thread( (char*)"envoid de %d/1", n );
         return -1;
+    }
     return 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -103,6 +120,28 @@ int Serial::write_string( const char* str, bool bAff)
 int Serial::write_string( const char* str)
 {
     return write_string( str, false );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Serial::write_g()
+{
+	if ( fd == -1 )				return 0;
+	
+    char cmd[255];
+    sprintf( cmd, "g" );
+
+	int ret =  write_string(cmd, false);
+	
+	if ( bConnect == false )		nbConnect++;
+	if ( nbConnect >= 2 )			
+	{
+		log_thread( (char*)"Connexion pas de reponse arduino" );
+		change_arduino( false );
+		sclose();
+	}
+	
+	return ret;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -157,7 +196,7 @@ void Serial::emet_commande()
         PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
 
         if( n!=len ){
-            logf_thread((char*)"[ERREUR]Il manque des caracteres !!" );
+            logf_thread((char*)"[Error] Il manque des caracteres !!" );
             //log_tab(false);
             return;
         }
@@ -165,7 +204,7 @@ void Serial::emet_commande()
         n = write_byte('\n');
 
         if( n!=0 ){
-            logf_thread((char*)"[ERREUR]Sur le retour chariot!!" );
+            logf_thread((char*)"[Error] Sur le retour chariot!!" );
             //log_tab(false);
             return;
         }
@@ -186,7 +225,7 @@ void Serial::read_thread()
     int i=0;
     logf_thread( (char*)"START Serial::read_thread" );
     VarManager& var= VarManager::getInstance();
-    bConnect = true;
+    bConnect = false;
     
     // ne fonctionne pas     // don't say why ..
     logf_thread( (char*)"Envoi de la commande g" );
@@ -342,6 +381,7 @@ void Serial::read_thread()
 			        	}
 			        	else {
 			        		logf_thread((char*)"  Version OK" );
+			        		bConnect = true;
 			        	}
 			        }
 
@@ -399,6 +439,7 @@ void Serial::start_thread()
     {
         th_serial = std::thread(&Serial::read_thread, this);
         th_serial.detach();
+        nbConnect = 0;
     }
     else                        logf_thread( (char*)"Port deja ouvert !! " );
 }

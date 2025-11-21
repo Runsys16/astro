@@ -202,6 +202,8 @@ inline Stars*           getStars()                                      { return
 inline void             setVecteurAD(vec2 v)                            { vAD = v; }
 inline void             setVecteurDE(vec2 v)                            { vDE = v; }
 inline Catalog*			getCatalog()									{ return pVizier; }
+inline Capture*			getCapture()									{ return pCapture; }
+//inline string&			getFilename()									{ if (pCapture) return pCapture->getBasename(); else return ""; }
 
 };
 

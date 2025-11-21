@@ -686,7 +686,8 @@ void Captures::charge2(void)
     	snprintf( (char*)buf, sizeof(buf), "FileCapture%03d", no++ );
         string key = buf;
 		logf( (char*)"Chargement ; %s", key.c_str() );
-		log_tab( true );            
+		log_tab( true );      
+		bDesactiveLog = true;      
 
         if ( var.existe( key ) )
         {
@@ -711,9 +712,12 @@ void Captures::charge2(void)
             break;
         }
 		log_tab( false );            
+
+		bDesactiveLog = false;      
     }
     
 	log_tab( false );            
+	bDesactiveLog = false;      
     logf( (char*)"Captures::charge2 ----END----" );
 }
 //--------------------------------------------------------------------------------------------------------------------

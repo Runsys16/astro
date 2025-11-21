@@ -29,6 +29,7 @@
 
 #include "main.h"
 #include "serial.h"
+#include "panel_debug.h"
 
 using namespace std;
 
@@ -39,45 +40,56 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+#define PANEL_LX200_DEBUG
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 SINGLETON_BEGIN( LX200 )
 
 protected:
-    std::thread                 th_1;
+    std::thread                 th_lx200_listen;
 
-    std::thread                 connect_1;
-
-    int                         sock_ref;
+    int                         sock_lx200;
+    int                         sock_listen_lx200;
     
-    int                         sock_1;
+    double						dRA;
+    double						dDC;
 
     bool                        listen_1;
     bool                        traite_1;
     
     string						sIP_lx200;
+    
+#ifdef PANEL_LX200_DEBUG
+    PanelDebug					panel_debug;
+#endif
 
 public:
 							    LX200();
     
-    float                       com2rad( int);
-    void                        decode(struct stellarium& ss, unsigned char* buffer);
-
+    void                        traite_command_G( char*, int);
+    void                        traite_command_M( char*, int);
+    void                        traite_command_Q( char*, int);
+    void                        traite_command_R( char*, int);
+    void                        traite_command_S( char*, int);
     void                        traite_connexion_lx200();
     void                        thread_listen_lx200();
     void                        start_lx200();
    
-    void                        write_stellarium( char* s);
-    void                        write_stellarium( int, char* s, int);
-    void                        write_stellarium( int, char* s, int, bool );
-    void                        write_stellarium( double, double );
+    void                        write_lx200( char* s);
+    void                        write_lx200( int, char* s, int);
+    void                        write_lx200( int, char* s, int, bool );
     
     void                        close_all();
 
     void                        print_list();
 
-inline bool                     is_connect()                          { return sock_1 != -1; }
+inline bool                     is_connect()						{ return sock_lx200 != -1; }
+
+#ifdef PANEL_LX200_DEBUG
+inline PanelDebug*				getPanel()							{ return &panel_debug; }
+	void						setColor( uint32_t );
+#endif
     
     
     

@@ -1,5 +1,5 @@
-#ifndef SERVEUR_MGR_H
-#define SERVEUR_MGR_H  1
+#ifndef SYNSCAN_H
+#define SYNSCAN_H  1
 
 
 //#include "camera.h"
@@ -29,7 +29,7 @@
 
 #include "main.h"
 #include "serial.h"
-#include "serveur_mgr.h"
+#include "panel_debug.h"
 
 using namespace std;
 
@@ -40,64 +40,47 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-struct stellarium
-{
-    long long   tz;
-    int         ra;
-    int         dc;
-};
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-SINGLETON_BEGIN( Serveur_mgr )
+SINGLETON_BEGIN( SYNSCAN )
 
 protected:
     std::thread                 th_1;
-    std::thread                 th_2;
 
     std::thread                 connect_1;
 
-    int                         sock_deplacement;
-    int                         sock_init;
-    
-    int                         sock_listen_deplacement;
-    int                         sock_listen_init;
+    int                         sock_ref;  
+    int                         sock_1;
 
     bool                        listen_1;
-    bool                        listen_2;
     bool                        traite_1;
-    bool                        traite_2;
     
-    string						sIP_init;
-    string						sIP_depl;
+    string						sIP_synscan;
+    //PanelDebug					panel_debug;
 
 public:
-    Serveur_mgr();
+							    SYNSCAN();
     
-    double						com2rad( int);
+    float                       com2rad( int);
     void                        decode(struct stellarium& ss, unsigned char* buffer);
 
-    void						traite_connexion_deplacement();
-    void                        thread_listen_deplacement();
-    void                        start_deplacement();
-
-    void                        traite_connexion_init();
-    void                        thread_listen_init();
-    void                        start_init();
+	void						traite_connexion_synscan();
+    void                        thread_listen_synscan();
+    void                        start_synscan();
    
     void                        write_stellarium( char* s);
     void                        write_stellarium( int, char* s, int);
     void                        write_stellarium( int, char* s, int, bool );
     void                        write_stellarium( double, double );
-
-    void                        _goto( double, double );
-    void                        _sync( double, double );
     
     void                        close_all();
 
     void                        print_list();
 
-inline bool                     isConnect()                             { return sock_deplacement !=-1; }
+inline bool                     is_connect()						{ return sock_ref != -1; }
+//inline PanelWindow*				getPanelWindow()					{ return &panel_win; }
+    
     
     
 SINGLETON_END()

@@ -18,7 +18,7 @@
 #include "main.h"
 
 extern double fTimeMili;
-#define VER_ARDUINO		"1.0.3"
+#define VER_ARDUINO		"1.0.4"
 
 
 using namespace std;
@@ -52,6 +52,7 @@ SINGLETON_BEGIN( Serial )
 		string			sVersionArduinoValable;
 		
 		bool            bConnect;
+		int				nbConnect;
 
     private:
         void            emet_commande();
@@ -66,6 +67,7 @@ SINGLETON_BEGIN( Serial )
         int             write_byte(char b);
         int             write_string(const char* str, bool);
         int             write_string(const char* str);
+        int             write_g();
         void            push_cmd(string&);
         void            push_cmd(char *);
 
