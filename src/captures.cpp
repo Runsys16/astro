@@ -227,22 +227,14 @@ void Captures::resize_normal(Capture* p, int _dx, int _dy)
 void Captures::resize_all()
 {
     logf( (char*)"Captures::resize_all()    ------------ curr=%d", current_capture );
+    bDesactiveLog = true;
     log_tab(true);    
-    //if ( captures.size() == 0 )             return;
-    
+
 
     bool bFull = false;
     if ( current_capture != -1 )        bFull = captures[current_capture]->getFullScreen();
     
-    //logf( (char*)"  %d   full = %s", current_capture, bFull ? (char*)"true":(char*)"false" );
-    logf( (char*)"Current=%d   bFull:%s bIcones:%s bShowIcones:%s"   
-                                                                , current_capture
-                                                                , BOOL2STR(bFull)
-                                                                , BOOL2STR(bIcones)
-                                                                , BOOL2STR(bShowIcones)
-                                                                 );
-    
-    
+    logf( (char*)"Current=%d   bFull:%s bIcones:%s bShowIcones:%s", current_capture, BOOL2STR(bFull) , BOOL2STR(bIcones) , BOOL2STR(bShowIcones) );
     //--------------------------------------------------
     // Calcul les dimensions pour l'icone
     //--------------------------------------------------
@@ -258,19 +250,6 @@ void Captures::resize_all()
 
     int n = captures.size();
 
-    //if ( m<=0 )      { log_tab(false); return; }
-    if ( n<=1 )      { 
-		//log_tab(false);    
-		//logf( (char*)"Captures::resize_all() ---------END--------" );
-    }
-
-	/*
-    if ( n>1 )      DY = (height-20-dyIcon) / (n);
-    else            DY = (height-20-dyIcon) / (n);
-
-	logf( (char*)"DY = %d", DY );
-	*/
-    //if ( m <= 0 )            return;
     //--------------------------------------------------
     // Affiche les autres en icones
     //--------------------------------------------------
@@ -325,6 +304,8 @@ void Captures::resize_all()
 
     log_tab(false);    
     logf( (char*)"Captures::resize_all() ---------END--------" );
+	bDesactiveLog = false;
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

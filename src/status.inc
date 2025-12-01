@@ -64,7 +64,7 @@ void set_courbe(void)
 //--------------------------------------------------------------------------------------------------------------------
 void set_asservissement(void)
 {
-	logf( (char*)"set_asservissement()" );
+	//logf( (char*)"set_asservissement()" );
 	
     var.set("bCorrection", bCorrection);
     fTimeCpt = 0.0; 
@@ -76,7 +76,7 @@ void set_asservissement(void)
 
     pButtonAsserv->setVal(bCorrection);
     
-    logf( (char*)"set_asservissement() bCorrection = %s", bCorrection?(char*)"true":(char*)"false" );
+    logf( (char*)"set_asservissement() bCorrection = %s", BOOL2STR(bCorrection) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -90,7 +90,7 @@ void set_mode(bool b)
    
     pButtonMode->setVal(bModeManuel);
     
-    logf( (char*)"status::set_mode() bModeManuel = %s", bModeManuel?(char*)"true":(char*)"false" );
+    logf( (char*)"status::set_mode() bModeManuel = %s", BOOL2STR(bModeManuel) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -821,7 +821,7 @@ void idleStatus()
 
     if ( bFirstStatus )
     {
-        logf( (char*)"[WARNING]Change mode " );
+        logf( (char*)"[WARNING ] Change mode manuel : %s", BOOL2STR(bModeManuel) );
         set_mode(bModeManuel);
         set_asservissement();
     }

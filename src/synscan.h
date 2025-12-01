@@ -46,12 +46,11 @@ using namespace std;
 SINGLETON_BEGIN( SYNSCAN )
 
 protected:
-    std::thread                 th_1;
+    std::thread                 th_synscan_listen;
 
-    std::thread                 connect_1;
-
-    int                         sock_ref;  
-    int                         sock_1;
+    int                         sock_listen_synscan;  
+    int                         sock_synscan;
+    unsigned					uPort;
 
     bool                        listen_1;
     bool                        traite_1;
@@ -69,16 +68,15 @@ public:
     void                        thread_listen_synscan();
     void                        start_synscan();
    
-    void                        write_stellarium( char* s);
-    void                        write_stellarium( int, char* s, int);
-    void                        write_stellarium( int, char* s, int, bool );
-    void                        write_stellarium( double, double );
+    void                        write_synscan( char* s);
+    void                        write_synscan( int, char* s, int);
+    void                        write_synscan( int, char* s, int, bool );
     
     void                        close_all();
 
     void                        print_list();
 
-inline bool                     is_connect()						{ return sock_ref != -1; }
+inline bool                     is_connect()						{ return sock_synscan != -1; }
 //inline PanelWindow*				getPanelWindow()					{ return &panel_win; }
     
     

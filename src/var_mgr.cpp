@@ -177,6 +177,13 @@ void VarManager::charge()
         logf_thread( (char*)"%s\t = %s", key.c_str(), val.c_str() );
 #endif
         
+        if ( type.find("#") != string::npos )
+        {
+			logf_thread( (char*)"******************************%s commentaire", key.c_str() );
+		#ifdef DEBUG
+		#endif
+        }
+        else
         if ( type.find("float") != string::npos )
         {
             set( key, stof(val) );

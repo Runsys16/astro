@@ -19,8 +19,10 @@ Serveur_mgr::Serveur_mgr()
     traite_1 = true;
     traite_2 = true;
 
-    sock_init		= -1;
     sock_deplacement	= -1;
+    uPort_deplacement	= 10001;
+    sock_init			= -1;
+    uPort_init			= 10002;
 
 	#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
@@ -146,7 +148,7 @@ void Serveur_mgr::thread_listen_init()
 	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
 	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
-	adresse.sin_port = htons(10002);
+	adresse.sin_port = htons(uPort_init);
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
@@ -297,7 +299,7 @@ void Serveur_mgr::thread_listen_deplacement()
 		exit(EXIT_FAILURE);
     }
 
-	adresse.sin_port = htons(10001);
+	adresse.sin_port = htons(uPort_deplacement);
 	
 #ifdef VAR_GLOBAL
 	//sIP_depl = VarManager::getInstance().gets("IP_DEPL");
@@ -607,13 +609,15 @@ void Serveur_mgr::close_all()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::print_list()
 {
-    logf( (char*)"---- Serveur_mgr::print_list()" );
+    //logf( (char*)"---- Serveur_mgr::print_list()" );
 
-	if ( sock_init != -1 )				logf( (char*)"  Init : %s", sIP_init.c_str() );
-	else								logf( (char*)"  Init listen" );
+	if ( sock_listen_init == -1 )		logf( (char*)"  STEL Init\timpossible d'ouvrir : %s", sIP_init.c_str() );
+	else if ( sock_init != -1 )			logf( (char*)"  STEL Init\tconnextion" );
+	else								logf( (char*)"  STEL Init\tlisten sur \t: %s : %d", sIP_init.c_str(), uPort_init );
 
-	if ( sock_deplacement != -1 )		logf( (char*)"  Bellatrix : %s", sIP_depl.c_str() );
-	else								logf( (char*)"  Bellatrix listen" );
+	if ( sock_listen_deplacement == -1)	logf( (char*)"  STEL depl\timpossible d'ouvrir : %s", sIP_depl.c_str() );
+	else if ( sock_deplacement != -1)	logf( (char*)"  STEL depl\tconnexion" );
+	else								logf( (char*)"  STEL depl\tlisten sur \t: %s : %d", sIP_depl.c_str(), uPort_deplacement );
 }    
 //--------------------------------------------------------------------------------------------------------------------
 //

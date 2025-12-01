@@ -17,6 +17,7 @@
 //#include "panel_spin_edit_text.h"
 #include "serveur_mgr.h"
 #include "lx200.h"
+#include "synscan.h"
 #include "capture.h"
 #include "var_mgr.h"
 #include "alert_box.h"
@@ -29,6 +30,7 @@
 #include "star_catalogue.h"
 #include "catalog.h"
 #include <GL/freeglut_ext.h>
+#include <mutex>
 
 #define SIZEPT  20
 //--------------- DEBUG -------------------------------------------
@@ -66,7 +68,6 @@ vector<string> t_sHelp1 =
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
-	"     J\t: Lance ASI Studio",
 	"     j\t: Affichage info fits",
 	"     k\t: Active/desactive le son",
 	"     K\t: Lance un carree de recherche",
@@ -79,6 +80,7 @@ vector<string> t_sHelp1 =
 	"Ctrl+o\t: Ouvrir un fichier image",
 	"     p\t: Pause de l'affichage camera",
 	"     P\t: Image suivante",
+	"     J\t: Lance ASI Studio",
 	"     q\t: Lance Polaris",
 	"     Q\t: Lance Stellarium",	
 //	"     r\t: Test alert BOX",
@@ -292,6 +294,7 @@ bool                bDisplayfftY = true;
 
 double				fTimeMili;
 vector<string>		logs_string;
+mutex				m_logs_string;
 //--------------------------------------------------------------------------------------------------------------------
 //              Ratio Witdh Height
 //--------------------------------------------------------------------------------------------------------------------
@@ -1359,6 +1362,7 @@ static void reshapeGL(int newWidth, int newHeight)
     resizeCourbe(newWidth, newHeight);
 
 	panelStatus->setPosAndSize( 0, newHeight-20, newWidth, 20 );
+	panelStatus->setCanMove	(false);
 	pFPS->setPos( newWidth-100, 5);
 	pHertz->setPos( newWidth-150, 5);
 
@@ -1728,7 +1732,6 @@ static void idleGL(void)
     {
         bOneFrame = true;
     }
-    bFirstStart = false;
 
     #ifdef IDLEGL
     log_tab(false);
@@ -1950,6 +1953,11 @@ static void idleGL(void)
     logf( (char*)"%02d-%.4f glutPostRedisplay", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
+    if ( bOneFrame )
+    {
+        bOneFrame = false;
+    }
+    bFirstStart = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1983,7 +1991,8 @@ static void quit(void)
     logf( (char*)"exit_handler()" );
 
     LX200::getInstance().close_all();
-    Serveur_mgr::getInstance().close_all();
+	SYNSCAN::getInstance().close_all();
+	Serveur_mgr::getInstance().close_all();
 	Camera_mgr::getInstance().stopAllCameras();
 	Connexion_mgr::getInstance().stopThread();
 
@@ -3071,7 +3080,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     case 'l':
         {            
         logf( (char*)"Key (l) : Affiche les connexions" );
+        logf( (char*)"---- Reseau -------" );
+
         LX200::getInstance().print_list();
+        SYNSCAN::getInstance().print_list();
         Serveur_mgr::getInstance().print_list();
         Connexion_mgr::getInstance().print_list();
         Camera_mgr::getInstance().print_list();
@@ -4226,7 +4238,7 @@ static void CreateStdOut()	{
 static void CreateAllWindows()	{
     //CreatePreview();
     //CreateControl();
-    if ( bStdOut)		CreateStdOut();
+    if ( panelStdOut == NULL )		CreateStdOut();
     CreateHelp();
     CreateResultat();
     CreateStatus();
@@ -4325,13 +4337,24 @@ void log_tab( bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void log( char* chaine )
 {
+	if ( bDesactiveLog )		return;
 
     string aff = sTab + string(chaine);
-    
+    if ( bFirstStart )
+    {
+		m_logs_string.lock();
+		logs_string.push_back( aff );
+		m_logs_string.unlock();
+		return;
+	}
 
-	if ( !bDesactiveLog)					printf( "log : %s\n", aff.c_str() );
+	printf( "log : %s\n", aff.c_str() );
 
     if ( panelStdOut && bStdOut )			panelStdOut->affiche( (char*)aff.c_str() );
+    //-----------------------------------------------------------
+    // Si le programme n'est pas entre dans idleGL()
+    //-----------------------------------------------------------
+
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4353,12 +4376,15 @@ void logf(char *fmt, ...)
 //--------------------------------------------------------------------------------------------------------------------
 void log_thread_aff()
 {
+	if ( bFirstStart )			return;
+	
+	m_logs_string.lock();
 	for( int i=0; i<logs_string.size(); i++ )
 	{
 		log( (char*)logs_string[i].c_str() );
 	}
-	
     logs_string.clear();
+	m_logs_string.unlock();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -4367,7 +4393,9 @@ void log_thread( char* chaine )
 {
     string aff = sTab + string(chaine);
 
+	m_logs_string.lock();
     logs_string.push_back( aff );
+	m_logs_string.unlock();
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4829,6 +4857,7 @@ void exit_handler()
     //BluetoothManager::getInstance().disconnect();
     Serveur_mgr::getInstance().close_all();
     LX200::getInstance().close_all();
+	SYNSCAN::getInstance().close_all();
     cout <<"exit_handler()"<< endl;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4912,14 +4941,16 @@ int main(int argc, char **argv)
     //cam_mgr.getCurrent();
     //cam_mgr.active();
 
+    init_var();
+
     Connexion_mgr::getInstance().start();
     PanelConsoleSerial::getInstance();
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
     Serveur_mgr::getInstance().start_init();
     Serveur_mgr::getInstance().start_deplacement();
     LX200::getInstance().start_lx200();
+    SYNSCAN::getInstance().start_synscan();
 
-    init_var();
     var.setSauve();
     
     if ( panelStdOut )

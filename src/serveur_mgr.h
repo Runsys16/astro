@@ -58,10 +58,12 @@ protected:
     std::thread                 connect_1;
 
     int                         sock_deplacement;
-    int                         sock_init;
-    
     int                         sock_listen_deplacement;
+    unsigned					uPort_deplacement;
+    
+    int                         sock_init;
     int                         sock_listen_init;
+    unsigned					uPort_init;
 
     bool                        listen_1;
     bool                        listen_2;

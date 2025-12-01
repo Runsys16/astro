@@ -347,87 +347,86 @@ void Capture::create_icones()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::create_preview()	{
-    logf((char*)"Capture::CreatePreview -------------" );
-    log_tab(true);
-    
+	logf((char*)"Capture::CreatePreview -------------" );
+	log_tab(true);
+
 
 	loadSkinPath( "images/astro" );
 	setBorderSize(8);
 
-    //create_icones();
-    logf((char*)"fichier = %s", (char*)filename.c_str() );
-    
+	//create_icones();
+	logf((char*)"fichier = %s", (char*)filename.c_str() );
+
 	WindowsManager& wm = WindowsManager::getInstance();
 
-    setDisplayGL(displayGLnuit_cb);
+	setDisplayGL(displayGLnuit_cb);
 
 	//-------------------------------------------------------------------------
 	// Chargement de l(image dans la structure
 	// struct readBackground   (main.h)
 	// ------ readBackground.ptr = pointeur sur le tableau de couleur
 	//
-    bFits = false;
-    if ( 	filename.find( ".fits" ) != std::string::npos  
-    	||	filename.find( ".fit" ) != std::string::npos
-    		)
-    {
-        bFits = true;
-	}
+	bFits = false;
+
+	int s = filename.find( ".fits" );
+	if ( s == filename.size()-5 )		        bFits = true;
+
+	logf( (char*)"Ouverture %d/%d", s, filename.size() );
+
+	s = filename.find( ".fit" );
+	if ( s == filename.size()-4 )		        bFits = true;
 
 	panelCapture = new PanelCapture(NULL, this);
-    //bFits = false;
-    if ( 	filename.find( ".fits" ) != std::string::npos  
-    	||	filename.find( ".fit" ) != std::string::npos
-    		)
-    {
-        logf((char*)"Fichier fits %s", (char*)filename.c_str() );
-        fits = new Fits(filename, panelCapture );
 
-        log((char*)"Chargement fichier" );
-        log_tab(true);
+	if ( bFits )
+	{
+		logf((char*)"Fichier fits %s", (char*)filename.c_str() );
+		fits = new Fits(filename, panelCapture );
 
-        fits->chargeFits();
-        fits->getPanelFits()->setParent(panelCapture);
-        //fits->getPanelCorrectionFits()->setParent();
-        fits->getRB(&readBgr);
-        log_tab(false);
-    }
-    else
-    {
-        unsigned int w, h, d;
-        readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, w, h, d );
-        readBgr.w = w;
-        readBgr.h = h,
-        readBgr.d = d;
-    }
+		log((char*)"Chargement fichier" );
+		log_tab(true);
+
+		fits->chargeFits();
+		fits->getPanelFits()->setParent(panelCapture);
+		fits->getRB(&readBgr);
+		log_tab(false);
+	}
+	else
+	{
+		unsigned int w, h, d;
+		readBgr.ptr = WindowsManager::OpenImage( (const std::string)filename, w, h, d );
+		readBgr.w = w;
+		readBgr.h = h,
+		readBgr.d = d;
+	}
 	//-------------------------------------------------------------------------
 	// Gestion des Erreurs
 	if ( readBgr.ptr == NULL )
 	{
-	    logf( (char*)"[Erreur] Pointeur sur background readBgr.ptr == NULL");
-        panelCapture->setRB( NULL );
-    }
-    else
-    {
-	    logf( (char*)"setBackground( ..., %d, %d, %d)", readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
-        panelCapture->setBackground( readBgr.ptr.load(), readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
-        panelCapture->setRB( &readBgr );
-    }
+		logf( (char*)"[Erreur] Pointeur sur background readBgr.ptr == NULL");
+		panelCapture->setRB( NULL );
+	}
+	else
+	{
+		logf( (char*)"setBackground( ..., %d, %d, %d)", readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
+		panelCapture->setBackground( readBgr.ptr.load(), readBgr.w.load(), readBgr.h.load(), readBgr.d.load());
+		panelCapture->setRB( &readBgr );
+	}
 
-    add(panelCapture);
-    resize( getWidth(), getHeight() );
+	add(panelCapture);
+	resize( getWidth(), getHeight() );
 
 	//-------------------------------------------------------------------------
 	// recuperarion du nom de fichier seul
-    char * pS = (char*)filename.c_str();
-    char * filenameShort = NULL;
-    int nb = filename.size();
-    
-    for( int i=nb; i>0; i-- )
-    {
-        int j = i-1;
-        if ( pS[j]=='/' )       { filenameShort = pS+j+1; break; }
-    }
+	char * pS = (char*)filename.c_str();
+	char * filenameShort = NULL;
+	int nb = filename.size();
+
+	for( int i=nb; i>0; i-- )
+	{
+		int j = i-1;
+		if ( pS[j]=='/' )       { filenameShort = pS+j+1; break; }
+	}
 
 	//-----------------------------------------------------------------------
 	// Ajoute les textes d'informations
@@ -443,21 +442,21 @@ void Capture::create_preview()	{
 	pNbStars->setExtraString( "PanelText NbStar" );
 	panelCapture->add( pNbStars );
 	panelCapture->getStars()->setPanelNbStars( pNbStars );
-	
- 	wm.add( this );
+
+	wm.add( this );
 	//------------------------
 	pNbVizier = new PanelText( (char*)"",		PanelText::LARGE_FONT, getWidth()-50, 20 );
 	pNbVizier->setExtraString( "PanelText NbVizier" );
 
 	panelCapture->add( pNbVizier );
 	//------------------------
-    
-    create_icones();
-    panelCapture->onBottom();
+
+	create_icones();
+	panelCapture->onBottom();
 
 
-    log_tab(false);
-    logf((char*)"Capture::CreatePreview ------END-------" );
+	log_tab(false);
+	logf((char*)"Capture::CreatePreview ------END-------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

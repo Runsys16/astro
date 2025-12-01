@@ -174,6 +174,7 @@ void StarCompare::compareStar( bool bSave )
 				fichier << sout <<"\n";
 	   		}
    		}
+   		/*
    		//--------------------------
    		// comparaison avec vizier idx = -1 = echec
    		else
@@ -184,6 +185,7 @@ void StarCompare::compareStar( bool bSave )
 	   				i, (float)v.x, (float)v.y, l, idx );
 	   		}
    		}
+   		*/
    	}
 
 	if ( bSave )		fichier.close();

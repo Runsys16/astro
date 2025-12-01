@@ -51,12 +51,13 @@ protected:
 
     int                         sock_lx200;
     int                         sock_listen_lx200;
+    unsigned					uPort;
     
     double						dRA;
     double						dDC;
 
-    bool                        listen_1;
-    bool                        traite_1;
+    bool                        bListen;
+    bool                        bLx200;
     
     string						sIP_lx200;
     

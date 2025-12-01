@@ -15,15 +15,17 @@
 LX200::LX200()
 {
     logf((char*)"----------- Constructeur LX200() -------------" );
-    listen_1 = true;
-    traite_1 = true;
+    bListen = true;
+    bLx200 = true;
 
     sock_lx200		= -1;
+    uPort			= 10003;
 
 #ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
 
-    if ( !var.existe("IP_LX200"))		var.set("IP_LX200", "127.0.0.1" );
+    if ( !var.existe("IP_LX200") )		printf( "IPLX200" );
+    if ( !var.existe("IP_LX200") )		var.set("IP_LX200", (char*)"127.0.0.1" );
     sIP_lx200 = *var.gets("IP_LX200" );
 
 #endif
@@ -527,7 +529,7 @@ void LX200::traite_connexion_lx200()
     unsigned char buffer[255];
     int n;
 
-    while( traite_1 )
+    while( bLx200 )
     {
 		#ifdef PANEL_LX200_DEBUG
 			panel_debug.setVisible(bPanelStdOut);
@@ -628,6 +630,7 @@ void LX200::traite_connexion_lx200()
 #ifdef PANEL_LX200_DEBUG
 	panel_debug.setVisible(false);
 #endif
+	bLx200 = false;
     sock_lx200 = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -656,7 +659,7 @@ void LX200::thread_listen_lx200()
 	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
 	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
-	adresse.sin_port = htons(10003);
+	adresse.sin_port = htons(uPort);
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
@@ -697,7 +700,7 @@ void LX200::thread_listen_lx200()
     logf_thread( (char*)"---------------------------------------------------------------");
 
 	listen(sock_listen_lx200, 5);
-	while (listen_1) {
+	while (bListen) {
 		longueur = sizeof(struct sockaddr_in);
 		int sock = accept(sock_listen_lx200, (struct sockaddr *) & adresse, & longueur);
 
@@ -722,6 +725,7 @@ void LX200::thread_listen_lx200()
 
 		//panel_win.setVisible(bPanelStdOut);
 		//PANEL_LX200_DEBUG.setVisible(bPanelStdOut);
+		bLx200 = true;
 		traite_connexion_lx200();
 	}
     logf_thread( (char*)"Fermeture de sock_listen_lx200 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
@@ -805,8 +809,8 @@ void LX200::close_all()
     logf_thread( (char*)"Fermeture de tous les sockets ..." );
     log_tab(true);
 
-    listen_1 = false;
-    traite_1 = false;
+    bListen = false;
+    bLx200 = false;
 
 	//close(sock_listen_lx200);
 	//close(sock_listen_lx200);
@@ -841,10 +845,11 @@ void LX200::close_all()
 //--------------------------------------------------------------------------------------------------------------------
 void LX200::print_list()
 {
-    logf( (char*)"---- LX200::print_list()" );
+    //logf( (char*)"---- LX200::print_list()" );
 
-	if ( sock_lx200 != -1 )				logf( (char*)"  LX200 : %s", sIP_lx200.c_str() );
-	else								logf( (char*)"  LX200 listen" );
+	if ( sock_listen_lx200 == -1 )		logf( (char*)"  LX200\timpossible d'ouvrir : %s", sIP_lx200.c_str() );
+	else if ( sock_lx200 != -1 )		logf( (char*)"  LX200\tconnexion" );
+	else								logf( (char*)"  LX200\tlisten sur \t: %s : %d", sIP_lx200.c_str(), uPort );
 
 }    
 #ifdef PANEL_LX200_DEBUG
