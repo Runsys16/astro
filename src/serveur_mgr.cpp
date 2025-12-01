@@ -28,10 +28,10 @@ Serveur_mgr::Serveur_mgr()
 	VarManager& var = VarManager::getInstance();
 
     if ( !var.existe("IP_INIT"))		var.set("IP_INIT", "127.0.0.1" );
-    sIP_init = *(var.gets("IP_INIT"));
+    sIP_listen_init = *(var.gets("IP_INIT"));
 
     if ( !var.existe("IP_DEPL"))		var.set("IP_DEPL", "127.0.0.1" );
-    sIP_depl = *var.gets("IP_DEPL" );
+    sIP_listen_depl = *var.gets("IP_DEPL" );
 	#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ void Serveur_mgr::traite_connexion_init()
 
         logf_thread( (char*)"Init reception de ra=%0.10lf, dc=%0.10lf", ra, dc);
         
-		_sync( ra, dc );
+		_sync_rad( ra, dc );
 
         Xref = 0.0;
         Yref = 0.0;
@@ -151,8 +151,8 @@ void Serveur_mgr::thread_listen_init()
 	adresse.sin_port = htons(uPort_init);
 	
 #ifdef VAR_GLOBAL
-	//sIP_init = VarManager::getInstance().gets("IP_INIT");
-	inet_aton( sIP_init.c_str(), &adresse.sin_addr ); 
+	//sIP_listen_init = VarManager::getInstance().gets("IP_INIT");
+	inet_aton( sIP_listen_init.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -207,11 +207,12 @@ void Serveur_mgr::thread_listen_init()
 
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+        sIP_init = string( some_addr );
 
-		//sIP_init = string( some_addr );
+		//sIP_listen_init = string( some_addr );
 	
 		logf_thread( (char*)"Serveur_mgr::thread_listen_init() connexion" );
-		logf_thread( (char*)"  sock = %d  sock_listen_init = %d  IP = %s:%d sur %s", sock_listen_init, sock_init, some_addr, (int)adresse.sin_port, sIP_init.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_init = %d  IP = %s:%d sur %s", sock_listen_init, sock_init, some_addr, (int)adresse.sin_port, sIP_listen_init.c_str() );
 
 		traite_connexion_init();
 	}
@@ -259,7 +260,7 @@ void Serveur_mgr::traite_connexion_deplacement()
         double ra = com2rad(ss.ra);
         double dc = com2rad(ss.dc);
 
-		_goto( ra, dc );
+		_goto_rad( ra, dc );
 
         log_tab( false );
     }
@@ -302,8 +303,8 @@ void Serveur_mgr::thread_listen_deplacement()
 	adresse.sin_port = htons(uPort_deplacement);
 	
 #ifdef VAR_GLOBAL
-	//sIP_depl = VarManager::getInstance().gets("IP_DEPL");
-	inet_aton( sIP_depl.c_str(), &adresse.sin_addr ); 
+	//sIP_listen_depl = VarManager::getInstance().gets("IP_DEPL");
+	inet_aton( sIP_listen_depl.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -358,9 +359,10 @@ void Serveur_mgr::thread_listen_deplacement()
 		
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr);
+        sIP_depl = string( some_addr );
 
 		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion" );
-		logf_thread( (char*)"  sock = %d  sock_listen_deplacement = %d  IP = %s:%d sur %s", sock_listen_deplacement, sock_deplacement, some_addr, (int)adresse.sin_port, sIP_depl.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_deplacement = %d  IP = %s:%d sur %s", sock_listen_deplacement, sock_deplacement, some_addr, (int)adresse.sin_port, sIP_listen_depl.c_str() );
 
 		traite_connexion_deplacement();
 		
@@ -532,14 +534,14 @@ void Serveur_mgr::_goto( double ra, double dc )
 {
     struct hms HMS;
     rad2hms( ra, HMS );
-    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, ra );
     
     struct dms DMS;
     rad2dms( dc, DMS );
-    logf_thread( (char*)"DC : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+    logf_thread( (char*)"DC : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, dc );
     
     char cmd[255];
-    sprintf( cmd, "A%lf;D%lf", RAD2DEG(ra), RAD2DEG(dc) );
+    sprintf( cmd, "A%lf;D%lf", ra, dc );
     logf_thread( (char*)"Serveur_mgr::_goto() envoi arduino : %s", cmd );
  
     if ( Serial::getInstance().write_string(cmd) != 0 )
@@ -555,31 +557,48 @@ void Serveur_mgr::_sync( double ra, double dc )
     logf_thread( (char*)"Serveur_mgr::_sync(( %lf, %lf )", ra, dc );
     if ( !Serial::getInstance().isConnect() )
     {
-    	write_stellarium( RAD2DEG(ra), RAD2DEG(dc) );
-		change_ad_status( RAD2DEG(ra) );
-		change_dc_status( RAD2DEG(dc) );
+    	write_stellarium( ra, dc );
+		change_ad_status( ra );
+		change_dc_status( dc );
     }
 
     struct hms HMS;
-    rad2hms( ra, HMS );
-    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, RAD2DEG(ra) );
+    deg2hms( ra, HMS );
+    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, ra );
     
     struct dms DMS;
-    rad2dms( dc, DMS );
-    logf_thread( (char*)"Dc : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, RAD2DEG(dc) );
+    deg2dms( dc, DMS );
+    logf_thread( (char*)"Dc : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, dc );
     
     char cmd[255];
-    sprintf( cmd, "ia%lf;id%lf", RAD2DEG(ra), RAD2DEG(dc) );
+    sprintf( cmd, "ia%lf;id%lf", ra, dc );
 
 	//-------------------------------------------------
-    logf_thread( (char*)"Envoi arduino : \"%s\"", cmd );
-    Serial::getInstance().write_string(cmd);
+    logf_thread( (char*)"Serveur_mgr::_goto() envoi arduino : %s", cmd );
+    if ( Serial::getInstance().write_string(cmd) != 0 )
+    {
+	    logf_thread( (char*)"[ERROR] Serial" );
+    }
 	//-------------------------------------------------
     logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
 	Camera_mgr::getInstance().position(ra, dc);
     Captures::getInstance().position(ra, dc);
 	//-------------------------------------------------
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::_goto_rad( double ra, double dc )
+{
+	_goto( RAD2DEG(ra), RAD2DEG(dc) );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::_sync_rad( double ra, double dc )
+{
+	_sync( RAD2DEG(ra), RAD2DEG(dc) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -611,13 +630,13 @@ void Serveur_mgr::print_list()
 {
     //logf( (char*)"---- Serveur_mgr::print_list()" );
 
-	if ( sock_listen_init == -1 )		logf( (char*)"  STEL Init\timpossible d'ouvrir : %s", sIP_init.c_str() );
-	else if ( sock_init != -1 )			logf( (char*)"  STEL Init\tconnextion" );
-	else								logf( (char*)"  STEL Init\tlisten sur \t: %s : %d", sIP_init.c_str(), uPort_init );
+	if ( sock_listen_init == -1 )		logf( (char*)"  STEL Init\timpossible d'ouvrir : %s", sIP_listen_init.c_str() );
+	else if ( sock_init != -1 )			logf( (char*)"  STEL Init\tconnexion de \t: %s", sIP_init.c_str() );
+	else								logf( (char*)"  STEL Init\tlisten sur \t\t: %s : %d", sIP_listen_init.c_str(), uPort_init );
 
-	if ( sock_listen_deplacement == -1)	logf( (char*)"  STEL depl\timpossible d'ouvrir : %s", sIP_depl.c_str() );
-	else if ( sock_deplacement != -1)	logf( (char*)"  STEL depl\tconnexion" );
-	else								logf( (char*)"  STEL depl\tlisten sur \t: %s : %d", sIP_depl.c_str(), uPort_deplacement );
+	if ( sock_listen_deplacement == -1)	logf( (char*)"  STEL depl\timpossible d'ouvrir : %s", sIP_listen_depl.c_str() );
+	else if ( sock_deplacement != -1)	logf( (char*)"  STEL depl\tconnexion de \t: %s", sIP_depl.c_str() );
+	else								logf( (char*)"  STEL depl\tlisten sur \t\t: %s : %d", sIP_listen_depl.c_str(), uPort_deplacement );
 }    
 //--------------------------------------------------------------------------------------------------------------------
 //

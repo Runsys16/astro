@@ -932,11 +932,27 @@ void PanelCapture::releaseLeft(int xm, int ym)
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
 
     if ( bFits && iGlutModifier == GLUT_ACTIVE_CTRL)    {
-		sendStellarium( xm, ym );
+		vec2 vTex = vec2( xm, ym );
+		vec2 vJ2000;
+
+		screen_2_tex( vTex );
+		pCapture->getFits()->tex_2_J2000( vTex, vJ2000 );
+        vJ2000.x = vJ2000.x >180.0 ? -360.0 + vJ2000.x : vJ2000.x;
+		
+		logf( (char*)"CTRL (%0.6f, %0.6f)", vJ2000.x, vJ2000.y );
+		Serveur_mgr::getInstance()._goto( vJ2000.x, vJ2000.y );
     }
     else
     if ( bFits && iGlutModifier == GLUT_ACTIVE_ALT)    {
-		sendStellarium( xm, ym );
+		vec2 vTex = vec2( xm, ym );
+		vec2 vJ2000;
+
+		screen_2_tex( vTex );
+		pCapture->getFits()->tex_2_J2000( vTex, vJ2000 );
+        vJ2000.x = vJ2000.x >180.0 ? -360.0 + vJ2000.x : vJ2000.x;
+		
+		logf( (char*)"ALT  (%0.6f, %0.6f)", vJ2000.x, vJ2000.y );
+		Serveur_mgr::getInstance()._sync( vJ2000.x, vJ2000.y );
     }
     else
     {

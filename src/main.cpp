@@ -760,7 +760,7 @@ void vizier_load_stars( string s )
 void get_info_arduino()
 {
 	fTimer10s = 9.0;
-    logf ( (char*)"main.c::get_info_arduino() fTimer = %0.2f", fTimer10s );
+    logf_thread ( (char*)"main.c::get_info_arduino() fTimer = %0.2f", fTimer10s );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

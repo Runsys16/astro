@@ -26,7 +26,7 @@ LX200::LX200()
 
     if ( !var.existe("IP_LX200") )		printf( "IPLX200" );
     if ( !var.existe("IP_LX200") )		var.set("IP_LX200", (char*)"127.0.0.1" );
-    sIP_lx200 = *var.gets("IP_LX200" );
+    sIP_listen_lx200 = *var.gets("IP_LX200" );
 
 #endif
 
@@ -269,7 +269,7 @@ void LX200::traite_command_M( char* buffer, int n)
 		logf_thread( (char*)"%s Slew to Target Object", buffer );
 		write_lx200( sock_lx200, (char*)"0", 1, true );	
 		
-		Serveur_mgr::getInstance()._goto( dRA, dDC );
+		Serveur_mgr::getInstance()._goto_rad( dRA, dDC );
 
 		if ( !Serial::getInstance().isConnect() )
 		{
@@ -604,7 +604,7 @@ void LX200::traite_connexion_lx200()
 				logf_thread( (char*)"%s Sync", buffer );
 				write_lx200( sock_lx200, (char*)"#", 1, false );
 
-				Serveur_mgr::getInstance()._sync( dRA, dDC );
+				Serveur_mgr::getInstance()._sync_rad( dRA, dDC );
 				if ( Serial::getInstance().isConnect() )
 				{
 					change_ad_status( RAD2DEG(dRA) );
@@ -663,7 +663,7 @@ void LX200::thread_listen_lx200()
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
-	inet_aton( sIP_lx200.c_str(), &adresse.sin_addr ); 
+	inet_aton( sIP_listen_lx200.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -717,11 +717,13 @@ void LX200::thread_listen_lx200()
 		sock_lx200 = sock;
 		char *some_addr;
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+		sIP_lx200 = string(some_addr);
+
 
 		//sIP_init = string( some_addr );
 	
 		logf_thread( (char*)"LX200::thread_listen_lx200() connexion SOCKET 2" );
-		logf_thread( (char*)"  sock = %d  sock_listen_lx200 = %d  IP = %s:%d sur %s", sock_listen_lx200, sock_lx200, some_addr, (int)adresse.sin_port, sIP_lx200.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_lx200 = %d  IP = %s:%d sur %s", sock_listen_lx200, sock_lx200, some_addr, (int)adresse.sin_port, sIP_listen_lx200.c_str() );
 
 		//panel_win.setVisible(bPanelStdOut);
 		//PANEL_LX200_DEBUG.setVisible(bPanelStdOut);
@@ -847,9 +849,9 @@ void LX200::print_list()
 {
     //logf( (char*)"---- LX200::print_list()" );
 
-	if ( sock_listen_lx200 == -1 )		logf( (char*)"  LX200\timpossible d'ouvrir : %s", sIP_lx200.c_str() );
-	else if ( sock_lx200 != -1 )		logf( (char*)"  LX200\tconnexion" );
-	else								logf( (char*)"  LX200\tlisten sur \t: %s : %d", sIP_lx200.c_str(), uPort );
+	if ( sock_listen_lx200 == -1 )		logf( (char*)"  LX200\timpossible d'ouvrir : %s", sIP_listen_lx200.c_str() );
+	else if ( sock_lx200 != -1 )		logf( (char*)"  LX200\tconnexion de \t: %s", sIP_lx200.c_str() );
+	else								logf( (char*)"  LX200\tlisten sur \t\t: %s : %d", sIP_listen_lx200.c_str(), uPort );
 
 }    
 #ifdef PANEL_LX200_DEBUG

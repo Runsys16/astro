@@ -26,7 +26,7 @@ SYNSCAN::SYNSCAN()
 	VarManager& var = VarManager::getInstance();
 
     if ( !var.existe("IP_SYNSCAN"))		var.set("IP_SYNSCAN", "127.0.0.1" );
-    sIP_synscan = *var.gets("IP_SYNSCAN" );
+    sIP_listen_synscan = *var.gets("IP_SYNSCAN" );
 
 	#endif
 	
@@ -138,7 +138,7 @@ void SYNSCAN::thread_listen_synscan()
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
-	inet_aton( sIP_synscan.c_str(), &adresse.sin_addr ); 
+	inet_aton( sIP_listen_synscan.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -187,6 +187,8 @@ void SYNSCAN::thread_listen_synscan()
 			close( sock );
 			char *some_addr;
 		    some_addr = inet_ntoa( adresse.sin_addr); // return the IP
+		    sIP_synscan = string(some_addr);
+		    
 			logf_thread( (char*)"[Warning] lx200 tentative de connection %s", some_addr );
 			continue;
 		}
@@ -199,7 +201,7 @@ void SYNSCAN::thread_listen_synscan()
 		//sIP_init = string( some_addr );
 	
 		logf_thread( (char*)"SYNSCAN::thread_listen_SYNSCAN() connexion SOCKET 2" );
-		logf_thread( (char*)"  sock = %d  sock_listen_synscan = %d  IP = %s:%d sur %s", sock_listen_synscan, sock_synscan, some_addr, (int)adresse.sin_port, sIP_synscan.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_synscan = %d  IP = %s:%d sur %s", sock_listen_synscan, sock_synscan, some_addr, (int)adresse.sin_port, sIP_listen_synscan.c_str() );
 
 		traite_connexion_synscan();
 	}
@@ -323,9 +325,9 @@ void SYNSCAN::print_list()
 {
     //logf( (char*)"---- SYNSCAN::print_list()" );
 
-	if ( sock_listen_synscan == -1 )		logf( (char*)"  SYNSCAN\timpossible d'ouvrir : %s", sIP_synscan.c_str() );
-	else if ( sock_synscan != -1 )			logf( (char*)"  SYNSCAN\t connexion" );
-	else									logf( (char*)"  SYNSCAN\tlisten sur \t: %s : %d", sIP_synscan.c_str(), uPort );
+	if ( sock_listen_synscan == -1 )		logf( (char*)"  SYNSCAN\timpossible d'ouvrir : %s", sIP_listen_synscan.c_str() );
+	else if ( sock_synscan != -1 )			logf( (char*)"  SYNSCAN\t connexion de \t: %s", sIP_synscan.c_str() );
+	else									logf( (char*)"  SYNSCAN\tlisten sur \t\t: %s : %d", sIP_listen_synscan.c_str(), uPort );
 
 }    
 //--------------------------------------------------------------------------------------------------------------------

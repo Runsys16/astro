@@ -70,7 +70,9 @@ protected:
     bool                        traite_1;
     bool                        traite_2;
     
+    string						sIP_listen_init;
     string						sIP_init;
+    string						sIP_listen_depl;
     string						sIP_depl;
 
 public:
@@ -94,6 +96,8 @@ public:
 
     void                        _goto( double, double );
     void                        _sync( double, double );
+    void                        _goto_rad( double, double );
+    void                        _sync_rad( double, double );
     
     void                        close_all();
 

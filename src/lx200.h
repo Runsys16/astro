@@ -59,6 +59,7 @@ protected:
     bool                        bListen;
     bool                        bLx200;
     
+    string						sIP_listen_lx200;
     string						sIP_lx200;
     
 #ifdef PANEL_LX200_DEBUG

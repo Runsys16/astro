@@ -55,6 +55,7 @@ protected:
     bool                        listen_1;
     bool                        traite_1;
     
+    string						sIP_listen_synscan;
     string						sIP_synscan;
     //PanelDebug					panel_debug;
 
