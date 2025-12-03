@@ -5,7 +5,12 @@
 #include "serveur_mgr.h"
 #include <sys/time.h>
 #include <time.h>
-//#include "MathlibD.h"
+//--------------------------------------------------------------------------------------------------------------------
+//
+//  Protocole SYNSCAN (skywatcher)
+//  ------------------------------
+//  https://inter-static.skywatcher.com/downloads/synscanserialcommunicationprotocol_version33.pdf
+//
 //--------------------------------------------------------------------------------------------------------------------
 #define VAR_GLOBAL
 //#define BAVARD
