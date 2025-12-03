@@ -55,16 +55,32 @@ protected:
     bool                        listen_1;
     bool                        traite_1;
     
+    double						AD_deg;
+    double						DC_deg;
+    
+    int							AA;
+    int							MM;
+    int							JJ;
+    int							HH;
+    int							MN;
+    int							SS;
+    int							GMT;
+    int							HETE;
+    
     string						sIP_listen_synscan;
     string						sIP_synscan;
-    //PanelDebug					panel_debug;
+    
+    char						sHex[91];     // 3*30 + '0' terminal
 
 public:
 							    SYNSCAN();
     
-    float                       com2rad( int);
-    void                        decode(struct stellarium& ss, unsigned char* buffer);
+    void                        decode_time(char*, int);
+    void                        encode_time(char*, int);
+    void                        decode_precise(char*, int);
+    void                        encode_precise(char*, int);
 
+    void                        traite_command( char*, int);
 	void						traite_connexion_synscan();
     void                        thread_listen_synscan();
     void                        start_synscan();
@@ -72,7 +88,8 @@ public:
     void                        write_synscan( char* s);
     void                        write_synscan( int, char* s, int);
     void                        write_synscan( int, char* s, int, bool );
-    
+    void                        to_hex( char*, int );
+
     void                        close_all();
 
     void                        print_list();

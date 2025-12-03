@@ -562,6 +562,7 @@ void Captures::deleteAllStars()
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::print_list()
 {
+	logf( (char*)"---- Captures -------" );
     int nb = captures.size();
     for( int i=0; i<nb; i++ )
     {
@@ -706,8 +707,8 @@ void Captures::charge2(void)
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::position(double ra, double dc)
 {
+	logf_thread( (char*)"Captures::position(%lf, %lf)", ra, dc );
     if (current_capture == -1)              return;
-    
     
     captures[current_capture]->getPreview()->getStars()->position(ra, dc);
 }

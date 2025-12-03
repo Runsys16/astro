@@ -377,7 +377,7 @@ int					iGlutModifier = 0;
 //
 //--------------------------------------------------------------------------------------------------------------------
 string				workDirCaptures = 		"/home/rene/Documents/astronomie/logiciel/script/images/";
-string				workDirSauveCourbe =	"/home/rene/.astropilot/";
+string				workDirSauveCourbe =	"/home/rene/.astropilot/suivi/";
 string				workDirFileBrowser =	"/home/rene/Documents/astronomie/logiciel/script/images/";
 string				filenameSauve =			"/home/rene/.astropilot/sauvegarde.txt";
 string				workDirFits =			"/home/rene/Documents/astronomie/fits/";
@@ -842,7 +842,7 @@ void CallbackChargeGuidage::callback( bool bb, int ii, char* str)
 void CallbackSauveGuidage::callback( bool bb, int ii, char* str)
 {
     VarManager& var = VarManager::getInstance();
-    logf( (char*)"CallbackSauveGuidage::callback( %s, %d, \"%s\" )", bb?(char*)"true":(char*)"false", ii, (char*)str );
+    logf( (char*)"CallbackSauveGuidage::callback( %s, %d, \"%s\" )", BOOL2STR(bb), ii, (char*)str );
 
     if ( bb )     
     {
@@ -3088,6 +3088,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         Connexion_mgr::getInstance().print_list();
         Camera_mgr::getInstance().print_list();
         Captures::getInstance().print_list();
+        Serial::getInstance().print_list();
         }
         break;
 

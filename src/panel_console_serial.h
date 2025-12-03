@@ -40,6 +40,7 @@ protected:
     double                          dc;
     double                          ad_change;
     double                          dc_change;
+    string							prompt;
 
 public :
     PanelConsoleSerial();
@@ -52,9 +53,9 @@ public :
 inline bool                         getVisible()                { return pw->getVisible(); }
 inline PanelWindow*                 getWindow()                 { return pw; }
 inline PanelConsole*                getConsole()                { return pc; }
-inline void                         setPrompt(string s)         { pc->setPrompt(s); }
-
+	
     void                            setColor(long l )           { pw->setColor(l); }
+inline	void                       	setPrompt(string s)        { prompt = s; }
 
    
 SINGLETON_END()

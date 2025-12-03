@@ -79,6 +79,8 @@ SINGLETON_BEGIN( Serial )
         void            reset();
 	    void			testVersionArduino();
 	    
+	    void			print_list();
+
 inline  bool            isConnect()                             { return bConnect; }
 inline  bool            getFree()                               { return bFree; }
 

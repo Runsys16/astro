@@ -9,7 +9,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Serial::Serial()
 {
-    logf((char*)"Constructeur Serial::Serial() -------------" );
+    logf_thread((char*)"Constructeur Serial::Serial() -------------" );
     fTimeOut = 0.0;
     fd = -1;
 
@@ -24,7 +24,7 @@ Serial::Serial()
 //--------------------------------------------------------------------------------------------------------------------
 void Serial::init( string dev)
 {
-    logf((char*)"Serial::init(%s) -------------", dev.c_str() );
+    logf_thread((char*)"Serial::init(%s) -------------", dev.c_str() );
     fd = -1;
     dev_name = dev;
     idx = 0;
@@ -287,7 +287,7 @@ void Serial::read_thread()
 					
 					// Initialise les coordonnées
 					if ( bPremiereConnexion )
-						Serveur_mgr::getInstance()._sync( DEG2RAD(d_deg_ad), DEG2RAD(d_deg_dc) );
+						Serveur_mgr::getInstance()._sync( d_deg_ad, d_deg_dc );
 					bPremiereConnexion = false;
                 }
                 else
@@ -460,11 +460,11 @@ void Serial::start_thread()
 // returns valid fd, or -1 on error
 void Serial::sopen()
 {
-    logf( (char*)"Serial::sopen()");
+    logf_thread( (char*)"Serial::sopen()");
     
     if (fd != -1)
     {        
-        logf( (char*)"sopen fd != -1 !! " );
+        logf_thread( (char*)"sopen fd != -1 !! " );
         return;
     }
     
@@ -477,16 +477,17 @@ void Serial::sopen()
 
     fd = open(dev_name.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1)  {
-        logf( (char*)"init_serialport: Unable to open port ");
+        logf_thread( (char*)"init_serialport: Unable to open port ");
         fd = -1;
         return;
     }
     
     if (tcgetattr(fd, &toptions) < 0) {
-        logf( (char*)"init_serialport: Couldn't get term attributes");
+        logf_thread( (char*)"init_serialport: Couldn't get term attributes");
         fd = -1;
         return;
     }
+    
     speed_t brate = baud; // let you override switch below if needed
     switch(baud) {
     case 4800:   brate=B4800;   break;
@@ -524,7 +525,7 @@ void Serial::sopen()
     toptions.c_cc[VTIME] = 20;
     
     if( tcsetattr(fd, TCSANOW, &toptions) < 0) {
-        logf( (char*)"init_serialport: Couldn't set term attributes");
+        logf_thread( (char*)"init_serialport: Couldn't set term attributes");
         fd = -1;
         return;
     }
@@ -559,6 +560,21 @@ void Serial::testVersionArduino()
 {
 	bVersionArduino = true;
 	sVersionArduinoValable = VER_ARDUINO;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::print_list()
+{
+    logf( (char*)"---- Arduino --------" );
+    if ( isConnect() )
+    {
+    	logf( (char*)"  EQ5_DRIVE  : v%s", VER_ARDUINO );
+    }
+    else
+    {
+    	logf( (char*)" Aucune Arduino connectée" );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -323,7 +323,7 @@ void cb_rotationCheck(PanelCheckBox* p)	{
     else if (  p == pButtonJoy )
     {
         char cmd[255];
-        sprintf( cmd, "j;g" );
+        sprintf( cmd, "j;x0;y0;g" );
         Serial::getInstance().write_string(cmd);
     }
     else if (  p == pButtonSui )

@@ -52,10 +52,8 @@ struct stellarium
 SINGLETON_BEGIN( Serveur_mgr )
 
 protected:
-    std::thread                 th_1;
-    std::thread                 th_2;
-
-    std::thread                 connect_1;
+    std::thread                 th_depl;
+    std::thread                 th_init;
 
     int                         sock_deplacement;
     int                         sock_listen_deplacement;
@@ -67,8 +65,8 @@ protected:
 
     bool                        listen_1;
     bool                        listen_2;
-    bool                        traite_1;
-    bool                        traite_2;
+    bool                        bTraite_depl;
+    bool                        bTraite_init;
     
     string						sIP_listen_init;
     string						sIP_init;

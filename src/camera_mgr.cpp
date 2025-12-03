@@ -460,17 +460,15 @@ Camera* Camera_mgr::getCamera( string name )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::print_list()
 {
-    logf_thread( (char*)"---- Camera_mgr::print_list()" );
+    logf( (char*)"---- Cameras -----------" );
 
     int nb0 = pCameras.size();
-    
- 
-    logf_thread( (char*)"  pCameras : " );
     for( int i=0; i<nb0; i++ )
     {
-        logf_thread( (char*)"    %s", pCameras[i]->getName().c_str() );
+        logf( (char*)"  Camera : %s", pCameras[i]->getName().c_str() );
     }
 
+	if ( nb0 == 0 )				logf( (char*)"  Aucune camera de connectée" );
 }    
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -555,11 +553,12 @@ void Camera_mgr::position(double ra, double dc)
     if (pCurrent == NULL)                   return;
     if (pCurrent->getRB() == NULL)          return;
     
+	logf_thread( (char*)"Camera_mgr::position(%lf, %lf)", ra, dc );
     
     if ( getRB() != NULL )
     {
     	if ( typeid(Pleiade) == typeid(*pCurrent) )	{
-    		logf_thread( (char*)"Camera_mgr::position() pCurrent = objet<pleiade>" );
+    		logf_thread( (char*)"  pCurrent = objet<pleiade>" );
     	}
     	else {
 	        pCurrent->getPanelCamera()->getStars()->position(ra, dc);

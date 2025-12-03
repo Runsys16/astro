@@ -247,7 +247,7 @@ std::thread Connexion_mgr::startThread()
 //--------------------------------------------------------------------------------------------------------------------
 void Connexion_mgr::print_list()
 {
-    logf( (char*)"---- Connexion_mgr::print_list()" );
+    logf( (char*)"---- Connexion sur /dev" );
 
     int nb0 = t_port_polling.size();
     int nb1 = t_port_current.size();

@@ -487,7 +487,8 @@ void PanelCourbe::sauve_guidage_1_1()
     for(int i=0; i<t_vSauve.size(); i++)
     {
         fichier << "delta(" << t_vSauve[i].v.x << ", " <<  t_vSauve[i].v.y << ")";
-        fichier << " origine" << "(" << vOrigine.x << ", " <<  vOrigine.y << ")";
+        //fichier << " origine" << "(" << vOrigine.x << ", " <<  vOrigine.y << ")";
+        fichier << " origine" << "(" << xSuivi << ", " <<  ySuivi << ")";
         fichier << " time" << "(" << t_vSauve[i].t << ")";
         fichier << "\n";
     }

@@ -16,8 +16,8 @@ Serveur_mgr::Serveur_mgr()
     logf((char*)"----------- Constructeur Serveur_mgr() -------------" );
     listen_1 = true;
     listen_2 = true;
-    traite_1 = true;
-    traite_2 = true;
+    bTraite_depl = true;
+    bTraite_init = true;
 
     sock_deplacement	= -1;
     uPort_deplacement	= 10001;
@@ -82,10 +82,10 @@ void Serveur_mgr::traite_connexion_init()
     unsigned char buffer[255];
     int n;
 
-    while( traite_2 )
+    while( bTraite_init )
     {
-        n = read(sock_init, buffer, 255);
-        //logf_thread( (char*)"Serveur_mgr::traite_connexion_init()" );
+        n = read(sock_init, buffer, sizeof(buffer));
+        logf_thread( (char*)"Serveur_mgr::traite_connexion_init()" );
         log_tab(true);
 
         if (n <= 0)
@@ -95,23 +95,23 @@ void Serveur_mgr::traite_connexion_init()
             break;
         }
 
+        logf_thread( (char*)"reception de %d octets", n);
 		buffer[n] = 0;
 
-		//-------------------------------------------------
-		// recuperation des infos
-        struct stellarium ss;
-        decode( ss, buffer );
-		//-------------------------------------------------
+		if ( n == 20 )
+		{
+			//-------------------------------------------------
+			// recuperation des infos
+		    struct stellarium ss;
+		    decode( ss, buffer );
+			//-------------------------------------------------
 
-        double ra = com2rad(ss.ra);
-        double dc = com2rad(ss.dc);
+		    double AD = com2rad(ss.ra);
+		    double DC = com2rad(ss.dc);
 
-        logf_thread( (char*)"Init reception de ra=%0.10lf, dc=%0.10lf", ra, dc);
-        
-		_sync_rad( ra, dc );
-
-        Xref = 0.0;
-        Yref = 0.0;
+		    logf_thread( (char*)"ra=%0.10lf, dc=%0.10lf", AD, DC );
+			_sync_rad( AD, DC );
+		}        
 
         log_tab(false);
 
@@ -225,8 +225,8 @@ void Serveur_mgr::thread_listen_init()
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::start_init()
 {
-    th_2 = std::thread(&Serveur_mgr::thread_listen_init, this);
-    th_2.detach();
+    th_init = std::thread(&Serveur_mgr::thread_listen_init, this);
+    th_init.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -236,7 +236,7 @@ void Serveur_mgr::traite_connexion_deplacement()
     unsigned char buffer[255];
     int n;
 
-    while( traite_1 )
+    while( bTraite_depl )
     {
         n = read(sock_deplacement,buffer,255);
         logf_thread( (char*)"Serveur_mgr::traite_connexion_deplacement()" );
@@ -249,18 +249,23 @@ void Serveur_mgr::traite_connexion_deplacement()
             break;  
         }
 
+        logf_thread( (char*)"reception de %d octets", n);
 		buffer[n] = 0;
-        logf_thread( (char*)"Deplacement nb octet lu : %d   \"%s\"", n, (char*)buffer );
 
-		if ( n == 2 )			{ log_tab(false); continue; }
+		if ( n == 20 )
+		{
+			//-------------------------------------------------
+			// recuperation des infos
+		    struct stellarium ss;
+		    decode( ss, buffer );
+			//-------------------------------------------------
 
-        struct stellarium ss;
-        decode( ss, buffer );
+		    double AD = com2rad(ss.ra);
+		    double DC = com2rad(ss.dc);
 
-        double ra = com2rad(ss.ra);
-        double dc = com2rad(ss.dc);
-
-		_goto_rad( ra, dc );
+		    logf_thread( (char*)"ra=%0.10lf, dc=%0.10lf", AD, DC );
+			_goto_rad( AD, DC );
+		}        
 
         log_tab( false );
     }
@@ -379,8 +384,8 @@ sortie_deplacement:
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::start_deplacement()
 {
-    th_1 = std::thread(&Serveur_mgr::thread_listen_deplacement, this);
-    th_1.detach();
+    th_depl = std::thread(&Serveur_mgr::thread_listen_deplacement, this);
+    th_depl.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -555,34 +560,39 @@ void Serveur_mgr::_goto( double ra, double dc )
 void Serveur_mgr::_sync( double ra, double dc )
 {
     logf_thread( (char*)"Serveur_mgr::_sync(( %lf, %lf )", ra, dc );
-    if ( !Serial::getInstance().isConnect() )
+
+	Serial& serial = Serial::getInstance();
+
+    if ( !serial.isConnect() )
     {
     	write_stellarium( ra, dc );
 		change_ad_status( ra );
 		change_dc_status( dc );
     }
-
-    struct hms HMS;
-    deg2hms( ra, HMS );
-    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, ra );
+	//return;
+    struct hms HMS;			deg2hms( ra, HMS );
+	struct dms DMS;			deg2dms( dc, DMS );
+	
+    logf_thread( (char*)"  AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, ra );
+    logf_thread( (char*)"  DC : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, dc );
     
-    struct dms DMS;
-    deg2dms( dc, DMS );
-    logf_thread( (char*)"Dc : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, dc );
-    
-    char cmd[255];
-    sprintf( cmd, "ia%lf;id%lf", ra, dc );
-
 	//-------------------------------------------------
-    logf_thread( (char*)"Serveur_mgr::_goto() envoi arduino : %s", cmd );
-    if ( Serial::getInstance().write_string(cmd) != 0 )
+    if ( serial.isConnect() )
     {
-	    logf_thread( (char*)"[ERROR] Serial" );
+		char cmd[255];
+
+		snprintf( (char*)cmd, sizeof(cmd), "ia%lf;id%lf", ra, dc );
+    	logf_thread( (char*)"Serveur_mgr::_sync() envoi arduino : %s", cmd );
+
+		if (  serial.write_string( (char*)cmd ) != 0 )
+		{
+	    	logf_thread( (char*)"[ERROR] Serial" );
+		}
     }
 	//-------------------------------------------------
-    logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
-	Camera_mgr::getInstance().position(ra, dc);
-    Captures::getInstance().position(ra, dc);
+    //logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );
+	//Camera_mgr::getInstance().position(ra, dc);
+	// Captures::getInstance().position(ra, dc);
 	//-------------------------------------------------
 
 }
@@ -598,7 +608,9 @@ void Serveur_mgr::_goto_rad( double ra, double dc )
 //--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::_sync_rad( double ra, double dc )
 {
-	_sync( RAD2DEG(ra), RAD2DEG(dc) );
+	double dra = RAD2DEG(ra);
+	double ddc = RAD2DEG(dc);
+	_sync( dra, ddc );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -610,8 +622,8 @@ void Serveur_mgr::close_all()
 
     listen_1 = false;
     listen_2 = false;
-    traite_1 = false;
-    traite_2 = false;
+    bTraite_depl = false;
+    bTraite_init = false;
 
     if ( sock_deplacement!= -1 )         shutdown(sock_deplacement, 2);
     if ( sock_init!= -1 )                shutdown(sock_init, 2);

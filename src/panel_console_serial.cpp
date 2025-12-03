@@ -60,6 +60,9 @@ PanelConsoleSerial::PanelConsoleSerial()
 
     if ( var.getb("bNuit") )    pc->setColor( 0xffff0000 );
     else                        pc->setColor( 0xffffffff );
+    
+   	prompt = "";
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -244,6 +247,12 @@ void PanelConsoleSerial::idleGL()
             dc = dc_change;
             change_dc_status( dc );
         }
+    }
+    
+    if ( prompt != "" )
+    {
+    	pc->setPrompt( prompt );
+    	prompt = "";
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

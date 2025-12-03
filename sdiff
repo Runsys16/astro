@@ -18,17 +18,56 @@ case $(uname -n) in
 		exit 1
 		;;
 esac
-#-------------------------------------------------------------------------------------------
-#echo $POSTE
-#FILES=$(git status | grep src | sed -e "s_.*\(src/.*\)_\1_g")
-#echo $FILES
-#exit
+#-----------------------------------------------------------------------------------------
+# fonction help()
+#-----------------------------------------------------------------------------------------
+function help()
+{
+	cat <<EOF
+sdiff  recopie uniquement les fichiers modifié 
+
+  ./sdiff -e -h -ed
+  
+  -e                   : affiche la commande sans la lancer
+  -ed|ed               : edition
+  -h                   : affiche l'aide
+  
+EOF
+}
 #-------------------------------------------------------------------------------------------
 #
 #-------------------------------------------------------------------------------------------
-#scp $(git diff --name-only| grep src) rene@$POSTE:$(pwd)/src
-scp $(git status | grep src | sed -e "s_.*\(src/.*\)_\1_g") rene@$POSTE:$(pwd)/src
-scp sdiff rene@$POSTE:$(pwd)
+numargs=$#
+ECHO=""
+for ((i=1 ; i <= numargs ; i++))
+do
+	arg=$1
+	case $arg in
+		e|-e)
+			ECHO="echo"
+			;;
+		ed|-ed)
+			edition ./sdiff
+			exit
+			;;
+		h|-h)
+			help
+			exit 0
+			;;
+		*)
+			help
+			echo "---------------"
+			echo \"$arg\" option inconnue
+			exit 1
+			;;
+	esac
+	shift
+done
+#-------------------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------------------
+$ECHO scp $(git status | grep src | sed -e "s_.*\(src/.*\)_\1_g") rene@$POSTE:$(pwd)/src
+$ECHO scp sdiff rene@$POSTE:$(pwd)
 
 
 
