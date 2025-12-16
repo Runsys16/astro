@@ -781,36 +781,47 @@ void FileBrowser::mouseOverDir(int x, int y)
         int dX = panelDir->getDX();
         int dY = DY;//pChild->getDY();
         
-        if (	0<=x && x<=(X+dX)
-			&&	Y<=y && y<=(Y+dY) )
+        if (	0<=x && x<(X+dX)
+			&&	Y<=y && y<(Y+dY) )
 		{
 			if (	pOldDir != pChild )
 			{
-				if ( pOldDir )			pOldDir->setColor( 0xFFFFFFFF );
+				if ( pOldDir )					pOldDir->setColor( 0xffFFffFF );
+				
 				pChild->setColor( 0x000000FF );
 				
 				if ( pOldFile )	
 				{
 					pOldFile->setColor( 0xFFFFFFFF );
-					panelInverseDir->setVisible(false);
+					panelInverseFile->setVisible(false);
 					pOldFile = NULL;
 				}
-				panelInverseFile->setVisible(false);
-				panelInverseDir->setVisible(true);
-				panelInverseDir->onBottom();
 				panelInverseDir->setPosAndSize( X, Y,	dX, dY );
 				panelInverseDir->updatePos();
-
+				panelInverseDir->setVisible(true);
+				panelInverseDir->onBottom();
+				pChild->updatePos();
+				pChild->onTop();
+				
+				/*
+				if ( pOldDir == NULL )
+					logf( (char*)"pChild (file) : %s   pOldFile = NULL ", pChild->getText().c_str() );
+				else
+					logf( (char*)"pChild (file) : %s   pOldFile : %s", pChild->getText().c_str(), pOldDir->getText().c_str() );
+				*/
 				pOldDir = pChild;
 				return;
 			}
 			break;
 	    }
+		else
+		if ( pChild )					pChild->setColor( 0xFFffFFFF );
     }
 	if ( i==childs.size() )
 	{
-		if ( pOldDir )			pOldDir->setColor( 0xFFFFFFFF );
+		if ( pOldDir )			pOldDir->setColor( 0x000000FF );
 		panelInverseDir->setVisible(false);
+		pOldDir = NULL;
 	}
     
 }
@@ -832,16 +843,19 @@ void FileBrowser::mouseOverFile(int x, int y)
     	
         int X  = pChild->getPosX();
         int Y  = pChild->getPosY();
-        int dX = pChild->getDX();
-        int dY = DY;//pChild->getDY();
+        int dX = pChild->getDX();        if ( dX > DXFile )	dX = DXFile;
+        int dY = DY;					//pChild->getDY();
+
         
-        if (	0<=x && x<=(X+dX)
-			&&	Y<=y && y<=(Y+dY) )
+        if (	X<=x && x<(X+dX)
+			&&	Y<=y && y<(Y+dY) )
 		{
 			if( pOldFile!=pChild )
 			{
-				if ( pOldFile )					pOldFile->setColor( 0xFFFFFFFF );
-				pChild->setColor( 0x000000FF);
+
+				if ( pOldFile )					pOldFile->setColor( 0xffFFffFF );
+				
+				pChild->setColor( 0x000000FF );
 
 				if ( pOldDir )	
 				{
@@ -849,26 +863,36 @@ void FileBrowser::mouseOverFile(int x, int y)
 					panelInverseDir->setVisible(false);
 					pOldDir = NULL;
 				}
+				panelInverseFile->setPosAndSize( X, Y,	pChild->getDX(), dY );
+				panelInverseFile->updatePos();
 				panelInverseFile->setVisible(true);
 				panelInverseFile->onBottom();
-				panelInverseFile->setPosAndSize( X, Y,	dX, dY );
-				panelInverseFile->updatePos();
 				pChild->updatePos();
+				pChild->onTop();
 				
+				/*
+				if ( pOldFile == NULL )
+					logf( (char*)"pChild (file) : %s   pOldFile = NULL ", pChild->getText().c_str() );
+				else
+					logf( (char*)"pChild (file) : %s   pOldFile : %s", pChild->getText().c_str(), pOldFile->getText().c_str() );
+				*/
 				
 				pOldFile = pChild;
-				//childs[i]->onTop();
-				return;
+
+				break;
 			}
 			break;
 	    }
+		else
+		if ( pChild )					pChild->setColor( 0xFFffFFFF );
     }
 
 	//logf( (char*)"FileBrowser::mouseOverFile(%d, %d) resultat %d/%d", x, y, i, childs.size() );
 	if ( i == childs.size() )
 	{
-		if ( pOldFile )			pOldFile->setColor( 0xFFFFFFFF );
+		if ( pOldFile )					pOldFile->setColor( 0x000000FF );
 		panelInverseFile->setVisible(false);
+		pOldFile = NULL;
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -906,6 +930,7 @@ void FileBrowser::setExtra( int ii)
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::setColor( unsigned long c)
 {
+    logf( (char*)"FileBrowser::setColor(%08X), c " );
     color = c;
     pW->setColor( color );
     panelDir->setColor( color );

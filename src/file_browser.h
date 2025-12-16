@@ -64,7 +64,7 @@ protected:
     
     PanelText*					pOldDir;
     PanelText*					pOldFile;
-   
+    
 
 private :
 	static FileBrowser* s_pInstance;	// Instance de la classe

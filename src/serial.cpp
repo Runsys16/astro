@@ -11,6 +11,7 @@ Serial::Serial()
 {
     logf_thread((char*)"Constructeur Serial::Serial() -------------" );
     fTimeOut = 0.0;
+    fTimer10s = 11.0;
     fd = -1;
 
     idx = 0;
@@ -18,6 +19,15 @@ Serial::Serial()
     
     bFree = true;
     bConnect = false;
+    bOldJoy = false;// getJoy();
+    
+    VarManager& var = VarManager::getInstance();
+    
+    sVersionArduinoValable = "PAS_VERSION";
+    
+    if ( var.existe("VER_ARDUINO") )			sVersionArduinoValable = *var.gets("VER_ARDUINO");
+    else
+	    logf_thread( (char*)"[ Erreur ] VER_ARDUINO inconnu" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -35,6 +45,18 @@ void Serial::init( string dev)
     
     bPrintInfo = true;
     sVersionArduino = "";
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::idle( double elapsedTime )
+{
+    fTimer10s += elapsedTime;
+    if ( fTimer10s >= 10.0 )
+    {
+        fTimer10s -= 10.0;
+        write_g();
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -61,11 +83,13 @@ int Serial::write_string( const char* str, bool bAff)
     	return -1;
     }
 
-    if ( (fTimeMili - fTimeOut) < 1.0 )     
+	
+    if ( (fTimeMili - fTimeOut) < 0.2 )     
     {
     	log_thread( (char*)"[Error] Serial::write_string() TimeOut" );
     	return -1;
     }
+    
     
 
     if ( str[0] == 'a' || str[0] == 'd' )
@@ -125,24 +149,35 @@ int Serial::write_string( const char* str)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Serial::write_g()
+void Serial::write_g_thread()
 {
-	if ( fd == -1 )				return 0;
+	if ( fd == -1 )				return;
 	
     char cmd[255];
     sprintf( cmd, "g" );
 
 	int ret =  write_string(cmd, false);
 	
+	sleep( 1 );
 	if ( bConnect == false )		nbConnect++;
+	else	{
+		change_arduino( true );
+		nbConnect = 0;
+	}
 	if ( nbConnect >= 2 )			
 	{
 		log_thread( (char*)"Connexion pas de reponse arduino" );
 		change_arduino( false );
 		sclose();
 	}
-	
-	return ret;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serial::write_g()
+{
+    th_write_g = std::thread(&Serial::write_g_thread, this);
+    th_write_g.detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -163,8 +198,8 @@ void Serial::push_cmd( string& cmd )
 //--------------------------------------------------------------------------------------------------------------------
 void Serial::sound()
 {
-    //aplay /usr/share/sounds/purple/send.wav
-    char *arguments[] = { (char*)"aplay", (char*)"/usr/share/sounds/purple/send.wav", (char*)NULL };
+    //aplay /home/rene/.astropilot/sounds/send.wav
+    char *arguments[] = { (char*)"aplay", (char*)"/home/rene/.astropilot/sounds/send.wav", (char*)NULL };
     execv( "/usr/bin/aplay", arguments );
 
 }
@@ -220,6 +255,23 @@ void Serial::emet_commande()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Serial::to_bin( unsigned val, char* buffer, int len)
+{
+	int bit  = 0;
+	int mask = 1;
+	int i;
+
+	for ( i = 0 ; i < (len-1) ; i++) 
+	{
+		bit = (val & mask) >> i ;
+		buffer[ 15 - i ] = (char)('0' + bit);
+		mask <<= 1 ;
+	}					
+	buffer[i] = 0;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Serial::read_thread()
 {
     unsigned char b[1];
@@ -231,8 +283,11 @@ void Serial::read_thread()
     bConnect = false;
     
     // ne fonctionne pas     // don't say why ..
+    /*
     logf_thread( (char*)"Envoi de la commande g" );
-    // write_string( "g\n", false );
+    usleep( 10 * 1000 ); // wait 10 msec try again
+   	write_g();
+    */
     get_info_arduino();
     
     do {
@@ -257,29 +312,32 @@ void Serial::read_thread()
         //printf( "%c", c);
         bool bAffiche = true;
 
-        if ( n == 1 && (c == '\n' || c == '\r') )
+        if (   ( n==1 && buffer[0]!='W' && (c=='\n' || c=='\r') )     ||
+               ( n==1 && idx==3 && buffer[0]=='W' ) )
         {
             if ( idx != 0 )
             {
                 buffer[idx++] = 0;
-                
                 string test = buffer;
-                //sound_thread();
-	            if ( var.getb("bVerboseArduino") )	{
-		            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
-		        }
                 
-                if ( test.find("=INFO START") != string::npos )
+            	if ( buffer[0] != 'W' && var.getb("bVerboseArduino") ) 
+		            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+                
+				//-------------------------------------------------------------------
+				//
+                if ( test.find("= START") != string::npos )
                 {
                     bPrintInfo = false;
                 }
                 else
-                if ( test.find("=INFO STOP") != string::npos )
+				//-------------------------------------------------------------------
+				//
+                if ( test.find("= STOP") != string::npos )
                 {
-					if ( bVersionArduino ) {		// pas de reception de version
-						logf_thread((char*)"[ Erreur ] Mauvaise version Arduino" );
-						logf_thread((char*)"[ Erreur ]   pas de version" );
-						bVersionArduino = false;
+					if ( !bVersionArduino ) {		// pas de reception de version
+						logf_thread((char*)"[ Erreur ] Mauvaise version Arduino sur STOP" );
+						//logf_thread((char*)"[ Erreur ]   pas de version" );
+						//bVersionArduino = false;
 					}
 						
                     bPrintInfo = true;
@@ -291,124 +349,100 @@ void Serial::read_thread()
 					bPremiereConnexion = false;
                 }
                 else
-                if ( test.find("Change joy ...NOK") != string::npos )
-                {
-                    changeJoy(false);
-                    
-                    if ( bSound)	system( (char*)"aplay /usr/share/sounds/purple/send.wav" );
-                }
-                else 
-                if ( test.find("Change joy ...OK") != string::npos )
-                {
-                    changeJoy(true);
-                    if ( bSound)	system( (char*)"aplay /usr/share/sounds/purple/receive.wav" );
-                }
-                else
-                if ( test.find("Retour Stellarium on") != string::npos )
-                {
-                    changeRetourPos( true );
-                }
-                else
-                if ( test.find("Retour Stellarium off") != string::npos )
-                {
-                    changeRetourPos( false );
-                }
-                else
+				//-------------------------------------------------------------------
+				//
+				//-------------------------------------------------------------------
                 if ( test.find("dbl click") != string::npos )
-                {
-                    system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
-                }
+                    system( (char*)"aplay /home/rene/.astropilot/sounds/logout.wav" );
                 else
-                if ( test.find("Rotation terre") != string::npos )
-                {
-                    if ( test.find("OUI") != string::npos)
-                    {
-                        //logf_thread( (char*)"ARDUINO Rotation terre : OUI" );
-                        changeSui( true );
-                    }
-                    else
-                    {
-                        //logf_thread( (char*)"ARDUINO Rotation terre : NON" );
-                        changeSui( false );
-                    }
-                }
-                else
-                if ( test.find("Rotation Declinaison") != string::npos )
-                {
-                    if ( test.find("normal") != string::npos)
-                    {
-                        //logf_thread( (char*)"Declinaison : normale" );
-                        changeDec( true );
-                    }
-                    else
-                    {
-                        //logf_thread( (char*)"Declinaison : inverse" );
-                        changeDec( false );
-                    }
-                }
-                else
-                if ( test.find("Rotation  Asc Droite") != string::npos )
-                {
-                    if ( test.find("normal") != string::npos)
-                    {
-                        //logf_thread( (char*)"Asc Droite : normale" );
-                        changeAsc( true );
-                    }
-                    else
-                    {
-                        //logf_thread( (char*)"Asc Droite : inverse" );
-                        changeAsc( false );
-                    }
-                }
-                else
+				//-------------------------------------------------------------------
+				//
                 if ( test.find("Pas sideral") != string::npos )
                 {
                     int n = test.find("Pas sideral");
                     string sPas = test.substr(n+11+3);
                     
                     pas_sideral = strtod(sPas.c_str(),NULL);
-                    //logf_thread( (char*)"Pas sideral : %0.8f", pas_sideral );
+	
+	 	            if ( var.getb("bVerboseArduino") )
+	                    logf_thread( (char*)"Pas sideral : %0.8f", pas_sideral );
                 }
                 else
+				//-------------------------------------------------------------------
+				//
                 if ( test.find("GOTO OK") != string::npos )
                 {
-                    if (bSound)     system( (char*)"aplay /usr/share/sounds/purple/login.wav" );
+                    if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/login.wav" );
                     bFree = true;
                     emet_commande();
                     //PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
                 }
                 else
-                if ( test.find("Version :") != string::npos )
+				//-------------------------------------------------------------------
+				//
+                if ( test.find("V :") != string::npos )
                 {
-			        if ( bVersionArduino )		{
-			        	logf_thread( (char*)"Test version Arduino (\"%s\")", buffer);
-			        	bVersionArduino = false;					// une seule fois
-			        	if ( test.find( VER_ARDUINO ) == string::npos )	{
-			        		logf_thread((char*)"[ Erreur ] Mauvaise version Arduino %s", buffer );
-			        		logf_thread((char*)"[ Erreur ]   recherchée \"Version %s\"  | trouvée \"%s\"", VER_ARDUINO, buffer );
-			        	}
-			        	else {
-			        		logf_thread((char*)"  Version OK" );
-			        		bConnect = true;
-			        	}
-			        }
-
+		        	if ( test.find( sVersionArduinoValable ) == string::npos )	{
+		        		logf_thread((char*)"[ Erreur ] Mauvaise version Arduino %s", test.c_str() );
+		        		logf_thread((char*)"[ Erreur ]   recherchée \"Version %s\"  | trouvée \"%s\"", VER_ARDUINO, buffer );
+		        		bVersionArduino = false;
+		        		change_arduino( false );
+		        	}
+		        	else {
+		        		//logf_thread((char*)"  Version OK" );
+ 		        		bConnect = true;
+						bVersionArduino = true;
+		        		change_arduino( true );
+		        	}
                 }
-
-                /*
-                if ( bPrintInfo == true && bAffiche )
-                {
-                    //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
-                    //logf_thread( (char*)"Buffer : \"%s\"", (char*)buffer );
-                    PanelConsoleSerial::getInstance().writeln( (char*)buffer );
-                }
-                */   
-
                 else
+				//-------------------------------------------------------------------
+				// Lecture des booleens
+				//  voir champ de bits
+				//-------------------------------------------------------------------
+                if ( buffer[0] == 'W' )
+                {
+					f_bool B;
+					B.u = (unsigned)buffer[2]<<8 + (unsigned)buffer[1];
+					B.u = 0 + (unsigned)buffer[1];
+
+					char buf_bool[17];
+					char str[80];
+
+					to_bin( B.u, buf_bool, sizeof(buf_bool) );
+					snprintf( str, sizeof(str), (char*)"W %s - %02X",  buf_bool, B.u );
+					
+	 	            if ( var.getb("bVerboseArduino") )	{
+			            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
+						logf_thread( (char*)str );
+					}
+
+					changeAsc( B.b.bRotAD );
+					changeDec( B.b.bRotDC );
+					changeSui( B.b.bRotSiderale );
+					changeRetourPos( B.b.bRetStellar );
+
+		            if ( B.b.bJoy != bOldJoy )
+		            {
+		                changeJoy(B.b.bJoy);
+		                
+		                if ( bSound)
+		                {
+				            if ( B.b.bJoy )			system( (char*)"aplay /home/rene/.astropilot/sounds/receive.wav" );
+							else	                system( (char*)"aplay /home/rene/.astropilot/sounds/send.wav" );
+		                }
+		                bOldJoy = B.b.bJoy;
+		            }
+                }
+                else
+				//-------------------------------------------------------------------
+				//
                 if ( buffer[0] != '-'  )
                 {
                     if (bPrintInfo) PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
                 }
+				//-------------------------------------------------------------------
+				//
                 else
                     PanelConsoleSerial::getInstance().writeln( (char*)buffer );
             }
@@ -436,6 +470,7 @@ void Serial::read_thread()
     changeAsc( true );
 	changeSui( false );
 	changeRetourPos( false );
+	system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
     logf_thread( (char*)"FIN   Serial::read_thread" );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -445,9 +480,16 @@ void Serial::start_thread()
 {
     if ( fd != -1 )             
     {
+		system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
         th_serial = std::thread(&Serial::read_thread, this);
         th_serial.detach();
         nbConnect = 0;
+		
+		sleep(1);
+        logf_thread( (char*)"Envoi de la commande g" );
+		//usleep( 10 * 1000 ); // wait 10 msec try again
+	   	write_g();
+
     }
     else                        logf_thread( (char*)"Port deja ouvert !! " );
 }

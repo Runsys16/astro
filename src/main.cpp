@@ -198,6 +198,7 @@ PanelText*          pArduino;
 PanelText*          pStellarium;
 PanelText*          pPas;
 PanelText*          pDeplacement;
+PanelText*          pRacket;
 PanelText*          pAD;
 PanelText*          pDC;
 PanelText*          pAsservi;
@@ -292,7 +293,7 @@ int                 iDisplayfft = 0;
 bool                bDisplayfftX = true;
 bool                bDisplayfftY = true;
 
-double				fTimeMili;
+double				fTimeMili = 0.0;
 vector<string>		logs_string;
 mutex				m_logs_string;
 //--------------------------------------------------------------------------------------------------------------------
@@ -462,7 +463,7 @@ void arret_urgence()
 //--------------------------------------------------------------------------------------------------------------------
 void sound_alert()
 {
-    string cmd = "aplay /usr/share/sounds/purple/alert.wav;";
+    string cmd = "aplay /home/rene/.astropilot/sounds/alert.wav;";
     cmd = cmd;
     system( (char*)cmd.c_str() );
     system( (char*)cmd.c_str() );
@@ -789,7 +790,7 @@ unsigned int get_color( vcf4 v )
 
     return r<<24 | g<<16 | b<<8 | a;
 }
-//--------------------------------------------------------------------------------------------------------------------
+//-------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 bool fexists(const char *filename)
@@ -1406,12 +1407,15 @@ void change_hertz(double hz)
 //--------------------------------------------------------------------------------------------------------------------
 void change_arduino(bool b)
 {
-    logf( (char*)"Change Arduino %s", (char*)BOOL2STR(b) );
+	if ( bArduino == b )			return;
+	
+    logf( (char*)"main::Change Arduino %s", (char*)BOOL2STR(b) );
     
     bArduino = b;
 
-    //if ( b )    pArduino->changeText((char*)"Arduino");
-    //else        pArduino->changeText((char*)"----");
+
+	if( b && bSound)			system( (char*)"aplay /home/rene/.astropilot/sounds/electric-piano-3.wav" );
+
     
     if ( b )    pArduino->setColor(COLOR_WHITE);
     else        pArduino->setColor(COLOR_GREY);
@@ -1419,7 +1423,6 @@ void change_arduino(bool b)
     if ( b )    PanelConsoleSerial::getInstance().setPrompt("Arduino> ");
     else        PanelConsoleSerial::getInstance().setPrompt("No connect> ");
 
-    if ( b )    Serial::getInstance().testVersionArduino();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1817,21 +1820,28 @@ static void idleGL(void)
     // et des pointeurs vers la texture background
     //-----------------------------------------------------------------------
     Camera_mgr::getInstance().update();
-    
     Captures::getInstance().update();
+    //-----------------------------------------------------------------------
+    // Idle serial
+    //-----------------------------------------------------------------------
+    double elapsedTime = -1;
+	if ( prevTime < 0 )	{
+		prevTime = fTimeMili;
+	}
+	else 	{
+		elapsedTime = fTimeMili - prevTime;
+		prevTime = fTimeMili;
+	}
+    
+	if ( elapsedTime != -1 )			Serial::getInstance().idle(elapsedTime);
+
     //-----------------------------------------------------------------------
     // Lance le suivi des etoiles
     //-----------------------------------------------------------------------
     if ( bSuivi )   suivi();
 
-    /*
-    if (!bModeManuel)
-    {
-        suivi();
-    }
-    */
     //-----------------------------------------------------------------------
-    //
+    // Enregistrement des traces
     //-----------------------------------------------------------------------
     if ( bRecTrace )
     {
@@ -1849,30 +1859,6 @@ static void idleGL(void)
             }
         }
     }
-    //-----------------------------------------------------------------------
-    //
-    //-----------------------------------------------------------------------
-	
-    double elapsedTime = -1;
-	if ( prevTime < 0 )	{
-		prevTime = fTimeMili;
-	}
-	else 	{
-		elapsedTime = fTimeMili - prevTime;
-		prevTime = fTimeMili;
-	}
-    
-    //WindowsManager::getInstance().idleGL( elapsedTime );
-    
-	if ( elapsedTime != -1 )
-	{
-	    fTimer10s += elapsedTime;
-	    if ( fTimer10s >= 10.0 )
-	    {
-	        fTimer10s -= 10.0;
-            Serial::getInstance().write_g();
-	    }
-	}
     //------------------------------------------------------
     //------------------------------------------------------
 	// CHARGEMENT IMAGE SUR SURVEILLANCE
@@ -1905,7 +1891,7 @@ static void idleGL(void)
             if ( l > fLimitCorrection0 ) {
                 logf( (char*)"[WARNING]Suivi l=%0.2f/%0.2f", l, fLimitCorrection0 ); 
                 arret_urgence();
-                //system( (char*)"aplay /usr/share/sounds/purple/logout.wav" );
+                //system( (char*)"aplay /home/rene/.astropilot/sounds/logout.wav" );
                 thread( &sound_alert).detach();
             }
 
@@ -3886,6 +3872,10 @@ void status_nuit( unsigned long );
 void setColor()	
 {
     //logf( (char*)"main::setColor()" );
+static bool bNuitOld =  -2;
+
+	if (bNuitOld == bNuit)		return;
+	bNuitOld = bNuit;
 
     uint32_t color;
     if (bNuit)                  color = 0xFF0000FF;
@@ -4160,7 +4150,7 @@ static void CreateStatus()	{
 	panelStatus->setExtraString( (char*)"PanelStatus");
 	panelStatus->setPosAndSize( x, y, dx, dy );
 
-    logf((char*)"** CreateStatus()  panelSatuts  %d", width);
+    logf((char*)"** CreateStatus()  panelStatuts  largeur : %d", width);
 
 	//-------------------------------------------------------------------------------------------
 
@@ -4186,6 +4176,10 @@ static void CreateStatus()	{
     pDeplacement = new PanelText( (char*)"Depl",		PanelText::NORMAL_FONT, width-405, 2 );
     pDeplacement->setColor(COLOR_GREY);
 	panelStatus->add( pDeplacement );
+
+    pRacket = new PanelText( (char*)"Racket",		PanelText::NORMAL_FONT, width-465, 2 );
+    pRacket->setColor(COLOR_GREY);
+	panelStatus->add( pRacket );
 
 	//-------------------------------------------------------------------------------------------
     double d;
@@ -4251,12 +4245,10 @@ static void CreateAllWindows()	{
 //--------------------------------------------------------------------------------------------------------------------
 void changeDec( bool b )
 {
-    pButtonDec->setVal( !b );
+    pButtonDec->setVal( b );
     if ( b != bDec )
     {
         logf( (char*)"Declinaison : %d", (int)b );
-        //inverse_texture( pButtonDec, b, "dec" );
-        pButtonDec->setVal( !b );
         bDec = b;
     }
 }
@@ -4265,11 +4257,10 @@ void changeDec( bool b )
 //--------------------------------------------------------------------------------------------------------------------
 void changeAsc( bool b )
 {
-    pButtonAsc->setVal( !b );
+    pButtonAsc->setVal( b );
     if ( b != bAsc )
     {
         logf( (char*)"Asc Droite : %d", (int)b );
-        //inverse_texture( pButtonAsc, b, "asc" );
         bAsc = b;
     }
 }
@@ -4282,7 +4273,6 @@ void changeSui( bool b )
     if ( b != bSui )
     {
         logf( (char*)"Suivi : %d", (int)b );
-        //inverse_texture( pButtonAsc, b, "asc" );
         bSui = b;
     }
 }
@@ -4294,7 +4284,6 @@ void changeJoy( bool b )
     pButtonJoy->setVal( b );
     if ( b != bJoy )
     {
-        //inverse_texture( pButtonAsc, b, "asc" );
         bJoy = b;
     }
 }

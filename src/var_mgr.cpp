@@ -159,6 +159,7 @@ void VarManager::charge()
     if ( !fichier ) 
     {
         logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        return;
     }
     
     char output[255];
@@ -221,6 +222,13 @@ void VarManager::charge()
 bool VarManager::existe(const std::string& name)
 {
     dbMap& db = getDB();
+	if ( db.size() == 0 )
+	{
+		printf( "%s n'existe pas\n", name.c_str() );
+		return false;
+	}
+
+
     VarManager::dbMap::iterator p;
     
     string key;
@@ -230,7 +238,7 @@ bool VarManager::existe(const std::string& name)
         key = string( p->first );
         if ( key.compare(name) == 0 )   return true;
     }
-
+	printf( "%s n'existe pas\n", name.c_str() );
     return false;
 }
 //--------------------------------------------------------------------------------------------------------------------

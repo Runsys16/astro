@@ -273,6 +273,7 @@ void Serveur_mgr::traite_connexion_deplacement()
     logf_thread( (char*)"Depl Deconnexion du sock_deplacement %d", sock_deplacement);
     close(sock_deplacement);
 
+	system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
     sock_deplacement = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -369,9 +370,8 @@ void Serveur_mgr::thread_listen_deplacement()
 		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion" );
 		logf_thread( (char*)"  sock = %d  sock_listen_deplacement = %d  IP = %s:%d sur %s", sock_listen_deplacement, sock_deplacement, some_addr, (int)adresse.sin_port, sIP_listen_depl.c_str() );
 
+		system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
 		traite_connexion_deplacement();
-		
-		
 	}
 
 sortie_deplacement:
@@ -553,6 +553,9 @@ void Serveur_mgr::_goto( double ra, double dc )
     {
 	    logf_thread( (char*)"[ERROR] Serial" );
     }
+    else
+	if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/start" );
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -560,6 +563,7 @@ void Serveur_mgr::_goto( double ra, double dc )
 void Serveur_mgr::_sync( double ra, double dc )
 {
     logf_thread( (char*)"Serveur_mgr::_sync(( %lf, %lf )", ra, dc );
+
 
 	Serial& serial = Serial::getInstance();
 
@@ -588,6 +592,8 @@ void Serveur_mgr::_sync( double ra, double dc )
 		{
 	    	logf_thread( (char*)"[ERROR] Serial" );
 		}
+		//else
+		//if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/prompt.wav" );
     }
 	//-------------------------------------------------
     //logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );

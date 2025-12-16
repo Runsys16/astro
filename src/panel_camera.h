@@ -100,6 +100,7 @@ public:
     void                displayVecAD();
     void                displayVecDC();
 
+    void				displayLigneSuivi();
     void				displaySuivi();
     void				displayCentre();
     void				displayVizier();

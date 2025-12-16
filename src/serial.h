@@ -18,7 +18,27 @@
 #include "main.h"
 
 extern double fTimeMili;
-#define VER_ARDUINO		"1.0.4"
+#define VER_ARDUINO		"1.0.7"
+
+typedef union
+{
+	uint16_t	u;
+
+	struct  	{
+		bool bRotAD			: 1;
+		bool bRotDC			: 1;
+		bool bRotJoyAD		: 1;
+		bool bRotJoyDC		: 1;
+		bool bRotSiderale	: 1;
+		bool bRetStellar	: 1;
+		bool bJoy			: 1;
+		int	 zero			: 9;
+	}b;
+} f_bool;
+
+
+
+
 
 
 using namespace std;
@@ -33,6 +53,7 @@ SINGLETON_BEGIN( Serial )
         string          dev_name;
         int             baudrate;
         int             fd;
+        thread          th_write_g;
         thread          th_serial;
         thread          th_sound;
         
@@ -41,9 +62,10 @@ SINGLETON_BEGIN( Serial )
         int             nbZero;
         
         bool            bPrintInfo;
-        double           fTimeOut;
-        
+        double			fTimeOut;
+		double			fTimer10s;
         bool            bFree;
+        bool			bOldJoy;
         
         vector<string>  tCommandes;
         string			sVersionArduino;
@@ -59,18 +81,21 @@ SINGLETON_BEGIN( Serial )
 
     public :
         Serial();
-
         void            init( string );
+
+        void			idle(double);
         void            sopen();
         void            sclose();
 
         int             write_byte(char b);
         int             write_string(const char* str, bool);
         int             write_string(const char* str);
-        int             write_g();
+        void			write_g_thread();
+        void			write_g();
         void            push_cmd(string&);
         void            push_cmd(char *);
 
+        void            to_bin(unsigned, char*, int);
         void            read_thread();
         void            sound_thread();
         void            sound();
@@ -81,6 +106,7 @@ SINGLETON_BEGIN( Serial )
 	    
 	    void			print_list();
 
+inline  bool            isCorrectVersion()                      { return bVersionArduino; }
 inline  bool            isConnect()                             { return bConnect; }
 inline  bool            getFree()                               { return bFree; }
 

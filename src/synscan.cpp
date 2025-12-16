@@ -509,6 +509,7 @@ void SYNSCAN::thread_listen_synscan()
 		logf_thread( (char*)"  sock = %d  sock_listen_synscan = %d  IP = %s:%d sur %s", sock_listen_synscan, sock_synscan, some_addr, (int)adresse.sin_port, sIP_listen_synscan.c_str() );
 
 		traite_connexion_synscan();
+		system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
 	}
     logf_thread( (char*)"Fermeture de sock_listen_synscan (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_listen_synscan);

@@ -187,7 +187,7 @@ void PanelConsoleSerial::writeln(char* str)
         }
         
         fa = DEG2RAD(fa) / M_PI * 2147483648;
-        fd = DEG2RAD(fd) / M_PI * 2147483648;
+        fd = DEG2RAD(fd) / M_PI * 2147483648;   // 32eb   2147483648 dec = 0x80000000 hex
 
         int a, d;
         

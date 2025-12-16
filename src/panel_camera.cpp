@@ -732,6 +732,48 @@ void PanelCamera::displayVecDC()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::displayLigneSuivi()
+{
+	//*
+    vec2* pvStar = getSuivi();
+
+    if ( pvStar!=NULL  )
+    {
+		vec2 vStarTex = vec2(pvStar->x, pvStar->y);
+		vec2 vSuiviTex = vec2(xSuivi, ySuivi);
+
+		//----- Droite de correction --------------------------------------------------
+		if ( vStarTex!=vec2(0.0,0.0) && vSuiviTex!=vec2(0.0,0.0)  )
+		{
+
+
+			vec2 vStarScr = vec2(pvStar->x, pvStar->y);
+			tex2screen(vStarScr);
+
+
+			vec2 vSuiviScr = vec2(xSuivi, ySuivi);
+			tex2screen(vSuiviScr);
+
+			if ( bNuit )				glColor4f( 1.0,   0.0,  0.0, 1.0 );
+			else						glColor4f( 0.2, 0.2, 1.0, 1.0);
+
+			
+
+			glLineStipple(2, 0xFF00);
+			glEnable(GL_LINE_STIPPLE);    
+
+			glBegin(GL_LINES);
+		        glVertex2i( (int)vStarScr.x,  (int)vStarScr.y);                  
+		        glVertex2i((int)vSuiviScr.x, (int)vSuiviScr.y );
+		    glEnd();
+
+		    glDisable(GL_LINE_STIPPLE);    
+		}
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displaySuivi()
 {
     if  ( panelCourbe==NULL )   return;
@@ -829,6 +871,7 @@ void PanelCamera::displaySuivi()
     glColor4fv( color );
 	glLineWidth( 1 );
 
+	
     //----- Droite de correction --------------------------------------------------
     if ( pvStar!=NULL && vStarTex!=vec2(0.0,0.0) && vSuiviTex!=vec2(0.0,0.0)  )
     {
@@ -838,6 +881,7 @@ void PanelCamera::displaySuivi()
         glEnd();
 
     }
+    
 
     if ( !bCorrection )
         glDisable(GL_LINE_STIPPLE);    
@@ -949,6 +993,7 @@ void PanelCamera::displayGL()
 		if ( bAffTrace )            displayGLTrace();
 		if ( bAfficheVec)           { displayVecAD(); displayVecDC(); }
 
+		displayLigneSuivi();
 		if ( bModeManuel )
 		{
 		    if ( var.getb("bNuit") )        glColor4f( 1.0, 0.0, 0.0, 0.2 );

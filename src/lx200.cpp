@@ -223,7 +223,7 @@ void LX200::traite_command_M( char* buffer, int n)
 	if ( strncmp( (char*)buffer, "#:Mw", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope West at current slew rate", buffer );
-		char cmd[] = "x100";
+		char cmd[] = "j1;x100";
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
@@ -234,7 +234,7 @@ void LX200::traite_command_M( char* buffer, int n)
 	if ( strncmp( (char*)buffer, "#:Me", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope Est at current slew rate", buffer );
-		char cmd[] = "x-100";
+		char cmd[] = "j1;x-100";
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
@@ -245,7 +245,7 @@ void LX200::traite_command_M( char* buffer, int n)
 	if ( strncmp( (char*)buffer, "#:Mn", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope North at current slew rate", buffer );
-		char cmd[] = "y100";
+		char cmd[] = "j1;y100";
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
@@ -256,7 +256,7 @@ void LX200::traite_command_M( char* buffer, int n)
 	if ( strncmp( (char*)buffer, "#:Ms", 4 ) == 0 )
 	{
 		logf_thread( (char*)"%s Move Telescope South at current slew rate", buffer );
-		char cmd[] = "y-100";
+		char cmd[] = "j1;y-100";
 		logf_thread( (char*)"  |Envoi arduino : %s", cmd );
 		if ( arduino.isConnect() )		arduino.write_string(cmd);
 	}
@@ -632,6 +632,7 @@ void LX200::traite_connexion_lx200()
 #endif
 	bLx200 = false;
     sock_lx200 = -1;
+	system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -728,6 +729,7 @@ void LX200::thread_listen_lx200()
 		//panel_win.setVisible(bPanelStdOut);
 		//PANEL_LX200_DEBUG.setVisible(bPanelStdOut);
 		bLx200 = true;
+		system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
 		traite_connexion_lx200();
 	}
     logf_thread( (char*)"Fermeture de sock_listen_lx200 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
@@ -839,6 +841,8 @@ void LX200::close_all()
     while( sock_stellarium != -1)	;
     while( sock_lx200!= -1)	;
     */
+    sock_lx200        = -1;
+
     logf_thread( (char*)"sock_listen_lx200=%d sock_listen_lx200=%d", sock_listen_lx200, sock_listen_lx200 );
     log_tab(false);
 }

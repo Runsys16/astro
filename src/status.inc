@@ -875,6 +875,23 @@ void status_nuit(unsigned long color )
 
     if ( Serveur_mgr::getInstance().isConnect() )	pStellarium->setColor(color);
     else                            				pStellarium->setColor(color_light);
+
+    if ( LX200::getInstance().is_connect() )	
+    {
+    	pRacket->changeText( (char*)"LX200" );
+    	pRacket->setColor(color);				
+    }
+	else
+    if ( SYNSCAN::getInstance().is_connect() )	
+    {
+    	pRacket->changeText( (char*)"SYNSCAN" );
+    	pRacket->setColor(color);				
+    }
+	else
+    {
+    	pRacket->changeText( (char*)"Racket" );
+    	pRacket->setColor(color_light);
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
