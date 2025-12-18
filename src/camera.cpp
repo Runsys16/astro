@@ -210,7 +210,8 @@ void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{
 	    logf_thread( (char*)"Ajout de '%s'  %.2f>%.2f/%.2f = %.2f", str0, (float)min, (float)max, (float)step, (float)pControl->getValue() );
 
 		char str1[256];
-		snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t\ %.0lf", min, max, step );
+		//snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t\ %.0lf", min, max, step );
+		snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t %.0lf", min, max, step );
 		PanelText* pp = new PanelText( (char*)"  ", PanelText::NORMAL_FONT, x + 150, y );
 		pp->razTabSize();
 		pp->setTabSize(85);

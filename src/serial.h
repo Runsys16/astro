@@ -55,7 +55,7 @@ SINGLETON_BEGIN( Serial )
         int             fd;
         thread          th_write_g;
         thread          th_serial;
-        thread          th_sound;
+        //thread          th_sound;
         
         char            buffer[1024];
         int             idx;
@@ -97,8 +97,8 @@ SINGLETON_BEGIN( Serial )
 
         void            to_bin(unsigned, char*, int);
         void            read_thread();
-        void            sound_thread();
-        void            sound();
+//        void            sound_thread();
+//        void            sound();
 
         void            start_thread();
         void            reset();

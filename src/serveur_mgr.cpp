@@ -553,8 +553,9 @@ void Serveur_mgr::_goto( double ra, double dc )
     {
 	    logf_thread( (char*)"[ERROR] Serial" );
     }
-    else
-	if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/start" );
+
+	
+	if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/xylofon.wav" );
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -593,7 +594,7 @@ void Serveur_mgr::_sync( double ra, double dc )
 	    	logf_thread( (char*)"[ERROR] Serial" );
 		}
 		//else
-		//if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/prompt.wav" );
+		if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/prompt.wav" );
     }
 	//-------------------------------------------------
     //logf_thread( (char*)"Envoi Camera_mgr et Captures position (ra,dec) = (%0.6lf, %0.6lf)", ra, dc );

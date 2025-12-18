@@ -15,8 +15,9 @@ void Connexion_mgr::start()
 {
     if ( !bStart )
     {
-        th_poll_connexion = startThread();
+        th_poll_connexion = std::thread(&Connexion_mgr::threadPooling, this); 
         th_poll_connexion.detach();
+        log_thread( (char*)"[thread] Connexion_mgr::start() !! " );
         bStart = true;
     }
 }
@@ -235,13 +236,6 @@ void Connexion_mgr::threadPooling()
     bStart = false;
     logf_thread( (char*)"[WARNING] Fin du thread Connexion_mgr::threadPooling()" );
 }
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-std::thread Connexion_mgr::startThread()
-{
-    return std::thread(&Connexion_mgr::threadPooling, this); 
-}    
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

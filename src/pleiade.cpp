@@ -61,6 +61,7 @@ void Pleiade::start_thread()
 {
     if ( !bStartThread )
     {
+		log_thread( (char*)"[thread] Pleiade::start_thread() !! " );
         thread_chargement = thread(&Pleiade::charge_background, this);
         thread_chargement.detach();
 

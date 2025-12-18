@@ -55,7 +55,7 @@ void Serial::idle( double elapsedTime )
     if ( fTimer10s >= 10.0 )
     {
         fTimer10s -= 10.0;
-        write_g();
+        if ( fd != -1 )			write_g();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -176,6 +176,7 @@ void Serial::write_g_thread()
 //--------------------------------------------------------------------------------------------------------------------
 void Serial::write_g()
 {
+	logf_thread( (char*)"[thread] Serial::write_g() !! %d", __LINE__ );
     th_write_g = std::thread(&Serial::write_g_thread, this);
     th_write_g.detach();
 }
@@ -193,6 +194,7 @@ void Serial::push_cmd( string& cmd )
 {
     tCommandes.push_back( string(cmd) );
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -211,6 +213,7 @@ void Serial::sound_thread()
     th_sound = std::thread(&Serial::sound, this);
     th_sound.detach();
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -218,6 +221,7 @@ void Serial::emet_commande()
 {
     //logf_thread((char*)"Serial::emet_commande()" );
     //log_tab(true);
+    if ( fd == -1 )			return;
     
     if (tCommandes.size()!=0 )
     {
@@ -282,12 +286,6 @@ void Serial::read_thread()
     VarManager& var= VarManager::getInstance();
     bConnect = false;
     
-    // ne fonctionne pas     // don't say why ..
-    /*
-    logf_thread( (char*)"Envoi de la commande g" );
-    usleep( 10 * 1000 ); // wait 10 msec try again
-   	write_g();
-    */
     get_info_arduino();
     
     do {
@@ -481,17 +479,19 @@ void Serial::start_thread()
     if ( fd != -1 )             
     {
 		system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
+		logf_thread( (char*)"[thread] Serial::start_thread() !! %d", __LINE__);
         th_serial = std::thread(&Serial::read_thread, this);
         th_serial.detach();
         nbConnect = 0;
 		
+		
 		sleep(1);
         logf_thread( (char*)"Envoi de la commande g" );
-		//usleep( 10 * 1000 ); // wait 10 msec try again
 	   	write_g();
+	   	
 
     }
-    else                        logf_thread( (char*)"Port deja ouvert !! " );
+    else                        logf_thread( (char*)"Port pas ouvert !! " );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

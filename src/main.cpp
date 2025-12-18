@@ -4369,11 +4369,12 @@ void log_thread_aff()
 	if ( bFirstStart )			return;
 	
 	m_logs_string.lock();
+	int n = logs_string.size();
 	for( int i=0; i<logs_string.size(); i++ )
 	{
 		log( (char*)logs_string[i].c_str() );
 	}
-    logs_string.clear();
+    if ( n!= 0 )		logs_string.clear();
 	m_logs_string.unlock();
 }
 //--------------------------------------------------------------------------------------------------------------------

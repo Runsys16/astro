@@ -483,23 +483,24 @@ void Captures::supprime()
     int n = captures.size();
     if ( current_capture != -1 )
     {
+        logf( (char*)"supprime()  current_capture = %d/%d", current_capture, n );
+        int  current_capture_svg = current_capture;
+        
         Capture* p = captures[current_capture];
         if ( p == NULL )		logf( (char*)"[ERROR] Capture no %d pointeur NULL ", current_capture );
         delete p;
+
         captures.erase(captures.begin()+current_capture);
         sauve();
 
-        int n = captures.size();
-        if ( n == 0 )           current_capture  = -1;
-        else
-        {
-            current_capture = ++current_capture % n;
-        }
+        //int n = captures.size();
+        current_capture = current_capture_svg;
+        n--;
+        current_capture = --current_capture % n;
     
+        if ( n <= 0 )           current_capture  = -1;
         showIcones();
     }
-    else 
-        logf( (char*)" supprime()  current_capture = -1" );
 
     log_tab(false);
     logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
