@@ -1,6 +1,7 @@
 #include "star_catalogue.h"
 //--------------------------------------------------------------------------------------------------------------------
 //#define COORD
+//#define AFFIDX
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -19,7 +20,7 @@ StarCatalog::~StarCatalog()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-StarCatalog::StarCatalog( double ra, double de, double mag, string n )
+StarCatalog::StarCatalog( double ra, double de, double mag, string n, int i )
 {
 //#define COORD
     //logf( (char*)"Constructeur StarCatalog()" );
@@ -48,7 +49,8 @@ StarCatalog::StarCatalog( double ra, double de, double mag, string n )
     else                        color = 0xFFFFFFFF;
 
     pInfo->setColor(color);
-    //WindowsManager::getInstance().add(pInfo);
+
+	idx = i;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -74,7 +76,11 @@ void StarCatalog::affiche_position()
 //--------------------------------------------------------------------------------------------------------------------
 void StarCatalog::affiche_magnitude()
 {
+	#ifdef AFFIDX
+    sprintf((char*)p_sInfo, "%d-%0.2f", idx, (float)fMag );
+	#else
     sprintf((char*)p_sInfo, "%0.2f", (float)fMag );
+	#endif
 
     pInfo->changeText( (char*)p_sInfo );
     

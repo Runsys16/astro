@@ -31,7 +31,8 @@
 #include "catalog.h"
 #include <GL/freeglut_ext.h>
 #include <mutex>
-
+//-----------------------------------------------------------------
+//-----------------------------------------------------------------
 #define SIZEPT  20
 //--------------- DEBUG -------------------------------------------
 //#define DEBUG 1
@@ -161,6 +162,8 @@ vector<string> t_sHelp3 =
 	"   d/f\t: Zoom Y"   ,
 	" Alt+n\t: Compare les etoiles avec le catalogue Vizier"   ,
 	" Alt+N\t: Compare les etoiles et  affiche la courbe"   ,
+	"      \t  limite la magnitude d'affichage"   ,
+	"Ctrl+H\t: Restaure la magnitude d'affichage a 20.0"   ,
 	"",
 	"---- DEBUG ----",
 	" Alt+g\t: Info fits"   ,
@@ -372,6 +375,7 @@ double				Wref  = -1.0;
 bool				bAffCatalog	= true;
 bool				bAffStar		= true;
 Catalog				vizier = Catalog();
+int					nbVizier;
 
 int					iGlutModifier = 0;
 //--------------------------------------------------------------------------------------------------------------------
@@ -540,7 +544,21 @@ void commande_magnitude( string filename )
     if ( filename == "" )
 	    command = "/home/rene/.astropilot/gnuplot/magnitude.sh magnitude.png >/dev/null 2>&1 &";
 	else
+	{
+		std::ifstream fichier;
+		fichier.open(filename, std::ios_base::app);
+
+		if ( fichier ) 
+		{
+			fichier.close();
+			char fn[256];
+			snprintf( fn, sizeof(fn), "/home/rene/.astropilot/gnuplot/%s", filename.c_str() );
+			logf( (char*)"Effacement de : %s", fn );
+			std::remove( fn );
+		}
+
 	    command = "/home/rene/.astropilot/gnuplot/magnitude.sh magnitude_" +filename+ ".png >/dev/null 2>&1 &";
+	}
 
     logf( (char*) command.c_str() );
     int ret = system( (char*) command.c_str() );
@@ -629,7 +647,7 @@ void vizier_parse_line( Catalog* pVizier, string & line )
     double fMag = stod( line.substr(52,6), 0 );
     //int    iHip = stoi( line.substr(59,6), 0, 10 );
  
-    StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name );
+    StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name, nbVizier++ );
     pVizier->add(p);
     
     //logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f  HIP%06d", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag, (unsigned)iHip );
@@ -667,6 +685,7 @@ void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_ca
     string cmd = rep + find;
     bool bRead = false;
     bool bEntete = false;
+    nbVizier = 0;
  
     if ((ptr = popen(cmd.c_str(), "r")) != NULL)    {
     
@@ -2132,6 +2151,13 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 		{
             logf( (char*)"Key (ctrl+f) : FullScreen" );
             Captures::getInstance().fullscreen();
+        }
+        break;
+	// CTRL+H
+    case 8:
+		{
+            logf( (char*)"Key (ctrl+H) : resetSatrCompare" );
+			Captures::getInstance().resetVizierMagMax();
         }
         break;
 	// TAB
@@ -4849,6 +4875,10 @@ void exit_handler()
     Serveur_mgr::getInstance().close_all();
     LX200::getInstance().close_all();
 	SYNSCAN::getInstance().close_all();
+	
+	WindowsManager& wm= WindowsManager::getInstance();
+	cout << "Nb Fenetre : " << wm.getChilds().size() << std::endl;
+
     cout <<"exit_handler()"<< endl;
 }
 //--------------------------------------------------------------------------------------------------------------------

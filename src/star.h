@@ -119,6 +119,7 @@ public:
 	inline double*		getvB()											{ return &dCoefB; }
 	inline double*		getvC()											{ return &dCoefC; }
     
+    inline void         setIdx(int i)									{ idx = i; }
 private:
     vec2                pos;
     
@@ -134,6 +135,8 @@ private:
 
     int                 x;
     int                 y;
+	
+	int					idx;
 
     float               xSuivi;
     float               ySuivi;

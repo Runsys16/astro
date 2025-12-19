@@ -203,6 +203,7 @@ inline void             setVecteurAD(vec2 v)                            { vAD = 
 inline void             setVecteurDE(vec2 v)                            { vDE = v; }
 inline Catalog*			getCatalog()									{ return pVizier; }
 inline Capture*			getCapture()									{ return pCapture; }
+inline StarCompare&		getStarCompare()								{ return starCompare; }
 //inline string&			getFilename()									{ if (pCapture) return pCapture->getBasename(); else return ""; }
 
 };

@@ -21,6 +21,7 @@ bool Surveillance::isImage(string name)
          || name.find( ".jpeg") != string::npos
          || name.find( ".JPG")  != string::npos
          || name.find( ".fits") != string::npos
+         || name.find( ".fit")  != string::npos
          || name.find( ".tga")  != string::npos
          || name.find( ".png")  != string::npos
        //*/
@@ -48,9 +49,6 @@ bool Surveillance::idleGL()
     	string bas_name = basename_charge.back();
     	
         charge_image( dir_name, bas_name);
-        
-        logf( (char*)"charge(%s)", bas_name.c_str() );
-        logf( (char*)"charge(%s)", dir_name.c_str() );
 
         iState = -1;
 	    bCharge = false;
@@ -110,6 +108,36 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
         int n = vff.size();
         int i;
 
+        for ( i=0; i<(n-1); i++ )            dirname = dirname + vff[i] + "/";
+        basename = string(vff[i]);
+        filename = dirname + basename;
+
+        logf_thread( (char*)"  fichier : %s", (char*)filename.c_str() );
+
+        sleep(1);
+        if (   isImage(basename) )
+        {
+		    basename_charge.push_back( basename );
+		    dirname_charge.push_back( dirname );
+	        logf_thread( (char*)"  push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
+ 			bCharge = true;
+ 			basename = "";
+ 			//dirname = "";
+ 	    }
+    }
+
+
+    if (i->mask & IN_CLOSE_WRITE)
+    {
+        iState = 2;
+        
+        logf_thread( (char*)"  Notification : file ecrit \"%s\"",i->name );
+        string f = string(i->name);
+        vector<string> vff = split( f, "/" );
+        
+        int n = vff.size();
+        int i;
+
         for ( i=0; i<(n-1); i++ )
         {
             dirname = dirname + vff[i] + "/";
@@ -132,6 +160,9 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
  			//dirname = "";
  	    }
     }
+
+
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

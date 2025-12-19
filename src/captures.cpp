@@ -74,9 +74,7 @@ bool Captures::isMouseOverCapture(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::charge_image( string dirname, string filename )
 {
-    logf( (char*)"Captures::charge_image() ......" );
-    logf( (char*)"    %s",(char*)dirname.c_str() );
-    logf( (char*)"    %s",(char*)filename.c_str() );
+    logf( (char*)"Captures::charge_image( %s, %s)",(char*)dirname.c_str(),(char*)filename.c_str() );
     log_tab( true );
 
     //if ( current_capture != -1 )    captures[current_capture]->iconize();   
@@ -85,8 +83,9 @@ void Captures::charge_image( string dirname, string filename )
 
     captures.push_back( new Capture(dirname, filename) );
     sauve();
-    current_capture = captures.size() - 1;
-    resize_all();
+    //current_capture = captures.size() - 1;
+    //resize_all();
+    rotate_capture_plus(false);
     //captures[current_capture]->restaure(true, true, true );
 
     log_tab( false );
@@ -136,6 +135,7 @@ void Captures::rotate_capture_moins(bool b)
 	Capture* pCurr = captures[current_capture];
 	if ( previous != -1 )		Capture* pPrev = captures[previous];
 	
+	logf( (char*)"Active le panelCapture %d \"%s\"", current_capture, pCurr->getBasename().c_str() );
 	if ( pCurr->isFits() && pCurr->getAfficheInfoFits() )		{
 		//pCurr->getFits()->afficheInfoFits(true);
       	WindowsManager::getInstance().onTop( pCurr->getFits()->getPanelFits() );
@@ -181,8 +181,8 @@ void Captures::rotate_capture_plus(bool b)
 	Capture* pCurr = captures[current_capture];
 	if ( previous != -1 )		Capture* pPrev = captures[previous];
 	
+	logf( (char*)"Active le panelCapture %d \"%s\"", current_capture, pCurr->getBasename().c_str() );
 	if ( pCurr && pCurr->isFits() ) {
-		logf( (char*)"Active le panelCapture %d \"%s\"", current_capture, pCurr->getBasename().c_str() );
 		Fits* pFits = pCurr->getFits();
 		
 		//pFits->getPanelCorrectionFits()->setVisible(true);
@@ -576,6 +576,7 @@ void Captures::print_list()
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::sauve(void)
 {
+	log( (char*)"Captures::sauve()" );
     VarManager&         var = VarManager::getInstance();
 
 
@@ -589,7 +590,7 @@ void Captures::sauve(void)
         //string key = "FileCapture" + to_string(no++);
         if ( var.existe( key ) )
         {
-            logf( (char*)"Suppression de la var[\"%s\"]", key.c_str() );
+            //logf( (char*)"Suppression de la var[\"%s\"]", key.c_str() );
             var.erase( key );
         }
         else
@@ -607,7 +608,9 @@ void Captures::sauve(void)
         string key = buf;
         
         var.set( key, captures[i]->getFilename() );
-        logf( (char*)"Creation de var[\"%s\"]", key.c_str() );// captures[i]->getFilename().c_str() );
+
+        if ( i == (captures.size()-1) )		
+        	logf( (char*)"Creation de var[\"%s\"]", key.c_str() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -901,6 +904,18 @@ void Captures::change_dc( double dc )
 		{
 			captures[i]->getPreview()->change_dc( dc );
 		}
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::resetVizierMagMax()
+{
+	logf( (char*)"Captures::resetVizierMagMax()" );
+	if ( current_capture != -1 && captures[current_capture]->isFits() )
+	{
+		Capture* p = captures[current_capture];
+		p->getPreview()->getStarCompare().setMagMax( 20.0 );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

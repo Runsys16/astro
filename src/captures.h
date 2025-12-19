@@ -74,6 +74,8 @@ public:
 	
 	void						change_ad( double );
 	void						change_dc( double );
+	
+	void						resetVizierMagMax();
 
 
     vector<Capture*>&           get_captures()          { return captures; }

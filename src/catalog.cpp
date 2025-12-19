@@ -189,7 +189,7 @@ bool Catalog::charge()
         fichier >> output;
         string name = string(output);
         
-        StarCatalog* p = new StarCatalog(fRA, fDE, fMag, name);
+        StarCatalog* p = new StarCatalog(fRA, fDE, fMag, name, nb);
         nb++;
         
         //logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );

@@ -3,6 +3,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 //#define AFF_CONTRUCTEUR
 //#define DEBUG
+//#define AFFIDX
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -258,13 +259,13 @@ void Star::calculMag()
 	
     double mag = -(log( ponderation ) / log(2.0)) + 17.0;
 
-	/*
-    if ( !bSuivi )
-        snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
-    else
-        snprintf( p_sInfo, sizeof(p_sInfo)-1, "mag=%0.2f", magnitude );
-	*/
-    snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
+    #ifdef AFFIDX
+		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%d-%0.2f", idx, magnitude );
+	#else
+		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
+	#endif
+
+
     pInfo->changeText( p_sInfo );
 }
 //--------------------------------------------------------------------------------------------------------------------

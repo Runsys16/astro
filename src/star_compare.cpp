@@ -1,5 +1,7 @@
 #include "star_compare.h"
 //--------------------------------------------------------------------------------------------------------------------
+//#define RECHERCHE_VIZIER 1
+//--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 StarCompare::StarCompare()
@@ -30,6 +32,8 @@ void StarCompare::init( Stars* pS, Catalog* pC )
     //logf( (char*)"StarCompare::init()" );
     pStars  = pS;
     pVizier = pC;
+    
+    magMax = 20.0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -44,6 +48,7 @@ int StarCompare::findVizier(vec2& vStar)
    	int			n		= pVizier->size();
    	int			idx		= -1;
    	double		min		= 9999999.0;
+   	
 	log_tab(true);
 	
 	//logf( (char*)"Pour %d etoiles vizier", n );
@@ -64,7 +69,9 @@ int StarCompare::findVizier(vec2& vStar)
    		vec2 v = vVizier - vStar;
    		double l = v.length();
 
-   		//logf( (char*)"Etoile[%02d]  (%0.2f, %0.2f) = %0.2f", i, (float)vVizier.x, (float)vVizier.y, (float)l );
+		#ifdef RECHERCHE_VIZIER
+   		logf( (char*)"Etoile[%02d]  (%0.2f, %0.2f) = %0.2f/%0.2f", i, (float)vVizier.x, (float)vVizier.y, (float)l, (float)min );
+   		#endif
    		//--------------------------
 		// distance inferieur à min
 		if ( l < min )		{
@@ -141,7 +148,11 @@ void StarCompare::compareStar( bool bSave )
 		fichier << "\"luminance\";\"calculées\";\"vizier\"\n";
 	}
 	
+   	magMax = 0.0;
+   	tStar.clear();
+   	tVizi.clear();
    	int n = pStars->size();
+   	
 	//--------------------------
 	// Pour tt les etoiles star
    	for( int i=0; i<n; i++ )
@@ -152,15 +163,22 @@ void StarCompare::compareStar( bool bSave )
    		pStars->get(i)->getPos(v);
    		//--------------------------
    		// comparaison avec vizier idx != -1 != echec
+		#ifdef RECHERCHE_VIZIER
+   		logf( (char*)"Recherche Etoile[%02d]  (%04.2f, %04.2f)", i, v.x, v.y ); 
+   		#endif
    		int idx = findVizier(v);
 		float l = 0.0;
 		if ( idx != -1 )	   			l = getDst(v, idx);
 
-   		if ( idx != -1 && l<0.5)
+   		if ( idx != -1 && l<5.0)
    		{
 	   		logf( (char*)"Etoile[%02d]  (%04.2f, %04.2f) = %04.2f   \tidx = %02d/%02d   \t%.0f %.2f~%.2f  ", 
 	   				i, (float)v.x, (float)v.y, l, i, idx, (float)pStars->get(i)->getPonderation(), (float)pStars->get(i)->getMagnitude(), (float)pVizier->get(idx)->getMag() );
-	   		
+
+			if ( pVizier->get(idx)->getMag() > magMax )	   		magMax = pVizier->get(idx)->getMag();
+			
+			tVizi.push_back( pVizier->get(idx) );
+			tStar.push_back( pStars->get(i) );
 	   		if ( bSave  )
 	   		{
 		   		//--------------------------
@@ -213,6 +231,51 @@ void StarCompare::saveCompareStar()
 {
    	log( (char*)"StarCompare::saveCompareStar()");
 	compareStar( true );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+void StarCompare::resetDelta()
+{
+   	log( (char*)"StarCompare::resetDelta()");
+	int n = pStars->size();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+double StarCompare::computeDelta()
+{
+	if ( magMax == 0.0 )			return 0.0;
+   	log( (char*)"StarCompare::computeDelta()");
+   	int n = tVizi.size();
+   	double tot = 0.0;
+   	int err = 0;
+   	
+	for( int i=0; i<n; i++ )
+	{
+		double mv = tVizi[i]->getMag();
+		double ms = tStar[i]->getMagnitude();
+		tot +=  (mv - ms);
+	}
+
+	double delta = tot / (double)n;	
+	int m = 0;
+		
+	for( int i=0; i<n; i++ )
+	{
+		double mv = tVizi[i]->getMag();
+		double ms = tStar[i]->getMagnitude() + delta;
+		if ( (mv - ms) < 0.5 )	
+		{
+			tot +=  (mv - ms);
+			m++;
+		}
+	}
+	
+	
+	return tot / (double)m;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

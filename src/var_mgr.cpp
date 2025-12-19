@@ -224,7 +224,7 @@ bool VarManager::existe(const std::string& name)
     dbMap& db = getDB();
 	if ( db.size() == 0 )
 	{
-		printf( "%s n'existe pas\n", name.c_str() );
+		logf( (char*)"%s n'existe pas", name.c_str() );
 		return false;
 	}
 
@@ -238,7 +238,7 @@ bool VarManager::existe(const std::string& name)
         key = string( p->first );
         if ( key.compare(name) == 0 )   return true;
     }
-	printf( "%s n'existe pas\n", name.c_str() );
+	logf( (char*)"%s n'existe pas", name.c_str() );
     return false;
 }
 //--------------------------------------------------------------------------------------------------------------------

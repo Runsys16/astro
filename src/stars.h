@@ -59,6 +59,8 @@ public:
 	void					setA(double d);
 	void					setB(double d);
 	void					setC(double d);
+	
+	void					setDelta(double);
 
 inline bool					getVisible()				{ return bVisible; }
 inline Star*				get(int i)					{ return v_tStars[i]; }

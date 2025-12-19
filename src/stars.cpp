@@ -46,6 +46,7 @@ void Stars::add(Star * p)
             return;
         }
     }
+    p->setIdx( v_tStars.size() );
     v_tStars.push_back( p );
 
 
@@ -162,6 +163,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
 
 
+    pp->setIdx( v_tStars.size() );
     v_tStars.push_back( pp );
 
     logf( (char*)"Nouvelle etoile no %d (%d,%d) mag=%0.2f find xy(%d,%d)", 
@@ -274,6 +276,7 @@ void Stars::findAllStars()
                     pView->add( pp->getInfo() );
                     pp->setView( pView );
                     
+                    pp->setIdx( v_tStars.size() );
                     v_tStars.push_back( pp );
 
                     //logf( (char*)" Add etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), x_find, y_find, pp->getMagnitude() );
@@ -861,6 +864,24 @@ void Stars::setC(double d)
     for( int i=0; i<nb; i++ )
     {
         v_tStars[i]->setC(d);
+        v_tStars[i]->calculMag();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::setDelta(double d)
+{
+	logf( (char*)"Stars::setDelta(%0.2lf)", d );
+	dCoefC = d;
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        double B = *(v_tStars[i]->getvB());
+        
+        B += d;
+        
+        v_tStars[i]->setB( B );
         v_tStars[i]->calculMag();
     }
 }

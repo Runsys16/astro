@@ -417,6 +417,7 @@ void PanelCapture::displayCatalog()
 
         for ( int i=0; i<n; i++ )
         {
+        	if ( starCompare.getMagMax() < pVizier->get(i)->getMag() )	continue;
             v.x = pVizier->get(i)->getXScreen();
             v.y = pVizier->get(i)->getYScreen();
 
@@ -1222,13 +1223,18 @@ void PanelCapture::clip(int& xm, int& ym)	{
 void PanelCapture::compareStar()
 {
    	log( (char*)"PanelCapture::compareStar()");
-   	if ( stars.size() == 0 )		return;
+	starCompare.setStars(&stars);
+	starCompare.setVizier(pVizier);
+
+   	if ( stars.size() == 0 )							{ starCompare.setMagMax(20.0); return; }
    	if ( pVizier == NULL || pVizier->size() == 0 )		return;
 
 	starCompare.setStars(&stars);
 	starCompare.setVizier(pVizier);
 
 	starCompare.compareStar();
+	double d = starCompare.computeDelta();
+	stars.setDelta( d );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

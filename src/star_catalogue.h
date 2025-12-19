@@ -20,12 +20,14 @@ public :
         double          fRA;
         double          fDE;
         double          fMag;
+        int				idx;
         string          name;
         PanelText *     pInfo;
         char            p_sInfo[225];
 
 public :
-        StarCatalog( double, double, double, string );
+        //StarCatalog( double, double, double, string );
+        StarCatalog( double, double, double, string, int );
         ~StarCatalog();
         
         void			affiche_position();
