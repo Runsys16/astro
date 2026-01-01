@@ -103,6 +103,8 @@ void Star::init(int xx, int yy)
     dCoefA		= 2196;
     dCoefB		= 33.8;
     dCoefC		= 1.46;
+    //dCoefA		= 46;
+    //dCoefC		= 1.16;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -243,8 +245,8 @@ void Star::calculMag()
     double x1=4.24, y1=7085.42;
     //double x1=6.79, y1=389.9;
 
-    double A = (x0-x1) / (log(y0)-log(y1));
-    double B = x0 - (A* log(y0));
+    double A = (x0-x1) / (log10(y0)-log10(y1));
+    double B = x0 - (A* log10(y0));
 
 	if ( modeMag == 0 )
 	{
@@ -254,7 +256,7 @@ void Star::calculMag()
 	else
 	{
 		// NGC2392
-		magnitude = (A * dCoefC * log( ponderation + dCoefA )) + dCoefB ;
+		magnitude = (A * dCoefC * log10( ponderation + dCoefA )) + dCoefB ;
 	}
 	
     double mag = -(log( ponderation ) / log(2.0)) + 17.0;

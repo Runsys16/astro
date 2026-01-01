@@ -35,6 +35,19 @@
 #define COLOR_A(CCC)	            ((CCC&0x000000ff))
 #define COLOR32(RR, GG, BB, AA)	    ((RR<<24)|(GG<<16)|(BB<<8)|(AA))
 
+#ifdef MAIN_CPP
+	vcf4 cNoir		= vcf4( 0.0, 0.0, 0.0, 1.0);
+	vcf4 cBlanc		= vcf4( 1.0, 1.0, 1.0, 1.0);
+	vcf4 cBleu		= vcf4( 0.2, 0.2, 1.0, 1.0);
+	vcf4 cRouge		= vcf4( 1.0, 0.0, 0.0, 1.0);
+	vcf4 cVert		= vcf4( 0.0, 1.0, 0.0, 1.0);
+	vcf4 cOrange	= vcf4( 1.0, 0.7, 0.0, 0.8);
+	vcf4 cGris		= vcf4( 0.5, 0.5, 0.5, 1.0);
+	vcf4 cRougeC	= vcf4( 0.4, 0.0, 0.0, 1.0);
+
+#endif
+
+
 class Catalog;
 class PanelCapture;
 class PanelStdOut;
@@ -83,6 +96,13 @@ struct readBackground
 typedef struct readBackground       rb_t;
 
 #ifndef MAIN_CPP
+	extern vcf4						cBleu;
+	extern vcf4						cRouge;
+	extern vcf4						cVert;
+	extern vcf4						cOrange;
+	extern vcf4						cGris;
+	extern vcf4						cRougeC;
+
     extern bool                     bNuit;
     extern bool                     bFindStar;
     extern atomic<bool>             bOneFrame;
@@ -141,7 +161,7 @@ typedef struct readBackground       rb_t;
 	#endif
 
     
-    extern ivec2					mouse;
+    extern ivec2					vMouse;
     extern vec3                     vecAD[2];
     extern vec3                     vecDC[2];
     extern vec3                     vDepl[2];

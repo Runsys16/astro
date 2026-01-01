@@ -55,6 +55,7 @@ void PanelDebug::add_text( char* p)
 	{
 		PanelText* pPanelText =  new PanelText((char*)p ,  PanelText::NORMAL_FONT, 5,  7 + idx*14 );
 		pText.push_back( pPanelText );
+		pPanelText->razTabSize();
 		pPanelText->setTabSize(tab_size);
 		add( pPanelText );
 		int __DY = (idx+1) * 14 + 14;

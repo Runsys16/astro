@@ -20,7 +20,7 @@ Capture::Capture()
     logf((char*)"Constructeur Capture() -----------%d", __LINE__ );
     log_tab(true);
     
-    logf((char*)"old_dir : %s", (char*)old_dir.c_str() );
+    logf((char*)"Lit repertoire old_dir : %s", (char*)old_dir.c_str() );
     
     pooling();
 
@@ -40,19 +40,12 @@ Capture::Capture()
     dirname = "";
     
     int nb = res.size();
-    for( int i=0; i<nb-1; i++ )
-    {
-        dirname += "/" + res[i];
-    }
+    for( int i=0; i<nb-1; i++ )        dirname += "/" + res[i];
+    dirname = dirname + "/";
+
     basename = res[nb-1];
     
-    bIconized = false;
-    bFullScreen = false;
-
-    setExtraString( "Capture" );
-	bAfficheInfoFits = false;
-
-    create_preview();
+	charge( dirname, basename );
 
     log_tab(false);
     logf((char*)"Constructeur Capture() ----END----" );
@@ -60,27 +53,13 @@ Capture::Capture()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-Capture::Capture(string dirname, string name)
+Capture::Capture(string dir_name, string base_name)
 {
-    logf((char*)"Constructeur Capture(dirname, %s) -----------%d", (char*)name.c_str(), __LINE__ );
+    logf((char*)"Constructeur Capture(%s, %s) -----------%d", (char*)dir_name.c_str(), (char*)base_name.c_str(), __LINE__ );
     log_tab(true);
-    
-    filename = dirname + name;
-    dirname = dirname;
-    old_dir = string( dirname );
-    basename = name;
-    bIconized = false;
-    bFullScreen = false;
-
-    logf( (char*)"image : %s", filename.c_str() );
-
-    setExtraString( "Capture :"+basename );
-	bAfficheInfoFits = false;
-
-    create_preview();
-
+    charge( dir_name, base_name );
     log_tab(false);
-    logf((char*)"Constructeur Capture(%s, %s) -----END------", (char*)dirname.c_str(), (char*)name.c_str() );
+    logf((char*)"Constructeur Capture(%s, %s) -----END------", (char*)dirname.c_str(), (char*)basename.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -96,23 +75,17 @@ Capture::Capture(string f )
     dirname = "";
     
     int nb = res.size();
-    for( int i=0; i<nb-1; i++ )
-    {
-        dirname += "/" + res[i];
-    }
     
-    old_dir = string( dirname + "/" );
-
+    for( int i=0; i<nb-1; i++ )        dirname += "/" + res[i];
+    dirname = dirname + "/";
     basename = res[nb-1];
+
+    old_dir = string( dirname );
 
     logf( (char*)"basename : %s", basename.c_str() );
     setExtraString( "Capture :"+basename );
 
-
-    setExtraString( "Capture" );
-	bAfficheInfoFits = false;
-
-    create_preview();
+	charge( dirname, basename );
 
     log_tab(false);
     logf((char*)"Constructeur Capture(%s) -----END------", (char*)f.c_str() );
@@ -125,9 +98,13 @@ Capture::~Capture()
     logf((char*)"Destructeur Capture::~Capture() -----------" );
     log_tab(true);
 
+	WindowsManager& wm = WindowsManager::getInstance()	;
+
     sup(pTitre);
     sup(panelCapture);
     sup(pNbStars);
+
+    if ( isFits() )     delete fits;
 
     panelCapture->sup(pFermer);
     panelCapture->sup(pIconiser);
@@ -135,7 +112,6 @@ Capture::~Capture()
 
     sup( panelCapture );
 
-    //if ( isFits() )     delete fits;
 
     logf((char*)"Capture::~Capture() delete icons de fenetre" );
 	delete		pFermer;
@@ -153,11 +129,52 @@ Capture::~Capture()
 	
 	filenames.clear();
     logf((char*)"Destructeur Capture::~Capture() reste %d fenetre", getNbPanel() );
+
     
-	WindowsManager::getInstance().sup( this );
+	wm.sup( this );
 	
+	if ( pGraph )	{
+		wm.sup( pGraph );
+		delete pGraph;
+	}	
+
     log_tab(false);
     logf((char*)"Destructeur Capture::~Capture() -----END------" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::init()
+{
+	bAfficheInfoFits	= false;
+	bAfficheGraph		= false;
+    bIconized			= false;
+    bFullScreen			= false;
+
+	pGraph				= NULL;
+	sPosSvg.X			= -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::charge(string dir_name, string base_name)
+{
+    logf((char*)"Capture::charge(%s, %s) -----------%d", (char*)dir_name.c_str(), (char*)base_name.c_str(), __LINE__ );
+    log_tab(true);
+    
+    dirname		= dir_name;
+    basename	= base_name;
+    filename	= dirname + basename;
+    old_dir		= string( dirname );
+
+    logf( (char*)"image : %s", filename.c_str() );
+    setExtraString( "Capture :"+ basename );
+
+	init();
+    create_preview();
+
+    log_tab(false);
+    logf((char*)"Capture::charge(%s, %s) -----END------", (char*)dirname.c_str(), (char*)basename.c_str() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -269,47 +286,45 @@ void Capture::clickLeft(int xm, int ym)
 void Capture::releaseLeft(int xm, int ym)
 {
 
-    logf( (char*)"Capture::releaseLeft( %d, %d)", xm, ym );
-    log_tab(true);
+	logf( (char*)"Capture::releaseLeft( %d, %d)", xm, ym );
+	log_tab(true);
 
-    if ( pFermer == pFermer->isMouseOver(xm, ym) )
-    {
-        logf( (char*)"Capture::releaseLeft() Fermeture" );
-        Captures::getInstance().setCurrent(this);
-        Captures::getInstance().supprime();
-    }
-    else
-    if ( pMaximiser == pMaximiser->isMouseOver(xm, ym ) )
-    {
-        logf( (char*)"Capture::releaseLeft() Maximiser" );
-        if ( bIconized )
-        {
-            Captures::getInstance().setCurrent(this);
-            Captures::getInstance().onTop(this);
-        }
-        else
-        {
-            Captures::getInstance().setCurrent(this);
-            Captures::getInstance().fullscreen();
-        }
-    }
-    else
-    if ( pIconiser == pIconiser->isMouseOver(xm, ym ) )
-    {
-       logf( (char*)"Capture::releaseLeft() Iconiser" );
-       iconize( getDX(), getDY());
-       Captures::getInstance().rotate_capture_plus(true);
-       if ( bFits )	fits->afficheInfoFits(true);
-    }
-	/*
-    if ( bFits )	{
-		if ( !bIconized && bAfficheInfoFits )			fits->afficheInfoFits(true);
-		else											fits->afficheInfoFits(false);
+	if ( pFermer == pFermer->isMouseOver(xm, ym) )
+	{
+		logf( (char*)"Capture::releaseLeft() Fermeture" );
+		Captures::getInstance().setCurrent(this);
+		Captures::getInstance().supprime();
 	}
-	*/
+	else
+	if ( pMaximiser == pMaximiser->isMouseOver(xm, ym ) )
+	{
+		logf( (char*)"Capture::releaseLeft() Maximiser" );
+		if ( bIconized )
+		{
+			Captures::getInstance().setCurrent(this);
+			Captures::getInstance().onTop(this);
+		}
+		else
+		{
+			Captures::getInstance().setCurrent(this);
+			Captures::getInstance().fullscreen();
+		}
+	}
+	else
+	if ( pIconiser == pIconiser->isMouseOver(xm, ym ) )
+	{
+		logf( (char*)"Capture::releaseLeft() Iconiser" );
 
-    log_tab(false);
-    logf( (char*)"Capture::releaseLeft(...)   ------END---------" );
+		int X, Y;
+		Captures& cap = Captures::getInstance();
+
+		cap.compute_pos_icone( X, Y, cap.get_n_capture(this) );
+		iconize( cap.getDXIcon(), cap.getDYIcon());
+		cap.resize_icone( this, X, Y, cap.getDXIcon(), cap.getDYIcon() );
+	}
+
+	log_tab(false);
+	logf( (char*)"Capture::releaseLeft(...)   ------END---------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -387,7 +402,9 @@ void Capture::create_preview()	{
 		log_tab(true);
 
 		fits->chargeFits();
-		fits->getPanelFits()->setParent(panelCapture);
+		//fits->getPanelFits()->setParent(panelCapture);
+		//panelCapture->add( fits->getPanelFits() );
+		//add( fits->getPanelFits() );
 		fits->getRB(&readBgr);
 		log_tab(false);
 	}
@@ -454,7 +471,6 @@ void Capture::create_preview()	{
 	create_icones();
 	panelCapture->onBottom();
 
-
 	log_tab(false);
 	logf((char*)"Capture::CreatePreview ------END-------" );
 }
@@ -509,6 +525,7 @@ void Capture::resize(int w, int h )
 void Capture::resize(int x, int y, int w, int h )
 {
     logf((char*)"Capture::resize( %d, %d, %d, %d )   (%d)", x, y, w, h, __LINE__ );
+    log_tab(true);
 
     int dx, dy;
 
@@ -517,8 +534,27 @@ void Capture::resize(int x, int y, int w, int h )
 
     if ( filename.length() !=  0 )
     {
-        double ratioX = (double)dx / (double)readBgr.w;
-        double ratioY = (double)dy / (double)readBgr.h;
+        double r_image = (double)readBgr.w / (double)readBgr.h;
+        double r_place = (double)w / (double)h;
+        logf( (char*)"ratio   img = %0.4lf ecr = %0.4lf", r_image, r_place );
+
+        if  ( r_image > r_place ) 
+        {
+            dx = w;
+            dy = dx / r_image;
+
+            x += (w-dx)/2;
+            //dx = readBgr.w * ratioX;
+            //dy = readBgr.h * ratioX;
+        }
+        else
+        {
+            dy = h;
+            dx = dy * r_image;
+
+            y += (h-dy)/2;
+        }
+        /*
         if  ( ratioX < ratioY ) 
         {
             dx = (double)readBgr.w * ratioX;
@@ -535,6 +571,7 @@ void Capture::resize(int x, int y, int w, int h )
 
             x += (w-dx)/2;
         }
+        */
     }
     else
     {
@@ -542,10 +579,13 @@ void Capture::resize(int x, int y, int w, int h )
         dy = 30;
         filename = "pas de fichier dans " + getCurrentDirectory();
     }
-    
+
+	logf( (char*)" (%d, %d)  %dx%d", x, y, dx, dy );
     setPosAndSize( x, y, dx, dy );
     //panelCapture->setPosAndSize( 0, 0, dx, dy );
     panelCapture->setSize( dx, dy );
+    //sPosSvg.X = -1;
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -555,9 +595,10 @@ void Capture::fullscreen()
 	logf( (char*)"Capture::fullscreen() %s", basename.c_str() );
     int dx = WindowsManager::getInstance().getWidth();
     int dy = WindowsManager::getInstance().getHeight();
-    //logf((char*)"Capture::fullscreen()  dx=%d dy=%d", dx, dy );
 
-    //logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
+	if ( !bIconized )		getPosition( sPosSvg );
+	else					sPosSvg.X  = -1;
+
     setPosAndSize(0, 0, dx, dy);
     updatePos();
     //logf((char*)" preview  dx=%d dy=%d", panelCapture->getDX(), panelCapture->getDY() );
@@ -582,6 +623,9 @@ void Capture::iconize( int dxIcon, int dyIcon)
 	logf( (char*)"Capture::iconize() %s", basename.c_str() );
 	log_tab(true);
 
+	if ( !bFullScreen )		getPosition( sPosSvg );
+	else					sPosSvg.X  = -1;
+
     VarManager& 	var	= VarManager::getInstance();
 	if ( var.getb("bShowIcones")	)			setVisible( true );
 	else										setVisible( false );
@@ -591,13 +635,12 @@ void Capture::iconize( int dxIcon, int dyIcon)
 
 	setSize( dxIcon, dyIcon );
 	
-	panelCapture->iconize();
-
-
 	if ( bFits )	{
 		fits->getPanelFits()->setVisible(false);
-		fits->getPanelCorrectionFits()->setVisible(false);
+		//fits->getPanelCorrectionFits()->setVisible(false);
 	}
+	panelCapture->iconize();
+
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -606,18 +649,26 @@ void Capture::iconize( int dxIcon, int dyIcon)
 void Capture::restaure()
 {
 	logf( (char*)"Capture::restaure() %s", basename.c_str() );
+	log_tab(true);
 	bIconized 				= false;
-    /*
-    bAfficheInfoFits		= bInfo;
-    bAfficheInfoSouris		= bGrille;
-    bAfficheGrille			= bSouris;
-	*/
+
+	if ( sPosSvg.X != -1 )	
+	{
+		setPosAndSize( sPosSvg.X, sPosSvg.Y, sPosSvg.DX, sPosSvg.DY );
+		logf( (char*)"(%d, %d)  %dx%d", getPosX(), getPosY(), getPosDX(), getPosDY() );
+	}
+	
+	sPosSvg.X  = -1;
 
 	if ( bFits )	{
-		fits->restaure( bAfficheInfoFits );
+		if ( bAfficheInfoFits )		fits->getPanelFits()->setVisible(true);
+		//if ( bAfficheInfoFits )		fits->getPanelFits()->setVisible(true);
+		//fits->restaure( bAfficheInfoFits );
+		onTop();
 	}
-	panelCapture->restaure();
+	//panelCapture->restaure();
 
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -631,7 +682,7 @@ void Capture::onTop()
     wm.onTop( this );
     if ( isFits() )	{
 		wm.onTop( fits->getPanelFits() );
-		wm.onTop( fits->getPanelCorrectionFits() );
+		//fits->getPanelCorrectionFits()->onTop();
 
 	}	
 }
@@ -783,6 +834,129 @@ void Capture::setNbVizier( unsigned u )
     char t[] = "00000000000";  
     sprintf( t, "%d", (int)u );
     pNbVizier->changeText( t );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::setAffGraph( bool b )
+{
+	logf( (char*)"Capture::setAffGraph(%s)", BOOL2STR(b) );
+	
+	bAfficheGraph = b;
+
+	if ( b)
+	{
+		if ( pGraph == NULL )		
+		{
+			log_tab(true);
+			pGraph = new PanelGraph();
+			log_tab(false);
+			pGraph->setPosAndSize( 10, 10, width/2 -30, height/2 -30 );
+			WindowsManager& wm	= WindowsManager::getInstance();
+			wm.add( pGraph );
+		}
+		
+		WindowsManager& wm = WindowsManager::getInstance()	;
+		pGraph->setVisible( true ) ;
+		wm.onTop( pGraph );
+	} 
+	else
+	{
+		pGraph->setVisible( false ) ;
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::compareStar()
+{
+	if ( panelCapture->getStars() == NULL ) 			return;
+	if ( panelCapture->getStars()->size() == 0 )		return;
+	if ( panelCapture->getCatalog() == NULL )			return;
+	if ( panelCapture->getCatalog()->size() == 0 )		return;
+
+	logf( (char*)"Capture::compareStar()" );
+
+	if ( pGraph == NULL )	setAffGraph(true);
+	
+	panelCapture->compareStar();
+	
+	StarCompare& sc = panelCapture->getStarCompare();
+	
+	log( (char*)"Init min et max ..." );
+	pGraph->setXmin( sc.getLumMin() );
+	pGraph->setXmax( sc.getLumMax() );
+	pGraph->setYmin( sc.getMagMin() );
+	pGraph->setYmax( sc.getMagMax() );
+	
+	log( (char*)"Reset courbe ..." );
+	pGraph->resetCourbeStar();
+	pGraph->resetCourbeVizi();
+	
+	log( (char*)"Rempli les tableaux ..." );
+	vector<Star*>&			star = sc.getStar();
+	vector<StarCatalog*>&	vizi = sc.getVizi();
+	vector<ivec2>&			cmp	 = sc.getCmpViziStar();
+	
+	int nb = cmp.size();
+	
+	for( int i=0; i<nb; i++ )
+	{
+		int idx, ii;
+		idx = cmp[i].x;
+		ii  = cmp[i].y;
+		
+		vec2 v = vec2( star[i]->getPonderation(), star[i]->getMagnitude() );
+		pGraph->addStar( v );
+
+		vec2 w = vec2( star[i]->getPonderation(), vizi[i]->getMag() );
+		pGraph->addVizi( w );
+	}
+	
+	log( (char*)"Tri les tableaux ..." );
+	pGraph->sort_all();	
+	
+	pGraph->setName( basename );
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::create_graph()
+{
+	logf( (char*)"Capture::create_graph()" );
+	
+	if ( 		( (panelCapture->getStars() == NULL ) || ( panelCapture->getStars()->size() == 0 ) )
+		&&		( (panelCapture->getCatalog() == NULL ) || ( panelCapture->getCatalog()->size() == 0 ) )
+		)
+	{
+		log_tab(true);
+		VarManager&	var				= VarManager::getInstance();
+		bool 		bAffCatalogSvg	= bAffCatalog;
+		bool		bAffStarSvg		= bAffStar;	
+
+		//if ( !bAffCatalogSvg )		var.set( "bAffCatalog", true );//bAffCatalog = true;
+		//if ( !bAffStarSvg )			var.set( "bAffStar", true );//bAffStar	= true;
+		bAffStar	= true;
+		bAffCatalog = true;
+
+		panelCapture->findGaiaDR3();
+		panelCapture->findAllStars();
+		
+		compareStar();
+
+		//panelCapture->eraseGaiaDR3();
+		//panelCapture->deleteAllStars();
+		
+		bAffStar	= bAffStarSvg;
+		bAffCatalog = bAffCatalogSvg;
+		//var.set( "bAffCatalog", bAffCatalogSvg );//bAffCatalog = true;
+		//var.set( "bAffStar", bAffStarSvg );//bAffStar	= true;
+		log_tab(false);
+	}
+
+	
+	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

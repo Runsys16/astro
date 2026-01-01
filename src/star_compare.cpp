@@ -6,7 +6,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 StarCompare::StarCompare()
 {
-    logf_thread( (char*)"Constructeur StarCompare()" );
+    logf( (char*)"Constructeur StarCompare()" );
 	init(NULL, NULL);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -148,7 +148,14 @@ void StarCompare::compareStar( bool bSave )
 		fichier << "\"luminance\";\"calculées\";\"vizier\"\n";
 	}
 	
-   	magMax = 0.0;
+	cmpViziStar.clear();
+	
+   	magMax = -100.0;
+   	magMin =  100.0;
+
+   	lumMax = -1000000.0;
+   	lumMin =  1000000.0;
+   	
    	tStar.clear();
    	tVizi.clear();
    	int n = pStars->size();
@@ -161,24 +168,44 @@ void StarCompare::compareStar( bool bSave )
    		// recupere l'etoile star
    		vec2 v;
    		pStars->get(i)->getPos(v);
+   		if ( v == vec2(0.0,0.0) )		 continue;
    		//--------------------------
    		// comparaison avec vizier idx != -1 != echec
 		#ifdef RECHERCHE_VIZIER
    		logf( (char*)"Recherche Etoile[%02d]  (%04.2f, %04.2f)", i, v.x, v.y ); 
    		#endif
    		int idx = findVizier(v);
+
+		//if ( pVizier->get(idx)->getMag() < magMin )	   			magMin = pVizier->get(idx)->getMag();
+		//if ( pStars->get(i)->getMagnitude() < magMin )			magMin = pStars->get(i)->getMagnitude();
+		if ( pStars->get(i)->getPonderation() < 100.0 )		  	continue;
+
+
 		float l = 0.0;
 		if ( idx != -1 )	   			l = getDst(v, idx);
 
-   		if ( idx != -1 && l<5.0)
+   		if ( idx != -1 && l<2.5)
    		{
+		#ifdef RECHERCHE_VIZIER
 	   		logf( (char*)"Etoile[%02d]  (%04.2f, %04.2f) = %04.2f   \tidx = %02d/%02d   \t%.0f %.2f~%.2f  ", 
 	   				i, (float)v.x, (float)v.y, l, i, idx, (float)pStars->get(i)->getPonderation(), (float)pStars->get(i)->getMagnitude(), (float)pVizier->get(idx)->getMag() );
-
-			if ( pVizier->get(idx)->getMag() > magMax )	   		magMax = pVizier->get(idx)->getMag();
+		#endif
+			//---------------------------------------------
+			// Calul le min et le max
+			if ( pVizier->get(idx)->getMag() > magMax )	   			magMax = pVizier->get(idx)->getMag();
+			if ( pVizier->get(idx)->getMag() < magMin )	   			magMin = pVizier->get(idx)->getMag();
 			
+			if ( pStars->get(i)->getMagnitude() > magMax )			magMax = pStars->get(i)->getMagnitude();
+			if ( pStars->get(i)->getMagnitude() < magMin )			magMin = pStars->get(i)->getMagnitude();
+			if ( pStars->get(i)->getPonderation() > lumMax )	   	lumMax = pStars->get(i)->getPonderation();
+			if ( pStars->get(i)->getPonderation() < lumMin )	   	lumMin = pStars->get(i)->getPonderation();
+			
+			//---------------------------------------------
+			// Sauvegarde le resutta
 			tVizi.push_back( pVizier->get(idx) );
 			tStar.push_back( pStars->get(i) );
+			cmpViziStar.push_back( ivec2(idx, i) );
+			
 	   		if ( bSave  )
 	   		{
 		   		//--------------------------
@@ -207,6 +234,12 @@ void StarCompare::compareStar( bool bSave )
    	}
 
 	if ( bSave )		fichier.close();
+
+	logf( (char*)"magMax = %0.2lf)", magMax );
+	logf( (char*)"magMin = %0.2lf)", magMin );
+	logf( (char*)"lumMax = %0.2lf)", lumMax );
+	logf( (char*)"lumMin = %0.2lf)", lumMin );
+
 
    	log_tab(false);
 }
@@ -276,6 +309,32 @@ double StarCompare::computeDelta()
 	
 	
 	return tot / (double)m;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Retourne la correspondance Star
+//
+//--------------------------------------------------------------------------------------------------------------------
+int StarCompare::getTwinStar(int ii)
+{
+	for( int i=0; i<cmpViziStar.size(); i++ )
+	{
+		if ( cmpViziStar[i].x == ii )		return cmpViziStar[i].y;
+	}
+	return -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Retourne la correspondance Star
+//
+//--------------------------------------------------------------------------------------------------------------------
+int StarCompare::getTwinVizier(int ii)
+{
+	for( int i=0; i<cmpViziStar.size(); i++ )
+	{
+		if ( cmpViziStar[i].y == ii )		return cmpViziStar[i].x;
+	}
+	return -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

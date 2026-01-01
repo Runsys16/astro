@@ -15,6 +15,7 @@
 #include "star_compare.h"
 #include "timer.h"
 #include "panel_graph.h"
+#include "panel_debug.h"
 //----------------------------------------------------------------------------------------------
 class Capture;
 class Captures;
@@ -75,8 +76,9 @@ protected:
     StarCompare			starCompare;
     Stars               stars;
     Catalog*            pVizier;
+    int					idxVizierMouseOver;
     
-    PanelGraph*			pGraph;
+    PanelDebug*			pInfoVizier;
     PanelSimple*		pTelescope;
     PanelSimple*		pFondCoord;
     PanelText*			pColor;
@@ -110,11 +112,13 @@ protected:
 public:
     PanelCapture( rb_t *, Capture* );
     ~PanelCapture();    
-    
+    		void		init();
     
     virtual void		update_stars();
     		void		updateEchelle();
     		void		updateEchelleGeo();
+    		void		updateInfoVizier();
+    		void		updateVizier();
     virtual void		updatePos();
 
     		void		glCercleAnimation(int, int, int, int, int);
@@ -151,7 +155,7 @@ public:
 	void				saveCompareStar();
 
 
-    void                setCent();
+    void                setCentre();
     void                setEchelle(double f);
     void                setCentX(double f);
     void                setCentY(double f);

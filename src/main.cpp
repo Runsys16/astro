@@ -37,8 +37,34 @@
 //--------------- DEBUG -------------------------------------------
 //#define DEBUG 1
 //#define IDLEGL
-//#define APPEL_IDLE // determine l'ordre d'appel des fonctions GL
-float timerAppelIdle;
+//#define DEBUG_CALLBACK_OPENGL // determine l'ordre d'appel des fonctions GL
+#ifdef DEBUG_CALLBACK_OPENGL
+	volatile float timerAppelIdle;
+#endif
+/*
+log  :     01	0.00000000 idleGL:timer
+log  : 			0.00000000
+log  :     02	0.00000000 idleStatus
+log  : 			0.00299978
+log  :     03	0.00299978 Camera_mgr, Captures
+log  : 			0.00299978
+log  :     04	0.00299978 WindowsManager::idleGL()
+log  : 			0.00399971
+log  :     05	0.00399971 glutPostRedisplay
+log  : 			0.00399971
+log  :     06	0.00399971 glutPassiveMotionFunc(761, 661)
+log  :     07	-1.02300000 glutSpecialFunc
+log  :     08	0.00399971 glutPassiveMotionFunc(821, 661)
+log  :     09	0.00399971 glutKeyboardUpFunc
+log  :     10	0.00399971 glutKeyboardFunc
+log  :     11	0.00399971 glutKeyboardFuncCtrl
+log  :     12	0.00399971 glutPassiveMotionFunc(881, 665)
+log  :     13	0.00399971 displayGL() clearBuffer()
+log  :	 		0.00399971
+log  :     14	0.00399971 glutSwapBuffers()
+log  : 			0.01599979
+log  :     15	0.01599979 idleGL
+*/
 //-----------------------------------------------------------------
 #define COLOR_GREY			0x404040FF
 #define COLOR_WHITE			0xFFFFFFFF
@@ -69,9 +95,8 @@ vector<string> t_sHelp1 =
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
+	"   k/K\t: Coefficient comparaison etoile",
 	"     j\t: Affichage info fits",
-	"     k\t: Active/desactive le son",
-	"     K\t: Lance un carree de recherche",
 	"     l\t: List les ports /dev + les controles ",
 	"     L\t: List les variables",
 	"Ctrl+N\t: Mode nuit on/off",
@@ -84,7 +109,7 @@ vector<string> t_sHelp1 =
 	"     J\t: Lance ASI Studio",
 	"     q\t: Lance Polaris",
 	"     Q\t: Lance Stellarium",	
-//	"     r\t: Test alert BOX",
+	"   t/T\t: Coefficient comparaison etoile",
 	"     W\t: Surveille un repertoire",
 	"     -\t: Toutes les images sont affichees en icones",
 	"Alt+C \t: Affiche le deuxieme cercle (collimation)",
@@ -133,17 +158,16 @@ vector<string> t_sHelp2 =
 vector<string> t_sHelp3 = 
 {
 	"---- SUIVI ----",
-	"ctrl+D\t: Efface toutes les etoiles",
+	"ctrl+d\t: Efface toutes les etoiles",
+	"     r\t: Charge ficher de suivi (.guid)",
+	"     R\t: Reset Suivi (!!! Toute les data sont effacees)",
 	"     s\t: Recherche toutes les etoiles",
 	"     S\t: Lance/Stop le suivi",
-	"   t/T\t: change le temps de correction",
     "     U\t: Affichage du centre de la camera on/off",
     "     u\t: Affichage du suivi on/off",
 	" alt+u\t: Suivi au centre de l'ecran",
 	"     V\t: Initialise les coordonnees de suivi",
 	"     v\t: Sauvegarde fichier de suivi (.guid)",
-	"     r\t: Charge ficher de suivi (.guid)",
-	"     R\t: Reset Suivi (!!! Toute les data sont effacees)",
 	"     w\t: Centre l'asservissement",
 	"     Y\t: Lance l'asservissement",
 	"",
@@ -164,6 +188,7 @@ vector<string> t_sHelp3 =
 	" Alt+N\t: Compare les etoiles et  affiche la courbe"   ,
 	"      \t  limite la magnitude d'affichage"   ,
 	"Ctrl+H\t: Restaure la magnitude d'affichage a 20.0"   ,
+	"     x\t: Affiche la courbe de calcul de la magnitude"   ,
 	"",
 	"---- DEBUG ----",
 	" Alt+g\t: Info fits"   ,
@@ -243,7 +268,7 @@ bool                bArretUrgence;
 bool                bAffIconeCapture = true;;
 
 
-bool                bPanelControl  		= true;
+bool                bPanelControl  		= false;
 bool                bPanelHelp     		= false;
 bool                bPanelResultat 		= false;
 bool                bPanelCourbe   		= false;
@@ -309,7 +334,7 @@ int                 dyCam;
 
 double               zoom;
 
-ivec2               mouse;
+ivec2               vMouse;
 
 #define             GET_OFFSET(x,y,width)   (3*y*width+x)
 //--------------------------------------------------------------------------------------------------------------------
@@ -676,40 +701,41 @@ void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_ca
         #endif
     }
     
-    logf_thread( (char*)"Lance la requete : %s", find.c_str() );
 
-    string rep = "/home/rene/Documents/astronomie/logiciel/python/cds.cdsclient/cdsclient/";
+	string     rep = "/home/rene/Documents/astronomie/logiciel/python/cds.cdsclient/cdsclient/";
+	string     cmd = "python3 " + rep + find;
+	int        iRead = 0;
+	bool       bEntete = false;
+	FILE *     pipe;
+	char       buf1[BUFSIZ]; //BUFSIZ est une constante connue du système
 
-    char buf1[BUFSIZ]; //BUFSIZ est une constante connue du système
-    FILE *ptr;
-    string cmd = rep + find;
-    bool bRead = false;
-    bool bEntete = false;
+
     nbVizier = 0;
+
+	logf_thread( (char*)"Lance la requete : %s", find.c_str() );
+	logf_thread( (char*)"dans le repertoire  %s", rep.c_str() );
  
-    if ((ptr = popen(cmd.c_str(), "r")) != NULL)    {
+    if ((pipe = popen(cmd.c_str(), "r")) != NULL)    {
     
-        while (fgets(buf1, BUFSIZ, ptr) != NULL)        {
+        while (fgets(buf1, BUFSIZ, pipe) != NULL)        {
         	for( int i=0; i<BUFSIZ; i++ )	if (buf1[i]=='\n')	buf1[i]=0;
+        	
             string s = string( buf1 );
-			//log_thread( (char*)s.c_str() );
 			
             if ( s.find( "---------------" ) == 0 )            {
-				//log_thread( (char*)"----" );
-                bRead = !bRead;
+                iRead++;
                 bEntete = true;
                 continue;
             }
 
             if ( s.find( "#END#" ) == 0 )            {
 				//log_thread( (char*)"END" );
-                bRead = true;
                 bEntete = false;
                 continue;
             }
-			if ( !bRead && bEntete  )			vizier_parse_line( pVizier, s );
+			if ( iRead == 2   )			vizier_parse_line( pVizier, s );
         }
-        pclose(ptr);
+        pclose(pipe);
     }
     else    {
         fprintf(stderr, "Echec de popen\n");
@@ -1006,7 +1032,7 @@ vector<string> split (string s, string delimiter)
 //--------------------------------------------------------------------------------------------------------------------
 void captureOnTop(Capture* p)
 {
-    Captures::getInstance().onTop(p);
+    Captures::getInstance().active(p);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1340,12 +1366,14 @@ void updatePanelResultat()
 //--------------------------------------------------------------------------------------------------------------------
 static void displayGL(void)
 {
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f displayGL() clearBuffer()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f displayGL() clearBuffer()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
 #endif
     //logf( (char*)"*** DISPLAY GL ***" );
 	WindowsManager::getInstance().clearBufferGL(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+#endif
 	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -1359,11 +1387,14 @@ static void displayGL(void)
 
 	WindowsManager::getInstance().displayGL();
 
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutSwapBuffers()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutSwapBuffers()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
 #endif
 
 	glutSwapBuffers();
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+#endif
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1742,8 +1773,8 @@ void getSuiviParameter(void)
 //--------------------------------------------------------------------------------------------------------------------
 static void idleGL(void)
 {
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f idleGL", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f idleGL", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 	setColor();
 	log_thread_aff();
@@ -1764,13 +1795,16 @@ static void idleGL(void)
     char sFPS[] = "fps 0000";
     sprintf( sFPS,"fps %d", *Timer::getInstance().getvFPSCounter() );
     pFPS->changeText((char*)sFPS);
-    timer.Idle();
 
-#ifdef APPEL_IDLE
+#ifdef DEBUG_CALLBACK_OPENGL
 	appelIdle = 0;
 	timerAppelIdle = +Timer::getInstance().getGlutTime();
     log( (char*)"---------------------------------------------------------------" );
-    logf( (char*)"%02d-%.4f idleGL:timer", ++appelIdle, +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+    logf( (char*)"    %02d\t%.8f idleGL:timer", ++appelIdle, +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+#endif
+    timer.Idle();
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
 #endif
 
 
@@ -1780,7 +1814,13 @@ static void idleGL(void)
     #endif
 
 
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f idleStatus", ++appelIdle, +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+#endif
     idleStatus();
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+#endif
 
     //-----------------------------------------------------------------------
     // Gestion de alertbox
@@ -1834,12 +1874,19 @@ static void idleGL(void)
         var.set("dyPanelCourbe", panelCourbe->getDY() );
         
     }
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f Camera_mgr, Captures", ++appelIdle, +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+#endif
     //-----------------------------------------------------------------------
     // Mise a jour des buffers de la camera
     // et des pointeurs vers la texture background
     //-----------------------------------------------------------------------
     Camera_mgr::getInstance().update();
     Captures::getInstance().update();
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
+#endif
+
     //-----------------------------------------------------------------------
     // Idle serial
     //-----------------------------------------------------------------------
@@ -1885,7 +1932,7 @@ static void idleGL(void)
     //------------------------------------------------------
     if ( Surveillance::getInstance().idleGL() )
     {
-        Captures::getInstance().rotate_capture_plus(true);
+        //Captures::getInstance().rotate_capture_plus(true);
     }
 
     //------------------------------------------------------
@@ -1944,18 +1991,24 @@ static void idleGL(void)
     //------------------------------------------------------
     //------------------------------------------------------
     PanelConsoleSerial::getInstance().idleGL();
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f WindowsManager::idleGL()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime());
+#endif
     WindowsManager::getInstance().idleGL( elapsedTime );
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f WindowsManager::idleGL()", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime());
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
 #endif
 
     
     onTop();    
 
     //Camera_mgr::getInstance().idleGL();
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutPostRedisplay", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
+#endif
 	glutPostRedisplay();
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutPostRedisplay", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
 #endif
 
     if ( bOneFrame )
@@ -2091,8 +2144,8 @@ static void rotateVisible()
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 {
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardFuncCtrl", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutKeyboardFuncCtrl", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
 #endif
 
     WindowsManager&     wm      = WindowsManager::getInstance(); 
@@ -2233,8 +2286,8 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 {
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardFuncAlt", ++appelIdle, Timer::getInstance().getCurrentTime()  );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutKeyboardFuncAlt", ++appelIdle, Timer::getInstance().getCurrentTime()  );
 #endif
 
     WindowsManager&     wm      = WindowsManager::getInstance(); 
@@ -2407,29 +2460,16 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	case 'n':
 	    {
 	        logf( (char*)"Alt+n : Compare les etoiles trouvees avec le CDS" );
-	        Panel* panel = wm.getCapture();
+	        Capture* panel = Captures::getInstance().getCurrentCapture();
 
 	        if ( panel == NULL )
 	        {
-		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+		        log( (char*)"[WARNING] Pas de capture courante" );
 	        }
 	        else
-	        if ( typeid(*panel) == typeid(PanelCapture)	) {
-	        	PanelCapture* pPanelCapture = dynamic_cast<PanelCapture*>( panel );
-	        	pPanelCapture->compareStar();
-	        }
-			else
-	        if ( typeid(*panel) == typeid(PanelCamera)	)
 	        {
-				Camera* p = Camera_mgr::getInstance().getCurrent();
-				if ( p!=NULL )
-				{
-					p->compareStar();
-				}
-			}
-			else
-				log( (char*)"Pas de fenetre valise sous la souris" );
-				//logf( (char*)"panel = \"%s\"", panel->getExtraString().c_str() );
+	        	panel->compareStar();
+	        }
 		}
 	    break;
 	//----------------------------------------------------------------------------
@@ -2603,8 +2643,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutKeyboardFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
     //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
@@ -2613,6 +2653,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     Camera_mgr&  		cam_mgr = Camera_mgr::getInstance();
     WindowsManager& 	wm 		= WindowsManager::getInstance();
+    
+    //wm.setModifier(iGlutModifier);
     
     //------------------------------------------------------------------------
     if (tAlert.size() != 0 )
@@ -2726,7 +2768,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     	{
             logf( (char*)"Key (-) : Image icones" );
             log_tab(true);
-            Captures::getInstance().rotate_capture_moins(true);
+            //Captures::getInstance().iconize_all();
+            Captures::getInstance().iconize_active();
             log_tab(false);
     	}
 	    break;
@@ -3045,50 +3088,52 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 			}
         }
 		break;
-
     case 'K':
         {
-            //*
-            char cmd[] = "C";
-            Serial::getInstance().write_string(cmd);
-            //*/
-            /*
-            char cmd[255];
-            int ad, dc;
-
-            ad = 1000;
-            sprintf( cmd, "a%dp;", ad );
-            Serial::getInstance().write_string(cmd, true);
-
-            dc = 1000;
-            sprintf( cmd, "d%dp", dc );
-            Serial::getInstance().push_cmd(cmd);
-
-            ad = -1000;
-            sprintf( cmd, "a%dp;", ad );
-            Serial::getInstance().push_cmd(cmd);
-
-            dc = -1000;
-            sprintf( cmd, "d%dp", dc );
-            Serial::getInstance().push_cmd(cmd);
-
-            ad = -500; dc = -500;
-            sprintf( cmd, "a%dp;d%dp", ad, dc );
-            Serial::getInstance().push_cmd(cmd);
-
-            ad = 500; dc = 500;
-            sprintf( cmd, "a%dp;d%dp", ad, dc );
-            Serial::getInstance().push_cmd(cmd);
-            */
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPreview()->getStars();
+				if ( stars )
+				{
+					double _C = stars->getC() * 1.001;
+					stars->setC( _C );
+					logf( (char*)"Coef C=%0.2lf", _C );
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+				}
+        	}
         }
         break;
     case 'k':
         {
-        bSound = !bSound;
-        logf( (char*)"Key (k) : Active/desactive le son  %s ", BOOL2STR(bSound) );
-        var.set( "bSound", bSound );
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPreview()->getStars();
+				if ( stars )
+				{
+					double C = stars->getC() / 1.001;
+					stars->setC( C );
+					logf( (char*)"Coef C=%0.2lf", C );
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+				}
+        	}
         }
         break;
+	/*
+	*/
     case 'l':
         {            
         logf( (char*)"Key (l) : Affiche les connexions" );
@@ -3229,9 +3274,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'P':  // '-'
         {
-        logf( (char*)"Key (P) : Une image");
-        updatePanelPause(true);
-        bOneFrame = true;
+		    logf( (char*)"Key (P) : Une image");
+		    updatePanelPause(true);
+		    bOneFrame = true;
         }
         break;
 
@@ -3239,28 +3284,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
         	logf( (char*)"Lance Stellarium ..." );
             thread( &commande_stellarium).detach();
-
-        //Py_SetProgramName(argv[0]);  /* optional but recommended */
-        //vizier_load_stars(string(""), 56.0, 24.0);
-
-        /*
-	    char filename[] = "pyemb7.py";
-	    FILE* fp;
-
-	    Py_Initialize();
-
-	    fp = _Py_fopen(filename, "r");
-	    PyRun_SimpleFile(fp, filename);
-
-	    Py_Finalize();
-        
-        
-        
-        Py_Initialize();
-        PyRun_SimpleString("from time import time,ctime\n"
-                         "print( 'Hello Word' )\n");
-        Py_Finalize();
-        */
         }
         break;
 
@@ -3300,8 +3323,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             if ( Captures::getInstance().isMouseOverCapture(x, y)  )
             {
                 Captures::getInstance().findAllStar();
-    
-                //Captures::getInstance().deleteAllStars();
             }
             else
             {
@@ -3326,22 +3347,52 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             logf( (char*)"  bSuivi (%s)", BOOL2STR(bSuivi) );
         }
         break;
-
 	case 't':
 		{
-    		fTimeCorrection *= 0.9f;
-    		fTimeCpt = 0.0;
-            logf( (char*)"Augmente de temps : %0.2f", fTimeCorrection );
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPreview()->getStars();
+				if ( stars )
+				{
+					double A = stars->getA() / 1.1;
+					stars->setA( A );
+					logf( (char*)"Coef A=%0.2lf", A );
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+				}
+        	}
         }
 		break;
 	case 'T':
 		{
-    		fTimeCorrection /= 0.9f;
-    		fTimeCpt = 0.0;
-            logf( (char*)"Diminue de temps : %0.2f", fTimeCorrection );
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPreview()->getStars();
+				if ( stars )
+				{
+					double A = stars->getA() * 1.1;
+					stars->setA( A );
+					logf( (char*)"Coef A=%0.2lf", A );
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+				}
+        	}
         }
 		break;
-
+	/*
+	*/
     case 'U':
         {
         logf( (char*)"Key (U) : Affichage du centre de la camera on/off");
@@ -3476,39 +3527,38 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
         }
         break;
-
     case 'x':
         {
-            ++iDisplayfft %= 4;
-
-            if ( iDisplayfft&0x1 )          bDisplayfftX = true;        
-            else                            bDisplayfftX = false;
-            if ( iDisplayfft&0x2 )          bDisplayfftY = true;
-            else                            bDisplayfftY = false;
-
-            var.set("bDisplayfftX", bDisplayfftX);
-            var.set("bDisplayfftY", bDisplayfftY);
-
-            logf( (char*)"Key (x) : Affiche/Cache la FFT (%d)", iDisplayfft );
+        	Captures& 	cap 	= Captures::getInstance();
+        	Capture* 	p		= cap.getCurrentCapture();
+        	bool		bGraph;
+        	
+        	if ( p )	
+        	{
+        		bGraph = p->getGraph() == NULL;
+        		bool b = !p->getAffGraph();
+        		p->setAffGraph( b );
+        		
+        		if ( b && bGraph )
+        		{
+        			/*
+		    		p->getPreview()->findGaiaDR3();
+		    		p->getPreview()->deleteAllStars();
+		            p->getPreview()->findAllStars();
+			    	p->compareStar();
+			    	*/
+			    	p->create_graph();
+			    }
+        	}
         }
         break;
 
+	/*
     case 'X':
         {
-            ++iDisplayCourbe %= 4;
-
-            if ( iDisplayCourbe&0x1 )       bDisplayCourbeX = true;        
-            else                            bDisplayCourbeX = false;
-            if ( iDisplayCourbe&0x2 )       bDisplayCourbeY = true;
-            else                            bDisplayCourbeY = false;
-
-            var.set("bDisplayCourbeX", bDisplayCourbeX);
-            var.set("bDisplayCourbeY", bDisplayCourbeY);
-
-            logf( (char*)"Key (x) : Affiche/Cache la courbe (%d)", iDisplayfft );
         }
         break;
-
+	*/
     case 'y':
         {
         bAfficheVec = !bAfficheVec;
@@ -3554,8 +3604,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutKeyboardUpFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutKeyboardUpFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
 	WindowsManager::getInstance().keyboardUpFunc( key, x, y);
@@ -3566,8 +3616,8 @@ static void glutKeyboardUpFunc(unsigned char key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialFunc(int key, int x, int y)	{
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutSpecialFunc", ++appelIdle, -timerAppelIdle + Timer::getInstance().getCurrentTime() );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutSpecialFunc", ++appelIdle, -timerAppelIdle + Timer::getInstance().getCurrentTime() );
 #endif
 
     Captures::getInstance().glutSpecialFunc(key, x, y);
@@ -3704,8 +3754,8 @@ static void glutSpecialFunc(int key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutSpecialUpFunc(int key, int x, int y)	{
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutSpecialUpFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutSpecialUpFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 	WindowsManager::getInstance().keyboardSpecialUpFunc( key, x, y);
     //WindowsManager::getInstance().onBottom(panelPreView);
@@ -3715,21 +3765,24 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMouseFunc(int button, int state, int x, int y)	{
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutMouseFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutMouseFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
    	iGlutModifier = glutGetModifiers();
+   	
+    printf( "glutMouseFunc %d\n",iGlutModifier);
 
 	/*
     logf( (char*)"main::glutMouseFunc( button=%d, state=%d,  (%d, %d) )", button, state, x, y );
     log_tab(true);
     */
-    mouse.x = x;
-    mouse.y = y;
+    vMouse.x = x;
+    vMouse.y = y;
 
     WindowsManager& wm  = WindowsManager::getInstance();
     Camera_mgr&     mgr = Camera_mgr::getInstance(); 
 
+    //wm.setModifier(iGlutModifier);
 	wm.mouseFunc(button, state, x, y);
 
     PanelWindow*    pPreviewCam = NULL;
@@ -3863,16 +3916,21 @@ endglutMouseFunc:
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutMotionFunc(int x, int y)	{	
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutMotionFunc(%d, %d)", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime(), x, y );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutMotionFunc(%d, %d)", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime(), x, y );
 #endif
 
-    mouse.x = x;
-    mouse.y = y;
-   	iGlutModifier = glutGetModifiers();
-	WindowsManager::getInstance().motionFunc(x, y);
-    //WindowsManager::getInstance().onBottom(panelPreView);
-    onTop();
+    vMouse.x = x;
+    vMouse.y = y;
+	
+   	//iGlutModifier = glutGetModifiers();
+    
+	WindowsManager& wm = WindowsManager::getInstance();
+
+	wm.setModifier(iGlutModifier);
+	wm.motionFunc(x, y);
+
+	onTop();
 
 	//if ( bMouseDeplace  )        logf( (char*)" motion func (%d, %d)", x, y );
 }
@@ -3880,15 +3938,18 @@ static void glutMotionFunc(int x, int y)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void glutPassiveMotionFunc(int x, int y)	{
-#ifdef APPEL_IDLE
-    logf( (char*)"%02d-%.4f glutPassiveMotionFunc(%d, %d)", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime(), x, y );
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutPassiveMotionFunc(%d, %d)", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime(), x, y );
 #endif
 
-    mouse.x = x;
-    mouse.y = y;
-   	iGlutModifier = glutGetModifiers();
-	WindowsManager::getInstance().passiveMotionFunc(x, y);
-    //WindowsManager::getInstance().onBottom(panelPreView);
+    vMouse.x = x;
+    vMouse.y = y;
+    
+	WindowsManager& wm = WindowsManager::getInstance();
+
+    wm.setModifier(iGlutModifier);
+    wm.passiveMotionFunc(x, y);
+
     onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3897,10 +3958,11 @@ static void glutPassiveMotionFunc(int x, int y)	{
 void status_nuit( unsigned long );
 void setColor()	
 {
-    //logf( (char*)"main::setColor()" );
 static bool bNuitOld =  -2;
 
 	if (bNuitOld == bNuit)		return;
+    logf( (char*)"main::setColor()  " );
+	
 	bNuitOld = bNuit;
 
     uint32_t color;
@@ -4338,6 +4400,8 @@ void changeRetourPos( bool b )
 //--------------------------------------------------------------------------------------------------------------------
 void log_tab( bool b)
 {
+	if ( bDesactiveLog )		return;
+
     if ( b )            nb_tab++;
     else                nb_tab--;
     if ( nb_tab<0 )     nb_tab = 0;
@@ -4351,7 +4415,7 @@ void log_tab( bool b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void log( char* chaine )
+void log( char* chaine, bool bThr )
 {
 	if ( bDesactiveLog )		return;
 
@@ -4364,7 +4428,14 @@ void log( char* chaine )
 		return;
 	}
 
-	printf( "log : %s\n", aff.c_str() );
+	//---------------------------------------------------
+	// Si affichage pendant log_thread
+	if ( bThr )
+		printf( "log+ : %s\n", aff.c_str() );
+	else
+		printf( "log  : %s\n", aff.c_str() );
+		
+	
 
     if ( panelStdOut && bStdOut )			panelStdOut->affiche( (char*)aff.c_str() );
     //-----------------------------------------------------------
@@ -4372,6 +4443,13 @@ void log( char* chaine )
     //-----------------------------------------------------------
 
     
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void log( char* chaine )
+{
+	log( chaine, false );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -4393,22 +4471,49 @@ void logf(char *fmt, ...)
 void log_thread_aff()
 {
 	if ( bFirstStart )			return;
-	
+
 	m_logs_string.lock();
+	
 	int n = logs_string.size();
-	for( int i=0; i<logs_string.size(); i++ )
+	if ( n == 0 )
 	{
-		log( (char*)logs_string[i].c_str() );
+		m_logs_string.unlock();
+		return;
 	}
-    if ( n!= 0 )		logs_string.clear();
+	
+	for( int i=0; i < n; i++ )
+	{
+		log( (char*)logs_string[i].c_str(), true );
+	}
+
+	n = logs_string.size();
+	//printf( "nb log_thread_aff() = %d\n", n );
+	//printf( "nb log_thread = %d\n", n );
+    
+	try
+	{
+	  logs_string.clear();
+	}
+	catch(std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+		//return EXIT_FAILURE;
+	}
+    
 	m_logs_string.unlock();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+//#define DEBUG_LOG_THREAD
 void log_thread( char* chaine )
 {
-    string aff = sTab + string(chaine);
+   #ifdef DEBUG_LOG_THREAD
+	string n = to_string( logs_string.size() );
+	string aff = sTab + n + "-" + chaine;
+   #else
+	string aff = sTab + chaine;
+   #endif	
 
 	m_logs_string.lock();
     logs_string.push_back( aff );
@@ -4679,8 +4784,8 @@ void init_var()
     var.set("dyPanelStdOut", panelStdOut->getDY() );
     */
     //if ( panelStdOut->getX() == 0 )    bAlert = true;
-    mouse.x = 400;
-    mouse.y = 400;
+    vMouse.x = 400;
+    vMouse.y = 400;
 
 
 }

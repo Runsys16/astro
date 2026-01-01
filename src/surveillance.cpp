@@ -1,5 +1,7 @@
 #include "surveillance.h"
 //--------------------------------------------------------------------------------------------------------------------
+//#define DEBUG_MSG
+//--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Surveillance* Surveillance::s_pInstance;	// Instance de la classe
@@ -27,10 +29,10 @@ bool Surveillance::isImage(string name)
        //*/
     )
     {
-        logf_thread( (char*)"  %s est une image", name.c_str() );
+        logf_thread( (char*)"\"%s\" est une image", name.c_str() );
         return true;
     }        
-    logf_thread( (char*)"  %s n\'est pas une image", name.c_str() );
+    logf_thread( (char*)"\"%s\" n\'est pas une image", name.c_str() );
 
     return false;
 }
@@ -44,6 +46,7 @@ bool Surveillance::idleGL()
     {
     	logf( (char*)"Surveillance::idleGL()" );
     	log_tab(true);
+    	logf( (char*)"Fichier dans la pile : \"%s\"", basename_charge.back().c_str() );
 
     	string dir_name = dirname_charge.back();
     	string bas_name = basename_charge.back();
@@ -88,20 +91,21 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
     if (i->mask & IN_UNMOUNT)       slog += "IN_UNMOUNT ";
 
 
+	#ifdef DEBUG_MSG
     if (i->len > 0)                 
         logf_thread( (char*)"wd=%2d; %s name = %s iState=%d", i->wd, (char*)slog.c_str(), i->name, iState );
-
+	#endif
 
 
     if ( (i->mask & IN_CREATE) && (i->len > 0) ){
         iState = 1;
     }
-
+	/*
     if (    ( (i->mask & IN_CLOSE_WRITE) )  && (i->len > 0) && iState == 1)
     {
         iState = 2;
         
-        logf_thread( (char*)"  Notification : file ecrit \"%s\"",i->name );
+        logf_thread( (char*)"Notification : file ecrit \"%s\"",i->name );
         string f = string(i->name);
         vector<string> vff = split( f, "/" );
         
@@ -112,52 +116,43 @@ void Surveillance::displayInotifyEvent(struct inotify_event *i)
         basename = string(vff[i]);
         filename = dirname + basename;
 
-        logf_thread( (char*)"  fichier : %s", (char*)filename.c_str() );
+        logf_thread( (char*)"fichier : %s", (char*)filename.c_str() );
 
         sleep(1);
         if (   isImage(basename) )
         {
 		    basename_charge.push_back( basename );
 		    dirname_charge.push_back( dirname );
-	        logf_thread( (char*)"  push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
+	        logf_thread( (char*)"push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
  			bCharge = true;
  			basename = "";
- 			//dirname = "";
  	    }
     }
-
+	*/
 
     if (i->mask & IN_CLOSE_WRITE)
     {
         iState = 2;
         
-        logf_thread( (char*)"  Notification : file ecrit \"%s\"",i->name );
+        logf_thread( (char*)"Notification : file ecrit ONLY \"%s\"",i->name );
         string f = string(i->name);
         vector<string> vff = split( f, "/" );
         
         int n = vff.size();
         int i;
 
-        for ( i=0; i<(n-1); i++ )
-        {
-            dirname = dirname + vff[i] + "/";
-        }
-
+        for ( i=0; i<(n-1); i++ )            dirname = dirname + vff[i] + "/";
         basename = string(vff[i]);
-
         filename = dirname + basename;
-
-        logf_thread( (char*)"  fichier : %s", (char*)filename.c_str() );
 
         sleep(1);
         if (   isImage(basename) )
         {
 		    basename_charge.push_back( basename );
 		    dirname_charge.push_back( dirname );
-	        logf_thread( (char*)"  push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
+	        logf_thread( (char*)"push_back(%s, %s )", (char*)dirname.c_str(), (char*)basename.c_str() );
  			bCharge = true;
  			basename = "";
- 			//dirname = "";
  	    }
     }
 

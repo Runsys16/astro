@@ -5,32 +5,23 @@
 //#define DEBUG_WHEEL
 //--------------------------------------------------------------------------------------------------------------------
 #define DEG_SEXAGESIMAL
-//--------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------
 #define TIMEANIM 1.5
 #define SIZE_ECH 200.0
-//--------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------
+#define SIZEY 14
+#define POLICE "fonts/greek-wsi-regular.ttf"   	// 218 glyphe voir alpha ...
+//----------------------------------------------
+#define CLIP_VIZIER		// Ne traite que  les etoiles visibles
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 {
-	vTelescopeJ2000 = vec2(0.0, 0.0);
-    ech_geo     = 1.0;
-    ech_user    = 1.0;
-    dx          = 0.0;
-    dy          = 0.0;
-    xm_old      = -1;
-    ym_old      = -1;
-    dTimeAnim	= 0.0;
-	bFits		= false;
-	    
+	init();
+	
     pReadBgr    = pReadBgr;
     pCapture    = pc;
-
-    pVizier		= NULL;
-    pGraph		= NULL;
-
-	bAffCatalogPosition = false;
 
     stars.setView( this );
     stars.setModeMag( 1 );
@@ -47,14 +38,13 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pTelescope->setFantome( true );
     this->add( pTelescope );
     
-    #define SIZEY 14
-	#define POLICE "fonts/greek-wsi-regular.ttf"   	// 218 glyphe voir alpha ...
+    int x		= 90;
+    int y		= SIZEY;
+    int deltax	= 16;
 
-    int x = 90, y = SIZEY, deltax = 16;
     pColor = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 5, y );
     y += SIZEY;
     pCoord = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 5, y );
-    //y += SIZEY;
 
 
     pJ2000_alpha	= new PanelText( (char*)"a", 		(char*)POLICE , x, y, SIZEY, 0xFFFFFFFF );
@@ -64,17 +54,22 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pJ2000_delta	= new PanelText( (char*)"d", 		(char*)POLICE , x, y, SIZEY, 0xFFFFFFFF );
     pJ2000_2		= new PanelText( (char*)"(0,0)",	PanelText::NORMAL_FONT, x+deltax, y );
 
-    //PanelText* pGrec	= new PanelText( (char*)"abcdefghijklmnopqrstuvwxyz", 		(char*)POLICE , x, y, SIZEY, 0xFFFFFFFF );
-    //pGrec->setPos( 10, 60 );
-
     pFondCoord->add( pColor );
     pFondCoord->add( pCoord );
     pFondCoord->add( pJ2000_alpha );
     pFondCoord->add( pJ2000_delta );
     pFondCoord->add( pJ2000_1 );
     pFondCoord->add( pJ2000_2 );
-    //pFondCoord->add( pGrec );
-    
+
+	pInfoVizier = new PanelDebug();
+	pInfoVizier->setVisible(false);
+	pInfoVizier->setSize( 180, 1 );
+	pInfoVizier->setTabSize( 60 );
+	pInfoVizier->loadSkin( PanelWindow::BLACK );
+	pInfoVizier->setBorderSize(0);
+
+	add( pInfoVizier );
+	
     
     setExtraString( "PanelCapture" );
     setParentCliping( true );
@@ -85,21 +80,6 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 //--------------------------------------------------------------------------------------------------------------------
 PanelCapture::~PanelCapture()
 {
-    if ( pFondCoord != NULL )		delete pFondCoord;
-    if ( pTelescope != NULL )		delete pTelescope;
-    if ( pColor != NULL )			delete pColor;
-    if ( pCoord != NULL )			delete pCoord;
-
-
-    if ( pJ2000_alpha != NULL )		delete pJ2000_alpha;
-    if ( pJ2000_1 != NULL )			delete pJ2000_1;
-
-    if ( pJ2000_delta != NULL )		delete pJ2000_delta;
-    if ( pJ2000_2 != NULL )			delete pJ2000_2;
-
-    stars.setRB( NULL );
-    stars.deleteAllStars();
-
 	//---------------------------------------------------------------
 	for( int i=0; i<tAD.size(); i++ )
 	{
@@ -117,9 +97,42 @@ PanelCapture::~PanelCapture()
 	}
 	tDE.clear();
 	//---------------------------------------------------------------
+    if ( pTelescope != NULL )		delete pTelescope;
+    if ( pFondCoord != NULL )		delete pFondCoord;
+    if ( pColor != NULL )			delete pColor;
+    if ( pCoord != NULL )			delete pCoord;
+
+    if ( pJ2000_alpha != NULL )		delete pJ2000_alpha;
+    if ( pJ2000_1 != NULL )			delete pJ2000_1;
+
+    if ( pJ2000_delta != NULL )		delete pJ2000_delta;
+    if ( pJ2000_2 != NULL )			delete pJ2000_2;
+
+    stars.setRB( NULL );
+    stars.deleteAllStars();
 
     if ( pVizier != NULL )			delete pVizier;
-    if ( pGraph != NULL )			delete pGraph;
+    if ( pInfoVizier != NULL )		delete pInfoVizier;
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::init()
+{
+	vTelescopeJ2000 	= vec2(0.0, 0.0);
+    ech_geo				= 1.0;
+    ech_user			= 1.0;
+    dx					= 0.0;
+    dy					= 0.0;
+    xm_old				= -1;
+    ym_old				= -1;
+    dTimeAnim			= 0.0;
+	bFits				= false;
+	    
+    pVizier				= NULL;
+
+	bAffCatalogPosition = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -175,7 +188,162 @@ void PanelCapture::updateEchelleGeo()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-#define CLIP_VIZIER
+void PanelCapture::updateInfoVizier()
+{
+	if ( pVizier == NULL )			return;
+	
+	double	ad_vizi, de_vizi, ad_star, de_star;
+    int 	n		= pVizier->size();
+	Fits*	pFits	= pCapture->getFits();
+	vec2 	d 		= vec2( getX(), getY() );
+	double 	ech 	= ech_user * ech_geo;
+	char	str[255];
+	vec2	v;
+
+	if ( n==0 )			return;
+
+    idxVizierMouseOver = -1;
+
+    for ( int i=0; i<n; i++ )        {       
+		
+		PanelText* p = pVizier->get(i)->getInfo();
+
+		p->setVisible(true);
+
+        v.x = pVizier->get(i)->getRA();
+        v.y = pVizier->get(i)->getDE();
+
+		pFits->J2000_2_tex( v );
+		tex_2_screen(v);
+		
+		vec2 w = vec2(vMouse.x, vMouse.y);
+		w -= v;
+		if ( w.length() < (ech*10.0) )		idxVizierMouseOver = i;
+			
+	}
+	
+	if ( idxVizierMouseOver != -1 )
+	{
+		pInfoVizier->reset_list();
+		pInfoVizier->setVisible(true);
+
+		vec2 V, W;
+		StarCatalog* pStarViz = pVizier->get(idxVizierMouseOver);
+        ad_vizi = v.x = pStarViz->getRA();
+        de_vizi = v.y = pStarViz->getDE();
+
+		pFits->J2000_2_tex( v );
+		//tex_2_screen(v);
+        V = v;
+		
+		pInfoVizier->add_textf( (char*)"-GAIAdr3\t(%.2lf, %0.2lf)", v.x, v.y );
+		pInfoVizier->add_textf( (char*)"    mag\t= %0.2f", (float)pStarViz->getMag() );
+		
+		//------------------------------------
+		// Positionne la fenetre
+		int x, y;
+		x = vMouse.x - getX()  + 10;
+		y = vMouse.y - getY()  + 30;
+		if ( pCapture->getAfficheInfoSouris() )		y += 80;
+
+		pInfoVizier->setPos( x, y );
+		
+		int iStar = starCompare.getTwinStar( idxVizierMouseOver );
+		if ( iStar != -1 )
+		{
+			Star* pStar = stars.get(iStar);
+			ad_star = v.x = pStar->getAD();
+			de_star = v.y = pStar->getDE();
+
+			pFits->J2000_2_tex( v );
+			W = v;
+			pInfoVizier->add_textf( (char*)"-Calc \t(%.2lf, %0.2lf)", v.x, v.y );
+			pInfoVizier->add_textf( (char*)"    mag\t= %0.2f", (float)pStar->getMagnitude() );
+
+			W -= V;
+			pInfoVizier->add_text( (char*)"---------------------------" );
+
+			pInfoVizier->add_textf( (char*)"delta pix \t= %0.2f", (float)W.length() );
+			pInfoVizier->add_textf( (char*)"delta mag\t= %0.2f", (float)abs( pStar->getMagnitude()- pStarViz->getMag()) );
+
+			pInfoVizier->add_text( (char*)"---------------------------" );
+			deg2str_hms( ad_vizi, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"AD : %s", str );
+			deg2str_hms( ad_star, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"AD : %s", str );
+
+			deg2str_dms( de_vizi, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"DE : %s", str );
+			deg2str_dms( de_star, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"DE : %s", str );
+		}
+		else
+			pInfoVizier->setVisible(false);
+	}
+	else
+		pInfoVizier->setVisible(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::updateVizier()
+{
+    int 	n		= pVizier->size();
+	Fits*	pFits	= pCapture->getFits();
+	vec2 	d 		= vec2( getX(), getY() );
+	double 	ech 	= ech_user * ech_geo;
+	vec2	v;
+
+    vec2 	vMin	= vec2( pCapture->getX(), pCapture->getY() );
+    vec2 	vMax	= vec2( pCapture->getX()+pCapture->getDX()  ,  pCapture->getY()+pCapture->getDY()  );
+
+    idxVizierMouseOver = -1;
+
+    for ( int i=0; i<n; i++ )        {       
+		
+		PanelText* p = pVizier->get(i)->getInfo();
+
+		p->setVisible(true);
+
+        v.x = pVizier->get(i)->getRA();
+        v.y = pVizier->get(i)->getDE();
+
+		pFits->J2000_2_tex( v );
+		tex_2_screen(v);
+		
+		vec2 w = vec2(vMouse.x, vMouse.y);
+		w -= v;
+		if ( w.length() < (ech*10.0) )		idxVizierMouseOver = i;
+			
+#ifdef CLIP_VIZIER
+		if ( 	v.x> vMin.x   &&	v.x < vMax.x  
+			&& 	v.y> vMin.y   &&	v.y < vMax.y  )
+		{
+#endif			
+	        pVizier->get(i)->setScreen( v );
+
+	        double r = 17.5 - 0.675*pVizier->get(i)->fMag;
+			p->setPos( v.x + ech*r*0.707,    v.y - ech*r*0.707 - 15.0 );
+			p->updatePos();
+			p->setAlpha(0.0);
+			
+			screen_2_tex(v);
+	        pVizier->get(i)->setTex( v );
+			
+	        if ( bNuit )        p->setColor( COLOR32(255,   0, 0, 255) );
+	        else                p->setColor( COLOR32(255, 178, 0, 255) );
+
+#ifdef CLIP_VIZIER
+		}
+		else
+		{
+			vec2 v = vec2(-1.0,-1.0);
+	        pVizier->get(i)->setScreen( v );
+	        
+			p->setVisible(false);
+		}
+#endif			
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::updatePos()
 {
     if ( pReadBgr == NULL )
@@ -191,65 +359,19 @@ void PanelCapture::updatePos()
 
 
     setSize( fDX*ech, fDY*ech );
-    setCent();
+    setCentre();
 
     PanelSimple::updatePos();
 
-    vec2 vMin = vec2( pCapture->getX(), pCapture->getY() );
-    vec2 vMax = vec2( pCapture->getX()+pCapture->getDX()  ,  pCapture->getY()+pCapture->getDY()  );
+    
+    idxVizierMouseOver = -1;
 
     if ( pVizier != NULL && bAffCatalog && !pCapture->isIconized() )
     {
-	    int n = pVizier->size();
-		Fits*	pFits	= pCapture->getFits();
-		vec2 	d 		= vec2( getX(), getY() );
-		double 	ech 	= ech_user * ech_geo;
-		vec2	v;
-
-        for ( int i=0; i<n; i++ )        {       
-			
-			PanelText* p = pVizier->get(i)->getInfo();
-	
-			p->setVisible(true);
-
-            v.x = pVizier->get(i)->getRA();
-            v.y = pVizier->get(i)->getDE();
-
-			pFits->J2000_2_tex( v );
-			tex_2_screen(v);
-			
-#ifdef CLIP_VIZIER
-			if ( 	v.x> vMin.x   &&	v.x < vMax.x  
-				&& 	v.y> vMin.y   &&	v.y < vMax.y  )
-			{
-#endif			
-		        pVizier->get(i)->setScreen( v );
-
-		        double r = 17.5 - 0.675*pVizier->get(i)->fMag;
-				p->setPos( v.x + ech*r*0.707,    v.y - ech*r*0.707 - 15.0 );
-				p->updatePos();
-				p->setAlpha(0.0);
-				
-				screen_2_tex(v);
-		        pVizier->get(i)->setTex( v );
-				
-		        if ( bNuit )        p->setColor( COLOR32(255,   0, 0, 255) );
-		        else                p->setColor( COLOR32(255, 178, 0, 255) );
-
-#ifdef CLIP_VIZIER
-			}
-			else
-			{
-				vec2 v = vec2(-1.0,-1.0);
-		        pVizier->get(i)->setScreen( v );
-		        
-				p->setVisible(false);
-			}
-#endif			
-			
-
-        }
-    }    
+       	updateVizier();
+	}
+   	updateInfoVizier();
+    PanelSimple::updatePos();
 
 
 	if ( pCapture->getAfficheGrille() && !pCapture->isIconized() )	{
@@ -395,6 +517,7 @@ void PanelCapture::displayCatalog()
 {
 	//logf( (char*)"PanelCapture::displayCatalog() %d etoiles", pVizier->size() );
 
+
 	// Sauvegarde de l'ancienne couleur
 	unsigned color_old = getColor();
 
@@ -412,12 +535,19 @@ void PanelCapture::displayCatalog()
 
     if ( n!= 0)
     {
-        if ( bNuit )        glColor4f( 1.0,  0.0,  0.0, 1.0 );
-        else                glColor4f( 1.0, 0.7, 0.0, 0.8 );
+		vcf4 vNuit    = vcf4( 1.0,  0.0,  0.0, 1.0 );
+		vcf4 vOrange  = vcf4( 1.0,  0.7,  0.0, 0.8 );
+		vcf4 vSelect  = vcf4( 0.0,  0.8,  1.0, 1.0 );
+
+		if( bNuit )						glColor4fv( (GLfloat*)&vNuit );
+		else							glColor4fv( (GLfloat*)&vOrange );
 
         for ( int i=0; i<n; i++ )
         {
         	if ( starCompare.getMagMax() < pVizier->get(i)->getMag() )	continue;
+        	
+        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&vSelect );
+        	
             v.x = pVizier->get(i)->getXScreen();
             v.y = pVizier->get(i)->getYScreen();
 
@@ -430,6 +560,7 @@ void PanelCapture::displayCatalog()
 				p->displayGL();
 				nbAff++;
 			}
+        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&vOrange );
         }
 		
 		dDebug5s += Timer::getInstance().getElapsedTime();
@@ -604,7 +735,7 @@ void PanelCapture::idle(float f)
 		if ( pCapture->getAfficheInfoSouris() )
 		{
 			pFondCoord->setVisible(true);
-			passiveMotionFunc( (int)mouse.x, (int)mouse.y );
+			passiveMotionFunc( (int)vMouse.x, (int)vMouse.y );
 		}
 		else
 			pFondCoord->setVisible(false);
@@ -650,6 +781,7 @@ void PanelCapture::idle(float f)
 			}
 		}
 		//-------------------------------------------------------------------
+		/*
 		if ( !pCapture->isIconized() )
 		{
 			if ( var.getb("bAffFitsCorrection") )	pFits->getPanelCorrectionFits()->setVisible(true);
@@ -660,6 +792,7 @@ void PanelCapture::idle(float f)
 		//----------------------------------------------
 		if ( bNuit )		pFits->getPanelCorrectionFits()->setColor(0xFF0000FF);
 		else				pFits->getPanelCorrectionFits()->setColor(0xFFFFFFFF);
+		*/
 		//-------------------------------------------------------------------
 	}
 	else
@@ -798,7 +931,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	
 	if ( x<0 )	
 	{
-		logf( (char*)"[WARNING] x souris dans la texture negatif !!! %s ", pCapture->getBasename().c_str() );
+		//logf( (char*)"[WARNING] x souris dans la texture negatif !!! %s ", pCapture->getBasename().c_str() );
 		return;
 	}
 	
@@ -920,8 +1053,8 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 void PanelCapture::clickLeft(int xm, int ym)
 {
     logf( (char*)"PanelCapture::clickLeft(%d,%d) ...", xm, ym );
-    if ( pCapture->isIconized() )
-	    Captures::getInstance().setCurrent( pCapture );
+    //if ( pCapture->isIconized() )
+	//    Captures::getInstance().active( pCapture );
 
     //Panel::clickLeft(xm,ym);
 }
@@ -975,7 +1108,9 @@ void PanelCapture::releaseLeft(int xm, int ym)
 		}
 		else
 		{            
-		    captureOnTop(pCapture);
+			log_tab(true);
+		    Captures::getInstance().active( pCapture );
+			log_tab(false);
 		}
 	}
 }
@@ -985,7 +1120,7 @@ void PanelCapture::releaseLeft(int xm, int ym)
 void PanelCapture::clickRight(int xm, int ym)
 {
     logf( (char*)"PanelCapture::clickRight(%d,%d) ...", xm, ym );
-    Captures::getInstance().setCurrent( pCapture );
+    //Captures::getInstance().active( pCapture );
 
     if ( pCapture->getFullScreen() )
     {
@@ -1064,7 +1199,7 @@ void PanelCapture::clickMiddle(int xm, int ym)
     xm_old = xm;
     ym_old = ym;
     logf( (char*)"PanelCapture::clickMiddle(%d,%d) ...", xm, ym );
-    Captures::getInstance().setCurrent( pCapture );
+    //Captures::getInstance().active( pCapture );
 
 	motionMiddle( xm, ym);
     //bHaveMove = false;
@@ -1222,17 +1357,27 @@ void PanelCapture::clip(int& xm, int& ym)	{
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::compareStar()
 {
-   	log( (char*)"PanelCapture::compareStar()");
+	log( (char*)"PanelCapture::compareStar()");
 	starCompare.setStars(&stars);
 	starCompare.setVizier(pVizier);
 
-   	if ( stars.size() == 0 )							{ starCompare.setMagMax(20.0); return; }
-   	if ( pVizier == NULL || pVizier->size() == 0 )		return;
+	if ( stars.size() == 0 )
+	{
+		logf( (char*)"[ Warning] Reset magnitude 20.0" );
+		starCompare.setMagMax(20.0);
+		return;
+	}
+	if ( pVizier == NULL || pVizier->size() == 0 )
+	{
+		logf( (char*)"[ Warning] Pas de catalogue" );
+		return;
+	}
 
 	starCompare.setStars(&stars);
 	starCompare.setVizier(pVizier);
 
 	starCompare.compareStar();
+	
 	double d = starCompare.computeDelta();
 	stars.setDelta( d );
 }
@@ -1256,7 +1401,7 @@ void PanelCapture::saveCompareStar()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::setCent()
+void PanelCapture::setCentre()
 {
     double fDX = (double)pReadBgr->w * ech_geo;
     double fDY = (double)pReadBgr->h * ech_geo;
@@ -1315,7 +1460,7 @@ void PanelCapture::setEchelle(double f)
     
     
     setSize( fDX*ech_user, fDY*ech_user );
-    setCent();
+    setCentre();
     logf( (char*)"PanelCapture::setEchelle() ech_geo=%0.2f ech_user=%0.2f dx=%0.2f dy=%0.2f", ech_geo, ech_user, dx, dy );
     logf( (char*)"  setSize(%0.2lf, %0.2lf)", fDX, fDY );
     
@@ -1327,7 +1472,7 @@ void PanelCapture::setEchelle(double f)
 void PanelCapture::setCentX(double f)
 {
     dx = f;
-    setCent();
+    setCentre();
     return;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1336,7 +1481,7 @@ void PanelCapture::setCentX(double f)
 void PanelCapture::setCentY(double f)
 {
     dy = f;
-    setCent();
+    setCentre();
     return;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1707,16 +1852,19 @@ void PanelCapture::printObjet()
 void PanelCapture::findGaiaDR3()
 {
     logf( (char*)"PanelCapture::findGaiaDR3()" );
+    log_tab(true);
 
 	if ( pVizier )	{
 		if ( !bAffCatalogPosition )	{
 			bAffCatalogPosition = true;
 			pVizier->affiche_position();
+		    log_tab(false);
 			return;
 		}
 		else	{
 			bAffCatalogPosition = false;
 			pVizier->affiche_magnitude();
+		    log_tab(false);
 			return;
 		}
 
@@ -1724,10 +1872,18 @@ void PanelCapture::findGaiaDR3()
 		pVizier->efface();
 		delete pVizier;
 		pVizier = NULL;
+	    log_tab(false);
 		return;
 	}
 	
-	if ( !bFits )	return;
+	if ( !bFits )			{ log_tab(false); return; }
+	if ( 	pCapture->getFits()->getCDELT1() == -1.0 || 
+			pCapture->getFits()->getCDELT2() == -1.0 )
+	{
+		log_thread( (char*)" [ Erreur ] Le fichier fit ne contient pas de parametre CDELT" );
+		log_tab(false);
+		return;
+	};
 
 	//--------------------------------------------------------
 	// CALCUL LA TAILLE DE L'IMAGE pour le rayon de recherche
@@ -1735,17 +1891,20 @@ void PanelCapture::findGaiaDR3()
 	// resolution ecran
 	double resH = pCapture->getFits()->getNAXIS1();
 	double resV = pCapture->getFits()->getNAXIS2();
+	logf( (char*)"Calcul du rayon : %0.2lf %0.2lf", resH, resV );
 	
 	// Coefficient deg/pix
 	resH *= pCapture->getFits()->getCDELT1() * 3600.0;
 	resV *= pCapture->getFits()->getCDELT2() * 3600.0;
+	logf( (char*)"Calcul du rayon : %0.2lf %0.2lf", resH, resV );
 	
 	// On prend la diagonnale pour rayon de recherche
 	double rayon = sqrt( resV*resV + resH*resH );
 	rayon /= 2.0;
+	logf( (char*)"Calcul du rayon : r = %0.2lf", rayon );
 	
 	// si plus grand qu 1" d'arc
-	if ( rayon > 3600.0 )       	rayon = 3600.0;
+	if ( rayon > 1800.0 )       	rayon = 1800.0;
 	logf( (char*)"  rayon calcule %.2f", rayon );
 	
 	//---------------------------------------------------
@@ -1756,7 +1915,15 @@ void PanelCapture::findGaiaDR3()
 	static char coord[80];
 	snprintf( (char*)coord, sizeof(coord), "%0.2f-%0.2f", vCentre.x, vCentre.y );
 	string sFilename = "/home/rene/.astropilot/vizier/vizier_" + string(coord) + ".cat";
-	if ( pVizier->charge( sFilename ) )				return;
+	//---------------------------------------------------
+	// Si le fichier de donne existe
+	// on le charge
+	if ( pVizier->charge( sFilename ) )		
+	{
+		updatePos();
+		log_tab(false);
+		return;
+	}
 
 
 	//---------------------------------------------------
@@ -1767,6 +1934,8 @@ void PanelCapture::findGaiaDR3()
 
 	//vizier_load_stars( pVizier, string(coord) );	
 	vizier_capture_load_stars( pVizier, string(coord), this );	
+    log_tab(false);
+	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1914,9 +2083,9 @@ void PanelCapture::restaure()
 	//dTimeAnim = 0.0;
 	if ( !pCapture->isIconized() && pCapture->getAfficheInfoSouris() )
 	{
-		//logf( (char*)"passiveMotionFunc(%d,%d)", mouse.x, mouse.y );
+		//logf( (char*)"passiveMotionFunc(%d,%d)", vMouse.x, vMouse.y );
 		log_tab(true);
-		//passiveMotionFunc( mouse.x, mouse.y );
+		//passiveMotionFunc( vMouse.x, vMouse.y );
 		log_tab(false);
 	}
 }
@@ -2304,6 +2473,8 @@ double PanelCapture::compute_div( double val )
 	return d;
 }
 //--------------------------------------------------------------------------------------------------------------------
+//
+//		Sens trigo
 //
 //                -----------    ref horizon           ----------------
 //							/										   \

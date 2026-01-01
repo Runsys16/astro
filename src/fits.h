@@ -39,10 +39,12 @@ protected:
         
         PanelFits*					pPanelFits;
         PanelCapture*				pPanelCapture;
-        PanelCorrectionFits*		pPanelCorrectionFits;
+        //PanelCorrectionFits*		pPanelCorrectionFits;
         
         bool						bFlip;   // (0,0) Bottom, Left
         bool						bEOF;
+        bool						bCD;
+        bool						bPC;
                 
         int                         nBITPIX;
         int                         nNAXIS;
@@ -63,14 +65,9 @@ protected:
         double						dMin4;
         double						dMax4;
         
-volatile double                     dCRVAL1;
-volatile double                     dCRVAL2;
-
-volatile double                     dCRPIX1;
-volatile double                     dCRPIX2;
-        
-        mat2						mAstroEchl;
-        mat2						mAstroTrns;
+        mat2						mCD;
+        mat2						mPC;
+        mat2						mEchl;
         mat2						mMat;
         mat2						mMatInv;
 
@@ -78,14 +75,24 @@ volatile double                     dCRPIX2;
         double                      dCD1_2;
         double                      dCD2_1;
         double                      dCD2_2;
-        
-volatile double                     dCDELT1;
-volatile double                     dCDELT2;
+		int							nbCD;
+		bool						bDebugCD;
 
         double                      dPC1_1;
         double                      dPC1_2;
         double                      dPC2_1;
         double                      dPC2_2;
+		int							nbPC;
+		bool						bDebugPC;
+        
+volatile double                     dCDELT1;
+volatile double                     dCDELT2;
+        
+volatile double                     dCRVAL1;
+volatile double                     dCRVAL2;
+
+volatile double                     dCRPIX1;
+volatile double                     dCRPIX2;
         
         double						dBZERO;
         double						dBSCALE;
@@ -138,6 +145,8 @@ public :
         void                        readPC( string, string );
         void                        readCTYPE( string, string );
 
+		void						debug_CD();
+		void						debug_PC();
         void                        afficheDic();
 		bool						haveKey( string );
         void                        afficheDatas();
@@ -153,7 +162,7 @@ inline  int                         getD()                  { return (bValid ?  
 inline  PanelFits*                  getPanelFits()          { return pPanelFits; };
 inline  mat2&						getMatrix() 			{ return mMat; };
 inline  void 						setPanelCapture(PanelCapture* p) 			{ pPanelCapture = p; };
-inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionFits; }
+//inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionFits; }
 
         void                        getRB( struct readBackground* );
         void						tex_2_J2000( vec2, vec2& );

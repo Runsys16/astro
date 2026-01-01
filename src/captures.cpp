@@ -37,8 +37,9 @@ void Captures::init()
     mode %= 4;
 
     charge2();
+    setMode();
     
-    bFullPreview 		= false;
+    bFullScreen 		= false;
     bIcones  			= true;
 	bAfficheInfoSouris 	= false;
 	bAfficheInfoFits 	= false;
@@ -49,13 +50,22 @@ void Captures::init()
 
 
     sCurrentDir = "";
-    //afficheInfoFits( mode );
-    afficheInfoFits( mode );
-    resize_all();
+    //resize_all();
+    iconize_all();
+    invalide_all();
 
 //    rotate_capture_plus(true);
     log_tab( false );
-    logf((char*)" Captures::init() -----FIN---- %d", mode );
+    //logf((char*)"Captures::init() -----FIN---- %d", mode );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::invalide_all()
+{
+    logf((char*)"Captures::invalide_all()" );
+    int nb = captures.size();
+    for( int n=0; n<nb; n++ )		captures[n]->invalide_panel();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -77,17 +87,14 @@ void Captures::charge_image( string dirname, string filename )
     logf( (char*)"Captures::charge_image( %s, %s)",(char*)dirname.c_str(),(char*)filename.c_str() );
     log_tab( true );
 
-    //if ( current_capture != -1 )    captures[current_capture]->iconize();   
-    
     sCurrentDir = string( dirname ); 
 
     captures.push_back( new Capture(dirname, filename) );
     sauve();
-    //current_capture = captures.size() - 1;
-    //resize_all();
-    rotate_capture_plus(false);
-    //captures[current_capture]->restaure(true, true, true );
 
+    rotate_capture_plus(false);
+    active( captures.size() - 1 );
+    
     log_tab( false );
     logf( (char*)"Captures::charge_image() ...END..." );
 }
@@ -105,101 +112,60 @@ void Captures::update()
 void Captures::rotate_capture_moins(bool b)
 {
     logf( (char*)"Captures::rotate_capture_moins(%s)  %d/%d", b? (char*)"true":(char*)"false", current_capture, captures.size() );
-    if ( current_capture == -1 )		current_capture = captures.size() - 1;
-    if ( current_capture < 0 )	 		{ current_capture = -1; return; }
-
-    //---------------- determine si la capture courante est full
-    int  previous = current_capture;
-    bool bFull = false;
-    
-    if ( previous!=-1 )
-    {
-        bFull = captures[previous]->getFullScreen() ;
-    }
-    //------------------------------------------------------------
-    int n = captures.size();
-    
-    if ( n == 0 )           return;
-
-    if ( b != bIcones )
-    {
-        bIcones = b;
-        if ( b )		captures[current_capture]->iconize( dxIcon, dyIcon );
-    }
-    else
-    {
-        current_capture--;
-        if ( current_capture == -1 )            current_capture = n-1;
-    }
-
-	Capture* pCurr = captures[current_capture];
-	if ( previous != -1 )		Capture* pPrev = captures[previous];
 	
-	logf( (char*)"Active le panelCapture %d \"%s\"", current_capture, pCurr->getBasename().c_str() );
-	if ( pCurr->isFits() && pCurr->getAfficheInfoFits() )		{
-		//pCurr->getFits()->afficheInfoFits(true);
-      	WindowsManager::getInstance().onTop( pCurr->getFits()->getPanelFits() );
-		pCurr->getFits()->getPanelCorrectionFits()->onTop();      	
-	}
-    
-    if ( bIcones )      { bShowIcones = true; bFullPreview = false; }
-    resize_all();
+	int n			= captures.size();
+	int nCapture	= 0;
+
+	if ( n == 0 )				return;
+	
+	if (current_capture == -1 )			{ nCapture = n-1; }
+	else								{ nCapture = current_capture -1; }
+
+	if ( nCapture < 0)					nCapture = n-1;
+	
+	active( nCapture );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::rotate_capture_plus(bool b)
 {
-    logf( (char*)"Captures::rotate_capture_plus(%s)  %d/%d", b? (char*)"true":(char*)"false", current_capture, captures.size() );
-    //---------------- determine si la capture courante est full
-    if ( current_capture == -1 )		current_capture = captures.size() - 1;
-    if ( current_capture < 0 )	 		{ current_capture = -1; return; }
-    
-    
-    int  previous = current_capture;
-    bool bFull = false;
-    
-    if ( previous!=-1 )
-    {
-        bFull = captures[previous]->getFullScreen() ;
-    }
-    //------------------------------------------------------------
-
-    int n = captures.size();
-    if ( n == 0 )           return;
-
-    if ( b != bIcones )
-    {
-        bIcones = b;
-        if ( b )		captures[current_capture]->iconize( dxIcon, dyIcon );
-    }
-    else
-    {
-        current_capture = ++current_capture % n;
-    }
-    
-	Capture* pCurr = captures[current_capture];
-	if ( previous != -1 )		Capture* pPrev = captures[previous];
+	logf( (char*)"Captures::rotate_capture_plus(%s)  %d/%d", BOOL2STR(b), current_capture, captures.size() );
 	
-	logf( (char*)"Active le panelCapture %d \"%s\"", current_capture, pCurr->getBasename().c_str() );
-	if ( pCurr && pCurr->isFits() ) {
-		Fits* pFits = pCurr->getFits();
-		
-		//pFits->getPanelCorrectionFits()->setVisible(true);
-		pFits->getPanelCorrectionFits()->setPos(50,50);
-		WindowsManager::getInstance().onTop( pFits->getPanelCorrectionFits() );      	
+	int n			= captures.size();
+	int nCapture	= 0;
 
-		if ( pCurr->getAfficheInfoFits() )		{
-			//pFits->afficheInfoFits(true);
-		  	WindowsManager::getInstance().onTop( pFits->getPanelFits() );
-		}
-	}
+	if ( n == 0 )				return;
+	
+	if (current_capture == -1 )			{ nCapture = 0; }
+	else								{ nCapture = current_capture +1; }
+	
+	if ( nCapture >= n)					nCapture = 0;
+	
+	active( nCapture );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::compute_size_normal( int& DX, int& DY, int n )
+{
+    log( (char*)"Captures::compute_size_normal() " );
 
-    if ( bIcones )      { bShowIcones = true; bFullPreview = false; }
+    DY = height- 60;
+    DX = width - 60;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::compute_pos_icone( int& X, int& Y, int n )
+{
+    log( (char*)"Captures::compute_pos_icone() " );
 
-    resize_all();
-    
-    
+    int ny	= height / dyIcon;
+	int y	= n % ny;
+
+	Y = BORDER_ICON+ y*(dyIcon+2*BORDER_ICON);
+	X = width - dxIcon * (n/ny+1);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -217,9 +183,104 @@ void Captures::resize_normal(Capture* p, int _dx, int _dy)
 {
     logf( (char*)"Captures::resize_normal(\"%s\", %d, %d)", p->getBasename().c_str(), _dx, _dy );
     log_tab(true);
-    p->resize(10, 10, _dx-20, _dy-20);
+    p->resize(30, 30, _dx, _dy);
     p->restaure();
     log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::active( Capture* p )
+{
+	int n = captures.size();
+
+	for (int i=0; i<n; i++)				if ( p == captures[i] )		active(i);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::active( int n )
+{
+    logf( (char*)"Captures::active(%d) cur=%d bIcones=%s", n, current_capture, BOOL2STR(bIcones) );
+    log_tab(true);
+    //bDesactiveLog = true;
+
+    if ( n >= captures.size() )	{ bDesactiveLog = false; log( (char*)"([ ERREUR ]" );     log_tab(false); return; }
+    
+	//-------------------------------------------------------------
+    // Iconise current_capture
+	//-------------------------------------------------------------
+	if ( current_capture != -1 && current_capture != n )
+	{
+	    logf( (char*)"Icon = %d", current_capture );
+		Capture* p = captures[current_capture];
+		int X, Y;
+		compute_pos_icone( X, Y, current_capture );
+
+		p->iconize( dxIcon, dyIcon );
+		resize_icone( p, X, Y, dxIcon, dyIcon );
+	}
+
+	//-------------------------------------------------------------
+    current_capture = n;
+	Capture* p = captures[current_capture];
+	//-------------------------------------------------------------
+	int X, Y, DX, DY;
+	compute_size_normal( DX, DY, n );
+	
+	p->show();
+	if ( bFullScreen )			p->fullscreen();
+	else						resize_normal( p, DX, DY);
+	
+	onTop();
+	p->onTop();
+
+	//-------------------------------------------------------------
+	//bDesactiveLog = false;
+	log_tab(false);    
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::iconize_all()
+{
+	return;
+    logf( (char*)"Captures::iconize_all()    ------------ curr=%d", current_capture );
+
+	if ( current_capture != -1 )
+	{
+		Capture* p = captures[current_capture];
+		int X, Y;
+		compute_pos_icone( X, Y, current_capture );
+
+		p->iconize( dxIcon, dyIcon );
+		resize_icone( p, X, Y, dxIcon, dyIcon );
+	}    
+    
+    current_capture = -1;
+}
+    void                        iconize_all();
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Captures::iconize_active()
+{
+    log( (char*)"Captures::iconize_active()" );
+
+	if ( current_capture != -1 )
+	{
+		Capture* p = captures[current_capture];
+		int X, Y;
+		compute_pos_icone( X, Y, current_capture );
+
+		p->iconize( dxIcon, dyIcon );
+		resize_icone( p, X, Y, dxIcon, dyIcon );
+	}    
+	else
+		log( (char*)"[ Warning ] Aucune image d\'active" );
+    
+    current_capture = -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -227,34 +288,20 @@ void Captures::resize_normal(Capture* p, int _dx, int _dy)
 void Captures::resize_all()
 {
     logf( (char*)"Captures::resize_all()    ------------ curr=%d", current_capture );
-    bDesactiveLog = true;
     log_tab(true);    
+    bDesactiveLog = true;
 
 
     bool bFull = false;
     if ( current_capture != -1 )        bFull = captures[current_capture]->getFullScreen();
     
     logf( (char*)"Current=%d   bFull:%s bIcones:%s bShowIcones:%s", current_capture, BOOL2STR(bFull) , BOOL2STR(bIcones) , BOOL2STR(bShowIcones) );
-    //--------------------------------------------------
-    // Calcul les dimensions pour l'icone
-    //--------------------------------------------------
-    int dx, dy;// dxi, dyi;
-    float ratio = (float)width/(float)height;
-	logf( (char*)"ratio = %0.2f", ratio );
-    
-    dx = width - dxIcon;
-    dy = height; 
 
-    int DY;
-    int y=10;
-
-    int n = captures.size();
 
     //--------------------------------------------------
     // Affiche les autres en icones
     //--------------------------------------------------
-    int ny = height / dyIcon;
-	
+    int n = captures.size();
 
     for (int i=0; i<n; i++)
     {
@@ -266,13 +313,12 @@ void Captures::resize_all()
             if ( !bShowIcones )		p->hide();
             else
             {
+            	int X, Y;
+				compute_pos_icone( X, Y, i );
             	p->show();
 	        	p->iconize( dxIcon, dyIcon );
 				
-				y = i % ny;
-				dx = width - dxIcon * (i/ny+1);
-				
-		        resize_icone( p, dx, BORDER_ICON+ y*(dyIcon+2*BORDER_ICON), dxIcon, dyIcon );
+		        resize_icone( p, X, Y, dxIcon, dyIcon );
 			}
         }        
         else
@@ -282,29 +328,22 @@ void Captures::resize_all()
 			//--------------------------------------------------
 			if ( current_capture != -1  )
 			{
+				int DX, DY;
 				Capture* p = captures[current_capture];
-				
+
+				compute_size_normal( DX, DY, current_capture );
 				p->show();
-			    //dx = width - dxIcon * ((int)(n/N_ICON)+1);
-			    dx = width - dxIcon * ((int)(1.0/N_ICON)+1);
-				
-				if 		( bFullPreview )            p->fullscreen();
-				else if ( !bIcones )				resize_normal( p, dx, dy);
-				else								current_capture = -1;
+				if 		( bFullScreen )			p->fullscreen();
+				else if ( !bIcones )			resize_normal( p, DX, DY);
 				
 				p->onTop();
-				/*
-				if ( p->isFits() )	{	
-					p->onTop();
-				}
-				*/
 			} 
 	    }
     } 
 
+	bDesactiveLog = false;
     log_tab(false);    
     logf( (char*)"Captures::resize_all() ---------END--------" );
-	bDesactiveLog = false;
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -322,6 +361,7 @@ void Captures::reshapeGL(int width, int height)
     logf( (char*)"dxIcon = %d dyIcon = %d", dxIcon, dyIcon );
     log_tab(true);    
     resize_all();
+    invalide_all();
     log_tab(false);    
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -461,7 +501,8 @@ void Captures::ajoute()
     logf( (char*)"Captures::ajoute()" );
     captures.push_back( new Capture() );
     sauve();
-    current_capture = captures.size() - 1;
+    setMode();
+    active( captures.size()-1 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -471,6 +512,7 @@ void Captures::ajoute(string filename)
     logf( (char*)"Captures::ajoute(\"%s\")", filename.c_str() );
     captures.push_back( new Capture(filename) );
     sauve();
+    setMode();
     current_capture = captures.size() - 1;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -513,7 +555,8 @@ void Captures::onTop(Capture* p)
     logf( (char*)"Captures::onTop(%s)", (char*)p->getBasename().c_str() );
 
 
-
+    //--------------------------------------------
+    // rechercher de la fenetre
     int nb = captures.size();
     int i;
     for ( i=0; i<nb; i++ )
@@ -521,20 +564,17 @@ void Captures::onTop(Capture* p)
         if ( captures[i] == p ) break;
     }
     //--------------------------------------------
+    // Fenetre inconnue
     if ( i >= nb )          return;
     
-    logf( (char*)"  trouve  -> %s", (char*)p->getBasename().c_str() );
-
-    if ( p->isFits() )          			p->afficheFits();
-    bool bFull = false;
-    if ( current_capture != -1 )            bFull = captures[current_capture]->getFullScreen();
+    //--------------------------------------------
+    // OK
+    log_tab( true );
     
-    current_capture = i;
-    captures[current_capture]->setFullScreen(bFull);
+    logf( (char*)"|  trouve  -> %s", (char*)p->getBasename().c_str() );
+    active( i );
 
-    if ( bIcones )          bIcones = false;
-    
-    resize_all();
+    log_tab( false );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -613,6 +653,7 @@ void Captures::sauve(void)
         	logf( (char*)"Creation de var[\"%s\"]", key.c_str() );
     }
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -655,12 +696,14 @@ void Captures::charge(void)
     }    
     fichier.close();
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::charge2(void)
 {
-    logf( (char*)"Captures::charge2')" );
+    logf( (char*)"Captures::charge2()" );
+	log_tab( true );      
 
     VarManager&         var = VarManager::getInstance();
 
@@ -668,16 +711,18 @@ void Captures::charge2(void)
     
     while( true )
     {
-    	char buf[80];
+    	char		buf[80];
+        string		key;
+        
     	snprintf( (char*)buf, sizeof(buf), "FileCapture%03d", no++ );
-        string key = buf;
-		logf( (char*)"Chargement ; %s", key.c_str() );
-		log_tab( true );      
-		bDesactiveLog = true;      
-
+    	key = string(buf);
+    	
         if ( var.existe( key ) )
         {
             string filename = *var.gets( key );;
+
+			logf( (char*)"Chargement %s : %s", key.c_str(), filename.c_str() );
+			bDesactiveLog = true;      
 			
 			// Le fichier existe
 			//-----------------------
@@ -686,25 +731,23 @@ void Captures::charge2(void)
 			{
 		        captures.push_back( new Capture(filename) );
 		        current_capture = captures.size() - 1;
-		        //captures[current_capture]->iconize();
 		        captures[current_capture]->setFullScreen(false);
-		        //var.set( name, filename );
 		    }
 		    else
+		    {
+				bDesactiveLog = false;      
 				logf( (char*)"[Erreur] Fichier \"%s\" inexistant", filename.c_str() );
+				bDesactiveLog = true;      
+			}
+			getCurrentCapture()->invalide_panel();
+			bDesactiveLog = false;      
         }
-        else
-        {
-            break;
-        }
-		log_tab( false );            
-
-		bDesactiveLog = false;      
+        else 
+        	break;
     }
     
 	log_tab( false );            
-	bDesactiveLog = false;      
-    logf( (char*)"Captures::charge2 ----END----" );
+    //logf( (char*)"Captures::charge2 ----END----" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -729,20 +772,36 @@ void Captures::setCurrent(Capture* p)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+int Captures::get_n_capture(Capture* p)
+{
+    for(int i=0; i<captures.size(); i++)
+    {
+        if ( captures[i] == p )     return i;
+    }
+    return -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Captures::fullscreen()
 {
-    bFullPreview = !bFullPreview;
-    logf( (char*)"Captures::fullscreen  => %s", bFullPreview ? (char*)"true":(char*)"false" );
-
-    if ( bFullPreview )                 bShowIcones = false;
-    else                                bShowIcones = true;
+    bFullScreen = !bFullScreen;
+    logf( (char*)"Captures::fullscreen  => %s", bFullScreen ? (char*)"true":(char*)"false" );
 
     if ( current_capture != -1 )
     {
-        captures[current_capture]->setFullScreen(bFullPreview);
+        captures[current_capture]->setFullScreen(bFullScreen);
+		active( current_capture );
     }
+    else
+	{
+		log( (char*)"[Warning] pas de fenetre actives" );
+		bFullScreen = false;
+	}
+    
+    if ( bFullScreen )					bShowIcones = false;
+    else								bShowIcones = true;
 
-    resize_all();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -794,21 +853,17 @@ void Captures::setColor(long c)
 void Captures::setMode()
 {
 	logf( (char*)"Captures::setMode()" );
+	afficheInfoFits( mode );
+
     for(int i=0; i<captures.size(); i++)
     {
     	Capture*	pCapture = captures[i];    	
     	
-    	//pCapture->getPreview()->setInfoSouris( bAfficheInfoSouris );
-    	
         if ( pCapture->isFits() )		{
-        	//pCapture->setAfficheGrille( bAfficheGrille );
-        	
         	pCapture->setAfficheInfoFits( bAfficheInfoFits );
         	pCapture->setAfficheInfoSouris( bAfficheInfoSouris );
 	        pCapture->setAfficheGrille( bAfficheGrille );
         }
-        
-        if ( i == current_capture )			pCapture->onTop();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -819,7 +874,9 @@ void Captures::rotateInfoFitsPlus()
 	mode = ++mode % 4;
 	logf( (char*)"Captures::rotateInfoFitsPlus()" );
 	log_tab(true);
-	afficheInfoFits( mode );
+
+	setMode();	
+
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -830,7 +887,9 @@ void Captures::rotateInfoFitsMoins()
 	mode = (4 + (--mode)) % 4;
 	logf( (char*)"Captures::rotateInfoFitsMoins()" );
 	log_tab(true);
-	afficheInfoFits( mode );
+
+	setMode();	
+
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -849,7 +908,6 @@ void Captures::afficheInfoFits(int n)
 	case 3 : bAfficheGrille = true;  bAfficheInfoFits = true;  bAfficheInfoSouris = true; break;
 	}
 
-	setMode();	
 }
 /*
 //--------------------------------------------------------------------------------------------------------------------
@@ -876,7 +934,7 @@ void Captures::onTop()
     	Capture*		pCapture = captures[current_capture];
     	if ( pCapture->isFits() && bAfficheInfoFits )	{
     		WindowsManager::getInstance().onTop( pCapture->getFits()->getPanelFits() );
-			WindowsManager::getInstance().onTop( pCapture->getFits()->getPanelCorrectionFits());      	
+			//WindowsManager::getInstance().onTop( pCapture->getFits()->getPanelCorrectionFits());      	
     	}
 	}
 }

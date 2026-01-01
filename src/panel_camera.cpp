@@ -1,4 +1,5 @@
 #include "panel_camera.h"
+#include "camera_mgr.h"
 //--------------------------------------------------------------------------------------------------------------------
 #define SIZE_CERCLE_COLLIMATION	2
 //--------------------------------------------------------------------------------------------------------------------
@@ -156,7 +157,6 @@ PanelCamera::PanelCamera(Camera* p)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-#include "camera_mgr.h"
 void PanelCamera::idle(float f)
 {
     VarManager& var = VarManager::getInstance();
@@ -776,8 +776,8 @@ void PanelCamera::displayLigneSuivi()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displaySuivi()
 {
-    if  ( panelCourbe==NULL )   return;
-    if  ( pReadBgr==NULL )      return;
+    if  ( panelCourbe == NULL )		return;
+    if  ( pReadBgr == NULL )		return;
 
 	WindowsManager& wm = WindowsManager::getInstance();
 
@@ -792,9 +792,6 @@ void PanelCamera::displaySuivi()
     //logf( (char*)"Screen (%0.2f,%0.2f)  texture(%0.2f,%0.2f)", wSc, hSc, wTex, hTex );
     //logf( (char*)"     suivi (%0.2f,%0.2f) -> (%0.2f,%0.2f)", xSuivi, ySuivi, x, y );
     vcf4 color;
-    vcf4 cBleu = vcf4(0.2, 0.2, 1.0, 1.0);
-    vcf4 cRoug = vcf4(1.0, 0.0, 0.0, 1.0);
-    vcf4 cVert = vcf4(0.0, 1.0, 0.0, 1.0);
 
     //-----------------------------------------------------------------------------
     //      Affichage en mode nuit ?
@@ -858,7 +855,7 @@ void PanelCamera::displaySuivi()
 
     if ( bAffColimation )
     {
-    	glColor4fv( cRoug );
+    	glColor4fv( cRouge );
 	    glCercle( vSuiviScr, echelle*(fDiamSuivi1) );
 	}
 
@@ -881,17 +878,11 @@ void PanelCamera::displaySuivi()
         glEnd();
 
     }
-    
 
-    if ( !bCorrection )
-        glDisable(GL_LINE_STIPPLE);    
+    if ( !bCorrection )				glDisable(GL_LINE_STIPPLE);    
 
-    
-    if ( bNuit )                                    glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
-    else
-    {
-                                                    glColor4f( 1.0,   1.0,  0.0, f );
-    }
+    if ( bNuit )					glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
+    else							glColor4f( 1.0,   1.0,  0.0, f );
     
     if ( bCentrageSuivi )
     {
@@ -1017,8 +1008,8 @@ void PanelCamera::displayGL()
 		    if ( var.getb("bNuit") )			glColor4f( 1.0, 0.0, 0.0, 0.2 );
 			else								glColor4f( 0.0, 1.0, 0.0, 0.2 );
 			
-			int x = mouse.x;
-			int y = mouse.y;
+			int x = vMouse.x;
+			int y = vMouse.y;
 
 			glBegin(GL_LINES);
 				glVertex2i(x,y);                glVertex2i(vDeplaceDepuis.x, vDeplaceDepuis.y);

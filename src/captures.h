@@ -21,7 +21,7 @@ private:
 
     bool                        bIcones;
     bool                        bShowIcones;
-    bool                        bFullPreview;
+    bool                        bFullScreen;
     bool						bAfficheInfoSouris;
     bool						bAfficheInfoFits;
     bool						bAfficheGrille;
@@ -34,14 +34,21 @@ public:
     Captures();
     
     void						init();
+    void						invalide_all();
     bool                        isMouseOverCapture(int, int);
     void                        charge_image(string, string);
     void                        update();
     void                        rotate_capture_plus(bool);
     void                        rotate_capture_moins(bool);
 
+    void                        compute_size_normal( int&, int&, int );
+    void                        compute_pos_icone( int&, int&, int );
     void                        resize_icone( Capture*, int, int, int, int );
     void                        resize_normal( Capture*, int, int );
+    void						active(int);
+    void						active(Capture*);
+    void                        iconize_all();
+    void                        iconize_active();
     void                        resize_all();
     void                        reshapeGL(int, int);
     
@@ -54,11 +61,11 @@ public:
     void                        deleteAllStars();
     void                        print_list();
     void                        sauve();
-    void                        charge();
+//    void                        charge();
     void                        charge2();
     void                        position(double, double);
     void                        setCurrent(Capture*);
-    
+	int							get_n_capture(Capture*);
     void                        fullscreen();
     void                        showIcones();
     void                        hideIcones();

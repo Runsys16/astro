@@ -122,7 +122,7 @@ public :
     void                        setFocus();
     void                        setFilename( string );
     
-inline bool                     getVisible()                        { setColor(color); return pW->getVisible(); }
+inline bool                     getVisible()                        { return pW->getVisible(); }
 
 inline string                   getFilename()                       { return panelFilename->getText(); }
 inline string                   getCurrentDir()                     { return currentDir; }

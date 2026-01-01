@@ -3,21 +3,27 @@
 //
 //--------------------------------------------------------------------------------------------------------------------
 #define ECHELLE 10.0
-#define DY_MAX  (60*12)
+#define FONTSIZE	10
+#define INTERLIGNE	12
+#define DY_MAX  (60*INTERLIGNE)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 PanelFits::~PanelFits()
 {
-    WindowsManager& wm = WindowsManager::getInstance();
-
     logf( (char*)"Destructeur PanelFits()");
-
+    
+    WindowsManager& wm = WindowsManager::getInstance();
     int nb = fits_keys.size();
+
     for( int i=0; i<nb; i++ )		{
+    	pScroll->sup( fits_keys[i] );
+    	pScroll->sup( fits_values[i] );
     	delete fits_keys[i];
     	delete fits_values[i];
     }
+    sup( pScroll );
+    delete pScroll;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -31,6 +37,7 @@ PanelFits::PanelFits()
     
     pScroll = new PanelScrollY();
     pScroll->setBackground( (char*)"images/background.tga" );
+    pScroll->setDelta( INTERLIGNE );
 	add(pScroll);
 	pScroll->setPos(0,0);
     logf( (char*)"Constructeur PanelFits()");
@@ -63,16 +70,14 @@ void PanelFits::add_key_value(string k, string v )
 	
 	#define POLICE "fonts/DOS-VGA.ttf"
 	//#define POLICE "fonts/UbuntuMono-R.ttf"
-	PanelText* pTextKey =    new PanelText( (char*)k.c_str(), 		(char*)POLICE, 0,   i*12, 12, 0xFFFFFFFF );
-	PanelText* pTextVal =    new PanelText( (char*)val.c_str(),  	(char*)POLICE, 100, i*12, 12, 0xFFFFFFFF );
-	pTextKey->setDY( 12 );
-	pTextVal->setDY( 12 );
+	PanelText* pTextKey =    new PanelText( (char*)k.c_str(), 		(char*)POLICE, 0,   i*INTERLIGNE, FONTSIZE, 0xFFFFFFFF );
+	PanelText* pTextVal =    new PanelText( (char*)val.c_str(),  	(char*)POLICE, 100, i*INTERLIGNE, FONTSIZE, 0xFFFFFFFF );
+	pTextKey->setDY( FONTSIZE );
+	pTextVal->setDY( FONTSIZE );
 
 	fits_keys.push_back(     pTextKey );
 	fits_values.push_back(   pTextVal );
 		
-	//this->add( fits_keys[i] );
-	//this->add( fits_values[i] );
 	pScroll->add( fits_keys[i] );
 	pScroll->add( fits_values[i] );
 	
@@ -84,9 +89,9 @@ void PanelFits::add_key_value(string k, string v )
 	//if ( i>=30 )		 ii = 30;
 	
 	
-	if ( ii*12 < DY_MAX )	{
-		this->setSize( DX, ii*12 );
-		pScroll->setSize( DX, ii*12 );
+	if ( (ii*INTERLIGNE) < DY_MAX )	{
+		this->setSize( DX, ii*INTERLIGNE + 2 );
+		pScroll->setSize( DX, ii*INTERLIGNE );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -119,11 +124,16 @@ void PanelFits::displayGL()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelFits::updatePos()
 {
+	/*
+    int DY = pScroll->computeDY();// -  2* getBorderSize();
+    if ( pScroll->getChildsSize() > 60 )		DY = 60*12;
+    setPosDY( DY + 2 );// -  2* getBorderSize();
+    pScroll->setPosDY( DY + 2 );// -  2* getBorderSize();
+    */
+    int DY = getDY();
+    pScroll->setPosDY( DY );// -  2* getBorderSize();
+	    
     PanelWindow::updatePos();
-    int DX = getDX();// -  2* getBorderSize();
-    int DY = getDY();// -  2* getBorderSize();
-    pScroll->setSize(DX, DY);
-    pScroll->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -151,7 +161,7 @@ void PanelFits::releaseRight(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelFits::wheelUp(int xm, int ym)
 {
-    logf( (char*)"PanelFits::wheelUp(xm=%d, ym=%d)", xm, ym );
+    //logf( (char*)"PanelFits::wheelUp(xm=%d, ym=%d)", xm, ym );
     //pScroll->wheelUp(xm, ym);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -159,7 +169,7 @@ void PanelFits::wheelUp(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelFits::wheelDown(int xm, int ym)
 {
-    logf( (char*)"PanelFits::wheelDown(xm=%d, ym=%d)", xm, ym );
+    //logf( (char*)"PanelFits::wheelDown(xm=%d, ym=%d)", xm, ym );
     //pScroll->wheelDown(xm, ym);
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -19,10 +19,16 @@ class StarCompare
 private:
 		Stars*				pStars;
 		Catalog*			pVizier;
-		double				magMax;
+
 vector<Star*>				tStar;
 vector<StarCatalog*>		tVizi;
+vector<ivec2>				cmpViziStar;
 		
+		double				magMax;
+		double				magMin;
+		double				lumMax;
+		double				lumMin;
+
 public:
 		StarCompare();
 		StarCompare(Stars*, Catalog*);
@@ -38,10 +44,20 @@ public:
 		double				computeDelta();
 		void				resetDelta();
 		
+		int					getTwinStar(int);
+		int					getTwinVizier(int);
+		
+inline	vector<Star*>&			getStar()						{ return tStar; }
+inline	vector<StarCatalog*>&	getVizi()						{ return tVizi; }
+inline	vector<ivec2>&			getCmpViziStar()				{ return cmpViziStar; }
+
+inline	double				getMagMax()							{ return magMax; }
+inline	double				getMagMin()							{ return magMin; }
+inline	double				getLumMax()							{ return lumMax; }
+inline	double				getLumMin()							{ return lumMin; }
 	
 inline	void				setStars( Stars* p )				{ pStars = p; }
 inline	void				setVizier( Catalog* p )				{ pVizier = p; }
-inline	double				getMagMax()							{ return magMax; }
 inline	void				setMagMax(double d)					{ magMax = d; }
 
 };

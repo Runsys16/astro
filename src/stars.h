@@ -71,6 +71,10 @@ inline double*				getvA()						{ return &dCoefA; }
 inline double*				getvB()						{ return &dCoefB; }
 inline double*				getvC()						{ return &dCoefC; }
 
+inline double				getA()						{ return dCoefA; }
+inline double				getB()						{ return dCoefB; }
+inline double				getC()						{ return dCoefC; }
+
 private:
     vector<Star*>           v_tStars;
     rb_t*                   RB;

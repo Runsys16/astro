@@ -18,6 +18,11 @@ Fits::Fits(string filename, PanelCapture* p)
     
     bValid = false;
     bFlip = true;
+    
+    bDebugPC = false;
+    bDebugCD = false;
+    nbPC = 0;
+    nbCD = 0;
 
     dCDELT1 =  1.0;
     dCDELT2 =  1.0;
@@ -46,6 +51,14 @@ Fits::Fits(string filename, PanelCapture* p)
     dBSCALE = -1.0;
     iOFFSET = -1;
 
+	bCD = bPC = false;
+
+	mPC.identity();
+	mCD.identity();
+	mEchl.identity();
+	mMat.identity();
+	mMatInv.identity();
+
     dMin0 = dMin1 = dMin2 = dMin3 = 999999999999.9;
     dMax0 = dMax1 = dMax2 = dMax3 = -999999999999.9;
 
@@ -53,8 +66,7 @@ Fits::Fits(string filename, PanelCapture* p)
     VarManager& 		var	= VarManager::getInstance();
 	WindowsManager&     wm  = WindowsManager::getInstance();
 
-
-
+	/*
     pPanelCorrectionFits = new PanelCorrectionFits();
     pPanelCorrectionFits->setPos( 150, 150 );
     
@@ -63,19 +75,21 @@ Fits::Fits(string filename, PanelCapture* p)
     //pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
     //pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
 
-    pPanelCorrectionFits->getCDELT1()->set_val( vCDELT.x );
+
+	pPanelCorrectionFits->getCDELT1()->set_val( vCDELT.x );
     pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&(vCDELT.x) );
     
     pPanelCorrectionFits->getCDELT2()->set_val( vCDELT.y );
     pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&(vCDELT.y) );
     
 	pPanelCorrectionFits->setVisible( var.getb("bAffFitsCorrection") );
-    wm.add( pPanelCorrectionFits );
-
+	*/
     pPanelFits = new PanelFits();
     pPanelFits->setPosAndSize( 10, 10, 760, 250 );
     pPanelFits->setVisible( false );
 
+    //p->add( pPanelCorrectionFits );
+    wm.add( pPanelFits );
 	//------------------------------------------------------------------------
     log_tab(false);
     logf((char*)"Constructeur Fits::Fits() -------END------" );
@@ -85,11 +99,17 @@ Fits::Fits(string filename, PanelCapture* p)
 //--------------------------------------------------------------------------------------------------------------------
 Fits::~Fits()
 {
-    if ( readBgr.ptr != NULL )          free( readBgr.ptr );
-    readBgr.ptr = NULL;
+    logf((char*)"Destructeur Fits::~Fits()" );
+
+	WindowsManager&     wm  = WindowsManager::getInstance();
+    //if ( readBgr.ptr != NULL )          free( readBgr.ptr );
+    //readBgr.ptr = NULL;
+
+	wm.sup(pPanelFits);
+	//pPanelCapture->sup(pPanelCorrectionFits);
 
 	delete pPanelFits;
-	delete pPanelCorrectionFits;
+	//if ( pPanelCorrectionFits )		delete pPanelCorrectionFits;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -197,7 +217,8 @@ void Fits::chargeHDU(int n)
         
         pPanelFits->add_key_value( k, v);
         
-        
+        if ( bDebugPC ) 			debug_PC();
+        if ( bDebugCD ) 			debug_CD();
         
         if ( k.find("END") == 0 )       { bEOF = true; break; }
     }
@@ -221,12 +242,13 @@ void Fits::chargeHDU(int n)
 	vCRVAL =  vec2( dCRVAL1, dCRVAL2 );
 	vCDELT =  vec2( dCDELT1, dCDELT2 );
 
+	/*
     pPanelCorrectionFits->getCDELT1()->set_val( vCDELT.x );
     pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&(vCDELT.x) );
     
     pPanelCorrectionFits->getCDELT2()->set_val( vCDELT.y );
     pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&(vCDELT.y) );
-
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -306,21 +328,22 @@ double Fits::computeEchelle(vec2 v)
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::normalizeEchelleMatrice()
 {
+	return;
 	if ( dCDELT1==1.0 && dCDELT2==1.0)	{
 		dCDELT1 /= 1000.0;
 		dCDELT2 /= 1000.0;
-
+		/*
 		pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
 		pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
 		pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
 		pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
-		
+		*/
 		dPC1_1 *= 1000.0;
 		dPC1_2 *= 1000.0;
 		dPC2_1 *= 1000.0;
 		dPC2_2 *= 1000.0;
 		
-		mAstroEchl *= 1000.0;
+		mEchl *= 1000.0;
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -328,153 +351,57 @@ void Fits::normalizeEchelleMatrice()
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::sauveMatrice()
 {	
-	normalizeEchelleMatrice();
-	
-	mat2 mMoinsX = mat2( -1.0, 0.0, 0.0, -1.0 );
-	mMat = mMoinsX * mAstroEchl * mAstroTrns;// * sym0;
-	mMatInv = mMat.inverse();
-	//mMat = mAstroTrns * mAstroEchl * mMoinsX ;// * sym0;
-	//mMat = mAstroEchl * mAstroTrns;// * sym0;
-
+	//------------------------------------------------------------------------
+	// Calcul de la matrice  d'echelle
+	//------------------------------------------------------------------------
+	if ( bPC )	{
+		double _x =  vCDELT.x / cos( DEG2RAD(vCRVAL.y) );
+		mEchl = mat2( _x, 0.0, 0.0, dCDELT2 );
+	}
+	mat2 mMoinsY	= mat2( 1.0, 0.0, 0.0, -1.0 );
+	//------------------------------------------------------------------------
+	// Calcul de la matrice et de son inverse
+	//------------------------------------------------------------------------
+	if (bPC)		mMat = mEchl * mPC * mMoinsY;
+	if (bCD)		mMat = mEchl * mCD * mMoinsY;
+	mMatInv			= mMat.inverse();
+	//------------------------------------------------------------------------
 	char STR[255];
     row r;
-    r.key = "M_Trns";
-    mAstroTrns.to_str(STR);
-    r.value = string( STR );
-    pPanelFits->add_key_value( r.key, r.value );
-    r.key = "M_Echl";
-    mAstroEchl.to_str(STR);
-    r.value = string( STR );
+
+    r.key = "mEchl";    mEchl.to_str(STR);		r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 	
-	vec2 hg = vec2(0.0, 0.0);
-	vec2 bd = vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
-	vec2 v;
-
-    r.key = "M_Res";
-    mMat.to_str(STR);
-    r.value = string( STR );
+    r.key = "mPC";    	mPC.to_str(STR);			r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 
-	v = mMat * hg;
-    r.key = "HG";
-    v.to_str(STR);
-    r.value = string( STR );
-    pPanelFits->add_key_value( r.key, r.value );
-	v = mMat * bd + vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
-    r.key = "Coord Ba-Dr";
-    v.to_str(STR);
-    r.value = string( STR );
+    r.key = "mCD";		mCD.to_str(STR);			r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 
-	/*
+    r.key = "mMat";		mMat.to_str(STR);			r.value = string( STR );
+    pPanelFits->add_key_value( r.key, r.value );
 
-	//-----------------------------------------------------------------
-	// Grille de coordonnee
-	
-	vec2 p1, pp1, p2, pp2;
-	vec2 p1N, pp1N;
-	vec2 p2N, pp2N;
-	vec2 p1E, pp1E;
-	vec2 p2E, pp2E;
-	vec2 c, s;
+    r.key = "mMatInv";	mMatInv.to_str(STR);		r.value = string( STR );
+    pPanelFits->add_key_value( r.key, r.value );
+	//------------------------------------------------------------------------
+	vec2	hg = vec2(0.0, 0.0);
+	vec2	bd = vec2(nNAXISn[0], nNAXISn[1]);
+	vec2	v, w;
+	double	d;
 
-	vec2 vHaut;
-	vec2 vGauche;
-	
-	s = vec2( 1.0, -1.0 );
-	c = vec2( nNAXISn[0]/2, nNAXISn[1]/2 );
-	
-
-	//-----------------------------------------------------------------
-	p1N = vec2( 00, 00 );			p2N = vec2( 00, -50 );
-	pp1N = mMat * p1N;				pp2N = mMat * p2N;
-	pp1N += c;						pp2N += c;
-	
-	vec2 vN = pp2N - pp1N;
-	vN.normalize();
-	pPanelCapture->setVecteurAD( vN );
-	
-	intersectionH( 	vHaut,   pp1N, pp2N );
-	//pPanelCapture->addP1P2( vHaut, vHaut + 2.0*(pp1N-vHaut) );
-
-	//-----------------------------------------------------------------
-	p1E = vec2( 00, 00 );			p2E = vec2( -50, 00 );
-	pp1E = mMat * p1E;				pp2E = mMat * p2E;
-	pp1E += c;						pp2E += c;
-
-	vec2 vE = pp2E - pp1E;
-	vE.normalize();
-	pPanelCapture->setVecteurDE( vE );
-	
-	intersectionG( 	vGauche,   pp1E, pp2E );
-	//pPanelCapture->addP1P2( vGauche, vGauche + 2.0*(pp1E-vGauche) );
-
-
-	vec2 vNord = pp2N - pp1N;
-	vec2 vEst  = pp2E - pp1E;
-	vec2 vStart1N = pp1N;
-	vec2 vStart2N = pp2N;
-	vec2 vStart1E = pp1E;
-	vec2 vStart2E = pp2E;
-	
-	double echN = computeEchelle( vec2(0.0, dCRVAL1) );
-	double echE = computeEchelle( vec2(dCRVAL2, 0.0) );
-	
-	logf( (char*)"l-Nord = %0.4lf l-Est = %0.4lf", echN, echE );
-	
-	for( float f=-10.0; f <(10.0); f+=1.0 )	{
-		//-----------------------------------------------------------------
-		pp1N = vStart1N + f*echN *(vEst);
-		pp2N = vStart2N + f*echN *(vEst);
-		
-		intersectionH( 	vHaut,  pp1N, pp2N );
-		pPanelCapture->addP1P2( vHaut, vHaut + 2.0*(pp1N-vHaut) );
-
-		//-----------------------------------------------------------------
-		pp1E = vStart1E + f*echE *(vNord);
-		pp2E = vStart2E + f*echE *(vNord);
-
-		intersectionG( 	vGauche, pp1E, pp2E );
-		
-		pPanelCapture->addP1P2( vGauche, vGauche + 2.0*(pp1E-vGauche) );
-
-	}
-
-	
-	//-----------------------------------------------------------------
-	p1N = vec2( 00, 00 );			p2N = vec2( 00, -50 );
-	pp1N = mMat * p1N;				pp2N = mMat * p2N;
-	pp1N += c;						pp2N += c;
-	
-
-	//-----------------------------------------------------------------
-
-
-	
-	vv = v1 = vec2( 00, 00 );
-	ww = v2 = vec2( 50, 00 );
-	pPanelCapture->addP1P2( v1+c, v2+c );
-	v1 = mMat * vv;
-	v2 = mMat * ww;
-	pPanelCapture->addP1P2( v1+c, v2+c );
-
-	vv = v1 = vec2( 50, 50 );
-	ww = v2 = vec2( 50, 00 );
-	pPanelCapture->addP1P2( v1+c, v2+c );
-	v1 = mMat * vv;
-	v2 = mMat * ww;
-	pPanelCapture->addP1P2( v1+c, v2+c );
-	vv = v1 = vec2( 50, 00 );
-	ww = v2 = vec2( 00, 00 );
-	pPanelCapture->addP1P2( s*v1+c, s*v2+c );
-	v1 = mMat * vv;
-	v2 = mMat * ww;
-	pPanelCapture->addP1P2( s*v1+c, s*v2+c );
-
-	pPanelCapture->setAffLignes(true);
-	*/
-
+	v = (mMat * (hg-vCRPIX)) + vCRVAL;
+    r.key = "Coord Ha-Ga";	v.to_str(STR);			r.value = string( STR );
+    pPanelFits->add_key_value( r.key, r.value );
+    
+	w = (mMat * (bd-vCRPIX)) + vCRVAL;  // + vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
+    r.key = "Coord Ba-Dr";	w.to_str(STR);			r.value = string( STR );
+    pPanelFits->add_key_value( r.key, r.value );
+    
+    d = (v-w).length();
+    snprintf( STR, sizeof(STR), "R" ); 						r.key	= string( STR );
+    snprintf( STR, sizeof(STR), "rayon image = %lf", d );	r.value = string( STR );
+    pPanelFits->add_key_value( r.key, r.value );
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 // Pour une image en 8eb par couleur
@@ -870,24 +797,24 @@ void Fits::readCDELT( string key, string value )
 {
 	bool	bOK = true;
     if ( key.find("CDELT1") == 0 )	{
-            	dCDELT1  = getDouble( value );
-				pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
-				pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
+		dCDELT1  = getDouble( value );
+		//pPanelCorrectionFits->getCDELT1()->set_val( dCDELT1 );
+		//pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&dCDELT1 );
 	}
     else    if ( key.find("CDELT2") == 0 )  {
-    			dCDELT2  = getDouble( value );
-				pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
-				pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
+		dCDELT2  = getDouble( value );
+		//pPanelCorrectionFits->getCDELT2()->set_val( dCDELT2 );
+		//pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
 	}
     else	bOK = false;
-    
+    /*
     if ( bOK )	{
-		//mAstroEchl = mat2( dCDELT1, dCDELT2, dCDELT1, dCDELT2 );
+		mEchl = mat2( dCDELT1, 0.0, 0.0, dCDELT2 );
 		char STR[255];
-		mAstroEchl.to_str(STR);
+		mEchl.to_str(STR);
 		logf( (char*)"Coefficiens d\'echelle : %s", STR );
 	}
-    
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -900,13 +827,16 @@ void Fits::readCD( string key, string value )
     else    if ( key.find("CD2_1") == 0 )           dCD2_1  = getDouble( value );
     else    if ( key.find("CD2_2") == 0 )           dCD2_2  = getDouble( value );
     else	bOK = false;
+    
+    nbCD++;
+    
     if ( bOK )	{
-		mAstroEchl = mat2( dCD1_1, dCD2_1, dCD1_2, dCD2_2 );
-	/*    
-		char STR[255];
-		mAstroEchl.to_str(STR);
-		logf( (char*)"Matrice d'echelle: %s", STR );
-	*/
+		mCD = mat2( dCD1_1, dCD2_1, dCD1_2, dCD2_2 );
+		bCD = true;
+	}
+	
+	if ( nbCD == 4 ) {
+		bDebugCD = true;
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -920,25 +850,86 @@ void Fits::readPC( string key, string value )
     else    if ( key.find("PC2_1") == 0 )           dPC2_1  = getDouble( value );
     else    if ( key.find("PC2_2") == 0 )           dPC2_2  = getDouble( value );
     else	bOK = false;
+    
+    nbPC++;
 
     if ( bOK )	{
-		mAstroTrns = mat2( dPC1_1, dPC2_1, dPC1_2, dPC2_2 );
-	/*    
-    	char STR[255];
-		mAstroTrns.to_str(STR);
-		logf( (char*)"Matrice de transformation : %s", STR );
-	*/
+		mPC = mat2( dPC1_1, dPC2_1, dPC1_2, dPC2_2 );
+		mEchl.identity();
+		bPC = true;
+	}
+
+	if ( nbPC == 4 )	{
+		bDebugPC = true;
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Fits::getRB( struct readBackground* p )
+void Fits::debug_PC()
 {
-    p->ptr = readBgr.ptr.load();
-    p->w   = readBgr.w.load();
-    p->h   = readBgr.h.load();
-    p->d   = readBgr.d.load();
+	//------------------------------------------------------------------------
+	char STR[255];
+	row r;
+	double X, Y, l0, l1;
+
+	X = mPC.mat[0];
+	Y = mPC.mat[1];
+	l0 = sqrt( X*X + Y*Y );
+	Y = mPC.mat[2];
+	l1 = sqrt( X*X + Y*Y );
+	
+	snprintf( (char*)STR, sizeof(STR), "%.16lf, %.16lf", l0, l1 );
+	r.key		= string( "SQRT_PC" );
+	r.value		= string( STR );
+	pPanelFits->add_key_value( r.key, r.value );
+	
+	X = mPC.mat[3];
+	Y = mPC.mat[1];
+	l0 = sqrt( X*X + Y*Y );
+	Y = mPC.mat[2];
+	l1 = sqrt( X*X + Y*Y );
+	
+	snprintf( (char*)STR, sizeof(STR), "%.16lf, %.16lf", l0, l1 );
+	r.key		= string( "------ " );
+	r.value		= string( STR );
+	pPanelFits->add_key_value( r.key, r.value );
+	
+	bDebugPC = false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::debug_CD()
+{
+	//------------------------------------------------------------------------
+	char STR[255];
+	row r;
+	double X, Y, l0, l1;
+
+	X = mCD.mat[0];
+	Y = mCD.mat[1];
+	l0 = sqrt( X*X + Y*Y );
+	Y = mCD.mat[2];
+	l1 = sqrt( X*X + Y*Y );
+	
+	snprintf( (char*)STR, sizeof(STR), "%.16lf, %.16lf", l0, l1 );
+	r.key		= string( "SQRT_CD" );
+	r.value		= string( STR );
+	pPanelFits->add_key_value( r.key, r.value );
+	
+	X = mCD.mat[3];
+	Y = mCD.mat[1];
+	l0 = sqrt( X*X + Y*Y );
+	Y = mCD.mat[2];
+	l1 = sqrt( X*X + Y*Y );
+	
+	snprintf( (char*)STR, sizeof(STR), "%.16lf, %.16lf", l0, l1 );
+	r.key		= string( "------ " );
+	r.value		= string( STR );
+	pPanelFits->add_key_value( r.key, r.value );
+
+	bDebugCD = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1033,9 +1024,19 @@ void Fits::afficheInfoFits(bool b)
 		pPanelFits->setVisible( b );
 		if ( b )	{
 			WindowsManager::getInstance().onTop(pPanelFits);
-			WindowsManager::getInstance().onTop(pPanelCorrectionFits);
+			//WindowsManager::getInstance().onTop(pPanelCorrectionFits);
 		}
 	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::getRB( struct readBackground* p )
+{
+    p->ptr = readBgr.ptr.load();
+    p->w   = readBgr.w.load();
+    p->h   = readBgr.h.load();
+    p->d   = readBgr.d.load();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1051,9 +1052,6 @@ void Fits::tex_2_J2000( vec2& v )
 void Fits::tex_2_J2000(vec2 s, vec2& j )
 {
 //#define DEBUG
-	double x = vCDELT.x;
-	vCDELT.x =  vCDELT.x / cos( DEG2RAD(vCRVAL.y) );
-
 	#ifdef DEBUG
 		char STR[255];
 		r.to_str(STR);
@@ -1062,9 +1060,7 @@ void Fits::tex_2_J2000(vec2 s, vec2& j )
 	#endif
 
 	s -= vCRPIX;
-	s.x = - s.x;
 	j = mMat * s;
-	j *= vCDELT;
 	j += vCRVAL;
 
 	#ifdef DEBUG
@@ -1074,8 +1070,6 @@ void Fits::tex_2_J2000(vec2 s, vec2& j )
 		log_tab( false );
 	#endif
 #undef DEBUG
-
-	vCDELT.x = x;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1091,10 +1085,6 @@ void Fits::J2000_2_tex( vec2& v )
 void Fits::J2000_2_tex(vec2 j, vec2& s )
 {
 //#define DEBUG
-	double x = vCDELT.x;
-	vCDELT.x =  vCDELT.x / cos( DEG2RAD(vCRVAL.y) );
-
-
 	#ifdef DEBUG
 		char str1[255];
 		char str2[255];
@@ -1106,9 +1096,7 @@ void Fits::J2000_2_tex(vec2 j, vec2& s )
 	#endif
 	
 	j -= vCRVAL;
-	j /= vCDELT;
 	s = mMatInv * j;
-	s.x = -s.x;
 	s += vCRPIX;
 	
 	#ifdef DEBUG
@@ -1118,8 +1106,6 @@ void Fits::J2000_2_tex(vec2 j, vec2& s )
 		log_tab( false );
 	#endif
 #undef DEBUG
-
-	vCDELT.x = x;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

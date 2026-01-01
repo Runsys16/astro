@@ -27,12 +27,16 @@ protected:
     bool						bAfficheInfoSouris;
     bool						bAfficheGrille;
     bool						bAfficheCorrectionFits;
+    bool						bAfficheGraph;
+    
+    sPanelPos					sPosSvg;
     
     vector<string>              filenames;
     string                      filename;
     string                      dirname;
     string                      basename;
     
+    PanelGraph*					pGraph;
     PanelCapture*               panelCapture;
     PanelText*                  pTitre;
     PanelText*                  pNbStars;
@@ -51,6 +55,9 @@ public :
     Capture(string);
     Capture(string, string);
     ~Capture();
+    
+    void						init();
+    void						charge( string, string );
     
     void                        pooling();
     
@@ -87,8 +94,13 @@ public :
 	void						export_vizier();
 	
 	void						setNbVizier(unsigned);
+	void						setAffGraph(bool);
+	bool						cmp(vec2, vec2);
+	void						compareStar();
+	void						create_graph();
 
     
+inline bool	 					getAffGraph()                               { return bAfficheGraph; }
 inline rb_t *                   getRB()                                     { return &readBgr; }
 
 inline void                     setEchelle(float f)                         { panelCapture->setEchelle(f); }
@@ -103,6 +115,7 @@ inline string                   getFilename()                               { re
 inline string                   getBasename()                               { return basename; }
 inline string                   getDirname()                                { return dirname; }
 inline PanelCapture*            getPreview()                                { return panelCapture; }
+inline PanelGraph*            	getGraph()									{ return pGraph; }
 inline PanelText*	            getNbVizier()                               { return pNbVizier; }
 
 //	   void                     setIconized(bool b);
@@ -122,6 +135,7 @@ inline void						setAfficheInfoFits(bool b)					{ bAfficheInfoFits = b; }
 inline bool						getAfficheGrille()							{ return bAfficheGrille; }
 inline bool						getAfficheInfoSouris()						{ return bAfficheInfoSouris; }
 inline bool						getAfficheInfoFits()						{ return bAfficheInfoFits; }
+inline void						invalide_panel()							{ sPosSvg.X = -1; }
 };
 
 

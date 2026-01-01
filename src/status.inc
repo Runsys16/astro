@@ -778,6 +778,7 @@ void create_windows_button()
 //--------------------------------------------------------------------------------------------------------------------
 void idleStatus()
 {
+	static bool old_bNuit = !bNuit;
     //-----------------------------------------------------------------------
     // Gestion des connexions logiciel /dev/:
     // arduino et stellarium
@@ -813,18 +814,23 @@ void idleStatus()
     pButtonDeplac->setVal( bMouseDeplace );
 
 	//-----------------------------------------------------------------------
-    
-    if ( !bNuit )		status_nuit( COLOR_WHITE );
-    else				status_nuit( COLOR32(255, 0, 0, 255) );
-    
-    if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
-
+    if ( old_bNuit != bNuit )
+    {
+		if ( !bNuit )		status_nuit( COLOR_WHITE );
+		else				status_nuit( COLOR32(255, 0, 0, 255) );
+		
+		if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
+		
+		old_bNuit = bNuit;
+	}
+    /*
     if ( bFirstStatus )
     {
         logf( (char*)"[WARNING ] Change mode manuel : %s", BOOL2STR(bModeManuel) );
         set_mode(bModeManuel);
         set_asservissement();
     }
+    */
 
     bFirstStatus = false;
     if ( bModeManuel != pButtonMode->getVal() )     set_mode(bModeManuel);
@@ -835,6 +841,34 @@ void idleStatus()
 		double* pErr = panelCourbe->get_perr();
 		logf( (char*)"err=%0.2f", *pErr );
 	    pCercleErr->set_pVal( pErr );
+	}
+
+	unsigned long 		color		= COLOR_WHITE;
+	unsigned long 		color_light = COLOR_GREY;
+	if ( bNuit )		 {
+		color_light = COLOR32(128, 0, 0, 255);
+		color		= COLOR32(255, 0, 0, 255);
+	}
+	
+	
+    if ( Serveur_mgr::getInstance().isConnect() )	pStellarium->setColor(color);
+    else                            				pStellarium->setColor(color_light);
+	
+    if ( LX200::getInstance().is_connect() )	
+    {
+    	pRacket->changeText( (char*)"LX200" );
+    	pRacket->setColor(color);				
+    }
+	else
+    if ( SYNSCAN::getInstance().is_connect() )	
+    {
+    	pRacket->changeText( (char*)"SYNSCAN" );
+    	pRacket->setColor(color);				
+    }
+	else
+    {
+    	pRacket->changeText( (char*)"Racket" );
+    	pRacket->setColor(color_light);
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
