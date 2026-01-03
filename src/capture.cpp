@@ -132,6 +132,11 @@ Capture::~Capture()
 
     
 	wm.sup( this );
+
+	if ( pInfoGraph )	{
+		wm.sup( pInfoGraph );
+		delete pInfoGraph;
+	}	
 	
 	if ( pGraph )	{
 		wm.sup( pGraph );
@@ -152,6 +157,7 @@ void Capture::init()
     bFullScreen			= false;
 
 	pGraph				= NULL;
+	pInfoGraph			= NULL;
 	sPosSvg.X			= -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -224,6 +230,7 @@ void Capture::pooling()
 void Capture::update()
 {
     panelCapture->setRB( &readBgr );
+
     //panelCapture->updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -232,6 +239,8 @@ void Capture::update()
 void Capture::updatePos()
 {
     //logf( (char*)"Capture::updatePos() ... %s", basename.c_str() );
+	if ( pInfoGraph )	pInfoGraph->setPos( 50, pGraph->getPosDY() - 130 );
+
     Panel::updatePos();
     updatePosIcones();
     
@@ -319,12 +328,31 @@ void Capture::releaseLeft(int xm, int ym)
 		Captures& cap = Captures::getInstance();
 
 		cap.compute_pos_icone( X, Y, cap.get_n_capture(this) );
-		iconize( cap.getDXIcon(), cap.getDYIcon());
-		cap.resize_icone( this, X, Y, cap.getDXIcon(), cap.getDYIcon() );
+		iconize( X, Y, cap.getDXIcon(), cap.getDYIcon());
+		//cap.resize_icone( this, X, Y, cap.getDXIcon(), cap.getDYIcon() );
 	}
 
 	log_tab(false);
 	logf( (char*)"Capture::releaseLeft(...)   ------END---------" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::callback( void* p )
+{
+	Stars*			pStars	= panelCapture->getStars();
+	StarCompare&	sc		= panelCapture->getStarCompare();
+	vector<ivec2>&	cmp		= sc.getCmpViziStar();
+
+	for( int i=0; i<pStars->size(); i++ )	pStars->get(i)->setGraph(false);
+	
+	int idx = *(int*)p;
+	int iii = cmp[idx].y;
+
+	//logf( (char*)"Found %d %0.2lf", iii, pStars->get(iii)->getPonderation() );
+	//logf( (char*)"Found %d %0.2lf", idx, pStars->get(idx)->getPonderation() );
+
+	pStars->get(iii)->setGraph(true);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -366,8 +394,10 @@ void Capture::create_preview()	{
 	log_tab(true);
 
 
-	loadSkinPath( "images/astro" );
-	setBorderSize(8);
+	//loadSkinPath( "images/astro" );
+    //loadSkin( PanelWindow::RED );
+    loadSkin( PanelWindow::BLACK );
+	setBorderSize(2);
 
 	//create_icones();
 	logf((char*)"fichier = %s", (char*)filename.c_str() );
@@ -395,6 +425,11 @@ void Capture::create_preview()	{
 
 	if ( bFits )
 	{
+		//loadSkinPath( "images/astro" );
+		loadSkin( "rouge" );
+	    loadSkin( PanelWindow::BLACK );
+		setBorderSize(4);
+
 		logf((char*)"Fichier fits %s", (char*)filename.c_str() );
 		fits = new Fits(filename, panelCapture );
 
@@ -544,8 +579,6 @@ void Capture::resize(int x, int y, int w, int h )
             dy = dx / r_image;
 
             x += (w-dx)/2;
-            //dx = readBgr.w * ratioX;
-            //dy = readBgr.h * ratioX;
         }
         else
         {
@@ -554,24 +587,6 @@ void Capture::resize(int x, int y, int w, int h )
 
             y += (h-dy)/2;
         }
-        /*
-        if  ( ratioX < ratioY ) 
-        {
-            dx = (double)readBgr.w * ratioX;
-            dy = (double)readBgr.h * ratioX;
-
-            y += (h-dy)/2;
-            //dx = readBgr.w * ratioX;
-            //dy = readBgr.h * ratioX;
-        }
-        else
-        {
-            dx = (double)readBgr.w * ratioY;
-            dy = (double)readBgr.h * ratioY;
-
-            x += (w-dx)/2;
-        }
-        */
     }
     else
     {
@@ -617,15 +632,19 @@ void Capture::fullscreen()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::iconize( int dxIcon, int dyIcon)
+void Capture::iconize( int xIcon, int yIcon, int dxIcon, int dyIcon)
 {
 	if ( bIconized )	return;
-	logf( (char*)"Capture::iconize() %s", basename.c_str() );
+	
+	logf( (char*)"Capture::iconize(%d, %d, %d, %d) %s", xIcon, yIcon, dxIcon, dyIcon, basename.c_str() );
 	log_tab(true);
 
+	//----------------------------------------------
+	// Sauvegarde la position
 	if ( !bFullScreen )		getPosition( sPosSvg );
 	else					sPosSvg.X  = -1;
 
+	//----------------------------------------------
     VarManager& 	var	= VarManager::getInstance();
 	if ( var.getb("bShowIcones")	)			setVisible( true );
 	else										setVisible( false );
@@ -633,11 +652,26 @@ void Capture::iconize( int dxIcon, int dyIcon)
 	bIconized = true;
 	bFullScreen = false;
 
-	setSize( dxIcon, dyIcon );
+	int w = panelCapture->getDX();
+	int	h = panelCapture->getDY();
+	double r0 = (double)w/(double)h;
+	double r1 = (double)dxIcon/(double)dyIcon;
+
+	if ( r0 > r1 )	
+	{
+		yIcon += (dyIcon -(dxIcon / r0)) / 2;
+		dyIcon = dxIcon / r0;
+	}
+	else
+	{
+		xIcon += (dxIcon -(dyIcon * r0)) / 2;
+		dxIcon = dyIcon * r0;
+	}
+
+	setPosAndSize( xIcon, yIcon, dxIcon, dyIcon );
 	
 	if ( bFits )	{
 		fits->getPanelFits()->setVisible(false);
-		//fits->getPanelCorrectionFits()->setVisible(false);
 	}
 	panelCapture->iconize();
 
@@ -718,6 +752,7 @@ void Capture::setColor(long c)
     pFermer->setColor( c);
     pIconiser->setColor( c);
     pMaximiser->setColor( c);
+    if ( pInfoGraph )	pInfoGraph->setColor( c);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -843,26 +878,37 @@ void Capture::setAffGraph( bool b )
 	logf( (char*)"Capture::setAffGraph(%s)", BOOL2STR(b) );
 	
 	bAfficheGraph = b;
-
+	WindowsManager& wm = WindowsManager::getInstance();
+	
 	if ( b)
 	{
 		if ( pGraph == NULL )		
 		{
+			//---------------------------
 			log_tab(true);
 			pGraph = new PanelGraph();
-			log_tab(false);
 			pGraph->setPosAndSize( 10, 10, width/2 -30, height/2 -30 );
 			WindowsManager& wm	= WindowsManager::getInstance();
+			pGraph->setPanelCallback( this );
 			wm.add( pGraph );
+			//---------------------------
+			create_info_graph();
+			log_tab(false);
+			//---------------------------
 		}
-		
-		WindowsManager& wm = WindowsManager::getInstance()	;
 		pGraph->setVisible( true ) ;
+		pGraph->debug_log();
+		compareStar();
+		if (pInfoGraph)		pInfoGraph->setVisible( true ) ;
 		wm.onTop( pGraph );
 	} 
 	else
 	{
+		Stars* pStars = panelCapture->getStars();
+		for( int i=0; i<pStars->size(); i++ )	pStars->get(i)->setGraph(false);
+
 		pGraph->setVisible( false ) ;
+		if (pInfoGraph)		pInfoGraph->setVisible( false ) ;
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -876,6 +922,7 @@ void Capture::compareStar()
 	if ( panelCapture->getCatalog()->size() == 0 )		return;
 
 	logf( (char*)"Capture::compareStar()" );
+	log_tab(true);
 
 	if ( pGraph == NULL )	setAffGraph(true);
 	
@@ -906,11 +953,12 @@ void Capture::compareStar()
 		idx = cmp[i].x;
 		ii  = cmp[i].y;
 		
-		vec2 v = vec2( star[i]->getPonderation(), star[i]->getMagnitude() );
-		pGraph->addStar( v );
+		vec2 v = vec2( star[i]->getPonderation(), vizi[i]->getMag() );
+		vec2 w = vec2( star[i]->getPonderation(), star[i]->getMagnitude() );
 
-		vec2 w = vec2( star[i]->getPonderation(), vizi[i]->getMag() );
-		pGraph->addVizi( w );
+		//pGraph->addStar( v );
+		//pGraph->addVizi( w );
+		pGraph->addViziStar( v, w );
 	}
 	
 	log( (char*)"Tri les tableaux ..." );
@@ -918,6 +966,57 @@ void Capture::compareStar()
 	
 	pGraph->setName( basename );
 	
+	update_info_graph();
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::update_info_graph()
+{
+	if ( pInfoGraph == NULL )		{ log( (char*)"[ Erreur ] pInfoGraph inexistant"); create_info_graph();  }
+
+	pInfoGraph->setVisible( false );
+	if ( panelCapture->getStars() == NULL ) 			return;
+	if ( panelCapture->getStars()->size() == 0 )		return;
+	if ( panelCapture->getCatalog() == NULL )			return;
+	if ( panelCapture->getCatalog()->size() == 0 )		return;
+
+	int nbGaia = panelCapture->getCatalog()->size();
+	int nbStar = panelCapture->getStars()->size();
+	int nbCorr = panelCapture->getStarCompare().getCmpViziStar().size();
+	
+	panelCapture->getStarCompare().compute_moyenne();
+	panelCapture->getStarCompare().compute_ecart_type();
+	double dMoyen = panelCapture->getStarCompare().getMoyen();
+	double dEcart = panelCapture->getStarCompare().getEcart();
+
+	pInfoGraph->reset_list();
+	pInfoGraph->setVisible( pGraph->getVisible() );
+	
+	pInfoGraph->add_textf( (char*)"%d etoiles GAIA dr3", nbGaia );
+	pInfoGraph->add_textf( (char*)"%d etoiles trouvées", nbStar );
+	pInfoGraph->add_textf( (char*)"%d etoiles en correspondances", nbCorr );
+	pInfoGraph->add_textf( (char*)"%0.2lf mag diff moyen", dMoyen );
+	pInfoGraph->add_textf( (char*)"%0.2lf mag ecart type", dEcart );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::create_info_graph()
+{
+	if ( pInfoGraph != NULL )		{ log( (char*)"[ Erreur ] pInfoGraph existant"); return; }
+
+	pInfoGraph = new PanelDebug();
+	pInfoGraph->setBorderSize(0);
+	pInfoGraph->setVisible(pGraph->getVisible());
+	pInfoGraph->setPos( 50, pGraph->getPosDY() - 130 );
+	pInfoGraph->setTabSize( 60 );
+
+	pGraph->add( pInfoGraph );
+	pInfoGraph->setSize( 180, 50 );
+	
+	update_info_graph();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -935,8 +1034,6 @@ void Capture::create_graph()
 		bool 		bAffCatalogSvg	= bAffCatalog;
 		bool		bAffStarSvg		= bAffStar;	
 
-		//if ( !bAffCatalogSvg )		var.set( "bAffCatalog", true );//bAffCatalog = true;
-		//if ( !bAffStarSvg )			var.set( "bAffStar", true );//bAffStar	= true;
 		bAffStar	= true;
 		bAffCatalog = true;
 
@@ -944,19 +1041,14 @@ void Capture::create_graph()
 		panelCapture->findAllStars();
 		
 		compareStar();
-
-		//panelCapture->eraseGaiaDR3();
-		//panelCapture->deleteAllStars();
 		
 		bAffStar	= bAffStarSvg;
 		bAffCatalog = bAffCatalogSvg;
-		//var.set( "bAffCatalog", bAffCatalogSvg );//bAffCatalog = true;
-		//var.set( "bAffStar", bAffStarSvg );//bAffStar	= true;
+
+		if ( pInfoGraph == NULL )		create_info_graph();	
+
 		log_tab(false);
 	}
-
-	
-	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

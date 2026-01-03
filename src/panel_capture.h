@@ -80,19 +80,13 @@ protected:
     
     PanelDebug*			pInfoVizier;
     PanelSimple*		pTelescope;
-    PanelSimple*		pFondCoord;
+    PanelWindow*		pFondCoord;
     PanelText*			pColor;
     PanelText*			pCoord;
     PanelText*			pJ2000_1;
     PanelText*			pJ2000_2;
     PanelText*			pJ2000_alpha;
     PanelText*			pJ2000_delta;
-    
-    /*
-    vector<vec2>		p1;
-    vector<vec2>		p2;
-    vector<PanelText*>	pTextEch;
-    */
     
     vector<coord_line>	tAD;
     vector<coord_line>	tDE;
@@ -117,6 +111,7 @@ public:
     virtual void		update_stars();
     		void		updateEchelle();
     		void		updateEchelleGeo();
+    		void		updatePosInfoVizier();
     		void		updateInfoVizier();
     		void		updateVizier();
     virtual void		updatePos();
@@ -133,6 +128,7 @@ public:
 
     virtual void        wheelUp( int, int);
     virtual void        wheelDown( int, int);
+    		void		updatePosFondCoord();
     virtual void		passiveMotionFunc(int, int);
 
     virtual void        clickLeft( int, int);
@@ -199,6 +195,8 @@ public:
 	void				compute_angle();
 
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
+inline int				getDX()											{ return pReadBgr->w; }
+inline int				getDY()											{ return pReadBgr->h; }
 inline double           getEchelle()                                    { return ech_user; }
 inline double           getCentX()                                      { return dx; }
 inline double           getCentY()                                      { return dy; }

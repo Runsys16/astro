@@ -26,10 +26,12 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     stars.setView( this );
     stars.setModeMag( 1 );
     
-    pFondCoord = new PanelSimple();
+    pFondCoord = new PanelWindow();
     pFondCoord->setBackground( (char*)"images/background.tga" );
-    pFondCoord->setSize( 410, 95 );
-    pFondCoord->setSize( 210, 65 );
+    pFondCoord->setSize( 210, 55 );
+    pFondCoord->loadSkin( PanelWindow::BLACK );
+	pFondCoord->setBorderSize(2);
+
     this->add( pFondCoord );
     
     pTelescope = new PanelSimple();
@@ -39,7 +41,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     this->add( pTelescope );
     
     int x		= 90;
-    int y		= SIZEY;
+    int y		= 4;
     int deltax	= 16;
 
     pColor = new PanelText( (char*)"(0,0)",			PanelText::NORMAL_FONT, 5, y );
@@ -66,7 +68,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 	pInfoVizier->setSize( 180, 1 );
 	pInfoVizier->setTabSize( 60 );
 	pInfoVizier->loadSkin( PanelWindow::BLACK );
-	pInfoVizier->setBorderSize(0);
+	pInfoVizier->setBorderSize(2);
 
 	add( pInfoVizier );
 	
@@ -187,6 +189,35 @@ void PanelCapture::updateEchelleGeo()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+// Positionn ela fenetre info Vizier
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::updatePosInfoVizier()
+{
+	//------------------------------------
+	int dx, dy;
+	int ddyy = pCapture->getAfficheInfoSouris() ? 60 : 0;
+	
+	vec2 vDelta		= vec2(15, 20+ddyy);
+	vec2 vPosInfo 	= vec2(vMouse.x, vMouse.y) + vDelta - vec2(getX(), getY());
+	vec2 vCmp		= vec2(vMouse.x, vMouse.y) + vDelta + vec2(pInfoVizier->getPosDX(), pInfoVizier->getPosDY());
+	
+	dx = pCapture->getX() + pCapture->getPosDX();
+	dy = pCapture->getY() + pCapture->getPosDY();
+
+	if ( (vCmp.x)>(dx) )				vPosInfo.x -= pInfoVizier->getDX() + 2*vDelta.x;
+	if ( (vCmp.y)>(dy) )
+	{
+		vPosInfo.y -= pInfoVizier->getDY() + 2*vDelta.y;
+		
+		vCmp		= vec2(vMouse.x, vMouse.y) + vDelta + vec2(pFondCoord->getPosDX(), pFondCoord->getPosDY());
+		if ( (vCmp.y-ddyy)<=(dy) )				vPosInfo.y += ddyy;
+	}
+	
+	pInfoVizier->setPos( vPosInfo.x, vPosInfo.y );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::updateInfoVizier()
 {
@@ -202,6 +233,9 @@ void PanelCapture::updateInfoVizier()
 
 	if ( n==0 )			return;
 
+	//-----------------------------------------------
+	// Reche de l'etoile sous la souris
+	//   idxVizierMouseOver
     idxVizierMouseOver = -1;
 
     for ( int i=0; i<n; i++ )        {       
@@ -218,10 +252,13 @@ void PanelCapture::updateInfoVizier()
 		
 		vec2 w = vec2(vMouse.x, vMouse.y);
 		w -= v;
-		if ( w.length() < (ech*10.0) )		idxVizierMouseOver = i;
+		if ( w.length() < (ech*10.0) )		{ idxVizierMouseOver = i; break; }
 			
 	}
 	
+	//-----------------------------------------------
+	// Etoile trouvéz
+	//  idxVizierMouseOver != -1
 	if ( idxVizierMouseOver != -1 )
 	{
 		pInfoVizier->reset_list();
@@ -240,13 +277,6 @@ void PanelCapture::updateInfoVizier()
 		pInfoVizier->add_textf( (char*)"    mag\t= %0.2f", (float)pStarViz->getMag() );
 		
 		//------------------------------------
-		// Positionne la fenetre
-		int x, y;
-		x = vMouse.x - getX()  + 10;
-		y = vMouse.y - getY()  + 30;
-		if ( pCapture->getAfficheInfoSouris() )		y += 80;
-
-		pInfoVizier->setPos( x, y );
 		
 		int iStar = starCompare.getTwinStar( idxVizierMouseOver );
 		if ( iStar != -1 )
@@ -261,23 +291,26 @@ void PanelCapture::updateInfoVizier()
 			pInfoVizier->add_textf( (char*)"    mag\t= %0.2f", (float)pStar->getMagnitude() );
 
 			W -= V;
-			pInfoVizier->add_text( (char*)"---------------------------" );
+			pInfoVizier->add_text( (char*)"-----------------------------------" );
 
 			pInfoVizier->add_textf( (char*)"delta pix \t= %0.2f", (float)W.length() );
 			pInfoVizier->add_textf( (char*)"delta mag\t= %0.2f", (float)abs( pStar->getMagnitude()- pStarViz->getMag()) );
 
-			pInfoVizier->add_text( (char*)"---------------------------" );
+			pInfoVizier->add_text( (char*)"-----------------------------------" );
 			deg2str_hms( ad_vizi, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"AD : %s", str );
 			deg2str_hms( ad_star, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"AD : %s", str );
 
 			deg2str_dms( de_vizi, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"DE : %s", str );
 			deg2str_dms( de_star, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"DE : %s", str );
+
+			updatePosInfoVizier();
 		}
 		else
 			pInfoVizier->setVisible(false);
 	}
 	else
 		pInfoVizier->setVisible(false);
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -652,25 +685,19 @@ void PanelCapture::displayGL()
     
     if ( bNuit )		{
     	setColorBgr( COLOR32(255, 0, 0, 255) );
-    	pColor->setColor( COLOR32(255, 0, 0, 255) );
-    	pCoord->setColor( COLOR32(255, 0, 0, 255) );
-    	pJ2000_1->setColor( COLOR32(255, 0, 0, 255) );
-    	pJ2000_2->setColor( COLOR32(255, 0, 0, 255) );
-    	pJ2000_alpha->setColor( COLOR32(255, 0, 0, 255) );
-    	pJ2000_delta->setColor( COLOR32(255, 0, 0, 255) );
+    	//setColor( COLOR32(255, 0, 0, 255) );
 		stars.getPanelNbStars()->setColor( COLOR32(255,   0, 0, 255) );
         pCapture->getNbVizier()->setColor( COLOR32(255,   0, 0, 255) );
+        if ( pInfoVizier )		pInfoVizier->setColor( COLOR32(255,   0, 0, 255) );
+        if ( pFondCoord )		pFondCoord->setColor( COLOR32(255,   0, 0, 255) );
     }
     else	{
     	setColorBgr( COLOR32(255, 255, 255, 255) );    
-    	pColor->setColor( COLOR32(255, 255, 255, 255) );
-    	pCoord->setColor( COLOR32(255, 255, 255, 255) );
-    	pJ2000_1->setColor( COLOR32(255, 255, 255, 255) );
-    	pJ2000_2->setColor( COLOR32(255, 255, 255, 255) );
-    	pJ2000_alpha->setColor( COLOR32(255, 255, 255, 255) );
-    	pJ2000_delta->setColor( COLOR32(255, 255, 255, 255) );
+    	//setColor( COLOR32(255, 255, 255, 255) );    
         stars.getPanelNbStars()->setColor( COLOR32(  0, 255, 0, 255) );//setColor( 0x00ff00ff );//glColor4f( 0.0,   1.0,  0.0, 0.4 );
         pCapture->getNbVizier()->setColor( COLOR32(255, 178, 0, 255) );
+        if ( pInfoVizier )		pInfoVizier->setColor( COLOR32(255, 255, 255, 255) );
+        if ( pFondCoord )		pFondCoord->setColor( COLOR32(255, 255, 255, 255) );
     }
     
 	//-------------------------------------------------	
@@ -906,6 +933,30 @@ void PanelCapture::wheelDown(int xm, int ym)
 // xx, yy coordonnée écran du pointeur de souris
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::updatePosFondCoord()
+{
+	// Mise a jour du panelText
+	// dans la position de la souris
+	// Force la fabrication de la chaine de caractere
+	int dx, dy;
+	vec2 vDelta = vec2(15, 20);
+	vec2 vPosInfo 	= vec2(vMouse.x, vMouse.y) + vDelta - vec2(getX(), getY());
+	vec2 vCmp		= vec2(vMouse.x, vMouse.y) + vDelta + vec2(pFondCoord->getPosDX(), pFondCoord->getPosDY());
+	
+	dx = pCapture->getX() + pCapture->getPosDX();
+	dy = pCapture->getY() + pCapture->getPosDY();
+	
+
+	if ( (vCmp.x)>(dx) )		vPosInfo.x -= pFondCoord->getDX() + 2*vDelta.x;
+	if ( (vCmp.y)>(dy) )		vPosInfo.y -= pFondCoord->getDY() + 2*vDelta.y;
+	
+	pFondCoord->setPos( vPosInfo.x, vPosInfo.y );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// xx, yy coordonnée écran du pointeur de souris
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::passiveMotionFunc(int xm, int ym)
 {
 	//logf( (char*)"PanelCapture::passiveMotionFunc( %d, %d ) %s", xm, ym, pCapture->getBasename().c_str() );
@@ -1004,46 +1055,23 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 		pJ2000_2->changeText( (char*)coord_dc );
 		pJ2000_2->setChangeText(true);
 
-		// Mise a jour du panelText
-		// dans la position de la souris
-		// Force la fabrication de la chaine de caractere
-		x += 15; y += 15;
-		pFondCoord->setPos( x, y );
-
-		
-		unsigned X = pFondCoord->getPosX() + pFondCoord->getDX();
-		unsigned Y = pFondCoord->getPosY() + pFondCoord->getDY();
-		
-		vec2 v = vec2( X, Y );
-		panel_2_screen(v);
-		v -= vec2( pCapture->getX(), pCapture->getY() );
-		
-		if ( v.x > (pCapture->getDX()) )
-		{
-			//logf( (char*)"passiveMotionFunc (%d, %d)", (int)v.x, (int)v.y );
-			//logf( (char*)"Erreur X x=%d", x );
-	
-			x -= v.x - pCapture->getDX();
-			pFondCoord->setPos( x, y );
-		}
-
-		if ( v.y > pCapture->getDY() )
-		{
-			//y += v.y;
-			//  pCapture->getDY()+20;
-			y -= v.y - pCapture->getDY();
-			y -= pFondCoord->getDY() +10;
-			//logf( (char*)"Erreur Y  %d %d %d %d", (int)y, (int)v.y, (int)pFondCoord->getPosY(), (int)pFondCoord->getDY() );
-			pFondCoord->setPos( x, y);
-		}
-
-		
-		pFondCoord->onTop();
+		//------------------------
+		updatePosFondCoord();
 	}
 	else
 	{
 	}
 		
+	//------------------------------------------------------------
+	// si une etoile est survoler dans le graphique
+	if ( pCapture->getGraph() )
+	{
+		int iMouse = pCapture->getGraph()->getIndexMouse();
+		if (iMouse != -1 )
+		{
+			logf( (char*)"Find %d", iMouse );
+		}
+	}		
 	//log_tab(false);
 	//log( (char*)"---" );
 }
@@ -1358,6 +1386,7 @@ void PanelCapture::clip(int& xm, int& ym)	{
 void PanelCapture::compareStar()
 {
 	log( (char*)"PanelCapture::compareStar()");
+	log_tab(true);
 	starCompare.setStars(&stars);
 	starCompare.setVizier(pVizier);
 
@@ -1370,6 +1399,7 @@ void PanelCapture::compareStar()
 	if ( pVizier == NULL || pVizier->size() == 0 )
 	{
 		logf( (char*)"[ Warning] Pas de catalogue" );
+		log_tab(false);
 		return;
 	}
 
@@ -1380,6 +1410,7 @@ void PanelCapture::compareStar()
 	
 	double d = starCompare.computeDelta();
 	stars.setDelta( d );
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

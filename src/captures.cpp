@@ -159,13 +159,18 @@ void Captures::compute_size_normal( int& DX, int& DY, int n )
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::compute_pos_icone( int& X, int& Y, int n )
 {
-    log( (char*)"Captures::compute_pos_icone() " );
+    logf( (char*)"Captures::compute_pos_icone(%d, %d, %d)", X, Y, n );
 
-    int ny	= height / dyIcon;
-	int y	= n % ny;
+	int ny	= n % N_ICON;
+	int nx	= n / N_ICON;
 
-	Y = BORDER_ICON+ y*(dyIcon+2*BORDER_ICON);
-	X = width - dxIcon * (n/ny+1);
+	Y = ny*dyIcon + (ny)*BORDER_ICON + BORDER_ICON ;
+	X = width - ( dxIcon*nx + (nx)*BORDER_ICON + BORDER_ICON ) - dxIcon;
+
+	Y = ny*(dyIcon + 2*BORDER_ICON) + BORDER_ICON;
+	X = width - ((nx+1)*( dxIcon + 2*BORDER_ICON) + BORDER_ICON);
+
+    logf( (char*)"Resultat : %d, %d -> %d %d", nx, ny, X, Y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -216,9 +221,8 @@ void Captures::active( int n )
 		Capture* p = captures[current_capture];
 		int X, Y;
 		compute_pos_icone( X, Y, current_capture );
-
-		p->iconize( dxIcon, dyIcon );
-		resize_icone( p, X, Y, dxIcon, dyIcon );
+		p->iconize( X, Y, dxIcon, dyIcon );
+		//resize_icone( p, X, Y, dxIcon, dyIcon );
 	}
 
 	//-------------------------------------------------------------
@@ -254,8 +258,8 @@ void Captures::iconize_all()
 		int X, Y;
 		compute_pos_icone( X, Y, current_capture );
 
-		p->iconize( dxIcon, dyIcon );
-		resize_icone( p, X, Y, dxIcon, dyIcon );
+		p->iconize( X, Y, dxIcon, dyIcon );
+		//resize_icone( p, X, Y, dxIcon, dyIcon );
 	}    
     
     current_capture = -1;
@@ -274,8 +278,8 @@ void Captures::iconize_active()
 		int X, Y;
 		compute_pos_icone( X, Y, current_capture );
 
-		p->iconize( dxIcon, dyIcon );
-		resize_icone( p, X, Y, dxIcon, dyIcon );
+		p->iconize( X, Y, dxIcon, dyIcon );
+		//resize_icone( p, X, Y, dxIcon, dyIcon );
 	}    
 	else
 		log( (char*)"[ Warning ] Aucune image d\'active" );
@@ -316,9 +320,9 @@ void Captures::resize_all()
             	int X, Y;
 				compute_pos_icone( X, Y, i );
             	p->show();
-	        	p->iconize( dxIcon, dyIcon );
+	        	p->iconize( X, Y, dxIcon, dyIcon );
 				
-		        resize_icone( p, X, Y, dxIcon, dyIcon );
+		        //resize_icone( p, X, Y, dxIcon, dyIcon );
 			}
         }        
         else
@@ -352,12 +356,20 @@ void Captures::resize_all()
 void Captures::reshapeGL(int width, int height)
 {
     logf( (char*)"Captures::reshapeGL()" );
+    float ratio = (float)width/(float)height;
+	
+	/*
     dxIcon				= (float)(width  / N_ICON);
     dxIcon				= (float)(width -((N_ICON)*2*BORDER_ICON))  / N_ICON;
-    float ratio = (float)width/(float)height;
     //dyIcon				= height / 6;
     dyIcon				= dxIcon / ratio;
     dyIcon				= (float)(height -((N_ICON)*2*BORDER_ICON))  / N_ICON;
+    */
+    height -= 20; // panel_status
+    dyIcon	= (float)(height -((N_ICON)*2*BORDER_ICON))  / N_ICON;
+    dxIcon	= dyIcon * ratio;
+    
+    
     logf( (char*)"dxIcon = %d dyIcon = %d", dxIcon, dyIcon );
     log_tab(true);    
     resize_all();

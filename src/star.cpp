@@ -79,6 +79,7 @@ void Star::init(int xx, int yy)
     bSelect     = false;
     bSuivi      = false;
     bZoom       = false;
+    bGraph      = false;
     
     pInfo       = new PanelText( (char*)"mag=",		PanelText::NORMAL_FONT, x, y );
     pInfo->setExtraString( "Star pInfo" );
@@ -919,6 +920,8 @@ void Star::setZoom(bool b)
             bZoom = bSelect = true;
             panelZoom = new PanelZoom();
             panelZoom->setExtraString( "Star pInfo" );
+            panelZoom->setBorderSize(4);
+
 
             panelZoom->setPosStar(pos.x, pos.y);
             panelZoom->setCamView(pView->getPosX(), pView->getPosY(), ech_x);
@@ -944,6 +947,29 @@ void Star::setZoom(bool b)
             delete panelZoom;
             panelZoom = NULL;
         }
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Star::displayGLGraph()
+{
+    //logf( (char*)"Star::displayGL()" );
+    //glCroix(20,20);
+    //if ( !bVisible )				return;
+
+    if ( bNuit )        glColor4f( 0.3,  0.0,  0.0, 1.0 );
+    else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
+    
+    if (bInverseCouleur)glColor4f( 0.0,   0.0,  0.0, 1.0 );
+
+    float ech = ech_x<ech_y ? ech_x : ech_y;
+
+    if ( bGraph )      
+    {
+        glColor4fv( (GLfloat*)&cRouge );
+        float rayon = 3.0	*ech*(float)(computeRayon());
+        glCercle( rayon );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -987,6 +1013,13 @@ void Star::displayGL()
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
         float rayon = 2.0	*ech*(float)(computeRayon());
+        glCercle( rayon );
+    }
+
+    if ( bGraph )      
+    {
+        glColor4fv( (GLfloat*)&cRouge );
+        float rayon = 3.0	*ech*(float)(computeRayon());
         glCercle( rayon );
     }
 }

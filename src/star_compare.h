@@ -28,6 +28,9 @@ vector<ivec2>				cmpViziStar;
 		double				magMin;
 		double				lumMax;
 		double				lumMin;
+		
+		double				dMoyen;
+		double				dEcart;
 
 public:
 		StarCompare();
@@ -44,8 +47,13 @@ public:
 		double				computeDelta();
 		void				resetDelta();
 		
+		bool				doublon(double, int);
+		
 		int					getTwinStar(int);
 		int					getTwinVizier(int);
+		
+		void				compute_moyenne();
+		void				compute_ecart_type();
 		
 inline	vector<Star*>&			getStar()						{ return tStar; }
 inline	vector<StarCatalog*>&	getVizi()						{ return tVizi; }
@@ -56,6 +64,9 @@ inline	double				getMagMin()							{ return magMin; }
 inline	double				getLumMax()							{ return lumMax; }
 inline	double				getLumMin()							{ return lumMin; }
 	
+inline	double				getMoyen()							{ return dMoyen; }
+inline	double				getEcart()							{ return dEcart; }
+
 inline	void				setStars( Stars* p )				{ pStars = p; }
 inline	void				setVizier( Catalog* p )				{ pVizier = p; }
 inline	void				setMagMax(double d)					{ magMax = d; }

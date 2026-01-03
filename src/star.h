@@ -66,6 +66,7 @@ public:
     void                suivi();
 
 
+    void                displayGLGraph();
     void                displayGL();
     
     void                setZoom(bool);
@@ -118,6 +119,9 @@ public:
 	inline double*		getvA()											{ return &dCoefA; }
 	inline double*		getvB()											{ return &dCoefB; }
 	inline double*		getvC()											{ return &dCoefC; }
+
+	inline bool			getGraph()										{ return bGraph; }
+	inline void			setGraph(bool b)								{ bGraph = b; }
     
     inline void         setIdx(int i)									{ idx = i; }
 private:
@@ -167,6 +171,7 @@ private:
     bool                bSuivi;
     bool                bZoom;
     bool				bVisible;
+    bool				bGraph;
     
     double				dCoefA;
     double				dCoefB;

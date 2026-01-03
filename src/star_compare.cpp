@@ -148,7 +148,6 @@ void StarCompare::compareStar( bool bSave )
 		fichier << "\"luminance\";\"calculées\";\"vizier\"\n";
 	}
 	
-	cmpViziStar.clear();
 	
    	magMax = -100.0;
    	magMin =  100.0;
@@ -158,8 +157,9 @@ void StarCompare::compareStar( bool bSave )
    	
    	tStar.clear();
    	tVizi.clear();
+	cmpViziStar.clear();
+
    	int n = pStars->size();
-   	
 	//--------------------------
 	// Pour tt les etoiles star
    	for( int i=0; i<n; i++ )
@@ -176,15 +176,15 @@ void StarCompare::compareStar( bool bSave )
    		#endif
    		int idx = findVizier(v);
 
-		//if ( pVizier->get(idx)->getMag() < magMin )	   			magMin = pVizier->get(idx)->getMag();
-		//if ( pStars->get(i)->getMagnitude() < magMin )			magMin = pStars->get(i)->getMagnitude();
-		if ( pStars->get(i)->getPonderation() < 100.0 )		  	continue;
-
+		double pp = pStars->get(i)->getPonderation();
+		if ( pp <   100.0 )		  	continue;
+		if ( pp > 35000.0 )		  	continue;
+		if ( doublon(pp, i) )		continue;
 
 		float l = 0.0;
 		if ( idx != -1 )	   			l = getDst(v, idx);
 
-   		if ( idx != -1 && l<2.5)
+   		if ( idx != -1 && l<5.0)
    		{
 		#ifdef RECHERCHE_VIZIER
 	   		logf( (char*)"Etoile[%02d]  (%04.2f, %04.2f) = %04.2f   \tidx = %02d/%02d   \t%.0f %.2f~%.2f  ", 
@@ -235,11 +235,13 @@ void StarCompare::compareStar( bool bSave )
 
 	if ( bSave )		fichier.close();
 
-	logf( (char*)"magMax = %0.2lf)", magMax );
-	logf( (char*)"magMin = %0.2lf)", magMin );
-	logf( (char*)"lumMax = %0.2lf)", lumMax );
-	logf( (char*)"lumMin = %0.2lf)", lumMin );
+	logf( (char*)"magMax = %0.2lf", magMax );
+	logf( (char*)"magMin = %0.2lf", magMin );
+	logf( (char*)"lumMax = %0.2lf", lumMax );
+	logf( (char*)"lumMin = %0.2lf", lumMin );
 
+	compute_moyenne();
+	compute_ecart_type();
 
    	log_tab(false);
 }
@@ -300,7 +302,7 @@ double StarCompare::computeDelta()
 	{
 		double mv = tVizi[i]->getMag();
 		double ms = tStar[i]->getMagnitude() + delta;
-		if ( (mv - ms) < 0.5 )	
+		//if ( (mv - ms) < 0.5 )	
 		{
 			tot +=  (mv - ms);
 			m++;
@@ -309,6 +311,19 @@ double StarCompare::computeDelta()
 	
 	
 	return tot / (double)m;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Retourne la correspondance Star
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool StarCompare::doublon(double pond, int idx)
+{
+	for( int i=0; i<pStars->size(); i++ )
+	{
+		if ( (pStars->get(i)->getPonderation() == pond) && idx != i )		return true;
+	}
+	return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -335,6 +350,48 @@ int StarCompare::getTwinVizier(int ii)
 		if ( cmpViziStar[i].y == ii )		return cmpViziStar[i].x;
 	}
 	return -1;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Calcul la moyenne des ecarts de magnitude
+//
+//--------------------------------------------------------------------------------------------------------------------
+void StarCompare::compute_moyenne()
+{
+	dMoyen = 0.0;
+	 
+	for( int i=0; i<cmpViziStar.size(); i++ )
+	{
+		//int iv = cmpViziStar[i].x;
+		//int is = cmpViziStar[i].y;
+		double mv = tVizi[i]->getMag();
+		double ms = tStar[i]->getMagnitude();
+		dMoyen += abs(mv - ms );
+	}
+
+	dMoyen /= (double)cmpViziStar.size();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Calcul l' ecart type des ecarts de magnitude
+//
+//--------------------------------------------------------------------------------------------------------------------
+void StarCompare::compute_ecart_type()
+{
+	dEcart = 0.0;
+	 
+	for( int i=0; i<cmpViziStar.size(); i++ )
+	{
+		//int iv = cmpViziStar[i].x;
+		//int is = cmpViziStar[i].y;
+		double mv = tVizi[i]->getMag();
+		double ms = tStar[i]->getMagnitude();
+		double M = abs(mv-ms) - dMoyen;
+		dEcart += M * M;
+	}
+
+	dEcart /= (double)cmpViziStar.size();
+	dEcart = sqrt( dEcart );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

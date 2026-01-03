@@ -8,6 +8,7 @@
 #include <WindowsManager.h>
 #include "main.h"
 #include "panel_capture.h"
+#include "panel_debug.h"
 #include "fits.h"
 #include "var_mgr.h"
 #include "catalog.h"
@@ -37,6 +38,7 @@ protected:
     string                      basename;
     
     PanelGraph*					pGraph;
+    PanelDebug*					pInfoGraph;
     PanelCapture*               panelCapture;
     PanelText*                  pTitre;
     PanelText*                  pNbStars;
@@ -68,13 +70,15 @@ public :
     virtual void                clickLeft( int, int);
     virtual void                releaseLeft( int, int);
 
+    virtual void                callback(void *p);
+
     void                        create_icones();
     void                        create_preview();
     
     void                        resize(int,int);
     void                        resize(int,int,int,int);
     void                        fullscreen();
-    void						iconize(int, int);
+    void						iconize(int, int, int, int);
 	void						restaure();
 
     void                        onTop();
@@ -97,6 +101,9 @@ public :
 	void						setAffGraph(bool);
 	bool						cmp(vec2, vec2);
 	void						compareStar();
+
+	void						update_info_graph();
+	void						create_info_graph();
 	void						create_graph();
 
     

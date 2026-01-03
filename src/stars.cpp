@@ -734,6 +734,7 @@ void Stars::displayGL()
     {
         //v_tStars[i]->updatePos( pView->getX(), pView->getY(), e );
         v_tStars[i]->displayGL();
+        if ( v_tStars[i]->getGraph() )        v_tStars[i]->displayGLGraph();
     }
 
 

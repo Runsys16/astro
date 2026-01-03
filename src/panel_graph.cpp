@@ -11,20 +11,21 @@
 PanelGraph::~PanelGraph()
 {
     logf( (char*)"Destructeur  PanelGraph::~PanelGraph()" );
+
 	sup( pTitre );
 	delete pTitre;
 	
-	for( int i=0; i<tAbsPanel.size(); i++ )
-	{
-		delete tAbsPanel[i];
-	}
+	for( int i=0; i<tAbsPanel.size(); i++ )			sup( tAbsPanel[i] );
+	for( int i=0; i<tAbsPanel.size(); i++ )			delete tAbsPanel[i];
 	tAbsPanel.clear();
 	
-	for( int i=0; i<tOrdPanel.size(); i++ )
-	{
-		delete tOrdPanel[i];
-	}
-	tOrdPanel.clear();
+	for( int i=0; i<tOrdPanelG.size(); i++ )		sup( tOrdPanelG[i] );
+	for( int i=0; i<tOrdPanelG.size(); i++ )		delete tOrdPanelG[i];
+	tOrdPanelG.clear();
+	
+	for( int i=0; i<tOrdPanelD.size(); i++ )		sup( tOrdPanelD[i] );
+	for( int i=0; i<tOrdPanelD.size(); i++ )		delete tOrdPanelD[i];
+	tOrdPanelD.clear();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -41,7 +42,7 @@ PanelGraph::PanelGraph()
     setSize( 1000, 400 );
 
     setBackground((char*)"images/background.tga");
-	pTitre = new PanelText( (char*)"",  PanelText::NORMAL_FONT, 10, 10  );
+	pTitre = new PanelText( (char*)"",  PanelText::NORMAL_FONT, 10, 5  );
 	pTitre->setAlign( PanelText::CENTER );
 	add( pTitre );
     
@@ -61,15 +62,44 @@ void PanelGraph::init_var()
     dYmin	=     7.0;
     dYmax	=    16.0;
 
-	bLogX = true;
+	bLogX = false ;
 	bLogY = false;
+	
+	pPanelCallback = NULL;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::panel2graphX( double& __x )
+{
+	__x = __x + _debX - DELTA_AXE_X;
+	if ( bLogX )		__x = pow(10.0, __x / _pasX);
+	else				__x = __x  / _pasX;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::panel2graphY( double& __y )
+{
+	__y = getPosDY() -__y + _debY - DELTA_AXE_Y;
+	if ( bLogY )		__y = pow(10.0, __y / _pasX);
+	else				__y = __y / _pasY;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::panel2graph( vec2& __v )
+{
+	panel2graphX(__v.x);
+	panel2graphY(__v.y);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::graph2panelX( double& __x )
 {
-	__x = log10(__x ) * _pasX;
+	if ( bLogX )		__x = log10(__x ) * _pasX;
+	else				__x = __x  * _pasX;
 	__x = __x - _debX + DELTA_AXE_X;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -77,7 +107,8 @@ void PanelGraph::graph2panelX( double& __x )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::graph2panelY( double& __y )
 {
-	__y = __y * _pasY;
+	if ( bLogY )		__y = log10(__y ) * _pasX;
+	else				__y = __y * _pasY;
 	__y = getPosDY() -__y + _debY - DELTA_AXE_Y;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -209,10 +240,13 @@ void PanelGraph::displayCourbeVizi()
 
 	double _DY = getPosDY();
 	
-	for( int i=1; i<cVizi.size(); i++ )
+	for( int i=1; i<cSort.size(); i++ )
 	{
-		vec2 v1 = cVizi[i];
-		vec2 v0 = cVizi[i-1];
+		int j0 = cSort[i];
+		int j1 = cSort[i-1];
+
+		vec2 v0 = cVizi[j0];
+		vec2 v1 = cVizi[j1];
 		
 		graph2panel(v0);
 		graph2panel(v1);
@@ -233,10 +267,13 @@ void PanelGraph::displayCourbeStar()
 
 	double _DY = getPosDY();
 	
-	for( int i=1; i<cStar.size(); i++ )
+	for( int i=1; i<cSort.size(); i++ )
 	{
-		vec2 v1 = cStar[i];
-		vec2 v0 = cStar[i-1];
+		int j0 = cSort[i];
+		int j1 = cSort[i-1];
+
+		vec2 v0 = cStar[j0];
+		vec2 v1 = cStar[j1];
 		
 		graph2panel(v0);
 		graph2panel(v1);
@@ -250,7 +287,7 @@ void PanelGraph::displayCourbeStar()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::ajoute_ord(double val, vec2 pos)
+void PanelGraph::ajoute_ordG(double val, vec2 pos)
 {
 	char	str[21];
 	vec2 v = pos;
@@ -261,8 +298,25 @@ void PanelGraph::ajoute_ord(double val, vec2 pos)
 	PanelText* p = new PanelText( (char*)str,  PanelText::NORMAL_FONT, v.x+4-DELTA_AXE_X, v.y-8  );
 	add( p );
 	//log( (char*)"PanelText" );
-	tOrdPanel.push_back(p);
-	tOrdVec2.push_back(pos);
+	tOrdPanelG.push_back(p);
+	tOrdVec2G.push_back(pos);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::ajoute_ordD(double val, vec2 pos)
+{
+	char	str[21];
+	vec2 v = pos;
+	graph2panel( v );
+	
+	
+	snprintf( (char*)str, sizeof(str), "%d", (int)val );
+	PanelText* p = new PanelText( (char*)str,  PanelText::NORMAL_FONT, v.x+4+DELTA_AXE_X, v.y-8  );
+	add( p );
+	//log( (char*)"PanelText" );
+	tOrdPanelD.push_back(p);
+	tOrdVec2D.push_back(pos);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -277,8 +331,7 @@ void PanelGraph::ajoute_abs(double val, vec2 pos)
 	PanelText* p = new PanelText( (char*)str,  PanelText::NORMAL_FONT, v.x, v.y  );
 	
 	add( p );
-	//double dx = p->getPosDX()/2; 
-	//log( (char*)"PanelText" );
+
 	tAbsPanel.push_back(p);
 	tAbsVec2.push_back(pos);
 }
@@ -287,15 +340,23 @@ void PanelGraph::ajoute_abs(double val, vec2 pos)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::update_ord()
 {
-	if ( tOrdPanel.size() == 0 )			return;
+	if ( tOrdPanelG.size() == 0 )			return;
 
-	for( int i=0; i<tOrdPanel.size(); i++ )
+	for( int i=0; i<tOrdPanelG.size(); i++ )
 	{
-		vec2 v = tOrdVec2[i];
+		vec2 v = tOrdVec2G[i];
 		graph2panel(v);
-		int dd = tOrdPanel[i]->getPosDX() + 4;
+		int dd = tOrdPanelG[i]->getPosDX() + 4;
 		
-		tOrdPanel[i]->setPos( v.x-dd, v.y-8 );
+		tOrdPanelG[i]->setPos( v.x-dd, v.y-8 );
+	}
+	
+	for( int i=0; i<tOrdPanelD.size(); i++ )
+	{
+		vec2 v = tOrdVec2D[i];
+		graph2panel(v);
+
+		tOrdPanelD[i]->setPos( v.x+4, v.y-8 );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -317,24 +378,25 @@ void PanelGraph::update_abs()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::displayAxeV()
+void PanelGraph::displayAxeVlog()
 {
 	
 	if( bNuit )						glColor4fv( (GLfloat*)&cRougeC );
 	else							glColor4fv( (GLfloat*)&cGris );
 
+	double _log;
 	double	_ldeb = floor( log10(dXmin) ); 
-	double	_log =  pow( 10.0, _ldeb );
+	_log =  pow( 10.0, _ldeb );
 	if ( _log <= 1.0 )		_log = 1.0;
 	
 	double  _dif = log10(dXmax) - log10(dXmin);
-	_pasX = ( 1.0 /  _dif ) * ((double)getPosDX()-DELTA_AXE_X);
+	_pasX = ( 1.0 /  _dif ) * ((double)getPosDX()-2*DELTA_AXE_X);
 	_debX = log10(dXmin) * _pasX;
 	_finX = log10(dXmax) * _pasX;	
 
 	double fM = dXmax;	graph2panelX( fM );
 	double fm = dXmin;	graph2panelX( fm );
-	
+		
 	bool b = false;
 	if ( tAbsPanel.size() == 0)		b = true;
 
@@ -349,16 +411,129 @@ void PanelGraph::displayAxeV()
 		double _x = _log*i;
 		vec2 v = vec2(_x, dYmax);
 		graph2panel( v );
-
+		
 		if ( v.x < fm )	continue;
 		if ( v.x > fM )	break;
 
-		glLine(v, vec2(0.0, getPosDY()-DELTA_AXE_Y) );
+		glLine(v, vec2(0.0, getPosDY()-2*DELTA_AXE_Y) );
 		
 		if ( b && i==1.0 )			ajoute_abs( _x, vec2(_x, dYmin) );
 		if ( b && i==5.0 )			ajoute_abs( _x, vec2(_x, dYmin) );
 		if ( b && i==2.0 )			ajoute_abs( _x, vec2(_x, dYmin) );
 
+	}
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::displayAxeVlin()
+{
+	
+	if( bNuit )						glColor4fv( (GLfloat*)&cRougeC );
+	else							glColor4fv( (GLfloat*)&cGris );
+
+	double  _dif = (dXmax - dXmin);
+	_pasX = ( 1.0 /  _dif ) * ((double)getPosDX()-2*DELTA_AXE_X);
+	_debX = dXmin * _pasX;
+	_finX = dXmax * _pasX;	
+
+	double _ech = _dif / 5.0;
+	int n = 0;
+	
+	while( _ech >=10.0 )	{
+		n++;
+		_ech /= 10.0;
+	}
+	_ech = floor( _ech );
+	for( int i=0; i<n; i++ )	_ech *= 10.0;
+	
+
+	double fM = dXmax;	graph2panelX( fM );
+	double fm = dXmin;	graph2panelX( fm );
+		
+	bool b = false;
+	if ( tAbsPanel.size() == 0)		b = true;
+
+	for( double i=1.0; i<=10.0; i+=1.0 )
+	{
+		vec2 v = vec2(i*_ech, dYmax);
+		graph2panel( v );
+
+		if ( v.x < fm )	continue;
+		if ( v.x > fM )	break;
+
+		glLine(v, vec2(0.0, getPosDY()-2*DELTA_AXE_Y) );
+		
+		if ( b )			ajoute_abs( i*_ech, vec2(i*_ech, dYmin) );
+	}
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::displayAxeV()
+{
+	if ( bLogX )		displayAxeVlog();
+	else				displayAxeVlin();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::displayAxeHlog()
+{
+	double  _dif = dYmax - dYmin;
+	_pasY = ( 1.0 /  _dif ) * ((double)getPosDY()-2*DELTA_AXE_Y);
+	_debY = dYmin * _pasY;
+	_finY = dYmax * _pasY;	
+	
+	double fM = dYmax;	graph2panelY( fM );
+	double fm = dYmin;	graph2panelY( fm );
+
+	bool b = false;
+	if ( tOrdPanelG.size() == 0)		b = true;
+	
+	for( double i=1.0; i<=30.0; i+=1.0 )
+	{
+		vec2 v = vec2( dXmin, i );
+		graph2panel( v );
+				//logf( (char*)"%lf  %lf<%lf", v.y, fm, fM );
+		if ( v.y > fm )	continue;
+		if ( v.y < fM )	break;
+
+		glLine(  v, vec2(getPosDX()-2*DELTA_AXE_X, 0.0) );
+		if ( b )			ajoute_ordG( i, vec2(dXmin,i) );
+		if ( b )			ajoute_ordD( i, vec2(dXmax,i) );
+	}
+	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::displayAxeHlin()
+{
+	double  _dif = dYmax - dYmin;
+	_pasY = ( 1.0 /  _dif ) * ((double)getPosDY()-2*DELTA_AXE_Y);
+	_debY = dYmin * _pasY;
+	_finY = dYmax * _pasY;	
+	
+	double fM = dYmax;	graph2panelY( fM );
+	double fm = dYmin;	graph2panelY( fm );
+
+	bool b = false;
+	if ( tOrdPanelG.size() == 0)		b = true;
+	
+	for( double i=1.0; i<=30.0; i+=1.0 )
+	{
+		vec2 v = vec2( dXmin, i );
+		graph2panel( v );
+				//logf( (char*)"%lf  %lf<%lf", v.y, fm, fM );
+		if ( v.y > fm )	continue;
+		if ( v.y < fM )	break;
+
+		glLine(  v, vec2(getPosDX()-2*DELTA_AXE_X, 0.0) );
+		if ( b )			ajoute_ordG( i, vec2(dXmin,i) );
+		if ( b )			ajoute_ordD( i, vec2(dXmax,i) );
 	}
 	
 }
@@ -371,29 +546,8 @@ void PanelGraph::displayAxeH()
 	if( bNuit )						glColor4fv( (GLfloat*)&cRougeC );
 	else							glColor4fv( (GLfloat*)&cGris );
 
-	double  _dif = dYmax - dYmin;
-	_pasY = ( 1.0 /  _dif ) * ((double)getPosDY()-DELTA_AXE_Y);
-	_debY = dYmin * _pasY;
-	_finY = dYmax * _pasY;	
-	
-	double fM = dYmax;	graph2panelY( fM );
-	double fm = dYmin;	graph2panelY( fm );
-
-	bool b = false;
-	if ( tOrdPanel.size() == 0)		b = true;
-	
-	for( double i=1.0; i<=30.0; i+=1.0 )
-	{
-		vec2 v = vec2( dXmin, i );
-		graph2panel( v );
-				//logf( (char*)"%lf  %lf<%lf", v.y, fm, fM );
-		if ( v.y > fm )	continue;
-		if ( v.y < fM )	break;
-
-		glLine(  v, vec2(getPosDX()-DELTA_AXE_X, 0.0) );
-		if ( b )			ajoute_ord( i, vec2(dXmin,i) );
-	}
-	
+	if ( bLogY )	displayAxeHlog();
+	else			displayAxeHlin();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -445,17 +599,22 @@ void PanelGraph::displayGL(void)
 void PanelGraph::resetCourbeStar()
 {
     cStar.clear();
+    cSort.clear();
 
-	for( int i=0; i<tAbsPanel.size(); i++ )		sup( tAbsPanel[i] );
-	for( int i=0; i<tOrdPanel.size(); i++ )		sup( tOrdPanel[i] );
+	for( int i=0; i<tAbsPanel.size(); i++ )			sup( tAbsPanel[i] );
+	for( int i=0; i<tOrdPanelG.size(); i++ )		sup( tOrdPanelG[i] );
+	for( int i=0; i<tOrdPanelD.size(); i++ )		sup( tOrdPanelD[i] );
 
-	for( int i=0; i<tAbsPanel.size(); i++ )		delete tAbsPanel[i];
-	for( int i=0; i<tOrdPanel.size(); i++ )		delete tOrdPanel[i];
+	for( int i=0; i<tAbsPanel.size(); i++ )			delete tAbsPanel[i];
+	for( int i=0; i<tOrdPanelG.size(); i++ )		delete tOrdPanelG[i];
+	for( int i=0; i<tOrdPanelD.size(); i++ )		delete tOrdPanelD[i];
 
     tAbsPanel.clear();
     tAbsVec2.clear();
-    tOrdPanel.clear();
-    tOrdVec2.clear();
+    tOrdPanelG.clear();
+    tOrdVec2G.clear();
+    tOrdPanelD.clear();
+    tOrdVec2D.clear();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -463,17 +622,30 @@ void PanelGraph::resetCourbeStar()
 void PanelGraph::resetCourbeVizi()
 {
     cVizi.clear();
+    cSort.clear();
 
-	for( int i=0; i<tAbsPanel.size(); i++ )		sup( tAbsPanel[i] );
-	for( int i=0; i<tOrdPanel.size(); i++ )		sup( tOrdPanel[i] );
+	for( int i=0; i<tAbsPanel.size(); i++ )			sup( tAbsPanel[i] );
+	for( int i=0; i<tOrdPanelG.size(); i++ )		sup( tOrdPanelG[i] );
+	for( int i=0; i<tOrdPanelD.size(); i++ )		sup( tOrdPanelD[i] );
 
-	for( int i=0; i<tAbsPanel.size(); i++ )		delete tAbsPanel[i];
-	for( int i=0; i<tOrdPanel.size(); i++ )		delete tOrdPanel[i];
+	for( int i=0; i<tAbsPanel.size(); i++ )			delete tAbsPanel[i];
+	for( int i=0; i<tOrdPanelG.size(); i++ )		delete tOrdPanelG[i];
+	for( int i=0; i<tOrdPanelD.size(); i++ )		delete tOrdPanelD[i];
 
     tAbsPanel.clear();
     tAbsVec2.clear();
-    tOrdPanel.clear();
-    tOrdVec2.clear();
+    tOrdPanelG.clear();
+    tOrdVec2G.clear();
+    tOrdPanelD.clear();
+    tOrdVec2D.clear();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::resetCourbes()
+{
+	resetCourbeStar();
+	resetCourbeVizi();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -494,12 +666,25 @@ bool PanelGraph::doublons_vizi( vec2 v )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::addViziStar( vec2 v, vec2 w )
+{	
+	if ( v.x < 10.0 )				v.x = 10.0;
+	//if ( doublons_star(v) )			v.x = -1.0;//return;
+
+	if ( w.x < 10.0 )				w.x = 10.0;
+	//if ( doublons_vizi(w) )			w.x = -1.0;//return;
+
+    cVizi.push_back(v);
+    cStar.push_back(w);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::addStar( vec2 v )
 {	
 	if ( v.x < 10.0 )				v.x = 10.0;
-	if ( doublons_star(v) )			return;
+	if ( doublons_star(v) )			v.x = -1.0;//return;
 
-	//logf( (char*)"Star ajout (%0.4lf, %0.4lf", v.x, v.y );
     cStar.push_back(v);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -508,7 +693,7 @@ void PanelGraph::addStar( vec2 v )
 void PanelGraph::addVizi( vec2 v )
 {
 	if ( v.x < 10.0 )				v.x = 10.0;
-	if ( doublons_vizi(v) )			return;
+	if ( doublons_vizi(v) )			v.x = -1.0;//return;
 
 	//logf( (char*)"Vizi ajout (%0.4lf, %0.4lf", v.x, v.y );
     cVizi.push_back(v);
@@ -516,17 +701,23 @@ void PanelGraph::addVizi( vec2 v )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool cmp(vec2 v, vec2 w)
+vector<vec2>	triStar;
+bool cmp(int i, int j)
 {
-    return v.x > w.x;
+    return triStar[i].x > triStar[j].x;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::sort_all()
 {
-    sort(cVizi.begin(), cVizi.end(), cmp );
-    sort(cStar.begin(), cStar.end(), cmp );
+    //sort(cVizi.begin(), cVizi.end(), cmp );
+    //sort(cStar.begin(), cStar.end(), cmp );
+    triStar.clear();
+    cSort.clear();
+    for( int i=0; i<cStar.size(); i++ )	{ triStar.push_back( cStar[i] ); cSort.push_back( i ); }
+    
+    sort(cSort.begin(), cSort.end(), cmp );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -552,6 +743,38 @@ void PanelGraph::updatePos()
 		pTitre->setColor( 0xFFffffFF );
 	}
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::passiveMotionFunc( int mx, int my)
+{
+	iMouse = -1;
+
+	if ( !getVisible())					return;
+	if ( cStar.size() == 0 )			return;
+	if ( cVizi.size() == 0 )			return;
+	
+	double dMini = 100000.0;
+	
+	vec2 vMouse = vec2(mx, my) - vec2(getPosX(), getPosY());// - vec2(_debX, _debY);
+	panel2graph(vMouse);	
+	
+	for( int i=0; i<cStar.size(); i++ )
+	{
+		vec2 w = vec2(cStar[i].x, cStar[i].y) - vMouse;
+		
+		if ( w.length() < dMini )		
+		{
+			dMini = w.length();
+			iMouse = i;
+		}
+	}
+	
+	if (iMouse != -1)	{
+		pPanelCallback->callback( (void*)&iMouse );
+	}
+}
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -598,6 +821,7 @@ void PanelGraph::releaseMiddle( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+*/
 #endif
 
 

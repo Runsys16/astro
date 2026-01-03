@@ -3770,19 +3770,12 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 #endif
    	iGlutModifier = glutGetModifiers();
    	
-    printf( "glutMouseFunc %d\n",iGlutModifier);
-
-	/*
-    logf( (char*)"main::glutMouseFunc( button=%d, state=%d,  (%d, %d) )", button, state, x, y );
-    log_tab(true);
-    */
     vMouse.x = x;
     vMouse.y = y;
 
     WindowsManager& wm  = WindowsManager::getInstance();
     Camera_mgr&     mgr = Camera_mgr::getInstance(); 
 
-    //wm.setModifier(iGlutModifier);
 	wm.mouseFunc(button, state, x, y);
 
     PanelWindow*    pPreviewCam = NULL;
