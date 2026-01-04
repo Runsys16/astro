@@ -34,15 +34,16 @@ void transform(const char* pSrc, unsigned long* dst )
 				num = -1;
 			}
 
-			if ( 'a'<=pSrc[i] && pSrc[i]<='z' )	
+			if ( 'A'<=pSrc[i] && pSrc[i]<='Z' )	
 			{
-				dst[idx] = pSrc[i] - 32;
+				dst[idx] = pSrc[i] - 'A'+'a';
 			}
 			else
 			{
 				dst[idx] = pSrc[i];
 			}
 		}			
+
 		idx += 1;
 	}
 
@@ -251,7 +252,7 @@ bool FileBrowser::existe_remonte_dir()
 	}
 	
 	closedir(rep);
-	//workingDir = workingDir + "/";
+	if ( workingDir[workingDir.size()-1] != '/' )	workingDir = workingDir + "/";
 	return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -321,6 +322,8 @@ void FileBrowser::explore_dir()
     {
         //logf( (char*)"%s", (char*)tFileNames[i].c_str() );
         pT = new PanelText( (char*)tFileNames[i].c_str(),		PanelText::NORMAL_FONT, xf, yf );
+        pT->setMaxSize(DXFile-25);
+        pT->buildString();
         panelFile->add( pT );
         addImage( "images/file.png", panelFile, xf-4-16, yf );
         

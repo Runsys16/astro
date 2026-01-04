@@ -2149,11 +2149,17 @@ void PanelCapture::restaure()
 {
 	logf( (char*)"PanelCapture::restaure()" );
 	
+	// && pCapture->getAfficheInfoSouris() )
 	//dTimeAnim = 0.0;
-	if ( !pCapture->isIconized() && pCapture->getAfficheInfoSouris() )
+	if ( !pCapture->isIconized() )
 	{
-		//logf( (char*)"passiveMotionFunc(%d,%d)", vMouse.x, vMouse.y );
 		log_tab(true);
+		
+		if ( pCapture->getGraph() && pCapture->getGraph()->getVisible() )
+		{
+			WindowsManager& wm = WindowsManager::getInstance();
+			wm.onTop( pCapture->getGraph() );
+		}
 		//passiveMotionFunc( vMouse.x, vMouse.y );
 		log_tab(false);
 	}

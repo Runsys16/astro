@@ -696,11 +696,9 @@ void Capture::restaure()
 
 	if ( bFits )	{
 		if ( bAfficheInfoFits )		fits->getPanelFits()->setVisible(true);
-		//if ( bAfficheInfoFits )		fits->getPanelFits()->setVisible(true);
-		//fits->restaure( bAfficheInfoFits );
 		onTop();
+		
 	}
-	//panelCapture->restaure();
 
 	log_tab(false);
 }
@@ -717,7 +715,12 @@ void Capture::onTop()
     if ( isFits() )	{
 		wm.onTop( fits->getPanelFits() );
 		//fits->getPanelCorrectionFits()->onTop();
-
+		if ( pGraph && pGraph->getVisible() )
+		{
+			logf( (char*)"|  Active pGraph" );
+			WindowsManager& wm = WindowsManager::getInstance();
+			wm.onTop( pGraph );
+		}
 	}	
 }
 //--------------------------------------------------------------------------------------------------------------------

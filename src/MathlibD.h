@@ -163,6 +163,10 @@ public:
     {
     	sprintf( (char*)s,"(%lf, %lf)", x, y );
     }
+    void to_str_exp(char* s)
+    {
+    	sprintf( (char*)s,"(%.8e, %.8e)", x, y );
+    }
 
 	union {
 		struct {double x,y;};
@@ -625,6 +629,10 @@ public:
     void	to_str(char* s)
     {
     	sprintf( (char*)s, "(%lf, %lf, %lf, %lf)", mat[0], mat[1], mat[2], mat[3] );
+    }
+    void	to_str_exp(char* s)
+    {
+    	sprintf( (char*)s, "(%.8e, %.8e, %.8e, %.8e)", mat[0], mat[1], mat[2], mat[3] );
     }
 	double mat[4];
 };

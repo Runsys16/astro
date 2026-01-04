@@ -2494,6 +2494,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	        else
 	        if ( typeid(*panel) == typeid(PanelCapture)	)
 	        {
+				log( (char*)"Panel capture" );
+
 			    Capture* capture = Captures::getInstance().getCurrentCapture();
 			    if ( capture==NULL )		break;
 	        	
@@ -2505,13 +2507,13 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 			else
 	        if ( typeid(*panel) == typeid(PanelCamera)	)
 			{
+				log( (char*)"Panel camera" );
+
 				Camera* camera = Camera_mgr::getInstance().getCurrent();
 				if ( camera==NULL )		break;
 				camera->saveCompareStar();
 		        thread( &commande_magnitude, "pleiades" ).detach();
 			}
-			else
-				log( (char*)"Pas de fenetre valise sous la souris" );
 		}
 	    break;
 	//----------------------------------------------------------------------------
@@ -3223,6 +3225,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	Capture*  p = Captures::getInstance().getCurrentCapture();
         	if ( p && p->isFits() )	{
         		p->getPanelCapture()->findGaiaDR3();
+        		//p->getFits()->getPanelCorrectionFits()->setVisible(true);
         	}
         	else
 		        logf( (char*)"[Warning]Fenetre non valable");
@@ -3231,7 +3234,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'N':
         {
-	        logf( (char*)"Key (n) : Efface les etoiles GAIA");
+	        logf( (char*)"Key (ngetPanelCapture()->) : Efface les etoiles GAIA");
         	Capture*  p = Captures::getInstance().getCurrentCapture();
         	if ( p && p->isFits() )	{
         		p->getPanelCapture()->eraseGaiaDR3();
@@ -3534,15 +3537,15 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'x':
         {
-        	Captures& 	cap 	= Captures::getInstance();
-        	Capture* 	p		= cap.getCurrentCapture();
+        	Captures& 	captures 	= Captures::getInstance();
+        	Capture* 	capture		= captures.getCurrentCapture();
         	bool		bGraph;
         	
-        	if ( p )	
+        	if ( capture )	
         	{
-        		bGraph = p->getGraph() == NULL;
-        		bool b = !p->getAffGraph();
-        		p->setAffGraph( b );
+        		bGraph = capture->getGraph() == NULL;
+        		bool b = !capture->getAffGraph();
+        		capture->setAffGraph( b );
         		
         		if ( b && bGraph )
         		{
@@ -3552,7 +3555,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		            p->getPanelCapture()->findAllStars();
 			    	p->compareStar();
 			    	*/
-			    	p->create_graph();
+			    	capture->create_graph();
 			    }
         	}
         }

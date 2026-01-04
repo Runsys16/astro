@@ -39,7 +39,7 @@ protected:
         
         PanelFits*					pPanelFits;
         PanelCapture*				pPanelCapture;
-        //PanelCorrectionFits*		pPanelCorrectionFits;
+        PanelCorrectionFits*		pPanelCorrectionFits;
         
         bool						bFlip;   // (0,0) Bottom, Left
         bool						bEOF;
@@ -118,6 +118,9 @@ public :
         Fits(string, PanelCapture*);
         ~Fits();
         
+		void						create_correction_fits();
+		void						create_panel_fits();
+
         void                        chargeFits();
         bool						intersection( vec2&, vec2&, vec2&, vec2&, vec2& );
         void						intersectionH( vec2&, vec2&, vec2& );
@@ -162,7 +165,7 @@ inline  int                         getD()                  { return (bValid ?  
 inline  PanelFits*                  getPanelFits()          { return pPanelFits; };
 inline  mat2&						getMatrix() 			{ return mMat; };
 inline  void 						setPanelCapture(PanelCapture* p) 			{ pPanelCapture = p; };
-//inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionFits; }
+inline  PanelCorrectionFits*		getPanelCorrectionFits(){ return pPanelCorrectionFits; }
 
         void                        getRB( struct readBackground* );
         void						tex_2_J2000( vec2, vec2& );

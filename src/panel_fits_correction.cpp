@@ -38,7 +38,8 @@ PanelCorrectionFits::PanelCorrectionFits()
     float gris = 0.7;
     vcf4 c  = vcf4(gris, gris, gris, 1.0);
 
-	double min=-0.01, max=0.01, step=0.02, ntour=20.0;
+	//double min=-0.01, max=0.01, step=0.02, ntour=20.0;
+	double min=-3500.0, max=3500.0, step=100, ntour=2.0;
 
     this->setExtraString( (char*)"PanelCorrectionFits" );
     this->setBackground( (char*)"images/background.tga" );

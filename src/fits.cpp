@@ -62,11 +62,24 @@ Fits::Fits(string filename, PanelCapture* p)
     dMin0 = dMin1 = dMin2 = dMin3 = 999999999999.9;
     dMax0 = dMax1 = dMax2 = dMax3 = -999999999999.9;
 
+	pPanelCorrectionFits = NULL;
+	pPanelFits = NULL;
+	//------------------------------------------------------------------------
+	create_panel_fits();
+	//create_correction_fits();
+	//------------------------------------------------------------------------
+    log_tab(false);
+    logf((char*)"Constructeur Fits::Fits() -------END------" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::create_correction_fits()
+{
 	//------------------------------------------------------------------------
     VarManager& 		var	= VarManager::getInstance();
 	WindowsManager&     wm  = WindowsManager::getInstance();
 
-	/*
     pPanelCorrectionFits = new PanelCorrectionFits();
     pPanelCorrectionFits->setPos( 150, 150 );
     
@@ -76,23 +89,28 @@ Fits::Fits(string filename, PanelCapture* p)
     //pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&dCDELT2 );
 
 
-	pPanelCorrectionFits->getCDELT1()->set_val( vCDELT.x );
-    pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&(vCDELT.x) );
+	pPanelCorrectionFits->getCDELT1()->set_val( vCRPIX.x );
+    pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&(vCRPIX.x) );
     
-    pPanelCorrectionFits->getCDELT2()->set_val( vCDELT.y );
-    pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&(vCDELT.y) );
+    pPanelCorrectionFits->getCDELT2()->set_val( vCRPIX.y );
+    pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&(vCRPIX.y) );
     
 	pPanelCorrectionFits->setVisible( var.getb("bAffFitsCorrection") );
-	*/
+
+    wm.add( pPanelCorrectionFits );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Fits::create_panel_fits()
+{
+	WindowsManager&     wm  = WindowsManager::getInstance();
+
     pPanelFits = new PanelFits();
     pPanelFits->setPosAndSize( 10, 10, 760, 250 );
     pPanelFits->setVisible( false );
 
-    //p->add( pPanelCorrectionFits );
     wm.add( pPanelFits );
-	//------------------------------------------------------------------------
-    log_tab(false);
-    logf((char*)"Constructeur Fits::Fits() -------END------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -104,12 +122,16 @@ Fits::~Fits()
 	WindowsManager&     wm  = WindowsManager::getInstance();
     //if ( readBgr.ptr != NULL )          free( readBgr.ptr );
     //readBgr.ptr = NULL;
-
-	wm.sup(pPanelFits);
-	//pPanelCapture->sup(pPanelCorrectionFits);
-
-	delete pPanelFits;
-	//if ( pPanelCorrectionFits )		delete pPanelCorrectionFits;
+	if ( pPanelFits )
+	{
+		wm.sup(pPanelFits);
+		delete pPanelFits;
+	}
+	if ( pPanelCorrectionFits )
+	{
+		wm.sup(pPanelCorrectionFits);
+		delete pPanelFits;
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -350,20 +372,36 @@ void Fits::normalizeEchelleMatrice()
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::sauveMatrice()
-{	
+{
+	/*
+    pPanelCorrectionFits->getCDELT1()->set_val( vCRPIX.x );
+    pPanelCorrectionFits->getCDELT1()->set_pVal( (double*)&(vCRPIX.x) );
+    
+    pPanelCorrectionFits->getCDELT2()->set_val( vCRPIX.y );
+    pPanelCorrectionFits->getCDELT2()->set_pVal( (double*)&(vCRPIX.y) );
+	*/
+	
 	//------------------------------------------------------------------------
 	// Calcul de la matrice  d'echelle
 	//------------------------------------------------------------------------
-	if ( bPC )	{
-		double _x =  vCDELT.x / cos( DEG2RAD(vCRVAL.y) );
-		mEchl = mat2( _x, 0.0, 0.0, dCDELT2 );
-	}
 	mat2 mMoinsY	= mat2( 1.0, 0.0, 0.0, -1.0 );
+	double _x;
+	
+	if ( bPC )	{
+		_x =  vCDELT.x / cos( DEG2RAD(vCRVAL.y) );
+	}
+	else
+	if ( bCD )	{
+		vCRPIX.y = nNAXISn[1] - vCRPIX.y;
+		_x =  1.0 / cos( DEG2RAD(vCRVAL.y) );
+	}
+	mEchl = mat2( _x, 0.0, 0.0, dCDELT2 );
 	//------------------------------------------------------------------------
 	// Calcul de la matrice et de son inverse
 	//------------------------------------------------------------------------
 	if (bPC)		mMat = mEchl * mPC * mMoinsY;
 	if (bCD)		mMat = mEchl * mCD * mMoinsY;
+	
 	mMatInv			= mMat.inverse();
 	//------------------------------------------------------------------------
 	char STR[255];
@@ -378,22 +416,31 @@ void Fits::sauveMatrice()
     r.key = "mCD";		mCD.to_str(STR);			r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 
-    r.key = "mMat";		mMat.to_str(STR);			r.value = string( STR );
+    r.key = "mMat";		mMat.to_str_exp(STR);			r.value = string( STR );
+    //r.key = "mMat";		mMat.to_str(STR);			r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 
     r.key = "mMatInv";	mMatInv.to_str(STR);		r.value = string( STR );
+    pPanelFits->add_key_value( r.key, r.value );
+
+    r.key = "vCRPIX";	vCRPIX.to_str(STR);		r.value = string( STR );
+    pPanelFits->add_key_value( r.key, r.value );
+
+    r.key = "vCRVAL";	vCRVAL.to_str(STR);		r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
 	//------------------------------------------------------------------------
 	vec2	hg = vec2(0.0, 0.0);
 	vec2	bd = vec2(nNAXISn[0], nNAXISn[1]);
 	vec2	v, w;
+	v = hg;
+	w = bd;
 	double	d;
 
-	v = (mMat * (hg-vCRPIX)) + vCRVAL;
+	tex_2_J2000(v);//v = (mMat * (hg-vCRPIX)) + vCRVAL;
     r.key = "Coord Ha-Ga";	v.to_str(STR);			r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
     
-	w = (mMat * (bd-vCRPIX)) + vCRVAL;  // + vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
+	tex_2_J2000(w);//w = (mMat * (bd-vCRPIX)) + vCRVAL;  // + vec2(nNAXISn[0]/2.0, nNAXISn[1]/2.0);
     r.key = "Coord Ba-Dr";	w.to_str(STR);			r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
     
@@ -401,6 +448,12 @@ void Fits::sauveMatrice()
     snprintf( STR, sizeof(STR), "R" ); 						r.key	= string( STR );
     snprintf( STR, sizeof(STR), "rayon image = %lf", d );	r.value = string( STR );
     pPanelFits->add_key_value( r.key, r.value );
+    
+    if ( bCD )
+    {
+    	//vCRPIX -= vec2(nNAXISn[0]/2, nNAXISn[1]/2);// / 2.0;
+    	//vCRPIX.y = nNAXISn[1] - vCRPIX.y;
+    }
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1023,8 +1076,8 @@ void Fits::afficheInfoFits(bool b)
 	{
 		pPanelFits->setVisible( b );
 		if ( b )	{
-			WindowsManager::getInstance().onTop(pPanelFits);
-			//WindowsManager::getInstance().onTop(pPanelCorrectionFits);
+			if (pPanelFits)				WindowsManager::getInstance().onTop(pPanelFits);
+			if (pPanelCorrectionFits)	WindowsManager::getInstance().onTop(pPanelCorrectionFits);
 		}
 	}
 }
