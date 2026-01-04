@@ -121,7 +121,7 @@ inline float                    getCentY()                                  { re
 inline string                   getFilename()                               { return filename; }
 inline string                   getBasename()                               { return basename; }
 inline string                   getDirname()                                { return dirname; }
-inline PanelCapture*            getPreview()                                { return panelCapture; }
+inline PanelCapture*            getPanelCapture()							{ return panelCapture; }
 inline PanelGraph*            	getGraph()									{ return pGraph; }
 inline PanelText*	            getNbVizier()                               { return pNbVizier; }
 

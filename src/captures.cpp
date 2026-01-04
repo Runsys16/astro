@@ -453,7 +453,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 	    log_tab(true);
         Capture&  c = *captures[n];
 
-        c.getPreview()->wheelUp(x,y);
+        c.getPanelCapture()->wheelUp(x,y);
         /*
         float e = c.getEchelle() / 0.9;
         c.setEchelle(e);
@@ -472,7 +472,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 	    log_tab(true);
         Capture&  c = *captures[n];
 
-        c.getPreview()->wheelDown(x,y);
+        c.getPanelCapture()->wheelDown(x,y);
         
         /*
         float e = c.getEchelle() * 0.9;
@@ -596,7 +596,7 @@ void Captures::findAllStar()
     int n = current_capture;
     if ( n != -1 )
     {
-        captures[n]->getPreview()->findAllStars();
+        captures[n]->getPanelCapture()->findAllStars();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -607,7 +607,7 @@ void Captures::deleteAllStars()
     int n = current_capture;
     if ( n != -1 )
     {
-        captures[n]->getPreview()->deleteAllStars();
+        captures[n]->getPanelCapture()->deleteAllStars();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -769,7 +769,7 @@ void Captures::position(double ra, double dc)
 	logf_thread( (char*)"Captures::position(%lf, %lf)", ra, dc );
     if (current_capture == -1)              return;
     
-    captures[current_capture]->getPreview()->getStars()->position(ra, dc);
+    captures[current_capture]->getPanelCapture()->getStars()->position(ra, dc);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -932,7 +932,7 @@ void Captures::afficheInfoSouris()
     for(int i=0; i<captures.size(); i++)
     {
     	Capture*		pCapture = captures[i];
-        PanelCapture*	p = pCapture->getPreview();
+        PanelCapture*	p = pCapture->getPanelCapture();
         if ( p )		p->setInfoSouris(bAfficheInfoSouris);
     }
 }
@@ -959,7 +959,7 @@ void Captures::change_ad( double ad )
 	{
 		for(int i=0; i<captures.size(); i++)
 		{
-			captures[i]->getPreview()->change_ad( ad );
+			captures[i]->getPanelCapture()->change_ad( ad );
 		}
 	}
 }
@@ -972,7 +972,7 @@ void Captures::change_dc( double dc )
 	{
 		for(int i=0; i<captures.size(); i++)
 		{
-			captures[i]->getPreview()->change_dc( dc );
+			captures[i]->getPanelCapture()->change_dc( dc );
 		}
 	}
 }
@@ -985,7 +985,7 @@ void Captures::resetVizierMagMax()
 	if ( current_capture != -1 && captures[current_capture]->isFits() )
 	{
 		Capture* p = captures[current_capture];
-		p->getPreview()->getStarCompare().setMagMax( 20.0 );
+		p->getPanelCapture()->getStarCompare().setMagMax( 20.0 );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

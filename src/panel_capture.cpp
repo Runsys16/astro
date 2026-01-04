@@ -223,6 +223,8 @@ void PanelCapture::updatePosInfoVizier()
 void PanelCapture::updateInfoVizier()
 {
 	if ( pVizier == NULL )			return;
+	if ( pCapture->isIconized() )	return;
+	//if ( pVizier->isIconized() )	{ pInfoVizier->setVisible(false); return; }
 	
 	double	ad_vizi, de_vizi, ad_star, de_star;
     int 	n		= pVizier->size();
@@ -325,7 +327,7 @@ void PanelCapture::updateVizier()
 	vec2	v;
 
     vec2 	vMin	= vec2( pCapture->getX(), pCapture->getY() );
-    vec2 	vMax	= vec2( pCapture->getX()+pCapture->getDX()  ,  pCapture->getY()+pCapture->getDY()  );
+    vec2 	vMax	= vec2( pCapture->getX()+pCapture->getDX(),  pCapture->getY()+pCapture->getDY()  );
 
     idxVizierMouseOver = -1;
 
@@ -1013,7 +1015,9 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	//logf( (char*)"  ech_user = %0.2f, ech_geo = %0.2f )", (float)ech_user, (float)ech_geo );
 	//log_tab(true);
 
-	//if ( !bInfoSouris || bIcone ) 			{ return; }
+	if ( pCapture->isIconized() ) 			{ return; }
+	
+	
 	if ( pCapture == NULL  ) 			{ return; }
 	
 	if ( pCapture->getGraph() != NULL && stars.size() != 0 )		find_star_mouse_over();
@@ -1060,10 +1064,6 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	}
 	// Calcul de l'offset dans le buffer
 	long idx = 3 * (w * YY + XX);
-
-	//logf( (char*)"x=%ld y=%ld X=%lf Y=%lf)", x, y, X, Y );
-	//logf( (char*)"idx=%ld w=%d XX=%ld YY=%ld)", idx, w, XX, YY );
-		
 	// Affichage du resultat
 	// float l = 0.33 * (float)r + 0.5 * (float)g  + 0.16 * (float)b;
 	// Recuperation de la couleur du pixel
@@ -1111,23 +1111,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 		//------------------------
 		updatePosFondCoord();
 	}
-	else
-	{
-	}
 	
-	
-	//------------------------------------------------------------
-	// si une etoile est survoler dans le graphique
-	if ( pCapture->getGraph() )
-	{
-		int iMouse = pCapture->getGraph()->getIndexMouse();
-		if (iMouse != -1 )
-		{
-			//logf( (char*)"Find %d", iMouse );
-		}
-	}		
-	//log_tab(false);
-	//log( (char*)"---" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

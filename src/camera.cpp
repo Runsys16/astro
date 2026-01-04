@@ -821,11 +821,16 @@ void Camera::setColor( long color )
 void Camera::compareStar()
 {
    	log( (char*)"Camera::compareStar()");
+   	log_tab(true);
 
 	starCompare.setStars(  panelCamera->getStars() );
 	starCompare.setVizier( &vizier);
 
 	starCompare.compareStar();
+
+	double d = starCompare.computeDelta();
+	panelCamera->getStars()->setDelta( d );
+   	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

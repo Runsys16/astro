@@ -242,8 +242,8 @@ void Star::tex2screen( int& x, int& y )
 void Star::calculMag()
 {
 	//log ( (char*)"Star::computeMag()" );
-    double x0=2.77, y0=17995.92;
-    double x1=4.24, y1=7085.42;
+    double x0=2.90, y0=17861.18;
+    double x1=4.17, y1=7632.48;
     //double x1=6.79, y1=389.9;
 
     double A = (x0-x1) / (log10(y0)-log10(y1));
@@ -251,19 +251,19 @@ void Star::calculMag()
 
 	if ( modeMag == 0 )
 	{
-		// pleiades
-		magnitude = (A * log( ponderation +1500 )) + B;
+		// Camera pleiades
+		magnitude = (A * log10( ponderation )) + B;
 	}
 	else
 	{
-		// NGC2392
+		// Capture NGC2392
 		magnitude = (A * dCoefC * log10( ponderation + dCoefA )) + dCoefB ;
 	}
 	
     double mag = -(log( ponderation ) / log(2.0)) + 17.0;
 
     #ifdef AFFIDX
-		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%d-%0.2f", idx, magnitude );
+		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%d-%0.2f  %0.2f", idx, magnitude, ponderation );
 	#else
 		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
 	#endif
