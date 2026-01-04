@@ -2064,6 +2064,7 @@ static void quit(void)
     for( int i=nbPanel-1; i>=0; i-- )
     {
     	Panel *	p = childs[i];
+	    //logf( (char*)"Panel ID %d-%s, %d enfants %s", p->getID(), p->getExtraString().c_str(), p->getNbPanel(), typeid(*p).name() );
 	    logf( (char*)"Panel ID %d-%s, %d enfants", p->getID(), p->getExtraString().c_str(), p->getNbPanel() );
 		delete_all_panels( p );
 		childs.erase( childs.begin()+i );

@@ -46,6 +46,7 @@ private:
 	double				_finY;
 	
 	int					iMouse;
+	int					iMouseCapture;
 	Panel*				pPanelCallback;
 
 vector<vec2>			cStar;
@@ -73,6 +74,7 @@ public :
     void				graph2panelY( double& );
     void				graph2panel( vec2& );
 
+	void				glCercle(int, int, int);
     void                glCroix( int, int, int, int );
     void                glCroix( vec2, vec2 );
     void                glLine( int, int, int, int );
@@ -110,6 +112,7 @@ public :
     void				addVizi(vec2);
     //bool				cmp(vec2, vec2);
     void				sort_all();
+	void				setStarOverMouse(int);
 
 virtual void            displayGL( void );
 virtual void            updatePos( void );

@@ -968,7 +968,7 @@ void Star::displayGLGraph()
     if ( bGraph )      
     {
         glColor4fv( (GLfloat*)&cRouge );
-        float rayon = 3.0	*ech*(float)(computeRayon());
+        float rayon = 2.0	*ech*(float)(computeRayon());
         glCercle( rayon );
     }
 }

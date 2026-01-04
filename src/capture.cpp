@@ -239,7 +239,7 @@ void Capture::update()
 void Capture::updatePos()
 {
     //logf( (char*)"Capture::updatePos() ... %s", basename.c_str() );
-	if ( pInfoGraph )	pInfoGraph->setPos( 50, pGraph->getPosDY() - 130 );
+	if ( pInfoGraph )	pInfoGraph->setPos( 30, pGraph->getPosDY() - 110 );
 
     Panel::updatePos();
     updatePosIcones();
@@ -350,7 +350,7 @@ void Capture::callback( void* p )
 	int iii = cmp[idx].y;
 
 	//logf( (char*)"Found %d %0.2lf", iii, pStars->get(iii)->getPonderation() );
-	//logf( (char*)"Found %d %0.2lf", idx, pStars->get(idx)->getPonderation() );
+	//logf( (char*)"Capture::callback() found %d-%d %0.2lf", idx, iii, pStars->get(iii)->getPonderation() );
 
 	pStars->get(iii)->setGraph(true);
 }
@@ -996,7 +996,7 @@ void Capture::update_info_graph()
 	
 	pInfoGraph->add_textf( (char*)"%d etoiles GAIA dr3", nbGaia );
 	pInfoGraph->add_textf( (char*)"%d etoiles trouvées", nbStar );
-	pInfoGraph->add_textf( (char*)"%d etoiles en correspondances", nbCorr );
+	pInfoGraph->add_textf( (char*)"%d en correspondances", nbCorr );
 	pInfoGraph->add_textf( (char*)"%0.2lf mag diff moyen", dMoyen );
 	pInfoGraph->add_textf( (char*)"%0.2lf mag ecart type", dEcart );
 }
@@ -1008,9 +1008,10 @@ void Capture::create_info_graph()
 	if ( pInfoGraph != NULL )		{ log( (char*)"[ Erreur ] pInfoGraph existant"); return; }
 
 	pInfoGraph = new PanelDebug();
+	pInfoGraph->setExtraString("PanelInfoGraph");
 	pInfoGraph->setBorderSize(0);
 	pInfoGraph->setVisible(pGraph->getVisible());
-	pInfoGraph->setPos( 50, pGraph->getPosDY() - 130 );
+	pInfoGraph->setPos( 30, pGraph->getPosDY() - 110 );
 	pInfoGraph->setTabSize( 60 );
 
 	pGraph->add( pInfoGraph );

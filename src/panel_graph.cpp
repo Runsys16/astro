@@ -122,6 +122,27 @@ void PanelGraph::graph2panel( vec2& __v )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::glCercle(int x, int y, int rayon)
+{
+    double step = 80.0/(double)rayon;
+    if ( step < 1.0 )           step = 1.0;
+    
+    //logf ( (char*)" rayon %d   step %0.2f", rayon, step );
+    
+	glBegin(GL_LINE_LOOP);
+
+        for( double i=0; i<=360.0; i+=step )
+        {
+            double fx = (double)x+ (double)rayon*cos(DEG2RAD(i)) + getPosX(); 
+            double fy = (double)y+ (double)rayon*sin(DEG2RAD(i)) + getPosY();
+            glVertex2i(fx,fy);
+        }
+        
+    glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::glCroix( int x,  int y,  int dx,  int dy )
 {
     x += getPosX();// + dx_screen;
@@ -256,14 +277,27 @@ void PanelGraph::displayCourbeVizi()
 		glLine( v0, w );
 		glCroix( v0, vec2(6, 6) );
 	}
+
+	if ( iMouseCapture != -1 )
+	{
+		vec2 v0 = cVizi[iMouseCapture];
+		graph2panel(v0);
+
+		glColor4fv( (GLfloat*)&cRouge );
+		glCercle( (int)v0.x, (int)v0.y , 15 );
+		//iMouseCapture = -1;
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::displayCourbeStar()
 {
-	if( bNuit )						glColor4fv( (GLfloat*)&cRouge );
-	else							glColor4fv( (GLfloat*)&cVert );
+	vcf4 color;
+	if( bNuit )						color = cRouge;
+	else							color = cVert;
+	
+	glColor4fv( (GLfloat*)&color );
 
 	double _DY = getPosDY();
 	
@@ -281,8 +315,20 @@ void PanelGraph::displayCourbeStar()
 		vec2 w = v1-v0;
 		
 		glLine( v0, w );
+		
 		glCroix( v0, vec2(6, 6) );
 	}
+	
+	if ( iMouseCapture != -1 )
+	{
+		vec2 v0 = cStar[iMouseCapture];
+		graph2panel(v0);
+
+		glColor4fv( (GLfloat*)&cRouge );
+		glCarre( (int)v0.x, (int)v0.y , 15, 15 );
+		//iMouseCapture = -1;
+	}
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -722,6 +768,17 @@ void PanelGraph::sort_all()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::setStarOverMouse(int is)
+{
+	iMouseCapture = is;
+	return;
+	for( int i=0; i<cSort.size(); i++ )
+		if ( cSort[i] == is )			iMouseCapture = i;
+//	iMouseCapture = cSort[is];
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::updatePos()
 {
     PanelWindow::updatePos();
@@ -767,6 +824,7 @@ void PanelGraph::passiveMotionFunc( int mx, int my)
 		{
 			dMini = w.length();
 			iMouse = i;
+			iMouseCapture = i;
 		}
 	}
 	

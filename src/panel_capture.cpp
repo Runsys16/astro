@@ -64,6 +64,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pFondCoord->add( pJ2000_2 );
 
 	pInfoVizier = new PanelDebug();
+	pInfoVizier->setExtraString("Info Vizier");
 	pInfoVizier->setVisible(false);
 	pInfoVizier->setSize( 180, 1 );
 	pInfoVizier->setTabSize( 60 );
@@ -234,7 +235,7 @@ void PanelCapture::updateInfoVizier()
 	if ( n==0 )			return;
 
 	//-----------------------------------------------
-	// Reche de l'etoile sous la souris
+	// Recherche  de l'etoile sous la souris
 	//   idxVizierMouseOver
     idxVizierMouseOver = -1;
 
@@ -954,6 +955,55 @@ void PanelCapture::updatePosFondCoord()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+// Positionn ela fenetre info Vizier
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::find_star_mouse_over()
+{
+    int 	n					= stars.size();
+	Fits*	pFits				= pCapture->getFits();
+    int		idxStarMouseOver	= -1;
+    vec2	v, w;
+
+	//-----------------------------------------------
+	// Recherche  de l'etoile sous la souris
+	//   idxVizierMouseOver
+
+    for ( int i=0; i<n; i++ )        {       
+		
+		Star* pStar = stars.get(i);
+		pStar->setGraph(false);
+		
+        v.x = pStar->getAD();
+        v.y = pStar->getDE();
+
+		pFits->J2000_2_tex( v );
+		tex_2_screen(v);
+		
+		w = vec2(vMouse.x, vMouse.y);
+		w -= v;
+		if ( w.length() < (ech*10.0) )		{ idxStarMouseOver = i; }
+			
+	}
+	
+	if ( idxStarMouseOver != -1 )
+	{
+		stars.get(idxStarMouseOver)->setGraph(true);
+		vector<ivec2>& cmp = starCompare.getCmpViziStar();
+		
+		for( int i=0; i<cmp.size(); i++ )
+		{
+			if ( cmp[i].y == idxStarMouseOver )
+			{
+				//logf( (char*)"PanelCapture::find_star_mouse_over() = %d->%d", idxStarMouseOver, i );
+				pCapture->getGraph()->setStarOverMouse(i);
+			}
+		}
+	}
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
 // xx, yy coordonnée écran du pointeur de souris
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -965,6 +1015,9 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 
 	//if ( !bInfoSouris || bIcone ) 			{ return; }
 	if ( pCapture == NULL  ) 			{ return; }
+	
+	if ( pCapture->getGraph() != NULL && stars.size() != 0 )		find_star_mouse_over();
+	
 	if ( !pCapture->getAfficheInfoSouris() || pCapture->isIconized() )		
 	{
 		if ( pFondCoord )	pFondCoord->setVisible(false);
@@ -1061,7 +1114,8 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	else
 	{
 	}
-		
+	
+	
 	//------------------------------------------------------------
 	// si une etoile est survoler dans le graphique
 	if ( pCapture->getGraph() )
@@ -1069,7 +1123,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 		int iMouse = pCapture->getGraph()->getIndexMouse();
 		if (iMouse != -1 )
 		{
-			logf( (char*)"Find %d", iMouse );
+			//logf( (char*)"Find %d", iMouse );
 		}
 	}		
 	//log_tab(false);

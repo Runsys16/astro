@@ -111,6 +111,7 @@ public:
     virtual void		update_stars();
     		void		updateEchelle();
     		void		updateEchelleGeo();
+    		
     		void		updatePosInfoVizier();
     		void		updateInfoVizier();
     		void		updateVizier();
@@ -129,6 +130,8 @@ public:
     virtual void        wheelUp( int, int);
     virtual void        wheelDown( int, int);
     		void		updatePosFondCoord();
+    		
+    		void		find_star_mouse_over();
     virtual void		passiveMotionFunc(int, int);
 
     virtual void        clickLeft( int, int);
