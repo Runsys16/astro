@@ -320,10 +320,8 @@ void Stars::deleteAllStars()
         Star* p = v_tStars[n];
         //Panel*  panelPreview = p->getInfo()->getParent();
         //panelPreview->sup(p->getInfo());
+        if ( pView )	pView->sup(p->getInfo());
         delete p;
-        v_tStars.pop_back();
-        p=0;
-        
     }
     v_tStars.clear();
 
@@ -831,7 +829,7 @@ void Stars::affiche_position()
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::setA(double d)
 {
-	logf( (char*)"Stars::setA()" );
+	logf( (char*)"Stars::setA(%0.2lf)", d );
 	dCoefA = d;
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
@@ -845,7 +843,7 @@ void Stars::setA(double d)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::setB(double d)
 {
-	logf( (char*)"Stars::setB()" );
+	logf( (char*)"Stars::setB(%0.2lf)", d );
 	dCoefB = d;
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
@@ -884,6 +882,19 @@ void Stars::setDelta(double d)
         
         v_tStars[i]->setB( B );
         v_tStars[i]->calculMag();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::compute_magnitude()
+{
+	log( (char*)"Stars::compute_magnitude()" );
+
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+        v_tStars[i]->computeMag();
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

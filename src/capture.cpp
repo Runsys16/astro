@@ -929,10 +929,11 @@ void Capture::compareStar()
 
 	if ( pGraph == NULL )	setAffGraph(true);
 	
-	panelCapture->compareStar();
 	
 	StarCompare& sc = panelCapture->getStarCompare();
-	
+	panelCapture->compareStar();
+	//sc.compareStar();
+
 	log( (char*)"Init min et max ..." );
 	pGraph->setXmin( sc.getLumMin() );
 	pGraph->setXmax( sc.getLumMax() );
@@ -959,8 +960,6 @@ void Capture::compareStar()
 		vec2 v = vec2( star[i]->getPonderation(), vizi[i]->getMag() );
 		vec2 w = vec2( star[i]->getPonderation(), star[i]->getMagnitude() );
 
-		//pGraph->addStar( v );
-		//pGraph->addVizi( w );
 		pGraph->addViziStar( v, w );
 	}
 	
@@ -977,7 +976,9 @@ void Capture::compareStar()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::update_info_graph()
 {
+	if ( pGraph == NULL )		return;
 	if ( pInfoGraph == NULL )		{ log( (char*)"[ Erreur ] pInfoGraph inexistant"); create_info_graph();  }
+	log( (char*)"Capture::update_info_graph()" );
 
 	pInfoGraph->setVisible( false );
 	if ( panelCapture->getStars() == NULL ) 			return;
@@ -989,13 +990,13 @@ void Capture::update_info_graph()
 	int nbStar = panelCapture->getStars()->size();
 	int nbCorr = panelCapture->getStarCompare().getCmpViziStar().size();
 	
-	panelCapture->getStarCompare().compute_moyenne();
-	panelCapture->getStarCompare().compute_ecart_type();
+	//panelCapture->getStarCompare().compute_moyenne();
+	//panelCapture->getStarCompare().compute_ecart_type();
 	double dMoyen = panelCapture->getStarCompare().getMoyen();
 	double dEcart = panelCapture->getStarCompare().getEcart();
 
 	pInfoGraph->reset_list();
-	pInfoGraph->setVisible( pGraph->getVisible() );
+	if ( pGraph )	pInfoGraph->setVisible( pGraph->getVisible() );
 	
 	pInfoGraph->add_textf( (char*)"%d etoiles GAIA dr3", nbGaia );
 	pInfoGraph->add_textf( (char*)"%d etoiles trouvées", nbStar );
@@ -1013,7 +1014,7 @@ void Capture::create_info_graph()
 	pInfoGraph = new PanelDebug();
 	pInfoGraph->setExtraString("PanelInfoGraph");
 	pInfoGraph->setBorderSize(0);
-	pInfoGraph->setVisible(pGraph->getVisible());
+	if (pGraph)	pInfoGraph->setVisible(pGraph->getVisible());
 	pInfoGraph->setPos( 30, pGraph->getPosDY() - 110 );
 	pInfoGraph->setTabSize( 60 );
 

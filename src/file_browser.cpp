@@ -324,6 +324,7 @@ void FileBrowser::explore_dir()
         pT = new PanelText( (char*)tFileNames[i].c_str(),		PanelText::NORMAL_FONT, xf, yf );
         pT->setMaxSize(DXFile-25);
         pT->buildString();
+        pT->setAffShort(true);
         panelFile->add( pT );
         addImage( "images/file.png", panelFile, xf-4-16, yf );
         
@@ -806,12 +807,6 @@ void FileBrowser::mouseOverDir(int x, int y)
 				pChild->updatePos();
 				pChild->onTop();
 				
-				/*
-				if ( pOldDir == NULL )
-					logf( (char*)"pChild (file) : %s   pOldFile = NULL ", pChild->getText().c_str() );
-				else
-					logf( (char*)"pChild (file) : %s   pOldFile : %s", pChild->getText().c_str(), pOldDir->getText().c_str() );
-				*/
 				pOldDir = pChild;
 				return;
 			}
@@ -833,6 +828,7 @@ void FileBrowser::mouseOverDir(int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::mouseOverFile(int x, int y)
 {
+	//logf( (char*)"FileBrowser::isMouseOver(%d,%d)", x, y );
     vector<Panel*>& childs = panelFile->getChilds();
 
 	int i;
@@ -848,7 +844,7 @@ void FileBrowser::mouseOverFile(int x, int y)
         int Y  = pChild->getPosY();
         int dX = pChild->getDX();        if ( dX > DXFile )	dX = DXFile;
         int dY = DY;					//pChild->getDY();
-
+		//printf( "%d-%d %dx%d\n", Y, Y, dX, dY );
         
         if (	X<=x && x<(X+dX)
 			&&	Y<=y && y<(Y+dY) )
@@ -856,7 +852,10 @@ void FileBrowser::mouseOverFile(int x, int y)
 			if( pOldFile!=pChild )
 			{
 
-				if ( pOldFile )					pOldFile->setColor( 0xffFFffFF );
+				if ( pOldFile ) {
+					pOldFile->setColor( 0xffFFffFF );
+					pOldFile->setAffShort(true);
+				}
 				
 				pChild->setColor( 0x000000FF );
 
@@ -866,10 +865,15 @@ void FileBrowser::mouseOverFile(int x, int y)
 					panelInverseDir->setVisible(false);
 					pOldDir = NULL;
 				}
+
+				pChild->setAffShort(false);
+				//printf( "%s = %d\n", pChild->getText().c_str(), pChild->getTextLenght() );
+
 				panelInverseFile->setPosAndSize( X, Y,	pChild->getDX(), dY );
 				panelInverseFile->updatePos();
 				panelInverseFile->setVisible(true);
 				panelInverseFile->onBottom();
+
 				pChild->updatePos();
 				pChild->onTop();
 				
@@ -893,7 +897,11 @@ void FileBrowser::mouseOverFile(int x, int y)
 	//logf( (char*)"FileBrowser::mouseOverFile(%d, %d) resultat %d/%d", x, y, i, childs.size() );
 	if ( i == childs.size() )
 	{
-		if ( pOldFile )					pOldFile->setColor( 0x000000FF );
+		if ( pOldFile )
+		{
+			pOldFile->setColor( 0x000000FF );
+			pOldFile->setAffShort(true);
+		}
 		panelInverseFile->setVisible(false);
 		pOldFile = NULL;
 	}

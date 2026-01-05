@@ -268,8 +268,9 @@ void Star::calculMag()
 		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
 	#endif
 
-
-    pInfo->changeText( p_sInfo );
+	//logf( (char*)"%s", p_sInfo );
+	pInfo->changeText( p_sInfo );
+	pInfo->buildString();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1016,12 +1017,14 @@ void Star::displayGL()
         glCercle( rayon );
     }
 
+	/*
     if ( bGraph )      
     {
         glColor4fv( (GLfloat*)&cRouge );
         float rayon = 3.0	*ech*(float)(computeRayon());
         glCercle( rayon );
     }
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

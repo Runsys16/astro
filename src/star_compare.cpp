@@ -358,6 +358,7 @@ int StarCompare::getTwinVizier(int ii)
 //--------------------------------------------------------------------------------------------------------------------
 void StarCompare::compute_moyenne()
 {
+   	log( (char*)"StarCompare::compute_moyenne()");
 	dMoyen = 0.0;
 	 
 	for( int i=0; i<cmpViziStar.size(); i++ )
@@ -370,6 +371,8 @@ void StarCompare::compute_moyenne()
 	}
 
 	dMoyen /= (double)cmpViziStar.size();
+
+   	logf( (char*)"|  %0.2lf", dMoyen );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -378,6 +381,7 @@ void StarCompare::compute_moyenne()
 //--------------------------------------------------------------------------------------------------------------------
 void StarCompare::compute_ecart_type()
 {
+   	log( (char*)"StarCompare::compute_ecart_type()");
 	dEcart = 0.0;
 	 
 	for( int i=0; i<cmpViziStar.size(); i++ )
@@ -392,6 +396,8 @@ void StarCompare::compute_ecart_type()
 
 	dEcart /= (double)cmpViziStar.size();
 	dEcart = sqrt( dEcart );
+
+   	logf( (char*)"|  %0.2lf", dEcart );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

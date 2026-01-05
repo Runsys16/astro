@@ -64,7 +64,7 @@ void PanelDebug::add_text( char* p)
 	else
 	{
 		pText[idx]->changeText( p );
-		//pText[idx]->buildString();
+		pText[idx]->buildString();
 	}
 	
 	pText[idx]->setColor( uColor );

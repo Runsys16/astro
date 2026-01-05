@@ -1425,6 +1425,7 @@ void PanelCapture::compareStar()
 {
 	log( (char*)"PanelCapture::compareStar()");
 	log_tab(true);
+	
 	starCompare.setStars(&stars);
 	starCompare.setVizier(pVizier);
 

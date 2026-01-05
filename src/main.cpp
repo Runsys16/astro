@@ -3097,6 +3097,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		break;
     case 'K':
         {
+	        logf( (char*)"Key (K) : Comparaison etoiles");
+	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
         	Capture* 	cap		= caps.getCurrentCapture();
         	
@@ -3111,14 +3113,17 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 					bDesactiveLog = true;
 					cap->compareStar();
 					cap->compareStar();
-					cap->compareStar();
 					bDesactiveLog = false;
+					cap->compareStar();
 				}
         	}
+	        log_tab(false);
         }
         break;
     case 'k':
         {
+	        logf( (char*)"Key (k) : Comparaison etoiles");
+	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
         	Capture* 	cap		= caps.getCurrentCapture();
         	
@@ -3133,10 +3138,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 					bDesactiveLog = true;
 					cap->compareStar();
 					cap->compareStar();
-					cap->compareStar();
 					bDesactiveLog = false;
+					cap->compareStar();
 				}
         	}
+	        log_tab(false);
         }
         break;
 	/*
@@ -3357,6 +3363,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
 	case 't':
 		{
+	        logf( (char*)"Key (t) : Compaaraison etoiles");
+	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
         	Capture* 	cap		= caps.getCurrentCapture();
         	
@@ -3367,18 +3375,22 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 				{
 					double A = stars->getA() / 1.1;
 					stars->setA( A );
-					logf( (char*)"Coef A=%0.2lf", A );
+					//logf( (char*)"Coef A=%0.2lf", A );
 					bDesactiveLog = true;
 					cap->compareStar();
 					cap->compareStar();
-					cap->compareStar();
 					bDesactiveLog = false;
+					cap->compareStar();
+					//cap->update_info_graph();
 				}
         	}
+	        log_tab(false);
         }
 		break;
 	case 'T':
 		{
+	        logf( (char*)"Key (T) : Compaaraison etoiles");
+	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
         	Capture* 	cap		= caps.getCurrentCapture();
         	
@@ -3393,10 +3405,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 					bDesactiveLog = true;
 					cap->compareStar();
 					cap->compareStar();
-					cap->compareStar();
 					bDesactiveLog = false;
+					cap->compareStar();
+					//cap->update_info_graph();
 				}
         	}
+	        log_tab(false);
         }
 		break;
 	/*

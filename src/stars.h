@@ -61,6 +61,7 @@ public:
 	void					setC(double d);
 	
 	void					setDelta(double);
+	void					compute_magnitude();
 
 inline bool					getVisible()				{ return bVisible; }
 inline Star*				get(int i)					{ return v_tStars[i]; }

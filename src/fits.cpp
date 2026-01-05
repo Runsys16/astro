@@ -107,7 +107,7 @@ void Fits::create_panel_fits()
 	WindowsManager&     wm  = WindowsManager::getInstance();
 
     pPanelFits = new PanelFits();
-    pPanelFits->setPosAndSize( 10, 10, 760, 250 );
+    pPanelFits->setPosAndSize( 10, 10, 650, 250 );
     pPanelFits->setVisible( false );
 
     wm.add( pPanelFits );
