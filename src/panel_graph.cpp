@@ -276,6 +276,8 @@ void PanelGraph::displayCourbeVizi()
 
 		glLine( v0, w );
 		glCroix( v0, vec2(6, 6) );
+		
+		if ( i==1 ) 			glCroix( v1, vec2(6, 6) );
 	}
 
 	if ( iMouseCapture != -1 )
@@ -317,6 +319,8 @@ void PanelGraph::displayCourbeStar()
 		glLine( v0, w );
 		
 		glCroix( v0, vec2(6, 6) );
+
+		if ( i==1 ) 			glCroix( v1, vec2(6, 6) );
 	}
 	
 	if ( iMouseCapture != -1 )
@@ -771,6 +775,7 @@ void PanelGraph::sort_all()
 void PanelGraph::setStarOverMouse(int is)
 {
 	iMouseCapture = is;
+	//printf( "%d\n", iMouseCapture );
 	return;
 	for( int i=0; i<cSort.size(); i++ )
 		if ( cSort[i] == is )			iMouseCapture = i;

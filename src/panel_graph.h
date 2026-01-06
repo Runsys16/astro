@@ -126,7 +126,8 @@ virtual void            clickMiddle( int, int);
 virtual void            motionMiddle( int, int);
 virtual void            releaseMiddle( int, int);
 */    
-inline void				setName( string s )				{ name = s; pTitre->changeText(name); }
+inline void				setName( string s )				{ name = s; pTitre->changeText(name);  setExtraString("PanelGraph "+s);
+}
 
 inline void				setXmin(double d)				{ dXmin = d; }
 inline void				setXmax(double d)				{ dXmax = d; }

@@ -1,7 +1,7 @@
 #include "stars.h"
 #include <malloc.h>
 #include "panel_camera.h"
-
+//--------------------------------------------------------------------------------------------------------------------
 //#define DEBUG_UPDATES   0
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -13,9 +13,12 @@ Stars::Stars()
     pView			= NULL;
     pNbStars		= NULL;
 	bAffPosition	= false;
-    dCoefA			= 2196;
-    dCoefB			= 33.8;
-    dCoefC			= 1.46;
+
+    dCoefA			= 2196.00;
+    dCoefB			=   33.8;
+    dCoefC			=   -5.22;
+/*
+*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -831,12 +834,13 @@ void Stars::setA(double d)
 {
 	logf( (char*)"Stars::setA(%0.2lf)", d );
 	dCoefA = d;
-    int nb = v_tStars.size();
-    for( int i=0; i<nb; i++ )
-    {
-        v_tStars[i]->setA(d);
-        v_tStars[i]->calculMag();
-    }
+	int nb = v_tStars.size();
+	
+	for( int i=0; i<nb; i++ )
+	{
+		v_tStars[i]->setA(d);
+		v_tStars[i]->calculMag();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -846,9 +850,10 @@ void Stars::setB(double d)
 	logf( (char*)"Stars::setB(%0.2lf)", d );
 	dCoefB = d;
     int nb = v_tStars.size();
+    
     for( int i=0; i<nb; i++ )
     {
-        v_tStars[i]->setB(d);
+	    v_tStars[i]->setB(d);
         v_tStars[i]->calculMag();
     }
 }
@@ -857,14 +862,15 @@ void Stars::setB(double d)
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::setC(double d)
 {
-	logf( (char*)"Stars::setC()" );
+	logf( (char*)"Stars::setC(%0.02lf)", d );
 	dCoefC = d;
-    int nb = v_tStars.size();
-    for( int i=0; i<nb; i++ )
-    {
-        v_tStars[i]->setC(d);
-        v_tStars[i]->calculMag();
-    }
+	int nb = v_tStars.size();
+
+	for( int i=0; i<nb; i++ )
+	{
+		v_tStars[i]->setC(d);
+		v_tStars[i]->calculMag();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -872,7 +878,7 @@ void Stars::setC(double d)
 void Stars::setDelta(double d)
 {
 	logf( (char*)"Stars::setDelta(%0.2lf)", d );
-	dCoefC = d;
+	//dCoefC = d;
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
     {

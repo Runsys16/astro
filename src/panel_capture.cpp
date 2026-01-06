@@ -64,13 +64,15 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pFondCoord->add( pJ2000_2 );
 
 	pInfoVizier = new PanelDebug();
-	pInfoVizier->setExtraString("Info Vizier");
+	pInfoVizier->setExtraString("PanelDebug Info comparaison");
 	pInfoVizier->setVisible(false);
 	pInfoVizier->setSize( 180, 1 );
 	pInfoVizier->setTabSize( 60 );
 	pInfoVizier->loadSkin( PanelWindow::BLACK );
 	pInfoVizier->setBorderSize(2);
 
+	WindowsManager& wm = WindowsManager::getInstance();
+	wm.sup( pInfoVizier );
 	add( pInfoVizier );
 	
     
@@ -222,9 +224,15 @@ void PanelCapture::updatePosInfoVizier()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::updateInfoVizier()
 {
-	if ( pVizier == NULL )			return;
-	if ( pCapture->isIconized() )	return;
-	//if ( pVizier->isIconized() )	{ pInfoVizier->setVisible(false); return; }
+	if ( pVizier == NULL )							return;
+	if ( pCapture->isIconized() )					return;
+	if ( pCapture->isIconized() )					return;
+	if ( pCapture->getGraph() == NULL )				return;
+	if ( !pCapture->getGraph()->getVisible() )		{ pInfoVizier->setVisible(false); return; }
+
+	Panel* p = WindowsManager::getInstance().getCapture();
+	if ( p	&&  p->getExtraString().find( "PanelGraph")==0 )		{ pInfoVizier->setVisible(false); return; }
+	
 	
 	double	ad_vizi, de_vizi, ad_star, de_star;
     int 	n		= pVizier->size();
@@ -334,7 +342,7 @@ void PanelCapture::updateVizier()
     for ( int i=0; i<n; i++ )        {       
 		
 		PanelText* p = pVizier->get(i)->getInfo();
-
+		if ( p == NULL )	continue;
 		p->setVisible(true);
 
         v.x = pVizier->get(i)->getRA();
@@ -771,6 +779,7 @@ void PanelCapture::idle(float f)
 			pFondCoord->setVisible(false);
 	
 	}
+	passiveMotionFunc( (int)vMouse.x, (int)vMouse.y );
 	
 	if ( pCapture->isIconized() )		
 		pFondCoord->setVisible(false);
@@ -984,7 +993,7 @@ void PanelCapture::find_star_mouse_over()
 		
 		w = vec2(vMouse.x, vMouse.y);
 		w -= v;
-		if ( w.length() < (ech*10.0) )		{ idxStarMouseOver = i; }
+		if ( w.length() < (ech*10.0) )		{ idxStarMouseOver = i; pStar->setGraph(true); }
 			
 	}
 	
@@ -999,10 +1008,11 @@ void PanelCapture::find_star_mouse_over()
 			{
 				//logf( (char*)"PanelCapture::find_star_mouse_over() = %d->%d", idxStarMouseOver, i );
 				pCapture->getGraph()->setStarOverMouse(i);
+				return;
 			}
 		}
 	}
-
+	pCapture->getGraph()->setStarOverMouse(-1);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1015,17 +1025,18 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	//logf( (char*)"  ech_user = %0.2f, ech_geo = %0.2f )", (float)ech_user, (float)ech_geo );
 	//log_tab(true);
 
-	if ( pCapture->isIconized() ) 			{ return; }
+	if ( pCapture->isIconized() ) 									{ return; }
+	if ( pCapture == NULL  ) 										{ return; }
+
+	Panel* p = WindowsManager::getInstance().getCapture();
+	if ( p	&&  p->getExtraString().find( "PanelGraph")==0 )		return;
 	
+
 	
-	if ( pCapture == NULL  ) 			{ return; }
-	
-	if ( pCapture->getGraph() != NULL && stars.size() != 0 )		find_star_mouse_over();
-	
-	if ( !pCapture->getAfficheInfoSouris() || pCapture->isIconized() )		
+	if ( pCapture->getGraph() && pCapture->getGraph()->getVisible()  )
 	{
-		if ( pFondCoord )	pFondCoord->setVisible(false);
-		return;
+			
+		if ( pCapture->getGraph()->getVisible()  && stars.size() != 0 )			find_star_mouse_over();	
 	}
 	
 	static char coord[80];
@@ -1446,7 +1457,7 @@ void PanelCapture::compareStar()
 	starCompare.setVizier(pVizier);
 
 	starCompare.compareStar();
-	
+
 	double d = starCompare.computeDelta();
 	stars.setDelta( d );
 	log_tab(false);
@@ -1994,12 +2005,13 @@ void PanelCapture::findGaiaDR3()
 		log_tab(false);
 		return;
 	}
-
+	/*
+	*/
 
 	//---------------------------------------------------
 	// lance la requete
 	//static char coord[80];
-	snprintf( (char*)coord, sizeof(coord), "-r %d% 0.8f %0.8f", (int)(rayon), vCentre.x, vCentre.y );
+	snprintf( (char*)coord, sizeof(coord), " -r %d %0.8f %0.8f", (int)(rayon), vCentre.x, vCentre.y );
 	logf( (char*)"Requete Gaia DR3 : %s", coord );
 
 	//vizier_load_stars( pVizier, string(coord) );	

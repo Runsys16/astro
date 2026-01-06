@@ -173,9 +173,9 @@ private:
     bool				bVisible;
     bool				bGraph;
     
-    double				dCoefA;
-    double				dCoefB;
-    double				dCoefC;
+	double				dCoefA;
+	double				dCoefB;
+	double				dCoefC;
     
     PanelZoom*          panelZoom;
     PanelSimple*        pView;

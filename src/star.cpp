@@ -5,6 +5,12 @@
 //#define DEBUG
 //#define AFFIDX
 //--------------------------------------------------------------------------------------------------------------------
+/*
+double			Star::dCoefA = 2196.0;
+double			Star::dCoefB =   33.8;
+double			Star::dCoefC =    1.46;
+*/
+//--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Star::~Star()
@@ -101,11 +107,15 @@ void Star::init(int xx, int yy)
     dy_screen   = 0.0;
     
     modeMag		= 0.0;
+    /*
     dCoefA		= 2196;
     dCoefB		= 33.8;
     dCoefC		= 1.46;
-    //dCoefA		= 46;
-    //dCoefC		= 1.16;
+    */
+    dCoefA			= 2196.00;
+    dCoefB			=   33.8;
+    dCoefC			=   -5.22;
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -257,7 +267,7 @@ void Star::calculMag()
 	else
 	{
 		// Capture NGC2392
-		magnitude = (A * dCoefC * log10( ponderation + dCoefA )) + dCoefB ;
+		magnitude = (dCoefC * log10( ponderation + dCoefA )) + dCoefB ;
 	}
 	
     double mag = -(log( ponderation ) / log(2.0)) + 17.0;
@@ -266,11 +276,12 @@ void Star::calculMag()
 		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%d-%0.2f  %0.2f", idx, magnitude, ponderation );
 	#else
 		snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f", magnitude );
+		//snprintf( p_sInfo, sizeof(p_sInfo)-1, "%0.2f %0.8f", magnitude, A );
 	#endif
 
 	//logf( (char*)"%s", p_sInfo );
 	pInfo->changeText( p_sInfo );
-	pInfo->buildString();
+	pInfo->setChangeText(true);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -966,12 +977,9 @@ void Star::displayGLGraph()
 
     float ech = ech_x<ech_y ? ech_x : ech_y;
 
-    if ( bGraph )      
-    {
-        glColor4fv( (GLfloat*)&cRouge );
-        float rayon = 2.0	*ech*(float)(computeRayon());
-        glCercle( rayon );
-    }
+    glColor4fv( (GLfloat*)&cRouge );
+    float rayon = 2.0	*ech*(float)(computeRayon());
+    glCercle( rayon );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

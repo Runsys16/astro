@@ -7,27 +7,41 @@
 #include <WindowsManager.h>
 #include <thread>
 
-
+//#define MOUV_PROPRE
 using namespace std;
 
 class StarCatalog 
 {
 public :
-        double          fXScreen;
-        double          fYScreen;
-        double          fXTex;
-        double          fYTex;
-        double          fRA;
-        double          fDE;
-        double          fMag;
-        int				idx;
-        string          name;
-        PanelText *     pInfo;
-        char            p_sInfo[225];
+		//-----------------------
+		double          fXScreen;
+		double          fYScreen;
+		double          fXTex;
+		double          fYTex;
+		//-----------------------
+		double          fRA;
+		double          fDE;
+		double          fMag;
+		
+#ifdef MOUV_PROPRE
+		double			fpmRA;
+		double			feRA;
+		double			fpmDE;
+		double			feDE;
+#endif
+ 
+		int				idx;
+		string          name;
+		PanelText *     pInfo;
+		//char            p_sInfo[225];
 
 public :
         //StarCatalog( double, double, double, string );
+        
         StarCatalog( double, double, double, string, int );
+#ifdef MOUV_PROPRE
+        StarCatalog( double, double, double, double, double, double, double, string, int );
+#endif
         ~StarCatalog();
         
         void			affiche_position();

@@ -974,6 +974,35 @@ void Capture::compareStar()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+#define A_FACTOR 1.1
+void Capture::affine_compareStar(bool b)
+{
+	return;
+	logf( (char*)"Capture::affine_compareStar()" );
+	log_tab(true);
+	
+	Stars* pStars = panelCapture->getStars();
+	double cA = pStars->getA();
+	
+	if ( b )		cA /= A_FACTOR;
+	else			cA *= A_FACTOR;
+	
+	pStars->setA(cA);
+	//compareStar();
+	StarCompare& sc = panelCapture->getStarCompare();
+	for( int i=0; i<10; i++ )
+	{
+		bDesactiveLog = true;
+		compareStar();
+		bDesactiveLog = false;
+		printf( (char*)"affine %0.6lf\n", sc.getMoyen() );
+	}
+	
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Capture::update_info_graph()
 {
 	if ( pGraph == NULL )		return;
@@ -1012,7 +1041,7 @@ void Capture::create_info_graph()
 	if ( pInfoGraph != NULL )		{ log( (char*)"[ Erreur ] pInfoGraph existant"); return; }
 
 	pInfoGraph = new PanelDebug();
-	pInfoGraph->setExtraString("PanelInfoGraph");
+	pInfoGraph->setExtraString("PanelDebug statistique etoiles");
 	pInfoGraph->setBorderSize(0);
 	if (pGraph)	pInfoGraph->setVisible(pGraph->getVisible());
 	pInfoGraph->setPos( 30, pGraph->getPosDY() - 110 );

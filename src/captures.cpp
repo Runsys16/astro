@@ -985,7 +985,17 @@ void Captures::resetVizierMagMax()
 	if ( current_capture != -1 && captures[current_capture]->isFits() )
 	{
 		Capture* p = captures[current_capture];
+		if ( p == NULL )		return;
 		p->getPanelCapture()->getStarCompare().setMagMax( 20.0 );
+		/*
+		dCoefA			= 2196.00;
+		dCoefB			=   33.8;
+		dCoefC			=   -5.22;
+		*/
+		p->getPanelCapture()->getStars()->setA( 2196.00 );
+		p->getPanelCapture()->getStars()->setB( 33.8 );
+		p->getPanelCapture()->getStars()->setC( -5.22 );
+		p->compareStar();
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

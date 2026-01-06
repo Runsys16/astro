@@ -190,6 +190,9 @@ vector<string> t_sHelp3 =
 	"Ctrl+H\t: Restaure la magnitude d'affichage a 20.0"   ,
 	"     x\t: Affiche la courbe de calcul de la magnitude"   ,
 	"",
+	"Alt+l/L\t: Correction du calcul magnitude"   ,
+	"Alt+k/K\t: Correction du calcul magnitude"   ,
+	"",
 	"---- DEBUG ----",
 	" Alt+g\t: Info fits"   ,
 	"",
@@ -657,33 +660,80 @@ void commande_magnitude( string filename )
     RAJ2000 (deg)   (F15.11) Barycentric right ascension (ICRS) at Ep=2000.0 (added by CDS) (ra2000) [ucd=pos.eq.ra]
     DEJ2000 (deg)   (F15.11) Barycentric declination (ICRS) at Ep=2000.0 (added by CDS) (dec2000) [ucd=pos.eq.dec]*/
 //--------------------------------------------------------------------------------------------------------------------
+/*
+#Title: Gaia DR3 source catalog (1811709771 sources)
+#---Details of Columns:
+    RA_ICRS (deg)   (F15.11) Right ascension (ICRS) at Ep=2016.0 (ra) [ucd=pos.eq.ra;meta.main]
+    DE_ICRS (deg)   (F15.11) Declination (ICRS) at Ep=2016.0 (dec) [ucd=pos.eq.dec;meta.main]
+    Source          (I19)   Unique source identifier (unique within a particular Data Release) (source_id) [ucd=meta.id;meta.main]
+    Gmag (mag)      (F9.6)  ? G-band mean magnitude (phot_g_mean_mag) [ucd=phot.mag;em.opt]
+    pmRA (mas/yr)   (F9.3)  ? Proper motion in right ascension direction, pmRA*cosDE (pmra) [ucd=pos.pm;pos.eq.ra]
+    e_pmRA (mas/yr) (F6.3)  ? Standard error of proper motion in right ascension direction (pmra_error) [ucd=stat.error;pos.pm;pos.eq.ra]
+    pmDE (mas/yr)   (F9.3)  ? Proper motion in declination direction (pmdec) [ucd=pos.pm;pos.eq.dec]
+    e_pmDE (mas/yr) (F6.3)  ? Standard error of proper motion in declination direction (pmdec_error) [ucd=stat.error;pos.pm;pos.eq.dec]
+--------------- --------------- ------------------- --------- --------- ------ --------- ------
+                                                                        e_p              e_p   
+                                                    G         pmRA      mRA (m pmDE      mDE (m
+RA_ICRS (deg)   DE_ICRS (deg)   Source              mag (mag) (mas/yr)  as/yr) (mas/yr)  as/yr)
+--------------- --------------- ------------------- --------- --------- ------ --------- ------
+*/
+//#define MOUV_PROPRE
 void vizier_parse_line( Catalog* pVizier, string & line )
 {
     if ( line.size() < 58 )        return;
-/*
-    double fRA = stod( line.substr(0,15), 0 );
-    double fDE = stod( line.substr(16,15), 0 );
-    string name = line.substr(34, 17);
-    double fMag = stod( line.substr(167,15 ), 0 );
-*/ 
+
+	//printf( (char*)"%s\n", line.c_str() );
+	printf( (char*)"%s\n", line.c_str() );
+	
     double fRA	= stod( line.substr(0,15), 0 );
     double fDE	= stod( line.substr(16,15), 0 );
     string name = line.substr(32, 19);
-    double fMag = stod( line.substr(52,6), 0 );
+    double fMag = stod( line.substr(52,9), 0 );
+
+#ifdef MOUV_PROPRE
+	double pmRA = stod( line.substr(62,9), 0 );
+	double eRA  = stod( line.substr(72,6), 0 );
+	double pmDE = stod( line.substr(79,9), 0 );
+	double eDE  = stod( line.substr(89,6), 0 );
+
     //int    iHip = stoi( line.substr(59,6), 0, 10 );
  
+    //StarCatalog* p = new StarCatalog( fRA, fDE, fMag, pmRA, eRA, pmDE, eDE, name, nbVizier++ );
+#else
+#endif
     StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name, nbVizier++ );
     pVizier->add(p);
+
+#ifdef MOUV_PROPRE
+    logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7lf,\t%0.7lf)\tmag=%0.4lf\tpmRA=%0.4lf, eRA=%0.4lf  pmDE=%0.4lf, eDE=%0.4lf ",
+    					 (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag, 
+    					 (double)pmRA, (double)eRA, (double)pmDE, (double)eDE );
     
-    //logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f  HIP%06d", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag, (unsigned)iHip );
-    logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7f,\t%0.7f)\tmag=%0.4f", (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
-    //logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'", (char*)line.c_str() );
+#else
+    logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7lf,\t%0.7lf)\tmag=%0.4lf\tpmRA=%0.4lf, eRA=%0.4lf  pmDE=%0.4lf, eDE=%0.4lf 	",
+    					 (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
+#endif
 
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 #define ICRS
+
+#ifdef ICRS
+	#define COORD "RA_ICRS,DE_ICRS"
+#else
+	#define COORD "RAJ2000,DEJ2000"
+#endif
+
+
+#ifdef MOUV_PROPRE
+	#define MOUV ",pmRA,e_pmRA,pmDE,e_pmDE"
+#else
+	#define MOUV ""
+#endif
+
+//--------------------------------------------------------------------------------------------------------------------
 void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_capture )
 {
     logf_thread( (char*)"main::vizier_capture_thread()" );
@@ -694,13 +744,9 @@ void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_ca
         find = "find_gaia_dr3.py -r 10200 -m 3000 --Gmag=\"<8\" m45";
     }
     else    {
-		#ifdef ICRS
-	        find = "find_gaia_dr3.py -m 6000 --add=\"RA_ICRS,DE_ICRS,Source,Gmag\" --Gmag=\"<17.58\" " + s;
-	    #else
-        	find = "find_gaia_dr3.py -m 6000 --add=\"RAJ2000,DEJ2000,Source,Gmag\" --Gmag=\"<17.58\" " + s;
-        #endif
+       	find =  "find_gaia_dr3.py -m 6000 --add=\"" COORD ",Source,Gmag" MOUV "\" --Gmag=\"<17.58\"" + s ;
     }
-    
+   
 
 	string     rep = "/home/rene/Documents/astronomie/logiciel/python/cds.cdsclient/cdsclient/";
 	string     cmd = "python3 " + rep + find;
@@ -715,10 +761,12 @@ void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_ca
 	logf_thread( (char*)"Lance la requete : %s", find.c_str() );
 	logf_thread( (char*)"dans le repertoire  %s", rep.c_str() );
  
+ 	//return;
+ 
     if ((pipe = popen(cmd.c_str(), "r")) != NULL)    {
     
-        while (fgets(buf1, BUFSIZ, pipe) != NULL)        {
-        	for( int i=0; i<BUFSIZ; i++ )	if (buf1[i]=='\n')	buf1[i]=0;
+        while (fgets(buf1, sizeof(buf1), pipe) != NULL)        {
+        	for( int i=0; i<sizeof(buf1); i++ )	if (buf1[i]=='\n')	buf1[i]=0;
         	
             string s = string( buf1 );
 			
@@ -744,6 +792,9 @@ void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_ca
     logf_thread( (char*)"%d etoiles trouvees", pVizier->size() );
     log_tab(false);
     logf_thread( (char*)"main::vizier_capture_thread()  FIN" );
+    
+    // evite la sauvegarde dans un fichier
+    //return;
 
  	//____________________________________
  	// On previens la fenetre capture
@@ -2298,100 +2349,54 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	
 	switch(key){ 
 	//----------------------------------------------------------------------------
-    case 'o':
+    case 'A':
         {
-	        PanelCapture* p = (PanelCapture*)wm.getCapture();
-
-	        if ( p == NULL )
-	        {
-		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
-	        }
-	        else
-	        if ( typeid(*p) == typeid(PanelCapture)	)
-	        {
-	    		if ( p )
-	    		{
-	    			double d = *( p->getStars()->getvC() );
-					d *= 1.1;
-					p->getStars()->setC( d );
-					logf( (char*)"C = %0.2f", (float)d );
-				}				
-		    }
+	        logf( (char*)"Key (alt+shift+a) : Arduino bavard" );
+	        
+        	if ( var.existe("bVerboseArduino") )    {
+        		bool b = !var.getb("bVerboseArduino");
+        		var.set("bVerboseArduino", b);
+			    logf( (char*)"bVerboseArduino = %s", BOOL2STR(b) );
+        	}
         //logf( (char*)"Key (b) : Bluetooth disconnect" );
         //BluetoothManager::getInstance().disconnect();
         }
         break;
-    case 'p':
+	//----------------------------------------------------------------------------
+    case 'C':
         {
-	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+	        logf( (char*)"Key (alt+shift+c) : Aff le cercle de colimation %s", BOOL2STR(!bAffColimation) );
 
-	        if ( p == NULL )
-	        {
-		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
-	        }
-	        else
-	        if ( typeid(*p) == typeid(PanelCapture)	)
-	        {
-	    		if ( p )
-	    		{
-	    			double d = *( p->getStars()->getvC() );
-					d /= 1.1;
-					p->getStars()->setC( d );
-					logf( (char*)"C = %0.2f", (float)d );
-				}				
-		    }
-        //logf( (char*)"Key (b) : Bluetooth disconnect" );
-        //BluetoothManager::getInstance().disconnect();
+			bAffColimation = !bAffColimation;
+       		var.set("bAffColimation", bAffColimation);
         }
         break;
-    case 'l':
-        {
-	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+	//----------------------------------------------------------------------------
+	case 'e':
+	    {
+	        logf( (char*)"Key (Alt+e) : Affiche le catalog" );
 
-	        if ( p == NULL )
-	        {
-		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
-	        }
-	        else
-	        if ( typeid(*p) == typeid(PanelCapture)	)
-	        {
-	    		if ( p )
-	    		{
-	    			double d = *( p->getStars()->getvA() );
-					d *= 1.1;
-					p->getStars()->setA( d );
-					logf( (char*)"A = %0.2f", (float)d );
-				}				
-		    }
-        //logf( (char*)"Key (b) : Bluetooth disconnect" );
-        //BluetoothManager::getInstance().disconnect();
-        }
-        break;
-    case 'm':
-        {
-	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+	        bAffCatalog = !bAffCatalog;
+            VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
 
-	        if ( p == NULL )
-	        {
-		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
-	        }
-	        else
-	        if ( typeid(*p) == typeid(PanelCapture)	)
-	        {
-	    		if ( p )
-	    		{
-	    			double d = *( p->getStars()->getvA() );
-					d /= 1.1;
-					p->getStars()->setA( d );
-					logf( (char*)"A = %0.2f", (float)d );
-				}				
-		    }
-        //logf( (char*)"Key (b) : Bluetooth disconnect" );
-        //BluetoothManager::getInstance().disconnect();
-        }
-        break;
+	        logf( (char*)"Affiche oui/non le catalogue Vizier : %s", BOOL2STR(bAffCatalog) );
+            var.set( "bAffCatalog", bAffCatalog );
+	    }
+	    break;
+	//----------------------------------------------------------------------------
+	case 'g':
+	    {
+	        logf( (char*)"Key (Alt+g) : Affiche dic current" );
+
+	    	Capture* pCurrent = Captures::getInstance().getCurrentCapture();
+	    	if ( pCurrent == NULL )			break;
+	        pCurrent->afficheFitsDic();
+	    }
+	    break;
+	//----------------------------------------------------------------------------
     case 'j':
         {
+	        logf( (char*)"Key (Alt+j) : Affiche dic current" );
 	        PanelCapture* p = (PanelCapture*)wm.getCapture();
 
 	        if ( p == NULL )
@@ -2413,8 +2418,125 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
         //BluetoothManager::getInstance().disconnect();
         }
         break;
+	#define C_FACTOR   1.01
+    case 'K':
+        {
+	        logf( (char*)"Key (alt+shift+K) : Comparaison etoiles");
+	        
+	        log_tab(true);
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPanelCapture()->getStars();
+				if ( stars )
+				{
+					double cC = stars->getC();
+					cC *= C_FACTOR;
+					logf( (char*)"Coef C=%0.2lf", cC );
+					stars->setC( cC );
+					
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+					cap->compareStar();
+				}
+        	}
+	        log_tab(false);
+        }
+        break;
     case 'k':
         {
+	        logf( (char*)"Key (alt+k) : Comparaison etoiles");
+	        
+	        log_tab(true);
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPanelCapture()->getStars();
+				if ( stars )
+				{
+					double cC = stars->getC();
+					cC /= C_FACTOR;
+					logf( (char*)"Coef C=%0.2lf", cC );
+					stars->setC( cC );
+					
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+					cap->compareStar();
+				}
+        	}
+	        log_tab(false);
+        }
+        break;
+	//----------------------------------------------------------------------------
+	#define A_FACTOR   1.01
+	case 'l':
+		{
+	        logf( (char*)"Key (alt+l) : Compaaraison etoiles");
+	        log_tab(true);
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPanelCapture()->getStars();
+				if ( stars )
+				{
+					double A = stars->getA() / A_FACTOR;
+					stars->setA( A );
+					//logf( (char*)"Coef A=%0.2lf", A );
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+					cap->compareStar();
+					cap->affine_compareStar(true);
+					//cap->update_info_graph();
+				}
+        	}
+	        log_tab(false);
+        }
+		break;
+	//----------------------------------------------------------------------------
+	case 'L':
+		{
+	        logf( (char*)"Key (alt+shift+l) : Compaaraison etoiles");
+	        log_tab(true);
+        	Captures& 	caps 	= Captures::getInstance();
+        	Capture* 	cap		= caps.getCurrentCapture();
+        	
+        	if ( cap )	
+        	{
+				Stars* stars = cap->getPanelCapture()->getStars();
+				if ( stars )
+				{
+					double A = stars->getA() * A_FACTOR;
+					stars->setA( A );
+					logf( (char*)"Coef A=%0.2lf", A );
+					bDesactiveLog = true;
+					cap->compareStar();
+					cap->compareStar();
+					bDesactiveLog = false;
+					cap->compareStar();
+					cap->affine_compareStar(false);
+					//cap->update_info_graph();
+				}
+        	}
+	        log_tab(false);
+        }
+		break;
+	//----------------------------------------------------------------------------
+    case 'm':
+        {
+	        logf( (char*)"Key (alt+m) : Comparaison etoiles");
+
 	        PanelCapture* p = (PanelCapture*)wm.getCapture();
 
 	        if ( p == NULL )
@@ -2426,35 +2548,14 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	        {
 	    		if ( p )
 	    		{
-	    			double d = *( p->getStars()->getvB() );
-					d -= 0.1;
-					p->getStars()->setB( d );
-					logf( (char*)"B = %0.2f", (float)d );
+	    			double d = *( p->getStars()->getvA() );
+					d /= 1.1;
+					p->getStars()->setA( d );
+					logf( (char*)"A = %0.2f", (float)d );
 				}				
 		    }
         //logf( (char*)"Key (b) : Bluetooth disconnect" );
         //BluetoothManager::getInstance().disconnect();
-        }
-        break;
-	//----------------------------------------------------------------------------
-    case 'A':
-        {
-        	if ( var.existe("bVerboseArduino") )    {
-        		bool b = !var.getb("bVerboseArduino");
-        		var.set("bVerboseArduino", b);
-			    logf( (char*)"bVerboseArduino = %s", BOOL2STR(b) );
-        	}
-        //logf( (char*)"Key (b) : Bluetooth disconnect" );
-        //BluetoothManager::getInstance().disconnect();
-        }
-        break;
-	//----------------------------------------------------------------------------
-    case 'C':
-        {
-	        logf( (char*)"Alt+c : AffColimation %s", BOOL2STR(!bAffColimation) );
-
-			bAffColimation = !bAffColimation;
-       		var.set("bAffColimation", bAffColimation);
         }
         break;
 	//----------------------------------------------------------------------------
@@ -2483,7 +2584,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	//----------------------------------------------------------------------------
 	case 'N':
 	    {
-	        logf( (char*)"Alt+N \t: Compare les etoiles trouvees avec le CDS " );
+	        logf( (char*)"Key (alt+shift+n) : Compare les etoiles trouvees avec le CDS " );
+
 	        logf( (char*)"      \t: voir le fichier ~/.astropilot/gnuplot/magnitude.png" );
 	        Panel* panel = wm.getCapture();
 
@@ -2517,27 +2619,59 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 		}
 	    break;
 	//----------------------------------------------------------------------------
-	case 'e':
-	    {
-	        bAffCatalog = !bAffCatalog;
-            VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
+    case 'o':
+        {
+	        logf( (char*)"Key (alt+o) :  " );
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
 
-	        logf( (char*)"Affiche oui/non le catalogue Vizier : %s", BOOL2STR(bAffCatalog) );
-            var.set( "bAffCatalog", bAffCatalog );
-	    }
-	    break;
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvC() );
+					d *= 1.1;
+					p->getStars()->setC( d );
+					logf( (char*)"C = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
 	//----------------------------------------------------------------------------
-	case 'g':
-	    {
-	        logf( (char*)"Affiche dic current" );
-	    	Capture* pCurrent = Captures::getInstance().getCurrentCapture();
-	    	if ( pCurrent == NULL )			break;
-	        pCurrent->afficheFitsDic();
-	    }
-	    break;
+    case 'p':
+        {
+	        PanelCapture* p = (PanelCapture*)wm.getCapture();
+
+	        if ( p == NULL )
+	        {
+		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
+	        }
+	        else
+	        if ( typeid(*p) == typeid(PanelCapture)	)
+	        {
+	    		if ( p )
+	    		{
+	    			double d = *( p->getStars()->getvC() );
+					d /= 1.1;
+					p->getStars()->setC( d );
+					logf( (char*)"C = %0.2f", (float)d );
+				}				
+		    }
+        //logf( (char*)"Key (b) : Bluetooth disconnect" );
+        //BluetoothManager::getInstance().disconnect();
+        }
+        break;
 	//----------------------------------------------------------------------------
 	case 'r':
 	    {
+	        logf( (char*)"Key (alt+r) : affiche etoile " );
+
 	        bAffStar = !bAffStar;
             VarManager::getInstance().set("bAffStar", bAffStar);;
 	        logf( (char*)"Affiche oui/non etoiles : %s", BOOL2STR(bAffStar) );
@@ -2546,7 +2680,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	//----------------------------------------------------------------------------
 	case 'u':
 	    {
-	        logf( (char*)"Alt+b : Recentrage suivi " );
+	        logf( (char*)"key (alt+u) : Recentrage suivi " );
+	        
 	        Camera* p = Camera_mgr::getInstance().getCurrent();
 	        if ( p!=NULL )
 	        {
@@ -2560,6 +2695,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	//----------------------------------------------------------------------------
 	case 'w':
 	    {
+	        logf( (char*)"key (alt+w) : XRef " );
+
 	        Xref -= 1.0;
             var.set( "Xref",  (double)Xref );
 	        //logf( (char*)"Xref : %0.2f", (double)Xref );
@@ -3097,52 +3234,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		break;
     case 'K':
         {
-	        logf( (char*)"Key (K) : Comparaison etoiles");
-	        log_tab(true);
-        	Captures& 	caps 	= Captures::getInstance();
-        	Capture* 	cap		= caps.getCurrentCapture();
-        	
-        	if ( cap )	
-        	{
-				Stars* stars = cap->getPanelCapture()->getStars();
-				if ( stars )
-				{
-					double _C = stars->getC() * 1.001;
-					stars->setC( _C );
-					logf( (char*)"Coef C=%0.2lf", _C );
-					bDesactiveLog = true;
-					cap->compareStar();
-					cap->compareStar();
-					bDesactiveLog = false;
-					cap->compareStar();
-				}
-        	}
-	        log_tab(false);
         }
         break;
     case 'k':
         {
-	        logf( (char*)"Key (k) : Comparaison etoiles");
-	        log_tab(true);
-        	Captures& 	caps 	= Captures::getInstance();
-        	Capture* 	cap		= caps.getCurrentCapture();
-        	
-        	if ( cap )	
-        	{
-				Stars* stars = cap->getPanelCapture()->getStars();
-				if ( stars )
-				{
-					double C = stars->getC() / 1.001;
-					stars->setC( C );
-					logf( (char*)"Coef C=%0.2lf", C );
-					bDesactiveLog = true;
-					cap->compareStar();
-					cap->compareStar();
-					bDesactiveLog = false;
-					cap->compareStar();
-				}
-        	}
-	        log_tab(false);
         }
         break;
 	/*

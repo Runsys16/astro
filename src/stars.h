@@ -74,7 +74,7 @@ inline double*				getvC()						{ return &dCoefC; }
 
 inline double				getA()						{ return dCoefA; }
 inline double				getB()						{ return dCoefB; }
-inline double				getC()						{ return dCoefC; }
+inline double				getC()						{ printf("%lf\n",dCoefC); return dCoefC; }
 
 private:
     vector<Star*>           v_tStars;
@@ -90,6 +90,7 @@ private:
 	bool					bAffPosition;
 
     int						uModeMag;
+    
     double					dCoefA;
     double					dCoefB;
     double					dCoefC;

@@ -101,6 +101,7 @@ public :
 	void						setAffGraph(bool);
 	bool						cmp(vec2, vec2);
 	void						compareStar();
+	void						affine_compareStar(bool);
 
 	void						update_info_graph();
 	void						create_info_graph();
@@ -118,9 +119,9 @@ inline void                     setCentY(float f)                           { pa
 inline float                    getCentX()                                  { return panelCapture->getCentX(); }
 inline float                    getCentY()                                  { return panelCapture->getCentY(); }
 
-inline string                   getFilename()                               { return filename; }
-inline string                   getBasename()                               { return basename; }
-inline string                   getDirname()                                { return dirname; }
+inline string&                  getFilename()                               { return filename; }
+inline string&                  getBasename()                               { return basename; }
+inline string&                  getDirname()                                { return dirname; }
 inline PanelCapture*            getPanelCapture()							{ return panelCapture; }
 inline PanelGraph*            	getGraph()									{ return pGraph; }
 inline PanelText*	            getNbVizier()                               { return pNbVizier; }
