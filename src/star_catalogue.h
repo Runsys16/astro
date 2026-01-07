@@ -7,7 +7,7 @@
 #include <WindowsManager.h>
 #include <thread>
 
-//#define MOUV_PROPRE
+#define MOUV_PROPRE
 using namespace std;
 
 class StarCatalog 
@@ -23,11 +23,11 @@ public :
 		double          fDE;
 		double          fMag;
 		
-#ifdef MOUV_PROPRE
 		double			fpmRA;
 		double			feRA;
 		double			fpmDE;
 		double			feDE;
+#ifdef MOUV_PROPRE
 #endif
  
 		int				idx;
@@ -39,10 +39,12 @@ public :
         //StarCatalog( double, double, double, string );
         
         StarCatalog( double, double, double, string, int );
-#ifdef MOUV_PROPRE
         StarCatalog( double, double, double, double, double, double, double, string, int );
+#ifdef MOUV_PROPRE
 #endif
         ~StarCatalog();
+
+		void			init( double, double, double, double, double, double, double, string, int );
         
         void			affiche_position();
         void			affiche_magnitude();
@@ -60,6 +62,8 @@ inline  double          getYScreen()            {return fYScreen;}
 inline  double          getRA()                 {return fRA;}
 inline  double          getDE()                 {return fDE;}
 inline  double          getMag()                {return fMag;}
+inline  double          getPmDE()				{return fpmDE;}
+inline  double          getPmRA()				{return fpmRA;}
 inline  string&         getName()               {return name;}
 inline  PanelText*      getInfo()               {return pInfo;}
 };

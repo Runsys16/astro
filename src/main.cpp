@@ -680,39 +680,43 @@ RA_ICRS (deg)   DE_ICRS (deg)   Source              mag (mag) (mas/yr)  as/yr) (
 //#define MOUV_PROPRE
 void vizier_parse_line( Catalog* pVizier, string & line )
 {
-    if ( line.size() < 58 )        return;
-
+	if ( line.size() == 0 )		return;
+    if ( line.size() < 61 )		{ logf_thread( (char*)"[ Erreur ] Ligne< 62 \"%s\"", line.c_str() ); return; }
 	//printf( (char*)"%s\n", line.c_str() );
-	printf( (char*)"%s\n", line.c_str() );
 	
     double fRA	= stod( line.substr(0,15), 0 );
     double fDE	= stod( line.substr(16,15), 0 );
     string name = line.substr(32, 19);
     double fMag = stod( line.substr(52,9), 0 );
+    
+	double pmRA = 0.0;
+	double eRA  = 0.0;
+	double pmDE = 0.0;
+	double eDE  = 0.0;
 
-#ifdef MOUV_PROPRE
-	double pmRA = stod( line.substr(62,9), 0 );
-	double eRA  = stod( line.substr(72,6), 0 );
-	double pmDE = stod( line.substr(79,9), 0 );
-	double eDE  = stod( line.substr(89,6), 0 );
-
+    if ( line.size() < 95 )		
+    { 
+    	logf_thread( (char*)"[ Erreur ] Ligne<95  %d - \"%s\"", line.size(), line.c_str() ); 
+    }
+    else
+    {
+		pmRA = stod( line.substr(62,9), 0 );
+		eRA  = stod( line.substr(72,6), 0 );
+		pmDE = stod( line.substr(79,9), 0 );
+		eDE  = stod( line.substr(89,6), 0 );
+	}
     //int    iHip = stoi( line.substr(59,6), 0, 10 );
  
-    //StarCatalog* p = new StarCatalog( fRA, fDE, fMag, pmRA, eRA, pmDE, eDE, name, nbVizier++ );
-#else
-#endif
-    StarCatalog* p = new StarCatalog( fRA, fDE, fMag, name, nbVizier++ );
+    StarCatalog* p = new StarCatalog( fRA, fDE, fMag, pmRA, eRA, pmDE, eDE, name, nbVizier++ );
     pVizier->add(p);
 
-#ifdef MOUV_PROPRE
+
     logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7lf,\t%0.7lf)\tmag=%0.4lf\tpmRA=%0.4lf, eRA=%0.4lf  pmDE=%0.4lf, eDE=%0.4lf ",
     					 (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag, 
     					 (double)pmRA, (double)eRA, (double)pmDE, (double)eDE );
     
-#else
-    logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7lf,\t%0.7lf)\tmag=%0.4lf\tpmRA=%0.4lf, eRA=%0.4lf  pmDE=%0.4lf, eDE=%0.4lf 	",
-    					 (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
-#endif
+    //logf_thread( (char*)"main::vizier_parse_line() Etoile '%s'\t(%0.7lf,\t%0.7lf)\tmag=%0.4lf\tpmRA=%0.4lf, eRA=%0.4lf  pmDE=%0.4lf, eDE=%0.4lf 	",
+    //					 (char*)name.c_str(), (double)fRA, (double)fDE, (double)fMag );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -2116,7 +2120,7 @@ static void quit(void)
     {
     	Panel *	p = childs[i];
 	    //logf( (char*)"Panel ID %d-%s, %d enfants %s", p->getID(), p->getExtraString().c_str(), p->getNbPanel(), typeid(*p).name() );
-	    logf( (char*)"Panel ID %d-%s, %d enfants", p->getID(), p->getExtraString().c_str(), p->getNbPanel() );
+	    logf( (char*)"Panel ID %03d-%s, %d enfants", p->getID(), p->getExtraString().c_str(), p->getNbPanel() );
 		delete_all_panels( p );
 		childs.erase( childs.begin()+i );
     }
@@ -3326,7 +3330,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	Capture*  p = Captures::getInstance().getCurrentCapture();
         	if ( p && p->isFits() )	{
         		p->getPanelCapture()->findGaiaDR3();
-        		//p->getFits()->getPanelCorrectionFits()->setVisible(true);
         	}
         	else
 		        logf( (char*)"[Warning]Fenetre non valable");

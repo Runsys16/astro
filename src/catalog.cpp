@@ -98,10 +98,14 @@ void Catalog::sauve()
     {
         StarCatalog* p = stars[i];
         
-        fichier << "fRA "<< p->fRA << " ";
-        fichier << "fDE "<< p->fDE << " ";
-        fichier << "fMag "<< p->fMag << " ";
-        fichier << "name "<< p->name << "\n";
+        fichier << "fRA "	<< p->fRA	<< " ";
+        fichier << "fDE "	<< p->fDE	<< " ";
+        fichier << "fMag "	<< p->fMag	<< " ";
+        fichier << "name "	<< p->name	<< " ";
+        fichier << "fpmRA "	<< p->fpmRA << " ";
+        fichier << "feRA "	<< p->feRA	<< " ";
+        fichier << "fpmDE "	<< p->fpmDE << " ";
+        fichier << "feDE "	<< p->feDE	<< "\n";
     }
 
     fichier.close();
@@ -189,7 +193,27 @@ bool Catalog::charge()
         fichier >> output;
         string name = string(output);
         
-        StarCatalog* p = new StarCatalog(fRA, fDE, fMag, name, nb);
+        fichier >> output;
+        fichier >> output;
+        val = string(output);
+        double fpmRA = stof(val.c_str());
+
+        fichier >> output;
+        fichier >> output;
+        val = string(output);
+        double feRA = stof(val.c_str());
+
+        fichier >> output;
+        fichier >> output;
+        val = string(output);
+        double fpmDE = stof(val.c_str());
+
+        fichier >> output;
+        fichier >> output;
+        val = string(output);
+        double feDE = stof(val.c_str());
+
+        StarCatalog* p = new StarCatalog(fRA, fDE, fMag, fpmRA, feRA, fpmDE, feDE, name, nb);
         nb++;
         
         //logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );

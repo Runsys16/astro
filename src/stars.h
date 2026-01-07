@@ -23,6 +23,7 @@ public:
     Star*                   addStar( int, int, int, int, float );
     bool                    starExist(int, int);
     bool                    starExist(int, int, int);
+    void					print_stars();
 
     void                    findAllStars();
     void                    deleteAllStars();

@@ -80,6 +80,8 @@ public :
     void                glLine( int, int, int, int );
     void                glLine( vec2, vec2 );
     void                glCarre( int, int, int, int );
+    void                glCarre( vec2, vec2 );
+
     void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
     void                glEchelle();
 

@@ -3,6 +3,7 @@
 #include "panel_camera.h"
 //--------------------------------------------------------------------------------------------------------------------
 //#define DEBUG_UPDATES   0
+//#define DEBUG_EXIST
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -194,20 +195,54 @@ bool Stars::starExist(int xp, int yp )
 //--------------------------------------------------------------------------------------------------------------------
 bool Stars::starExist(int xp, int yp, int no )
 {
+	int nb = v_tStars.size();
+
+	#ifdef DEBUG_EXIST
+	log( (char*)"---------------------------------" );
+	#endif
+
+	for( int n=0; n<nb; n++ )
+	{
+		/*
+		*/
+		int x_star = v_tStars[n]->getXScreen();
+		int y_star = v_tStars[n]->getYScreen();
+
+		int dx = abs(xp-x_star);
+		int dy = abs(yp-y_star);
+
+
+		vec2 v =  v_tStars[n]->getPos();
+		//if ( dx < 8 && dy < 8 && n!=no )          return true;
+
+		vec2 w = vec2(v_tStars[n]->getXScreen(), v_tStars[n]->getYScreen() );
+		w -= vec2(xp, yp);
+		
+		#ifdef DEBUG_EXIST
+		logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ech=%0.2f  lg=%0.2lf ", xp, yp, n, x_star, y_star, dx, dy, ech, w.length() );
+		logf( (char*)"      (%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ech=%0.2f  lg=%0.2lf ", xp, yp, n, v.x, v.y, dx, dy, ech, w.length() );
+		#endif
+
+		if ( w.length() < (ech*2.0) )		return true;
+	}
+
+	return false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Stars::print_stars()
+{
     int nb = v_tStars.size();
     for( int n=0; n<nb; n++ )
     {
-        int x_star = v_tStars[n]->getXScreen();
-        int y_star = v_tStars[n]->getYScreen();
-        
-        int dx = abs(xp-x_star);
-        int dy = abs(yp-y_star);
-        
-        //logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ??", xp, yp, n, x_star, y_star, dx, dy );
-        if ( dx < 8 && dy < 8 && n!=no )          return true;
+    	logf( (char*)"%d-(%d,%d) %0.2lf"
+    								, n
+    								, v_tStars[n]->getXScreen()
+    								, v_tStars[n]->getYScreen()
+    								, (double)v_tStars[n]->getMagnitude()
+    								);
     }
-    
-    return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -255,12 +290,24 @@ void Stars::findAllStars()
                 
                 if ( p->getMagnitude() < 20.0 )     
                 {
+                    //p->updatePos(dx_view, dy_view, ech, ech);
                     p->updatePos(dx_view, dy_view, ech, ech);
+                    
+					#ifdef DEBUG_EXIST
+                    logf( (char*)"Etoile(%d,%d)", x_find, y_find );
+                    log_tab(true);
+					#endif
                     if ( starExist(p->getXScreen(), p->getYScreen()) )            
                     {
-                        //logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, y_find, p->getMagnitude() );
+						#ifdef DEBUG_EXIST
+                        logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, y_find, p->getMagnitude() );
+	                    log_tab(false);
+						#endif
                         continue;
                     }
+					#ifdef DEBUG_EXIST
+                    log_tab(false);
+					#endif
                     
                     Star * pp = new Star();
                     /*
@@ -305,6 +352,8 @@ void Stars::findAllStars()
 		else                pNbStars->setColor( 0x00ff00ff );//glColor4f( 0.0,   1.0,  0.0, 0.4 );
         pNbStars->changeText( t );
     }
+    
+    //print_stars();
     
     log_tab(false);
     logf( (char*)"Stars::findAllStars()" );

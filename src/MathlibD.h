@@ -59,6 +59,12 @@
 
 #define LUM(__r, __g, __b) (0.3333 * (double)__r + 0.5 * (double)__g  + 0.1667 * (double)__b)
 
+#define VEC2_2_AFF(__v) __v.x, __v.y
+#define VEC2_2_PRINTF "(%0.4f, %0.4f)"
+
+#define VEC3_2_AFF(__v) __v.x, __v.y, __v.z
+#define VEC3_2_PRINTF "(%0.4f, %0.4f, %0.4f)"
+
 const double INV_RAND_MAX = 1.0 / (RAND_MAX );
 inline double random(double max=1.0) { return max * rand() * INV_RAND_MAX; }
 inline double random(double min, double max) { return min + (max - min) * INV_RAND_MAX * rand(); }

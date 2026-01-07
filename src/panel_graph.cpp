@@ -62,10 +62,12 @@ void PanelGraph::init_var()
     dYmin	=     7.0;
     dYmax	=    16.0;
 
-	bLogX = false ;
-	bLogY = false;
+	bLogX	= false ;
+	bLogY	= false;
 	
-	pPanelCallback = NULL;
+	pPanelCallback	= NULL;
+
+	iMouseCapture	= -1;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -197,16 +199,27 @@ void PanelGraph::glCarre( int x, int y, int dx,  int dy )
     x += getPosX();// + dx_screen;
     y += getPosY();// + dy_screen;
     
-	glBegin(GL_LINES);
-        x = x-dx;
-        y = y-dy;
+	x = x-dx;
+	y = y-dy;
+	glBegin(GL_LINE_LOOP);
         
-        glVertex2i(x,y);                glVertex2i(x+2*dx,y);
-        glVertex2i(x+2*dx,y);           glVertex2i(x+2*dx,y+2*dy);
-        glVertex2i(x+2*dx,y+2*dy);      glVertex2i(x,y+2*dy);
-        glVertex2i(x,y+2*dy);           glVertex2i(x,y);
+        glVertex2i(x,y);                
+        glVertex2i(x+2*dx,y);
+        //glVertex2i(x+2*dx,y);
+        glVertex2i(x+2*dx,y+2*dy);
+        //glVertex2i(x+2*dx,y+2*dy);
+        glVertex2i(x,y+2*dy);
+        //glVertex2i(x,y+2*dy);
+        //glVertex2i(x,y);
 
     glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::glCarre( vec2 v, vec2 delta )
+{
+	glCarre( (int)v.x, (int)v.y, (int)delta.x, (int)delta.y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -275,9 +288,9 @@ void PanelGraph::displayCourbeVizi()
 		vec2 w = v1-v0;
 
 		glLine( v0, w );
-		glCroix( v0, vec2(6, 6) );
+		glCarre( v0, vec2(3, 3) );
 		
-		if ( i==1 ) 			glCroix( v1, vec2(6, 6) );
+		if ( i==1 ) 			glCarre( v1, vec2(3, 3) );
 	}
 
 	if ( iMouseCapture != -1 )

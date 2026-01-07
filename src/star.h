@@ -75,6 +75,7 @@ public:
     
     void				affiche_position(bool);
     
+    inline vec2&        getPos()										{ return pos; }
     inline void         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
     inline void         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
     inline void         getSuivi(vec2& v)                               { v.x=xSuivi; v.y=ySuivi; }

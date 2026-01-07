@@ -110,7 +110,7 @@ void Fits::create_panel_fits()
     pPanelFits->setPosAndSize( 10, 10, 650, 250 );
     pPanelFits->setVisible( false );
 
-    wm.add( pPanelFits );
+    //wm.add( pPanelFits );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1063,7 +1063,7 @@ void Fits::afficheDatas()
 void Fits::afficheInfoFits()
 {
 	if( pPanelFits != NULL )		{
-		pPanelFits->setVisible( !pPanelFits->getVisible() );
+		afficheInfoFits( !pPanelFits->getVisible() );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1074,10 +1074,18 @@ void Fits::afficheInfoFits(bool b)
 	//logf( (char*)"Fits::afficheInfoFits(%s)", BOOL2STR(b) );
 	if( pPanelFits != NULL )		
 	{
-		pPanelFits->setVisible( b );
-		if ( b )	{
-			if (pPanelFits)				WindowsManager::getInstance().onTop(pPanelFits);
-			if (pPanelCorrectionFits)	WindowsManager::getInstance().onTop(pPanelCorrectionFits);
+		if ( b != pPanelFits->getVisible() )
+		{
+			WindowsManager&     wm  = WindowsManager::getInstance();
+			pPanelFits->setVisible( b );
+
+			if ( b )	{
+				if (pPanelFits)				WindowsManager::getInstance().onTop(pPanelFits);
+				if (pPanelCorrectionFits)	WindowsManager::getInstance().onTop(pPanelCorrectionFits);
+				wm.add( pPanelFits );
+			}
+			else
+				wm.sup( pPanelFits );
 		}
 	}
 }
@@ -1165,14 +1173,16 @@ void Fits::J2000_2_tex(vec2 j, vec2& s )
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::iconize()
 {
-	pPanelFits->setVisible( false );
+	//pPanelFits->setVisible( false );
+	afficheInfoFits( false );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::restaure( bool bAffInfo )
 {
-	pPanelFits->setVisible( bAffInfo );
+	//pPanelFits->setVisible( bAffInfo );
+	afficheInfoFits( bAffInfo );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

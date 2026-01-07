@@ -209,6 +209,8 @@ inline void             setVecteurDE(vec2 v)                            { vDE = 
 inline Catalog*			getCatalog()									{ return pVizier; }
 inline Capture*			getCapture()									{ return pCapture; }
 inline StarCompare&		getStarCompare()								{ return starCompare; }
+//inline void				tex_2_J2000(vec2& v)							{ pCapture->getFits()->tex_2_J2000(v); }
+//inline void				J2000_2_tex(vec2& v)							{ pCapture->getFits()->J2000_2_tex(v); }
 //inline string&			getFilename()									{ if (pCapture) return pCapture->getBasename(); else return ""; }
 
 };

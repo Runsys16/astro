@@ -943,6 +943,7 @@ void PanelCamera::displayVizier()
 		        if ( bAffStar && stars.size() != 0 ) 	r += 5;
 			
 		        glCercle( v.x, v.y, r*echelle );
+		        //logf( (char*)"PanelCamera::displayVizier() i=%d", i );
 				p->displayGL();
 				//p->setVisible( true );
 			}

@@ -99,7 +99,7 @@ void Star::init(int xx, int yy)
     RB          = NULL;
     pView       = NULL;
     
-    ad			= 9999.0;
+    ad			= 9999.0;			// Important pour la fonction haveCoord()
     de			= 9999.0;
     nbNotFound  = 0;
     

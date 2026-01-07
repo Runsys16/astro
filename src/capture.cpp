@@ -432,14 +432,12 @@ void Capture::create_preview()	{
 
 		logf((char*)"Fichier fits %s", (char*)filename.c_str() );
 		fits = new Fits(filename, panelCapture );
+		fits->getPanelFits()->setExtraString( "PanelFit : "+ basename );
 
 		log((char*)"Chargement fichier" );
-		log_tab(true);
 
+		log_tab(true);
 		fits->chargeFits();
-		//fits->getPanelFits()->setParent(panelCapture);
-		//panelCapture->add( fits->getPanelFits() );
-		//add( fits->getPanelFits() );
 		fits->getRB(&readBgr);
 		log_tab(false);
 	}
@@ -671,7 +669,7 @@ void Capture::iconize( int xIcon, int yIcon, int dxIcon, int dyIcon)
 	setPosAndSize( xIcon, yIcon, dxIcon, dyIcon );
 	
 	if ( bFits )	{
-		fits->getPanelFits()->setVisible(false);
+		fits->afficheInfoFits(false);
 	}
 	panelCapture->iconize();
 
@@ -695,7 +693,7 @@ void Capture::restaure()
 	sPosSvg.X  = -1;
 
 	if ( bFits )	{
-		if ( bAfficheInfoFits )		fits->getPanelFits()->setVisible(true);
+		if ( bAfficheInfoFits )		fits->afficheInfoFits(true);
 		onTop();
 		
 	}

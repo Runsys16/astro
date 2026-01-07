@@ -67,7 +67,7 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 	pInfoVizier->setExtraString("PanelDebug Info comparaison");
 	pInfoVizier->setVisible(false);
 	pInfoVizier->setSize( 180, 1 );
-	pInfoVizier->setTabSize( 60 );
+	pInfoVizier->setTabSize( 70 );
 	pInfoVizier->loadSkin( PanelWindow::BLACK );
 	pInfoVizier->setBorderSize(2);
 
@@ -306,6 +306,10 @@ void PanelCapture::updateInfoVizier()
 
 			pInfoVizier->add_textf( (char*)"delta pix \t= %0.2f", (float)W.length() );
 			pInfoVizier->add_textf( (char*)"delta mag\t= %0.2f", (float)abs( pStar->getMagnitude()- pStarViz->getMag()) );
+
+			pInfoVizier->add_text( (char*)"-----------------------------------" );
+			pInfoVizier->add_textf( (char*)"Mouv p AD\t= %0.2lf mas/an", pStarViz->getPmRA() );
+			pInfoVizier->add_textf( (char*)"Mouv p DE\t= %0.2lf mas/an", pStarViz->getPmDE() );
 
 			pInfoVizier->add_text( (char*)"-----------------------------------" );
 			deg2str_hms( ad_vizi, str, sizeof(str) );		pInfoVizier->add_textf( (char*)"AD : %s", str );
@@ -769,25 +773,23 @@ void PanelCapture::idle(float f)
     
 	if ( pCapture->getAfficheInfoSouris() != pFondCoord->getVisible() )
 	{
-		
-		if ( pCapture->getAfficheInfoSouris() )
-		{
-			pFondCoord->setVisible(true);
-			passiveMotionFunc( (int)vMouse.x, (int)vMouse.y );
-		}
-		else
-			pFondCoord->setVisible(false);
-	
+		if ( pCapture->getAfficheInfoSouris() )			pFondCoord->setVisible(true);
+		else											pFondCoord->setVisible(false);
 	}
+	if ( pCapture->isIconized() )						pFondCoord->setVisible(false);
+
 	passiveMotionFunc( (int)vMouse.x, (int)vMouse.y );
-	
-	if ( pCapture->isIconized() )		
-		pFondCoord->setVisible(false);
 
 	pCapture->afficheFits();
 
     PanelSimple::idle(f);
-
+	
+	
+	//-----------------------------------------------------------------------
+	// met a jour les coordonnées des etoiles si elles ne
+	// sont pas a jour  ( haveCoord() )
+	// le tableau stars evolue suivant les choix
+	//
 	if ( bFits )
 	{
 		//-------------------------------------------------------------------
@@ -819,20 +821,6 @@ void PanelCapture::idle(float f)
 				pStar->setDE( vJ2000.y );
 			}
 		}
-		//-------------------------------------------------------------------
-		/*
-		if ( !pCapture->isIconized() )
-		{
-			if ( var.getb("bAffFitsCorrection") )	pFits->getPanelCorrectionFits()->setVisible(true);
-			else 									pFits->getPanelCorrectionFits()->setVisible(false);
-		}
-		else
-			pFits->getPanelCorrectionFits()->setVisible(false);
-		//----------------------------------------------
-		if ( bNuit )		pFits->getPanelCorrectionFits()->setColor(0xFF0000FF);
-		else				pFits->getPanelCorrectionFits()->setColor(0xFFFFFFFF);
-		*/
-		//-------------------------------------------------------------------
 	}
 	else
 		pFondCoord->setVisible(false);
@@ -1028,8 +1016,9 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 	if ( pCapture->isIconized() ) 									{ return; }
 	if ( pCapture == NULL  ) 										{ return; }
 
-	Panel* p = WindowsManager::getInstance().getCapture();
-	if ( p	&&  p->getExtraString().find( "PanelGraph")==0 )		return;
+	//Panel* p = WindowsManager::getInstance().getCapture();
+	//if ( p )	logf( (char*)"%s", p->getExtraString().c_str() );
+	if ( this != WindowsManager::getInstance().getCapture() )	return;
 	
 
 	
@@ -1958,6 +1947,7 @@ void PanelCapture::findGaiaDR3()
 	}
 	
 	if ( !bFits )			{ log_tab(false); return; }
+	
 	if ( 	pCapture->getFits()->getCDELT1() == -1.0 || 
 			pCapture->getFits()->getCDELT2() == -1.0 )
 	{
@@ -1968,29 +1958,27 @@ void PanelCapture::findGaiaDR3()
 
 	//--------------------------------------------------------
 	// CALCUL LA TAILLE DE L'IMAGE pour le rayon de recherche
-	
 	// resolution ecran
-	double resH = pCapture->getFits()->getNAXIS1();
-	double resV = pCapture->getFits()->getNAXIS2();
-	logf( (char*)"Calcul du rayon : %0.2lf %0.2lf", resH, resV );
-	
-	// Coefficient deg/pix
-	resH *= pCapture->getFits()->getCDELT1() * 3600.0;
-	resV *= pCapture->getFits()->getCDELT2() * 3600.0;
-	logf( (char*)"Calcul du rayon : %0.2lf %0.2lf", resH, resV );
-	
-	// On prend la diagonnale pour rayon de recherche
-	double rayon = sqrt( resV*resV + resH*resH );
-	rayon /= 2.0;
+	vec2 _vHG = vec2( 0.0, 0.0 );
+	vec2 _vBD = vec2( pCapture->getFits()->getNAXIS1(), pCapture->getFits()->getNAXIS2() );
+	vec2 vCentre = _vBD / 2.0;
+	pCapture->getFits()->tex_2_J2000(_vHG );
+	pCapture->getFits()->tex_2_J2000(_vBD );
+	pCapture->getFits()->tex_2_J2000(vCentre);
+
+	logf( (char*)"vCentre " VEC2_2_PRINTF "", VEC2_2_AFF(vCentre) );
+	logf( (char*)"HG " VEC2_2_PRINTF "  BD " VEC2_2_PRINTF "", VEC2_2_AFF(_vHG), VEC2_2_AFF(_vBD) );
+
+	//---------------------------------------------------
+	// Calcul du rayon de l'image
+	vec2	vRayon	= (_vHG - _vBD) / 2.0;
+	double	rayon	= 3600.0 * vRayon.length();
 	logf( (char*)"Calcul du rayon : r = %0.2lf", rayon );
-	
-	// si plus grand qu 1" d'arc
-	if ( rayon > 1800.0 )       	rayon = 1800.0;
+
+	// si plus grand qu 1°
+	if ( rayon > 3600.0 )       	rayon = 3600.0;
 	logf( (char*)"  rayon calcule %.2f", rayon );
 	
-	//---------------------------------------------------
-	// RECHERCHE DU CENTRE DE L'IMAGE pour la requete
-	vec2 vCentre = vec2( pCapture->getFits()->getCRVAL1(), pCapture->getFits()->getCRVAL2() );
 
 	pVizier = new Catalog(false);
 	static char coord[80];
@@ -1999,6 +1987,7 @@ void PanelCapture::findGaiaDR3()
 	//---------------------------------------------------
 	// Si le fichier de donne existe
 	// on le charge
+	// if ( false && pVizier->charge( sFilename ) )		
 	if ( pVizier->charge( sFilename ) )		
 	{
 		updatePos();
@@ -2026,7 +2015,10 @@ void PanelCapture::findGaiaDR3_end()
 {
     logf_thread( (char*)"PanelCapture::findGaiaDR3_end()" );
     
-	vec2 vCentre = vec2( pCapture->getFits()->getCRVAL1(), pCapture->getFits()->getCRVAL2() );
+	//vec2 vCentre = vec2( pCapture->getFits()->getCRVAL1(), pCapture->getFits()->getCRVAL2() );
+	vec2 vCentre = vec2( pCapture->getFits()->getNAXIS1(), pCapture->getFits()->getNAXIS2() );
+	vCentre /= 2.0;
+	pCapture->getFits()->tex_2_J2000(vCentre);
 
 	static char coord[80];
 	snprintf( (char*)coord, sizeof(coord), "%0.2f-%0.2f", vCentre.x, vCentre.y );
