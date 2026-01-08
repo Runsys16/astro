@@ -120,7 +120,10 @@ public:
     		void		glCercleAnimation(int, int, int, int, int);
 			void		glCroix( int,  int,  int,  int );
     		void		glCercle(int, int, int);
+    		void		glLine(vec2, vec2);
     		void		displayTelescope();
+    		void		displayCatalogMouseOver();
+    		void		displayMovePropre( StarCatalog*  );
     		void		displayCatalog();
     		void		displayAxe();
     virtual void		displayGL();
@@ -194,7 +197,8 @@ public:
 	void				computeRepere_03();
 	void				computeRepere();
 	
-	double				compute_div(double);
+	double				compute_div_de(double);
+	double				compute_div_ad(double);
 	void				compute_angle();
 
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }

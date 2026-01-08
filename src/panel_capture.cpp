@@ -531,6 +531,18 @@ void PanelCapture::glCercle(int x, int y, int rayon)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::glLine(vec2 v0, vec2 v1)
+{
+	glBegin(GL_LINES);
+
+		glVertex2i((int)v0.x, (int)v0.y);
+		glVertex2i((int)v1.x, (int)v1.y);
+        
+	glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::displayTelescope()
 {
 	unsigned color_old = getColor();
@@ -557,6 +569,32 @@ void PanelCapture::displayTelescope()
 	pTelescope->onTop();
 
 	glColor4f( COLOR_R(color_old), COLOR_G(color_old), COLOR_B(color_old), COLOR_A(color_old) );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::displayCatalogMouseOver()
+{
+	glColor4fv( (GLfloat*)&cRouge );
+	displayMovePropre( pVizier->get(idxVizierMouseOver) );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+#define MP_COEF 1000.0
+void PanelCapture::displayMovePropre( StarCatalog* p )
+{
+	vec2 v0 = vec2( p->getRA(), p->getDE() );
+	vec2 v1 = v0 + MP_COEF *  vec2(  MAS2DEG(p->getPmRA()), MAS2DEG(p->getPmDE()) );
+	//logf( (char*)"Raw line( " VEC2_PRINTF " , " VEC2_PRINTF "", VEC2_AFF(v0), VEC2_AFF(v1) );
+	
+	pCapture->getFits()->J2000_2_tex(v0);
+	pCapture->getFits()->J2000_2_tex(v1);
+	tex_2_screen( v0 );
+	tex_2_screen( v1 );
+	
+	glLine( v0, v1 );
+	//logf( (char*)"Ecr line( " VEC2_PRINTF " , " VEC2_PRINTF "", VEC2_AFF(v0), VEC2_AFF(v1) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -592,21 +630,27 @@ void PanelCapture::displayCatalog()
 
         for ( int i=0; i<n; i++ )
         {
+        	// n'affiche pas les etoiles sans correspondance (mag max)
         	if ( starCompare.getMagMax() < pVizier->get(i)->getMag() )	continue;
         	
-        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&vSelect );
+        	// Si curseur decu idxVizierMouseOver
         	
             v.x = pVizier->get(i)->getXScreen();
             v.y = pVizier->get(i)->getYScreen();
+            
+        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&vSelect );
 
 			if ( 	v.x != -1.0  )
 			{
+		        displayMovePropre( pVizier->get(i) );
+
 				PanelText* p = pVizier->get(i)->getInfo();
 		        double r = 17.5 - 0.675*pVizier->get(i)->fMag;
 			
 		        glCercle( v.x, v.y, r*ech );
 				p->displayGL();
 				nbAff++;
+	        	//displayMovePropre( pVizier->get(i) );
 			}
         	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&vOrange );
         }
@@ -728,6 +772,8 @@ void PanelCapture::displayGL()
 		if ( bFits )	{
 			if ( !pCapture->isIconized() && pCapture->getAfficheGrille() )		displayAxe();
 			if ( var.getb( "bAffCatalog") && (pVizier) )						displayCatalog();
+			
+			if ( idxVizierMouseOver != -1 )		displayCatalogMouseOver();
 		}
 	
 		if ( 0<vTelescopeScreen.x && vTelescopeScreen.x<getDX() && 0<vTelescopeScreen.y && vTelescopeScreen.y<getDY()  )	
@@ -1773,7 +1819,7 @@ void PanelCapture::print_echelle_coordonnees()
 	parent_2_J2000( v1 );	v1.to_str( str );
 	logf( (char*)"v1 = %s", str );
 
-	div = compute_div( abs(v1.x-v0.x) );
+	div = compute_div_ad( abs(v1.x-v0.x) );
 	logf( (char*)"Compute Div sur ad  \tdelta=%f   div=%f   1/div=%f", (float)(v1.x-v0.x), (float)div, (float)1.0/div );
 
 	//----------------------------------------------------------------------------
@@ -1803,7 +1849,7 @@ void PanelCapture::print_echelle_coordonnees()
 	parent_2_J2000( v1 );	v1.to_str( str );
 	logf( (char*)"v1 = %s", str );
 
-	div = compute_div( abs(v1.y-v0.y) );
+	div = compute_div_de( abs(v1.y-v0.y) );
 	logf( (char*)"Compute Div sur de  \tdelta=%f   div=%f   1/div=%f", (float)(v1.y-v0.y), (float)div, (float)1.0/div );
 
 	//----------------------------------------------------------------------------
@@ -1900,13 +1946,13 @@ void PanelCapture::printObjet()
 	vec2 v0 = vec2(      0.0, 0.0 );	parent_2_J2000( v0 );
 	vec2 v1 = vec2( SIZE_ECH, 0.0 );	parent_2_J2000( v1 );
 
-	double div = compute_div( abs(v1.y-v0.y) );
+	double div = compute_div_ad( abs(v1.y-v0.y) );
 	logf( (char*)"      Div H \t(%.0lf, %lf))", div, 1.0/div );
 	
 	v0 = vec2( 0.0,      0.0 );	parent_2_J2000( v0 );
 	v1 = vec2( 0.0, SIZE_ECH );	parent_2_J2000( v1 );
 
-	div = compute_div( abs(v1.x-v0.x) );
+	div = compute_div_de( abs(v1.x-v0.x) );
 	logf( (char*)"      Div V \t(%.0lf, %lf))", div, 1.0/div );
 
 	//-----------------------------------------------------------------------
@@ -1966,8 +2012,8 @@ void PanelCapture::findGaiaDR3()
 	pCapture->getFits()->tex_2_J2000(_vBD );
 	pCapture->getFits()->tex_2_J2000(vCentre);
 
-	logf( (char*)"vCentre " VEC2_2_PRINTF "", VEC2_2_AFF(vCentre) );
-	logf( (char*)"HG " VEC2_2_PRINTF "  BD " VEC2_2_PRINTF "", VEC2_2_AFF(_vHG), VEC2_2_AFF(_vBD) );
+	logf( (char*)"vCentre " VEC2_PRINTF "", VEC2_AFF(vCentre) );
+	logf( (char*)"HG " VEC2_PRINTF "  BD " VEC2_PRINTF "", VEC2_AFF(_vHG), VEC2_AFF(_vBD) );
 
 	//---------------------------------------------------
 	// Calcul du rayon de l'image
@@ -2453,7 +2499,7 @@ void PanelCapture::computeRepere_03()
 		v0 = vec2(      0.0, 0.0 );							parent_2_J2000( v0 );
 		v1 = vec2( SIZE_ECH, 0.0 );							parent_2_J2000( v1 );
 
-		div = compute_div( abs(v1.y-v0.y) );
+		div = compute_div_de( abs(v1.y-v0.y) );
 		//----------------------------------------------------------------------------
 		epsilon = 0.000001/div;
 		cg = floor( vHG.y * div ) / div;
@@ -2467,7 +2513,7 @@ void PanelCapture::computeRepere_03()
 		v0 = vec2( 0.0, 0.0 );								parent_2_J2000( v0 );
 		v1 = vec2( 0.0, SIZE_ECH );							parent_2_J2000( v1 );
 
-		div = compute_div( abs(v1.x-v0.x) );
+		div = compute_div_ad( abs(v1.x-v0.x) );
 		//----------------------------------------------------------------------------
 		epsilon = 0.000001/div;
 		cg = floor( vHG.x * div ) / div;
@@ -2485,7 +2531,7 @@ void PanelCapture::computeRepere_03()
 		v0 = vec2(      0.0, 	  0.0 );					parent_2_J2000( v0 );
 		v1 = vec2( 		0.0, SIZE_ECH );					parent_2_J2000( v1 );
 
-		div = compute_div( abs(v1.y-v0.y) );
+		div = compute_div_de( abs(v1.y-v0.y) );
 		//----------------------------------------------------------------------------
 		epsilon = 0.000001/div;
 		cg = floor( vHG.y * div ) / div;
@@ -2500,7 +2546,7 @@ void PanelCapture::computeRepere_03()
 		v0 = vec2(      0.0, 0.0 );							parent_2_J2000( v0 );
 		v1 = vec2( SIZE_ECH, 0.0 );							parent_2_J2000( v1 );
 
-		div = compute_div( abs(v1.x-v0.x) );
+		div = compute_div_ad( abs(v1.x-v0.x) );
 		//----------------------------------------------------------------------------
 		epsilon = 0.000001/div;
 		cg = floor( vHG.x * div ) / div;
@@ -2539,16 +2585,33 @@ void PanelCapture::computeRepere()
 //							 2"	= 0.0005556°		1/1800		2
 //							 1"	= 0.0002778°		1/3600		2
 //--------------------------------------------------------------------------------------------------------------------
-double t_div[] = { 1.0, 2.0, 6.0, 12.0, 30.0, 60.0, 120.0, 360.0, 720.0, 1800.0, 3600.0 };
+double t_div_de[] = { 1.0, 2.0, 6.0, 12.0, 30.0, 60.0, 120.0, 360.0, 720.0, 1800.0, 3600.0 };
+//double t_div_ad[] = { 1.0, 2.0, 6.0, 12.0, 30.0, 60.0, 120.0, 360.0, 720.0, 1800.0, 3600.0 };
+double t_div_ad[] = { 1.0, 2.0, 6.0, 12.0, 30.0, 60.0, 120.0, 240.0, 480.0, 1200.0, 2400.0 };
+
 //--------------------------------------------------------------------------------------------------------------------
-double PanelCapture::compute_div( double val )
+double PanelCapture::compute_div_de( double val )
 {
 	double d = 0.0;
 	
 	for( int i=0; i<11; i++ )
 	{
-		d = t_div[i];
-		if ( val > (1.0/t_div[i]) )			return d;
+		d = t_div_de[i];
+		//if ( val > (1.0/t_div_de[i]) )			{ logf( (char*)"compute_div_de = %.0lf", d ); return d; }
+		if ( val > (1.0/t_div_de[i]) )			{ return d; }
+	}
+	return d;
+}
+//--------------------------------------------------------------------------------------------------------------------
+double PanelCapture::compute_div_ad( double val )
+{
+	double d = 0.0;
+	
+	for( int i=0; i<11; i++ )
+	{
+		d = t_div_ad[i];
+		//if ( val > (1.0/t_div_ad[i]) )			{ logf( (char*)"compute_div_ad = %.0lf", d ); return d; }
+		if ( val > (1.0/t_div_ad[i]) )			{ return d; }
 	}
 	return d;
 }
