@@ -72,6 +72,7 @@ PanelCamera::PanelCamera(Camera* p)
 	#define POLICE11 "fonts/GFSSolomos.otf"   			// 360 glyphe voir alpha ...
 	#define POLICE12 "fonts/greek-wsi-regular.ttf"   	// 218 glyphe voir alpha ...
 	#define POLICE13 "/usr/share/fonts/truetype/larabie/betsy.ttf"
+	#define POLICE14 "fonts/Sandrina-Calligraphy.ttf"
 	//add(new PanelText( 	(char*)"abcdefghijklmnopqrstuvwxyz", (char*)POLICE7 , 100, y, 150, 0xFF0095FA )  );
 
 
@@ -79,12 +80,12 @@ PanelCamera::PanelCamera(Camera* p)
 	#define TEXT01 "ABCDEFGHIJKLMNOPQRSTUBWXYZ"
 	#define TEXT02 "a c e g i k m o q s u w"
 	#define TEXT03 "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUBWXYZ"
-	#define TEXT04 "Essai"
-	#define TEXT05 
+	#define TEXT04 "Runsys16 "
+	#define TEXT05 "Essai"
 	int size, i;
 	
 	size = 100; y = 0;
-	PanelText* t = new PanelText( 	(char*)TEXT04, (char*)POLICE1 , 0, y, size, 0x40FF00FF, true );
+	PanelText* t = new PanelText( 	(char*)TEXT05, (char*)POLICE1 , 0, y, size, 0x40FF00FF, true );
 	add( t );
 	t->setAlign( PanelText::CENTER );
 	logf( (char*)"Size : %d", t->getPosDX() );
@@ -145,6 +146,12 @@ PanelCamera::PanelCamera(Camera* p)
 	t = new PanelText( 	(char*)"Rene Negre", (char*)POLICE10 ,        0, y, size, 0xFFFFFFFF, true ) ;
 	add( t );
 	t->setAlign( PanelText::RIGHT );
+	y += size + 10;
+
+	size = 100;	
+	t = new PanelText( 	(char*)"Runsys16", (char*)POLICE14 ,        0, y, size, 0xFFFFFFFF, true ) ;
+	add( t );
+	t->setAlign( PanelText::LEFT );
 	y += size + 10;
 #else
 	#define TEXT03 "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUBWXYZ &é(-è_çà)=+°^$¨£ù*%µ,;:!?./§²²"

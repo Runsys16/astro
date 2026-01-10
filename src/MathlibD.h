@@ -60,6 +60,9 @@
 
 #define LUM(__r, __g, __b) (0.3333 * (double)__r + 0.5 * (double)__g  + 0.1667 * (double)__b)
 
+#define IVEC2_AFF(__v) __v.x
+#define IVEC2_PRINTF "(%d, %d)"
+
 #define VEC2_AFF(__v) __v.x, __v.y
 #define VEC2_PRINTF "(%0.4f, %0.4f)"
 

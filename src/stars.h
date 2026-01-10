@@ -21,6 +21,7 @@ public:
     void                    sup( Star*);
 
     Star*                   addStar( int, int, int, int, float );
+    Star*                   addStar( int, int );
     bool                    starExist(int, int);
     bool                    starExist(int, int, int);
     void					print_stars();
@@ -61,8 +62,10 @@ public:
 	void					setB(double d);
 	void					setC(double d);
 	
-	void					setDelta(double);
+	void					set_delta(double);
 	void					compute_magnitude();
+
+	void					compute_print_all_stars();
 
 inline bool					getVisible()				{ return bVisible; }
 inline Star*				get(int i)					{ return v_tStars[i]; }
@@ -75,7 +78,8 @@ inline double*				getvC()						{ return &dCoefC; }
 
 inline double				getA()						{ return dCoefA; }
 inline double				getB()						{ return dCoefB; }
-inline double				getC()						{ printf("%lf\n",dCoefC); return dCoefC; }
+//inline double				getC()						{ printf("%lf\n",dCoefC); return dCoefC; }
+inline double				getC()						{ return dCoefC; }
 
 private:
     vector<Star*>           v_tStars;

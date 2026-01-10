@@ -98,8 +98,8 @@ public:
     inline int          getXScreen()                                    { return x_screen; }
     inline int          getYScreen()                                    { return y_screen; }
     inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
-    inline float        getMagnitude()                                  { return magnitude; }
-    inline float        getPonderation()								{ return ponderation; }
+    inline double		getMagnitude()                                  { return magnitude; }
+    inline double		getPonderation()								{ return ponderation; }
     inline PanelText*   getInfo()                                       { return pInfo; }
     inline void         select()                                        { bSelect = !bSelect; }
     
@@ -153,9 +153,9 @@ private:
     int                 y_screen;
 
     vec2                vFWHM;
-    float               ponderation;
+    double				ponderation;
+    double				magnitude;
     
-    float               magnitude;
     int					modeMag;
     float               maxLum;
     float               limitLum;

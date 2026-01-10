@@ -44,8 +44,8 @@ public:
 		void				compareStar(bool);
 		void				compareStar();
 		void				saveCompareStar();
-		double				computeDelta();
-		void				resetDelta();
+		double				compute_delta();
+		void				reset_delta();
 		
 		bool				doublon(double, int);
 		

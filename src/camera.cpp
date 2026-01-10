@@ -828,8 +828,8 @@ void Camera::compareStar()
 
 	starCompare.compareStar();
 
-	double d = starCompare.computeDelta();
-	panelCamera->getStars()->setDelta( d );
+	double d = starCompare.compute_delta();
+	panelCamera->getStars()->set_delta( d );
    	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------

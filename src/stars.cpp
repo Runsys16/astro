@@ -100,6 +100,95 @@ void Stars::sup(Star * p)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+Star* Stars::addStar(int xm, int ym )
+{
+    logf( (char*)"Stars::addStar() souris(%d, %d)    %d", xm, ym, __LINE__);
+    log_tab(true);
+
+
+    Star * pp = new Star((int) xm, (int)ym);
+    pp->setModeMag( uModeMag );
+    pp->setPtr( RB->ptr );
+    pp->setWidth( RB->w );
+    pp->setHeight( RB->h );
+
+    pp->chercheLum((int)xm, (int)ym, 50);
+    
+    pp->find();
+    pp->find();
+    int x_find = pp->getPos().x;
+    int y_find = pp->getPos().y;
+
+    logf( (char*)"rechercher etoile x_find, y_find(%d, %d)", x_find, y_find );
+    logf( (char*)"pos" VEC2_PRINTF "", VEC2_AFF(pp->getPos()) );
+
+    //if ( starExist( (int)pp->getPos().x, (int)pp->getPos().y ) )       { 
+    if ( starExist( x_find, y_find ) )       { 
+        delete pp;
+        logf( (char*)"Etoile existe deja ..." );
+
+        log_tab(false);
+		log( (char*)"---" );
+        return NULL;
+    }
+	logf( (char*)"Etoile n'existe pas OK" );
+
+    pp->setXY( x_find, y_find );
+    logf( (char*)"pos" VEC2_PRINTF "", VEC2_AFF(pp->getPos()) );
+    pp->find();
+    logf( (char*)"pos" VEC2_PRINTF "", VEC2_AFF(pp->getPos()) );
+    //pp->setView(pView);
+    if ( x_find == -1 || y_find == -1 ) {
+        delete pp;
+        logf( (char*)"Pas d'Etoile ..." );
+
+        log_tab(false);
+		log( (char*)"---" );
+        return NULL;
+    }
+    /*
+    //logf( (char*)"Appelle star::updatePos(%d, %d, %d, %d)", dx_screen, dy_screen, e, e ); 
+    pp->updatePos( dx_screen, dy_screen, e, e ); 
+
+    logf( (char*)"find(%d, %d)", pp->getXScreen(), pp->getYScreen()  );
+    if ( starExist(pp->getXScreen(), pp->getYScreen()) )        { 
+        delete pp;
+        logf( (char*)"Efface etoile ..." );
+
+        log_tab(false);
+		log( (char*)"---" );
+        return NULL;
+    }
+	*/
+
+    pp->computeMag();
+    pp->getMagnitude();
+    pView->add( pp->getInfo() );
+    pp->setView( pView );
+    pp->setRB( RB ); 
+
+
+
+
+    pp->setIdx( v_tStars.size() );
+    v_tStars.push_back( pp );
+
+    logf( (char*)"Nouvelle etoile no %d (%d,%d) mag=%0.2f find xy(%d,%d)", 
+                v_tStars.size(), xm, ym, pp->getMagnitude() , x_find, y_find );
+
+
+    char t[] = "00000000000";  
+    sprintf( t, "%d", (int)v_tStars.size() );
+    logf( (char*)"Nb etoiles %d", (int)v_tStars.size() );
+    pNbStars->changeText( t );
+    
+    log_tab(false);
+	log( (char*)"---" );
+    return pp;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 {
     logf( (char*)"Stars::addStar() souris(%d, %d)   dx_screen=%d, dy_screen=%d, echelle =%0.2f : %d",
@@ -123,6 +212,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     int x_find = pp->getX();
     int y_find = pp->getY();
 
+    logf( (char*)"starExist(%d, %d)", x_find, y_find );
     if ( starExist(x_find, y_find) )        { 
         delete pp;
         logf( (char*)"Etoile existe deja ..." );
@@ -201,29 +291,17 @@ bool Stars::starExist(int xp, int yp, int no )
 	log( (char*)"---------------------------------" );
 	#endif
 
+	vec2 v = vec2( xp, yp );
+
 	for( int n=0; n<nb; n++ )
 	{
-		/*
-		*/
-		int x_star = v_tStars[n]->getXScreen();
-		int y_star = v_tStars[n]->getYScreen();
-
-		int dx = abs(xp-x_star);
-		int dy = abs(yp-y_star);
-
-
-		vec2 v =  v_tStars[n]->getPos();
-		//if ( dx < 8 && dy < 8 && n!=no )          return true;
-
-		vec2 w = vec2(v_tStars[n]->getXScreen(), v_tStars[n]->getYScreen() );
-		w -= vec2(xp, yp);
+		vec2 vs =  v_tStars[n]->getPos() - v;
 		
 		#ifdef DEBUG_EXIST
-		logf( (char*)"Etoile(%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ech=%0.2f  lg=%0.2lf ", xp, yp, n, x_star, y_star, dx, dy, ech, w.length() );
-		logf( (char*)"      (%d,%d) v_tStars[%d](%d,%d) Test(%d,%d) ech=%0.2f  lg=%0.2lf ", xp, yp, n, v.x, v.y, dx, dy, ech, w.length() );
+		logf( (char*)"Etoile" VEC2_PRINTF "   v_tStars[%d]" VEC2_PRINTF "", VEC2_AFF(v), n, VEC2_AFF(v_tStars[n]) );
 		#endif
 
-		if ( w.length() < (ech*2.0) )		return true;
+		if ( vs.length() < (1.5) )		return true;
 	}
 
 	return false;
@@ -284,8 +362,9 @@ void Stars::findAllStars()
                 
                 p->setXY(x_find,y_find);            
                 p->find();            
-                int x_find = p->getX();
-                int y_find = p->getY();
+                p->find();            
+                int x_find = p->getPos().x;
+                int y_find = p->getPos().y;
                 p->computeMag();
                 
                 if ( p->getMagnitude() < 20.0 )     
@@ -297,7 +376,9 @@ void Stars::findAllStars()
                     logf( (char*)"Etoile(%d,%d)", x_find, y_find );
                     log_tab(true);
 					#endif
-                    if ( starExist(p->getXScreen(), p->getYScreen()) )            
+					p->find();
+					p->find();
+                    if ( starExist(p->getPos().x, p->getPos().y) )            
                     {
 						#ifdef DEBUG_EXIST
                         logf( (char*)"Etoile(%d,%d) mag=%0.2f   existe ...", x_find, y_find, p->getMagnitude() );
@@ -310,29 +391,21 @@ void Stars::findAllStars()
 					#endif
                     
                     Star * pp = new Star();
-                    /*
-                    pp->setPtr( RB->ptr );
-                    pp->setWidth( RB->w );
-                    pp->setHeight( RB->h );
-                    */
+
 				    pp->setModeMag( uModeMag );
                     pp->setRB( RB );
                     pp->setXY( x_find, y_find );
                     pp->find();
+                    pp->find();
 
                     pp->updatePos(dx_view, dy_view, ech, ech);
                     pp->computeMag();
-                    //pp->getMagnitude();
                     pView->add( pp->getInfo() );
                     pp->setView( pView );
                     
                     pp->setIdx( v_tStars.size() );
                     v_tStars.push_back( pp );
 
-                    //logf( (char*)" Add etoile no %d (%d,%d) mag=%0.2f", v_tStars.size(), x_find, y_find, pp->getMagnitude() );
-                    //logf( (char*)"      (%d,%d) e=%0.2f", dx_view, dy_view, ech );
-
-                    
                 }
             }
         }
@@ -442,13 +515,15 @@ void Stars::suivi(rb_t* p)
     
     for (int i=0; i<nb; i++ )
     {
+
         float e;
         float ew = (float)pView->getDX() / (float)RB->w; 
         float eh = (float)pView->getDY() / (float)RB->h;
         if ( ew>eh )    e = ew; 
         else            e = eh;
+    	/*
         //logf((char*)"Stars::suivi() w=%d h=%d  delta window (%d, %d)", p->w, p->h, pView->getDX(), pView->getDY() );
-
+        */
         if ( !v_tStars[i]->find()   )
         {
             if ( v_tStars[i]->getNotFound() > 10   )
@@ -618,10 +693,10 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
 
         if ( !pStar->find() && pStar->getNotFound() > 10   )
         {
-            t.push_back(i);
             #ifdef DEBUG_UPDATES  
-                logf( (char*)" Stars::update() push_back  !Star->find() = %d", i );
+            t.push_back(i);
             #endif
+                logf( (char*)" Stars::update() push_back  !Star->find() = %d", i );
         }
         // Star existe
         else
@@ -634,12 +709,14 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
             #ifdef DEBUG_UPDATES  
                 logf( (char*)" x_find=%d, y_find=%d", x_find, y_find );
             #endif
-            if ( starExist(x_find, y_find, i) )        { 
+            /*
+            if ( starExist(pStar->getPos().x, pStar->getPos().y, i) )        { 
                 t.push_back(i);
-                #ifdef DEBUG_UPDATES  
                     logf( (char*)" Stars::update() push_back existe = %d", i );
+                #ifdef DEBUG_UPDATES  
                 #endif
             }
+            */
         }
         //*/       
         //v_tStars[i]->computeMag();
@@ -672,8 +749,8 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
 
             tot = v_tStars.size();
         
-            #ifdef DEBUG_UPDATES  
                 logf( (char*)" reste %d", tot );
+            #ifdef DEBUG_UPDATES  
             #endif
         }
     }
@@ -924,9 +1001,9 @@ void Stars::setC(double d)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Stars::setDelta(double d)
+void Stars::set_delta(double d)
 {
-	logf( (char*)"Stars::setDelta(%0.2lf)", d );
+	logf( (char*)"Stars::set_delta(%0.2lf)", d );
 	//dCoefC = d;
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
@@ -950,6 +1027,29 @@ void Stars::compute_magnitude()
     for( int i=0; i<nb; i++ )
     {
         v_tStars[i]->computeMag();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool cmps( Star* p0, Star* p1 )
+{
+	return p0->getMagnitude() < p1->getMagnitude();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Stars::compute_print_all_stars()
+{
+	log( (char*)"Stars::compute_print_all_stars()" );
+
+	sort( v_tStars.begin(), v_tStars.end(), cmps );
+
+    int nb = v_tStars.size();
+    for( int i=0; i<nb; i++ )
+    {
+    	Star * p = v_tStars[i];
+        logf( (char*)"%03d-" VEC2_PRINTF "    \tmag= %0.2lf,     \tlum = %0.2lf", i, VEC2_AFF(p->getPos()), p->getMagnitude(), p->getPonderation() );
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

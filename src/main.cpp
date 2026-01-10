@@ -2266,26 +2266,32 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
     case 8:
 		{
             logf( (char*)"Key (ctrl+H) : resetSatrCompare" );
+            log_tab(true);
 			Captures::getInstance().resetVizierMagMax();
+            log_tab(false);
         }
         break;
 	// TAB
     case 9:
 		{
             logf( (char*)"Key (ctrl+TAB) : Change de camera" );
+            log_tab(true);
 			Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 			cam_mgr.active();
+            log_tab(false);
         }
         break;
 	// CTRL N
     case 14:
         {
-        logf( (char*)"Key (N) : Mode NUIT");
-        bNuit = !bNuit;
-        logf( (char*)"  bNuit = %s", BOOL2STR(bNuit) );
-        var.set("bNuit", bNuit);
+	        logf( (char*)"Key (N) : Mode NUIT");
+            log_tab(true);
+		    bNuit = !bNuit;
+		    logf( (char*)"  bNuit = %s", BOOL2STR(bNuit) );
+		    var.set("bNuit", bNuit);
 
-        setColor();
+		    setColor();
+            log_tab(false);
         }
         break;
 
@@ -2379,28 +2385,34 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	case 'e':
 	    {
 	        logf( (char*)"Key (Alt+e) : Affiche le catalog" );
+            log_tab(true);
 
 	        bAffCatalog = !bAffCatalog;
             VarManager::getInstance().set("bAffCatalog", bAffCatalog);;
 
 	        logf( (char*)"Affiche oui/non le catalogue Vizier : %s", BOOL2STR(bAffCatalog) );
             var.set( "bAffCatalog", bAffCatalog );
+            log_tab(false);
 	    }
 	    break;
 	//----------------------------------------------------------------------------
 	case 'g':
 	    {
 	        logf( (char*)"Key (Alt+g) : Affiche dic current" );
+            log_tab(true);
 
 	    	Capture* pCurrent = Captures::getInstance().getCurrentCapture();
 	    	if ( pCurrent == NULL )			break;
 	        pCurrent->afficheFitsDic();
+
+            log_tab(false);
 	    }
 	    break;
 	//----------------------------------------------------------------------------
     case 'j':
         {
 	        logf( (char*)"Key (Alt+j) : Affiche dic current" );
+            log_tab(true);
 	        PanelCapture* p = (PanelCapture*)wm.getCapture();
 
 	        if ( p == NULL )
@@ -2420,6 +2432,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 		    }
         //logf( (char*)"Key (b) : Bluetooth disconnect" );
         //BluetoothManager::getInstance().disconnect();
+            log_tab(false);
         }
         break;
 	#define C_FACTOR   1.01
@@ -2539,7 +2552,8 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	//----------------------------------------------------------------------------
     case 'm':
         {
-	        logf( (char*)"Key (alt+m) : Comparaison etoiles");
+	        logf( (char*)"Key (alt+m) : Comparaison etoiles parametre A");
+            log_tab(true);
 
 	        PanelCapture* p = (PanelCapture*)wm.getCapture();
 
@@ -2560,12 +2574,14 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 		    }
         //logf( (char*)"Key (b) : Bluetooth disconnect" );
         //BluetoothManager::getInstance().disconnect();
+            log_tab(false);
         }
         break;
 	//----------------------------------------------------------------------------
 	case 'n':
 	    {
 	        logf( (char*)"Alt+n : Compare les etoiles trouvees avec le CDS" );
+            log_tab(true);
 	        Panel* panel = wm.getCapture();
 	        if ( panel == NULL )
 	        {
@@ -2583,12 +2599,14 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 			    Camera* camera = Camera_mgr::getInstance().getCurrent();
 			    if ( camera )		        camera->compareStar();
 			}
+            log_tab(false);
 		}
 	    break;
 	//----------------------------------------------------------------------------
 	case 'N':
 	    {
 	        logf( (char*)"Key (alt+shift+n) : Compare les etoiles trouvees avec le CDS " );
+            log_tab(true);
 
 	        logf( (char*)"      \t: voir le fichier ~/.astropilot/gnuplot/magnitude.png" );
 	        Panel* panel = wm.getCapture();
@@ -2620,57 +2638,9 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 				camera->saveCompareStar();
 		        thread( &commande_magnitude, "pleiades" ).detach();
 			}
+            log_tab(false);
 		}
 	    break;
-	//----------------------------------------------------------------------------
-    case 'o':
-        {
-	        logf( (char*)"Key (alt+o) :  " );
-	        PanelCapture* p = (PanelCapture*)wm.getCapture();
-
-	        if ( p == NULL )
-	        {
-		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
-	        }
-	        else
-	        if ( typeid(*p) == typeid(PanelCapture)	)
-	        {
-	    		if ( p )
-	    		{
-	    			double d = *( p->getStars()->getvC() );
-					d *= 1.1;
-					p->getStars()->setC( d );
-					logf( (char*)"C = %0.2f", (float)d );
-				}				
-		    }
-        //logf( (char*)"Key (b) : Bluetooth disconnect" );
-        //BluetoothManager::getInstance().disconnect();
-        }
-        break;
-	//----------------------------------------------------------------------------
-    case 'p':
-        {
-	        PanelCapture* p = (PanelCapture*)wm.getCapture();
-
-	        if ( p == NULL )
-	        {
-		        log( (char*)"[WARNING] Pas de fenetre sous la souris" );
-	        }
-	        else
-	        if ( typeid(*p) == typeid(PanelCapture)	)
-	        {
-	    		if ( p )
-	    		{
-	    			double d = *( p->getStars()->getvC() );
-					d /= 1.1;
-					p->getStars()->setC( d );
-					logf( (char*)"C = %0.2f", (float)d );
-				}				
-		    }
-        //logf( (char*)"Key (b) : Bluetooth disconnect" );
-        //BluetoothManager::getInstance().disconnect();
-        }
-        break;
 	//----------------------------------------------------------------------------
 	case 'r':
 	    {
@@ -3649,6 +3619,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'x':
         {
+        logf( (char*)"Key (x) : Graphique etoile" );
+        log_tab(true);
         	Captures& 	captures 	= Captures::getInstance();
         	Capture* 	capture		= captures.getCurrentCapture();
         	bool		bGraph;
@@ -3667,9 +3639,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		            p->getPanelCapture()->findAllStars();
 			    	p->compareStar();
 			    	*/
+			        //logf( (char*)"Key (x) : Graphique etoile" );
 			    	capture->create_graph();
 			    }
         	}
+        log_tab(false);
         }
         break;
 

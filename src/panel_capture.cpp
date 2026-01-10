@@ -284,6 +284,8 @@ void PanelCapture::updateInfoVizier()
 		//tex_2_screen(v);
         V = v;
 		
+		pInfoVizier->add_textf( (char*)"%s", pStarViz->getName().c_str() );
+		pInfoVizier->add_text( (char*)"-----------------------------------" );
 		pInfoVizier->add_textf( (char*)"-GAIAdr3\t(%.2lf, %0.2lf)", v.x, v.y );
 		pInfoVizier->add_textf( (char*)"    mag\t= %0.2f", (float)pStarViz->getMag() );
 		
@@ -1176,6 +1178,7 @@ void PanelCapture::clickLeft(int xm, int ym)
 void PanelCapture::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
+	log_tab(true);
 
     if ( bFits && iGlutModifier == GLUT_ACTIVE_CTRL)    {
 		vec2 vTex = vec2( xm, ym );
@@ -1207,24 +1210,28 @@ void PanelCapture::releaseLeft(int xm, int ym)
 		int xx = ((double)xm-(double)getX()) / e;
 		int yy = ((double)ym-(double)getY()) / e;
 
+    	vec2 v = vec2( xm, ym );
+    	screen_2_tex( v );
 
 		// Si en plein ecran on ajoute une etoile
 		    
 		if ( !pCapture->isIconized()     )
 		{
 		    //stars.setView( (PanelSimple*)this->getParent() );
-		    stars.setView( this );
-		    stars.setRB( pReadBgr );
-		    if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
-		        stars.selectLeft(xx, yy);
+			stars.setView( this );
+			stars.setRB( pReadBgr );
+		    logf( (char*)"calcul v" VEC2_PRINTF "", VEC2_AFF(v) ); 
+
+			if ( stars.addStar( v.x, v.y ) == NULL )		stars.selectLeft(xx, yy);
+			//if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )		stars.selectLeft(xx, yy);
+			//if ( stars.addStar( (int)v.x, (int)v.y, 0, 0, e ) == NULL )		stars.selectLeft(xx, yy);
 		}
 		else
 		{            
-			log_tab(true);
 		    Captures::getInstance().active( pCapture );
-			log_tab(false);
 		}
 	}
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1271,7 +1278,20 @@ void PanelCapture::releaseRight(int xm, int ym)
     
     if ( iGlutModifier == GLUT_ACTIVE_ALT )
     {
+		logf( (char*)"ALT modfier" );
     	print_echelle_coordonnees();
+    }
+    else
+    if ( iGlutModifier == GLUT_ACTIVE_CTRL )
+    {
+		logf( (char*)"CTRL modfier" );
+		if ( pVizier )	pVizier->compute_print_all_stars();
+    }
+    else
+    if ( iGlutModifier == GLUT_ACTIVE_SHIFT )
+    {
+		logf( (char*)"SHIFT modfier" );
+		stars.compute_print_all_stars();
     }
     else
     {
@@ -1493,8 +1513,8 @@ void PanelCapture::compareStar()
 
 	starCompare.compareStar();
 
-	double d = starCompare.computeDelta();
-	stars.setDelta( d );
+	double d = starCompare.compute_delta();
+	stars.set_delta( d );
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -271,19 +271,19 @@ void StarCompare::saveCompareStar()
 //
 //
 //--------------------------------------------------------------------------------------------------------------------
-void StarCompare::resetDelta()
+void StarCompare::reset_delta()
 {
-   	log( (char*)"StarCompare::resetDelta()");
+   	log( (char*)"StarCompare::reset_delta()");
 	int n = pStars->size();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //
 //--------------------------------------------------------------------------------------------------------------------
-double StarCompare::computeDelta()
+double StarCompare::compute_delta()
 {
 	if ( magMax == 0.0 )			return 0.0;
-   	log( (char*)"StarCompare::computeDelta()");
+   	log( (char*)"StarCompare::compute_delta()");
    	int n = tVizi.size();
    	double tot = 0.0;
    	int err = 0;
