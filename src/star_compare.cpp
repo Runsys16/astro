@@ -295,7 +295,10 @@ double StarCompare::compute_delta()
 		tot +=  (mv - ms);
 	}
 
-	double delta = tot / (double)n;	
+	double delta = tot / (double)n;
+	
+	return delta;
+	/*
 	int m = 0;
 		
 	for( int i=0; i<n; i++ )
@@ -311,6 +314,7 @@ double StarCompare::compute_delta()
 	
 	
 	return tot / (double)m;
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

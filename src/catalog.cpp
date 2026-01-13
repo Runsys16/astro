@@ -1,11 +1,15 @@
 #include "catalog.h"
 #include "camera_mgr.h"
+#include "panel_stdout.h"
+//--------------------------------------------------------------------------------------------------------------------
+//#define VER_FICHIER_2
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Catalog::Catalog()
 {
     sFilename = "/home/rene/.astropilot/vizier/vizier.cat";
+    bVizCam = true;
 
     sName = "";
     charge();
@@ -19,6 +23,7 @@ Catalog::Catalog()
 Catalog::Catalog(bool b)
 {
     sFilename = "/home/rene/.astropilot/vizier/vizier.cat";
+    bVizCam = true;
     sName = "";
     bSauve = b;
 }
@@ -29,6 +34,7 @@ Catalog::Catalog(string f)
 {
     Catalog();
     sFilename = f;
+    bVizCam = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -38,6 +44,7 @@ Catalog::Catalog(string f, string n)
     Catalog();
     sFilename = f;
     sName = n;
+    bVizCam = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -143,7 +150,10 @@ bool Catalog::charge( string flnm )
 		return false;
     }
 	bSauve = true;
+    bVizCam = false;
+
 	bool ret = charge();
+
 	bSauve = false;
 	
 	return ret;
@@ -193,30 +203,39 @@ bool Catalog::charge()
         fichier >> output;
         string name = string(output);
         
-        fichier >> output;
-        fichier >> output;
-        val = string(output);
-        double fpmRA = stof(val.c_str());
+		double fpmRA	= 0.0;
+		double feRA		= 0.0;
+		double fpmDE	= 0.0;
+		double feDE		= 0.0;
 
-        fichier >> output;
-        fichier >> output;
-        val = string(output);
-        double feRA = stof(val.c_str());
+		if ( bVizCam == false )
+		{
 
-        fichier >> output;
-        fichier >> output;
-        val = string(output);
-        double fpmDE = stof(val.c_str());
+			fichier >> output;
+			fichier >> output;
+			val = string(output);
+			fpmRA = stof(val.c_str());
 
-        fichier >> output;
-        fichier >> output;
-        val = string(output);
-        double feDE = stof(val.c_str());
+			fichier >> output;
+			fichier >> output;
+			val = string(output);
+			feRA = stof(val.c_str());
 
+			fichier >> output;
+			fichier >> output;
+			val = string(output);
+			fpmDE = stof(val.c_str());
+
+			fichier >> output;
+			fichier >> output;
+			val = string(output);
+			feDE = stof(val.c_str());
+		}
+				
         StarCatalog* p = new StarCatalog(fRA, fDE, fMag, fpmRA, feRA, fpmDE, feDE, name, nb);
         nb++;
         
-        //logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s", fRA, fDE, fMag, name.c_str() );
+        //logf( (char*)"Catalog::charge()  Etoile RA=%0.4f DE=%0.4f Mag=%0.4f %s pmRA%0.2lf", fRA, fDE, fMag, name.c_str(), fpmRA );
         stars.push_back(p);
 
         if ( name.find("65221487868870784") == 0 )
@@ -316,14 +335,23 @@ void Catalog::compute_print_all_stars()
 {
 	log( (char*)"Catalog::compute_print_all_stars()" );
 
+	panelStdOut->change_tab_size();
+	panelStdOut->add_tab_size( 200 );
+	panelStdOut->add_tab_size( 100 );
+
 	sort( stars.begin(), stars.end(), cmpsc );
+    log_tab(true);
 
     int nb = stars.size();
     for( int i=0; i<nb; i++ )
     {
     	StarCatalog * p = stars[i];
-        logf( (char*)"%03d-(%0.4lf, %0.4lf)    \tmag= %0.2lf\tpm=(%0.2lf, %02lf)", i, p->getRA(), p->getDE(), p->getMag(), p->getPmRA(), p->getPmDE() );
+        logf( (char*)"%03d - (%0.4lf, %0.4lf)\tmag= %0.2lf\tpm=(%0.2lf, %0.2lf)", i, p->getRA(), p->getDE(), p->getMag(), p->getPmRA(), p->getPmDE() );
     }
+
+    log_tab(false);
+	panelStdOut->restaure_tab_size();
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

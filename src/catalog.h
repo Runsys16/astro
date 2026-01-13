@@ -18,6 +18,7 @@ private:
     string                          sName;
     vector<StarCatalog*>            stars;
     bool							bSauve;
+    bool							bVizCam;
 
 public:
     Catalog();

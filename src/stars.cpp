@@ -1,6 +1,7 @@
 #include "stars.h"
 #include <malloc.h>
 #include "panel_camera.h"
+#include "panel_stdout.h"
 //--------------------------------------------------------------------------------------------------------------------
 //#define DEBUG_UPDATES   0
 //#define DEBUG_EXIST
@@ -209,8 +210,13 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
     pp->chercheLum((int)X, (int)Y, 50);
     
-    int x_find = pp->getX();
-    int y_find = pp->getY();
+    //int x_find = pp->getX();
+    //int y_find = pp->getY();
+
+    pp->find();
+    pp->find();
+    int x_find = pp->getPos().x;
+    int y_find = pp->getPos().y;
 
     logf( (char*)"starExist(%d, %d)", x_find, y_find );
     if ( starExist(x_find, y_find) )        { 
@@ -1043,14 +1049,20 @@ void Stars::compute_print_all_stars()
 {
 	log( (char*)"Stars::compute_print_all_stars()" );
 
-	sort( v_tStars.begin(), v_tStars.end(), cmps );
+	panelStdOut->change_tab_size();
+	panelStdOut->add_tab_size( 220 );
+	panelStdOut->add_tab_size( 120 );
 
+	sort( v_tStars.begin(), v_tStars.end(), cmps );
+	log_tab(true);
     int nb = v_tStars.size();
     for( int i=0; i<nb; i++ )
     {
     	Star * p = v_tStars[i];
-        logf( (char*)"%03d-" VEC2_PRINTF "    \tmag= %0.2lf,     \tlum = %0.2lf", i, VEC2_AFF(p->getPos()), p->getMagnitude(), p->getPonderation() );
+        logf( (char*)"%03d - " VEC2_PRINTF "\tmag= %0.2lf,\tlum = %0.2lf", i, VEC2_AFF(p->getPos()), p->getMagnitude(), p->getPonderation() );
     }
+	log_tab(false);
+	panelStdOut->restaure_tab_size();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

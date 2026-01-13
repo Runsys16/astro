@@ -950,7 +950,7 @@ void PanelCamera::displayVizier()
 		        if ( bAffStar && stars.size() != 0 ) 	r += 5;
 			
 		        glCercle( v.x, v.y, r*echelle );
-		        //logf( (char*)"PanelCamera::displayVizier() i=%d", i );
+		        //logf( (char*)"PanelCamera::displayVizier() i=%d  " VEC2_PRINTF "", i, VEC2_AFF(v) );
 				p->displayGL();
 				//p->setVisible( true );
 			}
@@ -1128,14 +1128,17 @@ void PanelCamera::updateVizizePos()
 	        mat2 m;		       m.rotate( Wref );
 	        vec2 vHomothetie = vec2(ZrefX, ZrefY);
 	        vec2 vTranslatio = vec2(Xref , Yref);
+	        vec2 vRef		 = vec2(fRefCatalogX, fRefCatalogY);
 
-	        vec2 v = vec2( vizier.get(i)->fRA, vizier.get(i)->fDE) - vec2(fRefCatalogX, fRefCatalogY);
+	        vec2 v = vec2( vizier.get(i)->fRA, vizier.get(i)->fDE) - vRef;
 	        vec2 vViz = m * v;
 	        vViz = -vViz * vHomothetie  + vTranslatio;
 	        
 	        vec2 vScreen = vec2(vViz);
 			tex2screen(vScreen);
 			/*
+			logf( (char*)"|  vRef" VEC2_PRINTF "", VEC2_AFF(vRef) );
+			logf( (char*)"|  v" VEC2_PRINTF " => screen" VEC2_PRINTF " Zrex=%0.2lf", VEC2_AFF(v), VEC2_AFF(vScreen), ZrefX  );
 			*/
 			if ( 	vScreen.x> vMin.x   &&	vScreen.x < vMax.x  
 				&& 	vScreen.y> vMin.y   &&	vScreen.y < vMax.y  )

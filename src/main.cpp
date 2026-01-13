@@ -95,7 +95,6 @@ vector<string> t_sHelp1 =
 	"     F\t: Active/Desactive la simu",
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
-	"   k/K\t: Coefficient comparaison etoile",
 	"     j\t: Affichage info fits",
 	"     l\t: List les ports /dev + les controles ",
 	"     L\t: List les variables",
@@ -158,18 +157,18 @@ vector<string> t_sHelp2 =
 vector<string> t_sHelp3 = 
 {
 	"---- SUIVI ----",
-	"ctrl+d\t: Efface toutes les etoiles",
+	"     K\t: Lance/Stop le suivi",
+	"     k\t: Lance l'asservissement",
 	"     r\t: Charge ficher de suivi (.guid)",
 	"     R\t: Reset Suivi (!!! Toute les data sont effacees)",
 	"     s\t: Recherche toutes les etoiles",
-	"     S\t: Lance/Stop le suivi",
+	"     S\t: Efface toutes les etoiles",
     "     U\t: Affichage du centre de la camera on/off",
     "     u\t: Affichage du suivi on/off",
 	" alt+u\t: Suivi au centre de l'ecran",
 	"     V\t: Initialise les coordonnees de suivi",
 	"     v\t: Sauvegarde fichier de suivi (.guid)",
 	"     w\t: Centre l'asservissement",
-	"     Y\t: Lance l'asservissement",
 	"",
 	"---- FFT ----",
 	"   g/G\t: Change la valeur du filtre"   ,
@@ -2217,22 +2216,13 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 		    //deleteStars();
         }
 		break;
+	/*
 	// CTRL D
     case 4:
 		{
-	    logf( (char*)"Key (ctrl+d) : Efface les etoiles !!" );
-        Captures& cap = Captures::getInstance();
-        if ( cap.isMouseOverCapture(x, y)  )
-        {
-            cap.deleteAllStars();
-        }
-        else
-        {
-            if ( Camera_mgr::getInstance().getCurrent() != NULL )
-    		    Camera_mgr::getInstance().deleteAllStars();
-        }
         }
         break;
+    */
 	// CTRL E
     case 5:
 		{
@@ -2438,7 +2428,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	#define C_FACTOR   1.01
     case 'K':
         {
-	        logf( (char*)"Key (alt+shift+K) : Comparaison etoiles");
+	        logf( (char*)"Key (alt+shift+K) : Comparaison etoiles ajustement");
 	        
 	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
@@ -2466,7 +2456,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
         break;
     case 'k':
         {
-	        logf( (char*)"Key (alt+k) : Comparaison etoiles");
+	        logf( (char*)"Key (alt+k) : Comparaison etoiles ajustement");
 	        
 	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
@@ -2496,7 +2486,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	#define A_FACTOR   1.01
 	case 'l':
 		{
-	        logf( (char*)"Key (alt+l) : Compaaraison etoiles");
+	        logf( (char*)"Key (alt+l) : Comparaison etoiles ajustement");
 	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
         	Capture* 	cap		= caps.getCurrentCapture();
@@ -2524,7 +2514,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 	//----------------------------------------------------------------------------
 	case 'L':
 		{
-	        logf( (char*)"Key (alt+shift+l) : Compaaraison etoiles");
+	        logf( (char*)"Key (alt+shift+l) :  Comparaison etoiles ajustement");
 	        log_tab(true);
         	Captures& 	caps 	= Captures::getInstance();
         	Capture* 	cap		= caps.getCurrentCapture();
@@ -3116,7 +3106,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'f':  // '-'
         {
-        	logf( (char*)"NbTextures %d", wm.getNbTextures() );
+        	logf( (char*)"WindowsManage NbTextures %d", wm.getNbTextures() );
         }
         break;
 
@@ -3175,12 +3165,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'i':
         {
+        /*
         	string name = "";
 	        Camera* p = Camera_mgr::getInstance().getCurrent();
         	if( p ){
         		name = p->getPanelCamera()->getExtraString();
         	}
         	logf( (char*)name.c_str() );
+        */
         }
         break;
 
@@ -3208,10 +3200,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		break;
     case 'K':
         {
+        logf( (char*)"Key (K) : Suivi on/off" );
+            bSuivi = !bSuivi;
+            var.set( "bSuivi", bSuivi );
+            change_joy( xSuivi, ySuivi );
+            logf( (char*)"  bSuivi (%s)", BOOL2STR(bSuivi) );
         }
         break;
     case 'k':
         {
+        bCorrection = !bCorrection; 
+        logf( (char*)"Key (k) : Asservissement de monture %s", BOOL2STR(bCorrection) );
+        set_asservissement();
         }
         break;
 	/*
@@ -3422,11 +3422,17 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'S' :
         {
-        logf( (char*)"Key (S) : Suivi on/off" );
-            bSuivi = !bSuivi;
-            var.set( "bSuivi", bSuivi );
-            change_joy( xSuivi, ySuivi );
-            logf( (char*)"  bSuivi (%s)", BOOL2STR(bSuivi) );
+			logf( (char*)"Key (S) : Efface les etoiles !!" );
+		    Captures& cap = Captures::getInstance();
+		    if ( cap.isMouseOverCapture(x, y)  )
+		    {
+		        cap.deleteAllStars();
+		    }
+		    else
+		    {
+		        if ( Camera_mgr::getInstance().getCurrent() != NULL )
+				    Camera_mgr::getInstance().deleteAllStars();
+		    }
         }
         break;
 	case 't':
@@ -3663,9 +3669,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'Y':
         {
-        bCorrection = !bCorrection; 
-        logf( (char*)"Key (Y) : Asservissement de monture %s", BOOL2STR(bCorrection) );
-        set_asservissement();
         }
         break;
 

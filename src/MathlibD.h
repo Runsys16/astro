@@ -63,11 +63,20 @@
 #define IVEC2_AFF(__v) __v.x
 #define IVEC2_PRINTF "(%d, %d)"
 
+#define IVEC3_AFF(__v) __v.x, __v.y, __v.z
+#define IVEC3_PRINTF "(%d, %d, %d)"
+
+#define IVEC4_AFF(__v) __v.x, __v.y, __v.z, __v.w
+#define IVEC4_PRINTF "(%d, %d, %d, %d)"
+
 #define VEC2_AFF(__v) __v.x, __v.y
-#define VEC2_PRINTF "(%0.4f, %0.4f)"
+#define VEC2_PRINTF "(%0.4lf, %0.4lf)"
 
 #define VEC3_AFF(__v) __v.x, __v.y, __v.z
-#define VEC3_PRINTF "(%0.4f, %0.4f, %0.4f)"
+#define VEC3_PRINTF "(%0.4lf, %0.4lf, %0.4lf)"
+
+#define VEC4_AFF(__v) __v.x, __v.y, __v.z, __v.w
+#define VEC4_PRINTF "(%0.4lf, %0.4lf, %0.4lf, %0.4lf)"
 
 const double INV_RAND_MAX = 1.0 / (RAND_MAX );
 inline double random(double max=1.0) { return max * rand() * INV_RAND_MAX; }

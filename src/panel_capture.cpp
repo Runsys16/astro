@@ -144,7 +144,14 @@ void PanelCapture::init()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::update_stars()
 {
+	//logf( (char*)"PanelCapture::update()" );
+	
     if  ( pReadBgr==NULL )      logf( (char*)"PanelCapture::update()   pointeur RB NULL" );
+    
+    for( int i=0; i<stars.size(); i++ )
+    {
+    	stars.get(i)->updatePos( getX(), getY(), ech, ech );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1268,6 +1275,7 @@ void PanelCapture::motionRight(int xm, int ym)
 		updatePos();    
 	}
 	//stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
+	update_stars();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2348,8 +2356,10 @@ void PanelCapture::compute_points( pin_mode mode, struct coord_line& c, double c
 		cc = (coef - vHD.x) / (vBD.x - vHD.x) * (double)parent->getDY();
 		p2 = vec2(parent->getDX(), round(cc));
 
-		b1	= ( 0.0 <= p1.y ) && ( p1.y <= (double)parent->getDY() );
-		b2	= ( 0.0 <= p2.y ) && ( p2.y <= (double)parent->getDY() );
+		//b1	= ( 0.0 <= p1.y ) && ( p1.y <= (double)parent->getDY() );
+		//b2	= ( 0.0 <= p2.y ) && ( p2.y <= (double)parent->getDY() );
+		b1	= ( 0.0 <= p1.y ) &&  ( 0.0 <= p2.y );
+		b2	= ( p1.y <= (double)parent->getDY() ) && ( p2.y <= (double)parent->getDY() );
 		
 		c.bContinue	= !b1 && !b2;
 		break;
