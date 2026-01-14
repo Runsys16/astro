@@ -16,6 +16,7 @@
 #include "timer.h"
 #include "panel_graph.h"
 #include "panel_debug.h"
+#include "convert.h"
 //----------------------------------------------------------------------------------------------
 class Capture;
 class Captures;
@@ -41,7 +42,7 @@ struct coord_line
     bool		bBreak;
 };
 //----------------------------------------------------------------------------------------------
-class PanelCapture : public PanelSimple
+class PanelCapture : public PanelSimple, public Convert
 {
 
 protected:
@@ -104,8 +105,8 @@ protected:
     int					maxDC;
 
 public:
-    PanelCapture( rb_t *, Capture* );
-    ~PanelCapture();    
+						PanelCapture( rb_t *, Capture* );
+						~PanelCapture();    
     		void		init();
     
     virtual void		update_stars();
@@ -126,27 +127,27 @@ public:
     		void		displayMovePropre( StarCatalog*  );
     		void		displayCatalog();
     		void		displayAxe();
-    virtual void		displayGL();
+virtual void			displayGL();
 
-    virtual void		idle(float);
+virtual void			idle(float);
 
-    virtual void        wheelUp( int, int);
-    virtual void        wheelDown( int, int);
+virtual void			wheelUp( int, int);
+virtual void			wheelDown( int, int);
     		void		updatePosFondCoord();
     		
     		void		find_star_mouse_over();
-    virtual void		passiveMotionFunc(int, int);
+virtual void			passiveMotionFunc(int, int);
 
-    virtual void        clickLeft( int, int);
-    virtual void        releaseLeft( int, int);
+virtual void			clickLeft( int, int);
+virtual void			releaseLeft( int, int);
 
-    virtual void        clickRight( int, int);
-    virtual void        motionRight( int, int);
-    virtual void        releaseRight( int, int);
+virtual void			clickRight( int, int);
+virtual void			motionRight( int, int);
+virtual void			releaseRight( int, int);
 
-    virtual void        clickMiddle( int, int);
-    virtual void        motionMiddle( int, int);
-    virtual void        releaseMiddle( int, int);
+virtual void			clickMiddle( int, int);
+virtual void			motionMiddle( int, int);
+virtual void			releaseMiddle( int, int);
 
     void                findAllStars();
     void                deleteAllStars();
@@ -162,12 +163,13 @@ public:
     void                setCentX(double f);
     void                setCentY(double f);
 
-    void                screen_2_tex( vec2& );
-    void                screen_2_panel( vec2& );
-    void                tex_2_screen( vec2& );
-    void                tex_2_panel( vec2& );
-    void                panel_2_tex( vec2& );
-    void                panel_2_screen( vec2& );
+virtual void			screen_2_tex( vec2& );
+virtual void			screen_2_panel( vec2& );
+virtual void			tex_2_screen( vec2& );
+virtual void			tex_2_panel( vec2& );
+virtual void			panel_2_tex( vec2& );
+virtual void			panel_2_screen( vec2& );
+
     void				parent_2_J2000( vec2& );
 	void				parent_2_str_ad_str_dc(vec2&, char*, char*, int );
 	char*				J2000_2_str_ad(vec2&, char*, int );
