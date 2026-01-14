@@ -17,6 +17,7 @@
 #include "panel_graph.h"
 #include "panel_debug.h"
 #include "convert.h"
+#include "find_star.h"
 //----------------------------------------------------------------------------------------------
 class Capture;
 class Captures;
@@ -78,6 +79,7 @@ protected:
     Stars               stars;
     Catalog*            pVizier;
     int					idxVizierMouseOver;
+    FindStar*			pFindStar;
     
     PanelDebug*			pInfoVizier;
     PanelSimple*		pTelescope;
@@ -202,6 +204,8 @@ virtual void			panel_2_screen( vec2& );
 	double				compute_div_de(double);
 	double				compute_div_ad(double);
 	void				compute_angle();
+
+	void				create_find_star();
 
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
 inline int				getDX()											{ return pReadBgr->w; }

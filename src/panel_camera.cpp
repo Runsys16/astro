@@ -531,13 +531,84 @@ void PanelCamera::computeColor()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+// Transformation de coordonnees
+//----------------------------------
+// (x,y) ecran    =>     (x,y)  dans la texture (image astronomique)
+//
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::tex2screen(vec2& v)
+void PanelCamera::screen_2_tex(vec2& v)
 {
     if  ( pReadBgr==NULL )      return;
-    
-    v.x = echelle * v.x + (double)getX();    
-    v.y = echelle * v.y + (double)getY();    
+
+	vec2 delta   = vec2(getX(), getY());
+	v = ( v - delta  ) / echelle;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Transformation de coordonnees
+//----------------------------------
+// (x,y)  dans la texture (image astronomique)   =>    (x,y) ecran
+//
+void PanelCamera::tex_2_screen(vec2& v)
+{
+    if  ( pReadBgr==NULL )      return;
+
+	vec2 delta = vec2(getX(), getY());
+	v = (v * echelle) + delta;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Transformation de coordonnees
+//----------------------------------
+// (x,y)  dans la texture (image astronomique)   =>    (x,y)  dans panelCapture
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::tex_2_panel(vec2& v)
+{
+    if  ( pReadBgr==NULL )      return;
+
+	v = (echelle * v);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Transformation de coordonnees
+//----------------------------------
+//  (x,y) dans panelCapture			=>  (x,y)  dans la texture (image astronomique) 
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::panel_2_tex(vec2& v)
+{
+    if  ( pReadBgr==NULL )      return;
+
+	v = v / echelle;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Transformation de coordonnees
+//----------------------------------
+//  (x,y) dans panelCapture			=>    (x,y) ecran
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::panel_2_screen(vec2& v)
+{
+    if  ( pReadBgr==NULL )      return;
+
+	vec2 delta = vec2(getX(), getY());
+	v = v + delta;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Transformation de coordonnees
+//----------------------------------
+//  (x,y) ecran				=> 		(x,y) dans panelCapture
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::screen_2_panel(vec2& v)
+{
+    if  ( pReadBgr==NULL )      return;
+
+	vec2 delta = vec2(getX(), getY());
+	v = v - delta;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -547,7 +618,7 @@ void PanelCamera::tex2screen(double& xx, double& yy)
     if  ( pReadBgr==NULL )      return;
 
 	vec2 v = vec2( xx, yy );
-	tex2screen(v);
+	tex_2_screen(v);
 	xx = v.x; yy = v.y;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -558,18 +629,8 @@ void PanelCamera::tex2screen(int& xx, int& yy)
     if  ( pReadBgr==NULL )      return;
 
 	vec2 v = vec2( xx, yy );
-	tex2screen(v);
+	tex_2_screen(v);
 	xx = (int)v.x; yy = (int)v.y;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCamera::screen2tex(vec2& v)
-{
-    if  ( pReadBgr==NULL )      return;
-
-	v -= vec2( getX(), getY() );
-	v /= echelle;    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -579,7 +640,7 @@ void PanelCamera::screen2tex(double& xx, double& yy)
     if  ( pReadBgr==NULL )      return;
 
 	vec2 v = vec2( xx, yy );
-	screen2tex(v);
+	screen_2_tex(v);
 	xx = v.x; yy = v.y;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -590,7 +651,7 @@ void PanelCamera::screen2tex(int& xx, int& yy)
     if  ( pReadBgr==NULL )      return;
 
 	vec2 v = vec2( xx, yy );
-	screen2tex(v);
+	screen_2_tex(v);
 	xx = v.x; yy = v.y;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -755,11 +816,11 @@ void PanelCamera::displayLigneSuivi()
 
 
 			vec2 vStarScr = vec2(pvStar->x, pvStar->y);
-			tex2screen(vStarScr);
+			tex_2_screen(vStarScr);
 
 
 			vec2 vSuiviScr = vec2(xSuivi, ySuivi);
-			tex2screen(vSuiviScr);
+			tex_2_screen(vSuiviScr);
 
 			if ( bNuit )				glColor4f( 1.0,   0.0,  0.0, 1.0 );
 			else						glColor4f( 0.2, 0.2, 1.0, 1.0);
@@ -790,7 +851,7 @@ void PanelCamera::displaySuivi()
 
     vec2 vSuiviTex = vec2(xSuivi, ySuivi);
     vec2 vSuiviScr = vec2(xSuivi, ySuivi);
-    tex2screen(vSuiviScr);
+    tex_2_screen(vSuiviScr);
     
     //      Convertion des coordonnées
     double gris = 0.8;
@@ -824,7 +885,7 @@ void PanelCamera::displaySuivi()
     {
         vStarTex = vec2(pvStar->x, pvStar->y);
         vStarScr = vec2(pvStar->x, pvStar->y);
-        tex2screen(vStarScr);
+        tex_2_screen(vStarScr);
 
         vDiffText = vSuiviTex - vStarTex;
     }
@@ -894,7 +955,7 @@ void PanelCamera::displaySuivi()
     if ( bCentrageSuivi )
     {
         vec2 u = vec2(xSuiviSvg, ySuiviSvg);
-        tex2screen( u );
+        tex_2_screen( u );
         //glCroix( u.x, u.y, 10, 10 );
     }
 }
@@ -1135,7 +1196,7 @@ void PanelCamera::updateVizizePos()
 	        vViz = -vViz * vHomothetie  + vTranslatio;
 	        
 	        vec2 vScreen = vec2(vViz);
-			tex2screen(vScreen);
+			tex_2_screen(vScreen);
 			/*
 			logf( (char*)"|  vRef" VEC2_PRINTF "", VEC2_AFF(vRef) );
 			logf( (char*)"|  v" VEC2_PRINTF " => screen" VEC2_PRINTF " Zrex=%0.2lf", VEC2_AFF(v), VEC2_AFF(vScreen), ZrefX  );
@@ -1180,7 +1241,7 @@ void PanelCamera::recentreSuivi()
     int h = wm.getHeight();
 
     vec2 vSuiviTex = vec2(xSuivi, ySuivi);
-    tex2screen( vSuiviTex );
+    tex_2_screen( vSuiviTex );
     vec2 vSize( getDX(), getDY() );
     vec2 vPos( getPosX(), getPosY() );
     vec2 vScr2( w/2, h/2 );

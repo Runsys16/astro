@@ -10,6 +10,7 @@
 #include "stars.h"
 #include "catalog.h"
 #include <WindowsManager.h>
+#include "convert.h"
 
 class Camera;
 class Camera_mgr;
@@ -17,7 +18,7 @@ class Camera_mgr;
 using namespace std;
 
 
-class PanelCamera : public PanelWindow
+class PanelCamera : public PanelWindow, public Convert
 {
 
 protected:
@@ -80,12 +81,21 @@ public:
     void                screen2tex(int&,int&);
     void                screen2tex(double&,double&);
 
+/*
     void                screen2tex( vec2& );
     void                screen2panel( vec2& );
     void                tex2screen( vec2& );
     void                tex2panel( vec2& );
     void                panel2tex( vec2& );
     void                panel2screen( vec2& );
+*/    
+virtual void			screen_2_tex( vec2& );
+virtual void			screen_2_panel( vec2& );
+virtual void			tex_2_screen( vec2& );
+virtual void			tex_2_panel( vec2& );
+virtual void			panel_2_tex( vec2& );
+virtual void			panel_2_screen( vec2& );
+    
 	//-----------------------------------------------------------------
     void                glCercle(int x, int y, int rayon);
     inline void         glCercle(vec2 v, int r)							{ glCercle( (int)v.x, (int)v.y, r ); }

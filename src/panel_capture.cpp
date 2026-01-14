@@ -85,6 +85,9 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 //--------------------------------------------------------------------------------------------------------------------
 PanelCapture::~PanelCapture()
 {
+	if ( pFindStar != NULL )			delete pFindStar;
+	pFindStar = NULL;
+	
 	//---------------------------------------------------------------
 	for( int i=0; i<tAD.size(); i++ )
 	{
@@ -136,6 +139,7 @@ void PanelCapture::init()
 	bFits				= false;
 	    
     pVizier				= NULL;
+    pFindStar			= NULL;
 
 	bAffCatalogPosition = false;
 }
@@ -1187,6 +1191,19 @@ void PanelCapture::releaseLeft(int xm, int ym)
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
 	log_tab(true);
 
+    if ( bFits && iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT))    {
+		vec2 vTex = vec2( xm, ym );
+		vec2 vJ2000;
+
+		screen_2_tex( vTex );
+		
+		logf( (char*)"CTRL + SHIFT " VEC2_PRINTF, VEC2_AFF(vJ2000) );
+		//Serveur_mgr::getInstance()._goto( vJ2000.x, vJ2000.y );
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->find_line( vTex );
+    }
+    else
     if ( bFits && iGlutModifier == GLUT_ACTIVE_CTRL)    {
 		vec2 vTex = vec2( xm, ym );
 		vec2 vJ2000;
@@ -2679,6 +2696,22 @@ void PanelCapture::compute_angle()
     dAngleDE = dAngleAD - 90.0;
 
 	return;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::create_find_star()                         
+{
+	log( (char*)"PanelCapture::create_find_star()" );
+	log_tab(true);
+
+	pFindStar = new FindStar();
+	
+	pFindStar->setRB( pReadBgr );
+	pFindStar->setView( this );
+	pFindStar->setConvert( this );
+
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
