@@ -26,13 +26,13 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     stars.setView( this );
     stars.setModeMag( 1 );
     
-    pFondCoord = new PanelWindow();
-    pFondCoord->setBackground( (char*)"images/background.tga" );
-    pFondCoord->setSize( 210, 55 );
-    pFondCoord->loadSkin( PanelWindow::BLACK );
-	pFondCoord->setBorderSize(2);
+    pMouseCoord = new PanelWindow();
+    pMouseCoord->setBackground( (char*)"images/background.tga" );
+    pMouseCoord->setSize( 210, 55 );
+    pMouseCoord->loadSkin( PanelWindow::BLACK );
+	pMouseCoord->setBorderSize(2);
 
-    this->add( pFondCoord );
+    this->add( pMouseCoord );
     
     pTelescope = new PanelSimple();
     pTelescope->setBackground( (char*)"images/telescope.png" );
@@ -56,12 +56,12 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
     pJ2000_delta	= new PanelText( (char*)"d", 		(char*)POLICE , x, y, SIZEY, 0xFFFFFFFF );
     pJ2000_2		= new PanelText( (char*)"(0,0)",	PanelText::NORMAL_FONT, x+deltax, y );
 
-    pFondCoord->add( pColor );
-    pFondCoord->add( pCoord );
-    pFondCoord->add( pJ2000_alpha );
-    pFondCoord->add( pJ2000_delta );
-    pFondCoord->add( pJ2000_1 );
-    pFondCoord->add( pJ2000_2 );
+    pMouseCoord->add( pColor );
+    pMouseCoord->add( pCoord );
+    pMouseCoord->add( pJ2000_alpha );
+    pMouseCoord->add( pJ2000_delta );
+    pMouseCoord->add( pJ2000_1 );
+    pMouseCoord->add( pJ2000_2 );
 
 	pInfoVizier = new PanelDebug();
 	pInfoVizier->setExtraString("PanelDebug Info comparaison");
@@ -106,7 +106,7 @@ PanelCapture::~PanelCapture()
 	tDE.clear();
 	//---------------------------------------------------------------
     if ( pTelescope != NULL )		delete pTelescope;
-    if ( pFondCoord != NULL )		delete pFondCoord;
+    if ( pMouseCoord != NULL )		delete pMouseCoord;
     if ( pColor != NULL )			delete pColor;
     if ( pCoord != NULL )			delete pCoord;
 
@@ -224,7 +224,7 @@ void PanelCapture::updatePosInfoVizier()
 	{
 		vPosInfo.y -= pInfoVizier->getDY() + 2*vDelta.y;
 		
-		vCmp		= vec2(vMouse.x, vMouse.y) + vDelta + vec2(pFondCoord->getPosDX(), pFondCoord->getPosDY());
+		vCmp		= vec2(vMouse.x, vMouse.y) + vDelta + vec2(pMouseCoord->getPosDX(), pMouseCoord->getPosDY());
 		if ( (vCmp.y-ddyy)<=(dy) )				vPosInfo.y += ddyy;
 	}
 	
@@ -388,7 +388,7 @@ void PanelCapture::updateVizier()
 	        pVizier->get(i)->setTex( v );
 			
 	        if ( bNuit )        p->setColor( COLOR32(255,   0, 0, 255) );
-	        else                p->setColor( COLOR32(255, 178, 0, 255) );
+	        else                p->setColor( VCF4_2_COLOR32(cOrangeC) );   //255, 178, 0, 255) );
 
 #ifdef CLIP_VIZIER
 		}
@@ -588,8 +588,20 @@ void PanelCapture::displayTelescope()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::displayCatalogMouseOver()
 {
+	if ( pVizier == NULL )			return;
 	glColor4fv( (GLfloat*)&cRouge );
 	displayMovePropre( pVizier->get(idxVizierMouseOver) );
+	
+
+	vec2 v;
+	v.x = pVizier->get(idxVizierMouseOver)->getXScreen();
+	v.y = pVizier->get(idxVizierMouseOver)->getYScreen();
+
+	if ( 	v.x != -1.0  )
+	{
+		double r = 17.5 - 0.675*pVizier->get(idxVizierMouseOver)->fMag;
+		glCercle( v.x, v.y, r*ech );	
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -634,13 +646,14 @@ void PanelCapture::displayCatalog()
 
     if ( n!= 0)
     {
-		vcf4 vNuit    = vcf4( 1.0,  0.0,  0.0, 1.0 );
-		vcf4 vOrange  = vcf4( 1.0,  0.7,  0.0, 0.8 );
-		vcf4 vSelect  = vcf4( 0.0,  0.8,  1.0, 1.0 );
+		vcf4 cNuit    = cRouge;
+		vcf4 cSelect  = cRouge;
+		vcf4 color;
 
-		if( bNuit )						glColor4fv( (GLfloat*)&vNuit );
-		else							glColor4fv( (GLfloat*)&vOrange );
+		if( bNuit )						color = cNuit;
+		else							color = cOrangeC;
 
+		
         for ( int i=0; i<n; i++ )
         {
         	// n'affiche pas les etoiles sans correspondance (mag max)
@@ -651,7 +664,8 @@ void PanelCapture::displayCatalog()
             v.x = pVizier->get(i)->getXScreen();
             v.y = pVizier->get(i)->getYScreen();
             
-        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&vSelect );
+			glColor4fv( (GLfloat*)&color );
+        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&cSelect );
 
 			if ( 	v.x != -1.0  )
 			{
@@ -665,7 +679,7 @@ void PanelCapture::displayCatalog()
 				nbAff++;
 	        	//displayMovePropre( pVizier->get(i) );
 			}
-        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&vOrange );
+        	if ( i == idxVizierMouseOver && !bNuit )			glColor4fv( (GLfloat*)&color );
         }
 		
 		dDebug5s += Timer::getInstance().getElapsedTime();
@@ -761,7 +775,7 @@ void PanelCapture::displayGL()
 		stars.getPanelNbStars()->setColor( COLOR32(255,   0, 0, 255) );
         pCapture->getNbVizier()->setColor( COLOR32(255,   0, 0, 255) );
         if ( pInfoVizier )		pInfoVizier->setColor( COLOR32(255,   0, 0, 255) );
-        if ( pFondCoord )		pFondCoord->setColor( COLOR32(255,   0, 0, 255) );
+        if ( pMouseCoord )		pMouseCoord->setColor( COLOR32(255,   0, 0, 255) );
     }
     else	{
     	setColorBgr( COLOR32(255, 255, 255, 255) );    
@@ -769,7 +783,7 @@ void PanelCapture::displayGL()
         stars.getPanelNbStars()->setColor( COLOR32(  0, 255, 0, 255) );//setColor( 0x00ff00ff );//glColor4f( 0.0,   1.0,  0.0, 0.4 );
         pCapture->getNbVizier()->setColor( COLOR32(255, 178, 0, 255) );
         if ( pInfoVizier )		pInfoVizier->setColor( COLOR32(255, 255, 255, 255) );
-        if ( pFondCoord )		pFondCoord->setColor( COLOR32(255, 255, 255, 255) );
+        if ( pMouseCoord )		pMouseCoord->setColor( COLOR32(255, 255, 255, 255) );
     }
     
 	//-------------------------------------------------	
@@ -781,6 +795,7 @@ void PanelCapture::displayGL()
     if ( !pCapture->isIconized() )
     {
     	stars.displayGL();
+		if ( pFindStar != NULL )		pFindStar->displayGL();
 
 		if ( bFits )	{
 			if ( !pCapture->isIconized() && pCapture->getAfficheGrille() )		displayAxe();
@@ -801,6 +816,7 @@ void PanelCapture::displayGL()
 	{
 		pTelescope->setVisible(false);
 	}	
+
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -830,12 +846,12 @@ void PanelCapture::idle(float f)
 	}    
     
     
-	if ( pCapture->getAfficheInfoSouris() != pFondCoord->getVisible() )
+	if ( pCapture->getAfficheInfoSouris() != pMouseCoord->getVisible() )
 	{
-		if ( pCapture->getAfficheInfoSouris() )			pFondCoord->setVisible(true);
-		else											pFondCoord->setVisible(false);
+		if ( pCapture->getAfficheInfoSouris() )			pMouseCoord->setVisible(true);
+		else											pMouseCoord->setVisible(false);
 	}
-	if ( pCapture->isIconized() )						pFondCoord->setVisible(false);
+	if ( pCapture->isIconized() )						pMouseCoord->setVisible(false);
 
 	passiveMotionFunc( (int)vMouse.x, (int)vMouse.y );
 
@@ -882,7 +898,7 @@ void PanelCapture::idle(float f)
 		}
 	}
 	else
-		pFondCoord->setVisible(false);
+		pMouseCoord->setVisible(false);
 	
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -909,9 +925,10 @@ void PanelCapture::wheelUp(int xm, int ym)
     double Y1 = k*Y0 + (k-1)*YM;
     
     double ech = ech_user * ech_geo;
+    /*
     double max_x = (ech*(double)pReadBgr->w) - p->getDX();
     double max_y = (ech*(double)pReadBgr->h) - p->getDY();
-
+	*/
     int x1 = X1;
     int y1 = Y1;
     
@@ -958,8 +975,10 @@ void PanelCapture::wheelDown(int xm, int ym)
     double Y1 = k*Y0 + (k-1)*YM;
 
     double ech = ech_user * ech_geo;
+    /*
     double max_x = ech*pReadBgr->w - p->getDX();
     double max_y = ech*pReadBgr->h - p->getDY();
+	*/
     
 
     int x1 = X1;
@@ -992,7 +1011,7 @@ void PanelCapture::wheelDown(int xm, int ym)
 // xx, yy coordonnée écran du pointeur de souris
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::updatePosFondCoord()
+void PanelCapture::updatePosMouseCoord()
 {
 	// Mise a jour du panelText
 	// dans la position de la souris
@@ -1000,16 +1019,16 @@ void PanelCapture::updatePosFondCoord()
 	int dx, dy;
 	vec2 vDelta = vec2(15, 20);
 	vec2 vPosInfo 	= vec2(vMouse.x, vMouse.y) + vDelta - vec2(getX(), getY());
-	vec2 vCmp		= vec2(vMouse.x, vMouse.y) + vDelta + vec2(pFondCoord->getPosDX(), pFondCoord->getPosDY());
+	vec2 vCmp		= vec2(vMouse.x, vMouse.y) + vDelta + vec2(pMouseCoord->getPosDX(), pMouseCoord->getPosDY());
 	
 	dx = pCapture->getX() + pCapture->getPosDX();
 	dy = pCapture->getY() + pCapture->getPosDY();
 	
 
-	if ( (vCmp.x)>(dx) )		vPosInfo.x -= pFondCoord->getDX() + 2*vDelta.x;
-	if ( (vCmp.y)>(dy) )		vPosInfo.y -= pFondCoord->getDY() + 2*vDelta.y;
+	if ( (vCmp.x)>(dx) )		vPosInfo.x -= pMouseCoord->getDX() + 2*vDelta.x;
+	if ( (vCmp.y)>(dy) )		vPosInfo.y -= pMouseCoord->getDY() + 2*vDelta.y;
 	
-	pFondCoord->setPos( vPosInfo.x, vPosInfo.y );
+	pMouseCoord->setPos( vPosInfo.x, vPosInfo.y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1168,7 +1187,7 @@ void PanelCapture::passiveMotionFunc(int xm, int ym)
 		pJ2000_2->setChangeText(true);
 
 		//------------------------
-		updatePosFondCoord();
+		updatePosMouseCoord();
 	}
 	
 }
@@ -1191,17 +1210,46 @@ void PanelCapture::releaseLeft(int xm, int ym)
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
 	log_tab(true);
 
-    if ( bFits && iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT))    {
-		vec2 vTex = vec2( xm, ym );
-		vec2 vJ2000;
-
-		screen_2_tex( vTex );
-		
-		logf( (char*)"CTRL + SHIFT " VEC2_PRINTF, VEC2_AFF(vJ2000) );
-		//Serveur_mgr::getInstance()._goto( vJ2000.x, vJ2000.y );
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
+		logf( (char*)"CTRL+SHIFT+ALT " );
 		if ( pFindStar == NULL )	create_find_star();
 		
-		pFindStar->find_line( vTex );
+		pFindStar->setName( pCapture->getBasename() );
+		pFindStar->click_all();
+    }
+    else
+    if ( iGlutModifier == (GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
+		logf( (char*)"SHIFT+ALT " );
+		if ( pFindStar == NULL )	create_find_star();
+		
+		vec2 vTex = vec2( xm, ym );
+		screen_2_tex( vTex );
+
+		pFindStar->setName( pCapture->getBasename() );
+		pFindStar->click_find_star(vTex);
+    }
+    else
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_SHIFT))    {
+		if ( pFindStar == NULL )	create_find_star();
+		
+		vec2 vTex = vec2( xm, ym );
+		vec2 vJ2000;
+		screen_2_tex( vTex );
+		logf( (char*)"CTRL+SHIFT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
+
+		pFindStar->setName( pCapture->getBasename() );
+		pFindStar->click_graph_distri(vTex);
+    }
+    else
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT))    {
+		vec2 vTex = vec2( xm, ym );
+		screen_2_tex( vTex );
+		
+		logf( (char*)"CTRL+ALT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->setName( pCapture->getBasename() );
+		pFindStar->click_graph_lum( vTex );
     }
     else
     if ( bFits && iGlutModifier == GLUT_ACTIVE_CTRL)    {
@@ -1943,7 +1991,7 @@ void PanelCapture::printObjet()
     log( (char*)"" );
     logf( (char*)"this->bAffCatalogPosition=%s", BOOL2STR(bAffCatalogPosition) );
     logf( (char*)"this->pTelescope->bVisible=%s", BOOL2STR(pTelescope->getVisible()) );
-    logf( (char*)"this->pFondCoord->bVisible=%s", BOOL2STR(pFondCoord->getVisible()) );
+    logf( (char*)"this->pMouseCoord->bVisible=%s", BOOL2STR(pMouseCoord->getVisible()) );
     logf( (char*)"this->pColor->bVisible=%s", BOOL2STR(pColor->getVisible()) );
     logf( (char*)"this->pCoord->bVisible=%s", BOOL2STR(pCoord->getVisible()) );
 
@@ -2206,7 +2254,7 @@ void PanelCapture::setInfoSouris(bool b)
 	
 	if ( pCapture->getAfficheInfoSouris() ) 	{
 		pTelescope->setVisible(true);
-		pFondCoord->setVisible(true);
+		pMouseCoord->setVisible(true);
 		pCoord->setVisible(true);
 		pJ2000_1->setVisible(true);
 		pJ2000_2->setVisible(true);
@@ -2222,7 +2270,7 @@ void PanelCapture::setInfoSouris(bool b)
 	else
 	{	
 		pTelescope->setVisible(false);
-		pFondCoord->setVisible(false);
+		pMouseCoord->setVisible(false);
 		pCoord->setVisible(false);
 		pJ2000_1->setVisible(false);
 		pJ2000_2->setVisible(false);
@@ -2708,7 +2756,7 @@ void PanelCapture::create_find_star()
 	pFindStar = new FindStar();
 	
 	pFindStar->setRB( pReadBgr );
-	pFindStar->setView( this );
+	pFindStar->setView( pCapture );
 	pFindStar->setConvert( this );
 
 	log_tab(false);

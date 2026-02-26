@@ -30,6 +30,7 @@ public:
 		void						add_textf( char*, ... );
 		void						reset_list();
 	 	void						setTabSize(unsigned);
+	 	void						setColorAll( uint32_t );
 	 	void						setColor( uint32_t );
 	
 inline	void						setDebug(bool b )			{ setVisible(b); }

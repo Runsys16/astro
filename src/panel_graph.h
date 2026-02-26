@@ -8,23 +8,39 @@
 //--------------------------------------------------------------------------------------------------------------------
 #include <GL/glew.h>
 #include <GL/glut.h>
-
+//--------------------------------------------------------------------------------------------------------------------
 #include <stdio.h>
 #include <complex>
- 
+//--------------------------------------------------------------------------------------------------------------------
 #include "MathlibD.h"
 #include <WindowsManager.h>
 #include "main.h"
 #include "var_mgr.h"
-
-
-
+//--------------------------------------------------------------------------------------------------------------------
 using namespace std;
+//--------------------------------------------------------------------------------------------------------------------
+/*
+typedef struct
+{
+	int X, Y, DX, DY;
+} s;
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 class PanelGraph : public PanelWindow
 {
+public:
+	enum PT { NOTHING, CARREE, CROIX, POINT, CERCLE };
+	
+	typedef struct
+	{
+		vector<vec2>	pts;
+		PT				pt;	
+	} Courbe;
+	
+	//typedef Courbe  courbe_t;
+
 private:
 	string				name;
 	PanelText*			pTitre;
@@ -45,9 +61,14 @@ private:
 	double				_debY;
 	double				_finY;
 	
+	PT					ptStar;
+	PT					ptVizi;
+	
 	int					iMouse;
 	int					iMouseCapture;
 	Panel*				pPanelCallback;
+	vcf4				cColorStar;
+	vcf4				cColorVizi;
 
 vector<vec2>			cStar;
 vector<vec2>			cVizi;
@@ -75,6 +96,7 @@ public :
     void				graph2panel( vec2& );
 
 	void				glCercle(int, int, int);
+	void				glCercle(vec2, int);
     void                glCroix( int, int, int, int );
     void                glCroix( vec2, vec2 );
     void                glLine( int, int, int, int );
@@ -82,13 +104,14 @@ public :
     void                glCarre( int, int, int, int );
     void                glCarre( vec2, vec2 );
 
-    void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
-    void                glEchelle();
+    //void                glEchelleAxe( int, int, float, float, PanelText*, PanelText* );
+    //void                glEchelle();
 
     void                build_unites_text(void);
     int                 sc2winX(int);
     int                 sc2winY(int);
     
+    void				displayPt(PT, vec2);
     void				displayCourbeStar();
     void				displayCourbeVizi();
     void				ajoute_ordG( double, vec2 );
@@ -138,6 +161,12 @@ inline void				setYmax(double d)				{ dYmax = d; }
 
 inline void				setPanelCallback(Panel* p)		{ pPanelCallback = p; }
 inline int				getIndexMouse()					{ return iMouse; }
+inline void				setPtStar(PT p)					{ ptStar = p; }
+inline void				setLogX()						{ bLogX = true; }
+inline void				setLogY()						{ bLogY = true; }
+inline void				setLinearX()					{ bLogX = false; }
+inline void				setLinearY()					{ bLogY = false; }
+inline void				setColorStar(vcf4 c)			{ cColorStar = c; }
 
 inline void				debug_log()						{ bLogX = !bLogX; resetCourbes(); }
 };

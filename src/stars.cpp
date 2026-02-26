@@ -848,7 +848,8 @@ void Stars::displayGL()
     //if ( var.getb("bNuit") )        glColor4f( 0.5, 0.0, 0.0, 1.0 );    
     //else                            glColor4f( gris, gris, gris, 0.2 );
 
-    if ( RB == NULL )        return;
+    if ( RB == NULL )		return;
+    if ( !bAffStar )		return;
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();

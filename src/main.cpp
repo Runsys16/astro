@@ -295,6 +295,7 @@ bool                bCentrageSuivi		= false;
 bool                bFirstStart			= true;
 bool				bDesactiveLog		= true;
 bool				bAffColimation		= false;
+bool				bAffFindStar		= false;
 
 int                 wImg;
 int                 hImg;
@@ -2655,6 +2656,20 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 		        logf( (char*)"Pas de camera" );
 		}
 	    break;
+	//----------------------------------------------------------------------------
+	case 't':
+	    {
+	        logf( (char*)"Key (alt+z) : Affiche etoiles findstar" );
+            log_tab(true);
+
+	        bAffFindStar = !bAffFindStar;
+            VarManager::getInstance().set("bAffFindStar", bAffFindStar);;
+
+	        logf( (char*)"Affiche oui/non les etoiles find_star : %s", BOOL2STR(bAffFindStar) );
+            var.set( "bAffCatalog", bAffCatalog );
+            log_tab(false);
+	    }
+	    break;
 
 	//----------------------------------------------------------------------------
 	case 'w':
@@ -3296,23 +3311,28 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'n':
         {
-	        logf( (char*)"Key (n) :Requete GAIA");
+	        logf( (char*)"Key (n) : Requete GAIA");
+	        log_tab(true);
         	Capture*  p = Captures::getInstance().getCurrentCapture();
         	if ( p && p->isFits() )	{
         		p->getPanelCapture()->findGaiaDR3();
         	}
         	else
 		        logf( (char*)"[Warning]Fenetre non valable");
+
+	        log_tab(false);
         }
         break;
 
     case 'N':
         {
-	        logf( (char*)"Key (ngetPanelCapture()->) : Efface les etoiles GAIA");
+	        logf( (char*)"Key (N) : Efface les etoiles GAIA");
+	        log_tab(true);
         	Capture*  p = Captures::getInstance().getCurrentCapture();
         	if ( p && p->isFits() )	{
         		p->getPanelCapture()->eraseGaiaDR3();
         	}
+	        log_tab(false);
         }
         break;
 
@@ -3866,6 +3886,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     logf( (char*)"    %02d\t%.8f glutMouseFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
    	iGlutModifier = glutGetModifiers();
+   	//if ( iGlutModifier )	logf( (char*)"glutGetModifiers = %d", iGlutModifier );
    	
     vMouse.x = x;
     vMouse.y = y;
@@ -4377,10 +4398,7 @@ static void CreateStatus()	{
 	//-------------------------------------------------------------------------------------------
  	wm.add( panelStatus );
  	panelStatus->setBackground((char*)"images/background.tga");
- 	
- 	create_windows_button();
-
-	_x = posStatusX+50;
+	_x = 900+50;
 
     pAsservi = new PanelText( (char*)"GUID",		    PanelText::NORMAL_FONT, _x, 2 );
 	panelStatus->add( pAsservi );
@@ -4393,6 +4411,9 @@ static void CreateStatus()	{
     pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, _x, 2 );
 	panelStatus->add( pCoordSuivi );
 
+
+ 	
+ 	create_windows_button();
 
 
 
@@ -5050,6 +5071,9 @@ void charge_var()
 
     if ( !var.existe("bAffColimation"))		var.set("bAffColimation", false );
     bAffColimation = var.getb("bAffColimation" );
+
+    if ( !var.existe("bAffFindStar"))		var.set("bAffFindStar", false );
+    bAffFindStar = var.getb("bAffFindStar" );
 
     if ( !var.existe("fTimeCorrection"))		var.set("fTimeCorrection", 3.0 );
     fTimeCorrection = var.getf("fTimeCorrection" );

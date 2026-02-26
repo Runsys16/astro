@@ -1112,6 +1112,7 @@ void Fits::tex_2_J2000( vec2& v )
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::tex_2_J2000(vec2 s, vec2& j )
 {
+/*	
 //#define DEBUG
 	#ifdef DEBUG
 		char STR[255];
@@ -1119,18 +1120,21 @@ void Fits::tex_2_J2000(vec2 s, vec2& j )
 		logf( (char*)"Fits::screen2J2000( %s, x=%d, y=%d )", STR, x, y );
 		log_tab( true );
 	#endif
+*/
 
 	s -= vCRPIX;
 	j = mMat * s;
 	j += vCRVAL;
 
+/*	
 	#ifdef DEBUG
 		r.to_str(STR);
 		logf( (char*)"valeur de retour %s", STR );
 		
 		log_tab( false );
 	#endif
-#undef DEBUG
+//#undef DEBUG
+*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1145,6 +1149,7 @@ void Fits::J2000_2_tex( vec2& v )
 //--------------------------------------------------------------------------------------------------------------------
 void Fits::J2000_2_tex(vec2 j, vec2& s )
 {
+/*
 //#define DEBUG
 	#ifdef DEBUG
 		char str1[255];
@@ -1155,18 +1160,20 @@ void Fits::J2000_2_tex(vec2 j, vec2& s )
 		logf( (char*)"Fits::J2000_2_screen( j%s, s%s )", str1, str2 );
 		log_tab( true );
 	#endif
-	
+*/	
 	j -= vCRVAL;
 	s = mMatInv * j;
 	s += vCRPIX;
-	
+
+/*	
 	#ifdef DEBUG
 		s.to_str(str1);
 		logf( (char*)"valeur de retour s%s", str1 );
 		
 		log_tab( false );
 	#endif
-#undef DEBUG
+//#undef DEBUG
+*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

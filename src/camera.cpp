@@ -47,6 +47,7 @@ Camera::Camera()
     init();
 
     //CreatePreview();
+	//if ( bNuit ) 	setColor( VCF4_2_COLOR32(cRouge) );
     log_tab(false);
     //logf_thread((char*)"Constructeur Camera() ---- END ----" );
 }
@@ -62,6 +63,7 @@ Camera::Camera(int w, int h)
     init();
     //setWidth(w);
     //setHeight(h);
+	//if ( bNuit ) 	setColor( VCF4_2_COLOR32(cRouge) );
     log_tab(false);
     //logf_thread((char*)"Constructeur Camera(%d, %d) ---- END ----", w, h);
 }

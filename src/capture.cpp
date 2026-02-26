@@ -46,6 +46,7 @@ Capture::Capture()
     basename = res[nb-1];
     
 	charge( dirname, basename );
+	if ( bNuit ) 	setColor( VCF4_2_COLOR32(cRouge) );
 
     log_tab(false);
     logf((char*)"Constructeur Capture() ----END----" );
@@ -58,6 +59,7 @@ Capture::Capture(string dir_name, string base_name)
     logf((char*)"Constructeur Capture(%s, %s) -----------%d", (char*)dir_name.c_str(), (char*)base_name.c_str(), __LINE__ );
     log_tab(true);
     charge( dir_name, base_name );
+	if ( bNuit ) 	setColor( VCF4_2_COLOR32(cRouge) );
     log_tab(false);
     logf((char*)"Constructeur Capture(%s, %s) -----END------", (char*)dirname.c_str(), (char*)basename.c_str() );
 }
@@ -87,6 +89,7 @@ Capture::Capture(string f )
 
 	charge( dirname, basename );
 
+	if ( bNuit ) 	setColor( VCF4_2_COLOR32(cRouge) );
     log_tab(false);
     logf((char*)"Constructeur Capture(%s) -----END------", (char*)f.c_str() );
 }
@@ -239,7 +242,7 @@ void Capture::update()
 void Capture::updatePos()
 {
     //logf( (char*)"Capture::updatePos() ... %s", basename.c_str() );
-	if ( pInfoGraph )	pInfoGraph->setPos( 30, pGraph->getPosDY() - 110 );
+	if ( pInfoGraph )	pInfoGraph->setPos( 50, pGraph->getPosDY() - 110 );
 
     Panel::updatePos();
     updatePosIcones();
@@ -888,7 +891,7 @@ void Capture::setAffGraph( bool b )
 			//---------------------------
 			log_tab(true);
 			pGraph = new PanelGraph();
-			pGraph->setPosAndSize( 10, 10, width/2 -30, height/2 -30 );
+			pGraph->setPosAndSize( 10, 10, width/2 -40, height/2 -40 );
 			WindowsManager& wm	= WindowsManager::getInstance();
 			pGraph->setPanelCallback( this );
 			wm.add( pGraph );
@@ -965,6 +968,7 @@ void Capture::compareStar()
 	pGraph->sort_all();	
 	
 	pGraph->setName( basename );
+	pGraph->setLinearY();
 	
 	update_info_graph();
 	log_tab(false);
@@ -1042,7 +1046,7 @@ void Capture::create_info_graph()
 	pInfoGraph->setExtraString("PanelDebug statistique etoiles");
 	pInfoGraph->setBorderSize(0);
 	if (pGraph)	pInfoGraph->setVisible(pGraph->getVisible());
-	pInfoGraph->setPos( 30, pGraph->getPosDY() - 110 );
+	pInfoGraph->setPos( 50, pGraph->getPosDY() - 110 );
 	pInfoGraph->setTabSize( 60 );
 
 	pGraph->add( pInfoGraph );

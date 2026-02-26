@@ -83,7 +83,7 @@ protected:
     
     PanelDebug*			pInfoVizier;
     PanelSimple*		pTelescope;
-    PanelWindow*		pFondCoord;
+    PanelWindow*		pMouseCoord;
     PanelText*			pColor;
     PanelText*			pCoord;
     PanelText*			pJ2000_1;
@@ -135,7 +135,7 @@ virtual void			idle(float);
 
 virtual void			wheelUp( int, int);
 virtual void			wheelDown( int, int);
-    		void		updatePosFondCoord();
+    		void		updatePosMouseCoord();
     		
     		void		find_star_mouse_over();
 virtual void			passiveMotionFunc(int, int);
@@ -171,6 +171,8 @@ virtual void			tex_2_screen( vec2& );
 virtual void			tex_2_panel( vec2& );
 virtual void			panel_2_tex( vec2& );
 virtual void			panel_2_screen( vec2& );
+virtual double			get_echelle()									{ return ech; }
+
 
     void				parent_2_J2000( vec2& );
 	void				parent_2_str_ad_str_dc(vec2&, char*, char*, int );

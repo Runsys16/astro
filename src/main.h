@@ -34,17 +34,70 @@
 #define COLOR_B(CCC)	            ((CCC&0x0000ff00)>>8)
 #define COLOR_A(CCC)	            ((CCC&0x000000ff))
 #define COLOR32(RR, GG, BB, AA)	    ((RR<<24)|(GG<<16)|(BB<<8)|(AA))
+#define VCF4_2_COLOR32(_VVV)		(COLOR32((int)(_VVV.r*255.0),(int)(_VVV.g*255.0),(int)(_VVV.b*255.0),(int)(_VVV.a*255.0)))
 
 #ifdef MAIN_CPP
 	vcf4 cNoir		= vcf4( 0.0, 0.0, 0.0, 1.0);
 	vcf4 cBlanc		= vcf4( 1.0, 1.0, 1.0, 1.0);
-	vcf4 cBleu		= vcf4( 0.2, 0.2, 1.0, 1.0);
-	vcf4 cRouge		= vcf4( 1.0, 0.0, 0.0, 1.0);
-	vcf4 cVert		= vcf4( 0.0, 1.0, 0.0, 1.0);
-	vcf4 cOrange	= vcf4( 1.0, 0.7, 0.0, 0.8);
+
+	vcf4 cGrisF		= vcf4( 0.2, 0.2, 0.2, 1.0);
 	vcf4 cGris		= vcf4( 0.5, 0.5, 0.5, 1.0);
+	vcf4 cGrisC		= vcf4( 0.8, 0.8, 0.8, 1.0);
+
+	vcf4 cRougeF	= vcf4( 0.6, 0.0, 0.0, 1.0);
+	vcf4 cRouge		= vcf4( 1.0, 0.0, 0.0, 1.0);
 	vcf4 cRougeC	= vcf4( 0.4, 0.0, 0.0, 1.0);
 
+	vcf4 cVertF		= vcf4( 0.0, 0.6, 0.0, 1.0);
+	vcf4 cVert		= vcf4( 0.0, 1.0, 0.0, 1.0);
+	vcf4 cVertC		= vcf4( 0.5, 1.0, 0.5, 1.0);
+
+	vcf4 cBleuF		= vcf4( 0.0, 0.0, 0.6, 1.0);
+	vcf4 cBleu		= vcf4( 0.0, 0.0, 1.0, 1.0);
+	vcf4 cBleuC		= vcf4( 0.4, 0.6, 1.0, 1.0);
+
+	vcf4 cOrangeF	= vcf4( 0.5, 0.2, 0.0, 0.8);
+	vcf4 cOrange	= vcf4( 1.0, 0.5, 0.0, 0.8);
+	vcf4 cOrangeC	= vcf4( 1.0, 0.7, 0.0, 0.8);
+
+	vcf4 cJauneF	= vcf4( 0.6, 0.6, 0.0, 1.0);
+	vcf4 cJaune		= vcf4( 1.0, 1.0, 0.0, 1.0);
+	vcf4 cJauneC	= vcf4( 1.0, 1.0, 0.4, 1.0);
+
+	vcf4 cMagentaF	= vcf4( 0.5, 0.0, 0.45, 1.0);
+	vcf4 cMagenta	= vcf4( 1.0, 0.0, 0.85, 1.0);
+	vcf4 cMagentaC	= vcf4( 1.0, 0.5, 0.92, 1.0);
+#else
+	extern	vcf4 cNoir;
+	extern	vcf4 cBlanc;
+
+	extern	vcf4 cGrisF;
+	extern	vcf4 cGris;
+	extern	vcf4 cGrisC;
+
+	extern	vcf4 cRougeF;
+	extern	vcf4 cRouge;
+	extern	vcf4 cRougeC;
+
+	extern	vcf4 cVertF;
+	extern	vcf4 cVert;
+	extern	vcf4 cVertC;
+
+	extern	vcf4 cBleuF;
+	extern	vcf4 cBleu;
+	extern	vcf4 cBleuC;
+
+	extern	vcf4 cOrangeF;
+	extern	vcf4 cOrange;
+	extern	vcf4 cOrangeC;
+
+	extern	vcf4 cJauneF;
+	extern	vcf4 cJaune;
+	extern	vcf4 cJauneC;
+
+	extern	vcf4 cMagentaF;
+	extern	vcf4 cMagenta;
+	extern	vcf4 cMagentaC;
 #endif
 
 
@@ -121,6 +174,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bPanelResultat;
     extern bool                     bDesactiveLog;
 	extern bool						bAffColimation;
+	extern bool						bAffFindStar;
 	
     extern int                      width;
     extern int                      height;

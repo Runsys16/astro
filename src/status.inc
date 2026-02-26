@@ -772,6 +772,7 @@ void create_windows_button()
 	panelStatus->add( pDelta );
 	//WindowsManager::getInstance().add( pAlpha );
 	//WindowsManager::getInstance().add( pDelta );
+	if ( bNuit )		status_nuit( VCF4_2_COLOR32(cRouge) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -891,9 +892,6 @@ void status_nuit(unsigned long color )
 	
 	if ( bNuit )		color_light = COLOR32(128, 0, 0, 255);
 
-
-    if (bCorrection)								pAsservi->setColor(color);
-    else											pAsservi->setColor(color_light);
 
 	if (bMouseDeplace)              				pDeplacement->setColor(color);
     else                            				pDeplacement->setColor(color_light);

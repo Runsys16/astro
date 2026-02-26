@@ -260,6 +260,9 @@ bool FileBrowser::existe_remonte_dir()
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::explore_dir()
 {
+	logf( (char*)"FileBrowser::explore_dir()" );
+	log_tab(true);
+
     struct dirent *lecture;
     DIR *rep;
     PanelText *     pT;
@@ -269,7 +272,7 @@ void FileBrowser::explore_dir()
 	// et que l'on ne peut pas remonté dans l'arborescnece
 	// Gros probleme
 	//
-	if ( !existe_remonte_dir() )			return;
+	if ( !existe_remonte_dir() )			{ log_tab(false); return; }
 	//
 	//
     rep = opendir( (char*)workingDir.c_str() );
@@ -278,6 +281,7 @@ void FileBrowser::explore_dir()
     	logf( (char*)"[Erreur]Repertoire inexistant : \"%s\"", workingDir.c_str() );
     	workingDir = "/home/rene/";
     	panelQuit->releaseLeft(0, 0);
+		log_tab(false);
 	    return;
     }
 
@@ -320,7 +324,7 @@ void FileBrowser::explore_dir()
      
     for( int i=0; i<tFileNames.size(); i++ )
     {
-        //logf( (char*)"%s", (char*)tFileNames[i].c_str() );
+        logf( (char*)"%s", (char*)tFileNames[i].c_str() );
         pT = new PanelText( (char*)tFileNames[i].c_str(),		PanelText::NORMAL_FONT, xf, yf );
         pT->setMaxSize(DXFile-25);
         pT->buildString();
@@ -339,8 +343,8 @@ void FileBrowser::explore_dir()
         addImage( "images/dir.png", panelDir, 4, yd );
         yd += DY;
     }
-        
-      
+
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

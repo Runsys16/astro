@@ -6,7 +6,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 StarCompare::StarCompare()
 {
-    logf( (char*)"Constructeur StarCompare()" );
+    logf_thread( (char*)"Constructeur StarCompare()" );
 	init(NULL, NULL);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -23,6 +23,10 @@ StarCompare::StarCompare( Stars* pS, Catalog* pC )
 StarCompare::~StarCompare()
 {
     logf_thread( (char*)"Destructeur StarCompare()" );
+    
+    tStar.clear();
+	tVizi.clear();
+	cmpViziStar.clear();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

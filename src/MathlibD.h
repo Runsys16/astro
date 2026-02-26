@@ -60,7 +60,7 @@
 
 #define LUM(__r, __g, __b) (0.3333 * (double)__r + 0.5 * (double)__g  + 0.1667 * (double)__b)
 
-#define IVEC2_AFF(__v) __v.x
+#define IVEC2_AFF(__v) __v.x, __v.y
 #define IVEC2_PRINTF "(%d, %d)"
 
 #define IVEC3_AFF(__v) __v.x, __v.y, __v.z
@@ -71,12 +71,15 @@
 
 #define VEC2_AFF(__v) __v.x, __v.y
 #define VEC2_PRINTF "(%0.4lf, %0.4lf)"
+#define VEC2_PRINTFN(__n__) "(%0." #__n__ "lf, %0." #__n__ "lf)"
 
 #define VEC3_AFF(__v) __v.x, __v.y, __v.z
 #define VEC3_PRINTF "(%0.4lf, %0.4lf, %0.4lf)"
+#define VEC3_PRINTFN(__n__) "(%0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf)"
 
 #define VEC4_AFF(__v) __v.x, __v.y, __v.z, __v.w
 #define VEC4_PRINTF "(%0.4lf, %0.4lf, %0.4lf, %0.4lf)"
+#define VEC4_PRINTFN(__n__) "(%0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf)"
 
 const double INV_RAND_MAX = 1.0 / (RAND_MAX );
 inline double random(double max=1.0) { return max * rand() * INV_RAND_MAX; }

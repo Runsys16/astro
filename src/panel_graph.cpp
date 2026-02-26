@@ -4,7 +4,7 @@
 #include "panel_graph.h"
 //--------------------------------------------------------------------------------------------------------------------
 #define DELTA_AXE_Y	16.0
-#define DELTA_AXE_X	20.0
+#define DELTA_AXE_X	40
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -57,13 +57,19 @@ void PanelGraph::init_var()
 {
     VarManager&         var = VarManager::getInstance();
     
-    dXmin	=   500.0;
-    dXmax	= 55000.0;
-    dYmin	=     7.0;
-    dYmax	=    16.0;
+    dXmin			=   500.0;
+    dXmax			= 55000.0;
+    dYmin			=     7.0;
+    dYmax			=    16.0;
 
-	bLogX	= false ;
-	bLogY	= false;
+	bLogX			= false;
+	bLogY			= false;
+
+	cColorStar		= cVert;
+	cColorVizi		= cOrangeC;
+	ptStar			= CROIX;
+
+	ptVizi			= CARREE;
 	
 	pPanelCallback	= NULL;
 
@@ -109,7 +115,7 @@ void PanelGraph::graph2panelX( double& __x )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::graph2panelY( double& __y )
 {
-	if ( bLogY )		__y = log10(__y ) * _pasX;
+	if ( bLogY )		__y = log10(__y ) * _pasY;
 	else				__y = __y * _pasY;
 	__y = getPosDY() -__y + _debY - DELTA_AXE_Y;
 }
@@ -118,6 +124,13 @@ void PanelGraph::graph2panelY( double& __y )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::graph2panel( vec2& __v )
 {
+	if ( bLogX && __v.x == 0.0 )		__v.x = 0.9999;
+	if ( bLogY && __v.y == 0.0 )		__v.y = 0.9999;
+
+	if ( bLogX && __v.x == 0.0 )		__v.x = 0.9999;
+	if ( bLogY && __v.y == 0.0 )		__v.y = 0.9999;
+
+	
 	graph2panelX(__v.x);
 	graph2panelY(__v.y);
 }
@@ -141,6 +154,13 @@ void PanelGraph::glCercle(int x, int y, int rayon)
         }
         
     glEnd();        
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::glCercle(vec2 v, int rayon)
+{
+	glCercle( (int)v.x, (int)v.y, rayon );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -205,12 +225,8 @@ void PanelGraph::glCarre( int x, int y, int dx,  int dy )
         
         glVertex2i(x,y);                
         glVertex2i(x+2*dx,y);
-        //glVertex2i(x+2*dx,y);
         glVertex2i(x+2*dx,y+2*dy);
-        //glVertex2i(x+2*dx,y+2*dy);
         glVertex2i(x,y+2*dy);
-        //glVertex2i(x,y+2*dy);
-        //glVertex2i(x,y);
 
     glEnd();        
 }
@@ -221,6 +237,7 @@ void PanelGraph::glCarre( vec2 v, vec2 delta )
 {
 	glCarre( (int)v.x, (int)v.y, (int)delta.x, (int)delta.y );
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -235,14 +252,13 @@ void PanelGraph::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTex
     {
         color       = vcf4( gris, 0.0, 0.0, 1.0 );    
         colorLimit  = vcf4( 0.8, 0.0, 0.0, 1.0 );    
-        colorAxe    = vcf4( 1.0, 0.0, 0.0, 1.0 );
+        colorAxe    = cGrisF;
     }
     else                            
     {
-        //gris = 0.4;
         color       = vcf4( gris, gris, gris, 1.0 );
         colorLimit  = vcf4( 1.0, 0.0, 0.0, 1.0 );
-        colorAxe    = vcf4( 1.0, 1.0, 1.0, 1.0 );
+        colorAxe    = cGrisF;
     }
     
     glBegin(GL_LINES);
@@ -263,21 +279,46 @@ void PanelGraph::glEchelle()
     VarManager& var = VarManager::getInstance();
 
 }
+*/
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelGraph::displayPt( PanelGraph::PT p, vec2 v)
+{
+	switch( p )
+	{
+	case NOTHING:
+		break;
+	case CARREE:
+		glCarre( v, vec2(3.0, 3.0) );
+		break;
+	case CROIX:
+		glCroix( v, vec2(6.0, 6.0) );
+		break;
+	case POINT:
+		glCarre( v, vec2(1.0, 1.0) );
+		break;
+	case CERCLE:
+		glCercle( v, 5 );
+		break;
+	}
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::displayCourbeVizi()
 {
-
-	if( bNuit )						glColor4fv( (GLfloat*)&cRouge );
-	else							glColor4fv( (GLfloat*)&cOrange );
+	vcf4 color;
+	if( bNuit )						color = cRouge;
+	else							color = cColorVizi;
+	glColor4fv( (GLfloat*)&color );
 
 	double _DY = getPosDY();
 	
 	for( int i=1; i<cSort.size(); i++ )
 	{
-		int j0 = cSort[i];
-		int j1 = cSort[i-1];
+		int j0	= cSort[i];
+		int j1	= cSort[i-1];
 
 		vec2 v0 = cVizi[j0];
 		vec2 v1 = cVizi[j1];
@@ -285,12 +326,11 @@ void PanelGraph::displayCourbeVizi()
 		graph2panel(v0);
 		graph2panel(v1);
 
-		vec2 w = v1-v0;
-
+		vec2 w	= v1-v0;
 		glLine( v0, w );
-		glCarre( v0, vec2(3, 3) );
+		displayPt( ptVizi, v0 );
 		
-		if ( i==1 ) 			glCarre( v1, vec2(3, 3) );
+		if ( i==1 ) 			displayPt( ptVizi, v1 );
 	}
 
 	if ( iMouseCapture != -1 )
@@ -310,7 +350,7 @@ void PanelGraph::displayCourbeStar()
 {
 	vcf4 color;
 	if( bNuit )						color = cRouge;
-	else							color = cVert;
+	else							color = cColorStar;
 	
 	glColor4fv( (GLfloat*)&color );
 
@@ -318,8 +358,8 @@ void PanelGraph::displayCourbeStar()
 	
 	for( int i=1; i<cSort.size(); i++ )
 	{
-		int j0 = cSort[i];
-		int j1 = cSort[i-1];
+		int j0	= cSort[i];
+		int j1	= cSort[i-1];
 
 		vec2 v0 = cStar[j0];
 		vec2 v1 = cStar[j1];
@@ -327,13 +367,11 @@ void PanelGraph::displayCourbeStar()
 		graph2panel(v0);
 		graph2panel(v1);
 		
-		vec2 w = v1-v0;
-		
+		vec2 w	= v1-v0;
 		glLine( v0, w );
-		
-		glCroix( v0, vec2(6, 6) );
+		displayPt( ptStar, v1 );
 
-		if ( i==1 ) 			glCroix( v1, vec2(6, 6) );
+		if ( i==1 ) 			displayPt( ptStar, v1 );
 	}
 	
 	if ( iMouseCapture != -1 )
@@ -445,7 +483,7 @@ void PanelGraph::displayAxeVlog()
 {
 	
 	if( bNuit )						glColor4fv( (GLfloat*)&cRougeC );
-	else							glColor4fv( (GLfloat*)&cGris );
+	else							glColor4fv( (GLfloat*)&cGrisF );
 
 	double _log;
 	double	_ldeb = floor( log10(dXmin) ); 
@@ -492,15 +530,18 @@ void PanelGraph::displayAxeVlog()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::displayAxeVlin()
 {
-	
+//#define DEBUG
+#ifdef DEBUG
+#endif	
 	if( bNuit )						glColor4fv( (GLfloat*)&cRougeC );
-	else							glColor4fv( (GLfloat*)&cGris );
+	else							glColor4fv( (GLfloat*)&cGrisF );
 
 	double  _dif = (dXmax - dXmin);
 	_pasX = ( 1.0 /  _dif ) * ((double)getPosDX()-2*DELTA_AXE_X);
 	_debX = dXmin * _pasX;
 	_finX = dXmax * _pasX;	
 
+	//double _ech = _dif;
 	double _ech = _dif / 5.0;
 	int n = 0;
 	
@@ -508,27 +549,44 @@ void PanelGraph::displayAxeVlin()
 		n++;
 		_ech /= 10.0;
 	}
+
 	_ech = floor( _ech );
 	for( int i=0; i<n; i++ )	_ech *= 10.0;
-	
 
-	double fM = dXmax;	graph2panelX( fM );
-	double fm = dXmin;	graph2panelX( fm );
+	double fM = dXmax;	
+	double ffM = fM;	graph2panelX( fM );
+	double fm = dXmin;	
+	double ffm = fm;	graph2panelX( fm );
 		
+	#ifdef DEBUG
+	logf( (char*)"_dif=%0.1lf  _ech=%0.1lf _pasX=%0.1lf minmax" VEC2_PRINTFN(0), _dif, _ech, _pasX, VEC2_AFF(vec2(ffm, ffM)) );
+	#endif	
+
 	bool b = false;
 	if ( tAbsPanel.size() == 0)		b = true;
+	double add = floor(dXmin/_ech);
 
-	for( double i=1.0; i<=10.0; i+=1.0 )
+	for( double ii=1.0; ii<=(10.0); ii+=1.0 )
 	{
+		double i = ii + add;
 		vec2 v = vec2(i*_ech, dYmax);
 		graph2panel( v );
 
+		#ifdef DEBUG
+		logf( (char*)VEC2_PRINTFN(0),  VEC2_AFF(v) );
+		#endif	
+	
 		if ( v.x < fm )	continue;
 		if ( v.x > fM )	break;
 
 		glLine(v, vec2(0.0, getPosDY()-2*DELTA_AXE_Y) );
 		
 		if ( b )			ajoute_abs( i*_ech, vec2(i*_ech, dYmin) );
+
+		#ifdef DEBUG
+		logf( (char*)"add" IVEC2_PRINTF, IVEC2_AFF(ivec2(i*_ech, dYmin)) );
+		#endif	
+
 	}
 	
 }
@@ -545,30 +603,60 @@ void PanelGraph::displayAxeV()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::displayAxeHlog()
 {
-	double  _dif = dYmax - dYmin;
+
+	if ( dYmin == 0.0 ) dYmin = 0.999;
+	double _log;
+	double	_ldeb = floor( log10(dYmin) ); 
+	_log =  pow( 10.0, _ldeb );
+	if ( _log <= 1.0 )		_log = 1.0;
+
+	double  _dif = log10(dYmax) - log10(dYmin);
 	_pasY = ( 1.0 /  _dif ) * ((double)getPosDY()-2*DELTA_AXE_Y);
-	_debY = dYmin * _pasY;
-	_finY = dYmax * _pasY;	
+	_debY = log10(dYmin) * _pasY;
+	_finY = log10(dYmax) * _pasY;	
 	
 	double fM = dYmax;	graph2panelY( fM );
 	double fm = dYmin;	graph2panelY( fm );
 
 	bool b = false;
 	if ( tOrdPanelG.size() == 0)		b = true;
-	
-	for( double i=1.0; i<=30.0; i+=1.0 )
+
+	/*
+	log( (char*)"-------------------------------------------------------------------------" );
+	logf( (char*)"_dif=%0.2lf   _pasY=%0.2lf  _debY=%0.2lf  _finY=%0.2lf", _dif, _pasY, _debY, _finY );
+	logf( (char*)"fM=%0.2lf   fm=%0.2lf  log=%0.2lf", fM, fm, _log );
+	logf( (char*)"dYmin=%0.2lf  dYmax=%0.2lf  log=%0.2lf", dYmin, dYmax, _log );
+	log( (char*)"-------------------------------------------------------------------------" );
+	*/
+
+	for( double i=1.0; i<=10.0; i+=1.0 )
 	{
-		vec2 v = vec2( dXmin, i );
+		if ( i == 10.0 )	{
+			_log *= 10.0;
+			if ( isinf(_log) )	{ log( (char*)"[ Erreur ] Infini PanelGraph::displayAxeV()" ); setVisible(false); break; }
+			i = 1.0;
+			//logf( (char*)"i=%0.2lf dYmin=%0.2lf   dYmax=%0.2lf  log=%0.2lf", i, dYmin, dYmax, _log );
+		}
+
+		double _y = _log*i;
+		vec2 v = vec2( dXmin, _y );
 		graph2panel( v );
-				//logf( (char*)"%lf  %lf<%lf", v.y, fm, fM );
-		if ( v.y > fm )	continue;
-		if ( v.y < fM )	break;
+
+		if ( i*_log < dYmin )	continue;
+		if ( i*_log > dYmax )	break;
 
 		glLine(  v, vec2(getPosDX()-2*DELTA_AXE_X, 0.0) );
-		if ( b )			ajoute_ordG( i, vec2(dXmin,i) );
-		if ( b )			ajoute_ordD( i, vec2(dXmax,i) );
+
+		if ( b && i==1.0 )	{	ajoute_ordG( i*_log, vec2(dXmin, i*_log) );
+								ajoute_ordD( i*_log, vec2(dXmax, i*_log) ); }
+		if ( b && i==2.0 )	{	ajoute_ordG( i*_log, vec2(dXmin, i*_log) );
+								ajoute_ordD( i*_log, vec2(dXmax, i*_log) ); }
+		if ( b && i==5.0 )	{	ajoute_ordG( i*_log, vec2(dXmin, i*_log) );
+								ajoute_ordD( i*_log, vec2(dXmax, i*_log) ); }
+
+		//logf( (char*)"%0.2lf log=%0.2lf  v" VEC2_PRINTF "", i, i * _log, VEC2_AFF(v) );
 	}
-	
+	//setVisible(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -580,23 +668,33 @@ void PanelGraph::displayAxeHlin()
 	_debY = dYmin * _pasY;
 	_finY = dYmax * _pasY;	
 	
+	double _ech = _dif / 5.0;
+	int n = 0;
+	
+	while( _ech >=10.0 )	{
+		n++;
+		_ech /= 10.0;
+	}
+	_ech = floor( _ech );
+	for( int i=0; i<n; i++ )	_ech *= 10.0;
+	
 	double fM = dYmax;	graph2panelY( fM );
 	double fm = dYmin;	graph2panelY( fm );
 
 	bool b = false;
 	if ( tOrdPanelG.size() == 0)		b = true;
 	
-	for( double i=1.0; i<=30.0; i+=1.0 )
+	for( double i=1.0; i<=20.0; i+=1.0 )
 	{
-		vec2 v = vec2( dXmin, i );
+		vec2 v = vec2( dXmin, i*_ech );
 		graph2panel( v );
 				//logf( (char*)"%lf  %lf<%lf", v.y, fm, fM );
 		if ( v.y > fm )	continue;
 		if ( v.y < fM )	break;
 
 		glLine(  v, vec2(getPosDX()-2*DELTA_AXE_X, 0.0) );
-		if ( b )			ajoute_ordG( i, vec2(dXmin,i) );
-		if ( b )			ajoute_ordD( i, vec2(dXmax,i) );
+		if ( b )			ajoute_ordG( i*_ech, vec2(dXmin,i*_ech) );
+		if ( b )			ajoute_ordD( i*_ech, vec2(dXmax,i*_ech) );
 	}
 	
 }
@@ -607,7 +705,7 @@ void PanelGraph::displayAxeH()
 {
 
 	if( bNuit )						glColor4fv( (GLfloat*)&cRougeC );
-	else							glColor4fv( (GLfloat*)&cGris );
+	else							glColor4fv( (GLfloat*)&cGrisF );
 
 	if ( bLogY )	displayAxeHlog();
 	else			displayAxeHlin();
@@ -617,7 +715,7 @@ void PanelGraph::displayAxeH()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::displayAxes()
 {
-	if (dXmin < 10.0 )		    dXmin = 10.0;
+	if (dXmin < 0.9999 )		    dXmin = 0.9999;
 
 	//glLineStipple(1, 0xCCCC);
 	glLineStipple(1, 0xAAAA);
@@ -731,10 +829,10 @@ bool PanelGraph::doublons_vizi( vec2 v )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::addViziStar( vec2 v, vec2 w )
 {	
-	if ( v.x < 10.0 )				v.x = 10.0;
+	if ( v.x < 0.9999 )				v.x =  0.9999;
 	//if ( doublons_star(v) )			v.x = -1.0;//return;
 
-	if ( w.x < 10.0 )				w.x = 10.0;
+	if ( w.x < 0.9999 )				w.x = 0.9999;
 	//if ( doublons_vizi(w) )			w.x = -1.0;//return;
 
     cVizi.push_back(v);
@@ -745,7 +843,7 @@ void PanelGraph::addViziStar( vec2 v, vec2 w )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::addStar( vec2 v )
 {	
-	if ( v.x < 10.0 )				v.x = 10.0;
+	if ( v.x < 0.9999 )				v.x = 0.9999;
 	if ( doublons_star(v) )			v.x = -1.0;//return;
 
     cStar.push_back(v);
@@ -755,7 +853,7 @@ void PanelGraph::addStar( vec2 v )
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::addVizi( vec2 v )
 {
-	if ( v.x < 10.0 )				v.x = 10.0;
+	if ( v.x < 0.9999 )				v.x = 0.9999;
 	if ( doublons_vizi(v) )			v.x = -1.0;//return;
 
 	//logf( (char*)"Vizi ajout (%0.4lf, %0.4lf", v.x, v.y );

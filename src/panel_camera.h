@@ -11,6 +11,8 @@
 #include "catalog.h"
 #include <WindowsManager.h>
 #include "convert.h"
+#include "find_star.h"
+#include "panel_debug.h"
 
 class Camera;
 class Camera_mgr;
@@ -20,7 +22,8 @@ using namespace std;
 
 class PanelCamera : public PanelWindow, public Convert
 {
-
+	//-----------------------------------------------------------------
+	//-----------------------------------------------------------------
 protected:
     double              echelle;
     double				ech_user;
@@ -51,86 +54,86 @@ protected:
     ivec2				vDeplaceDepuis;
     
     Camera*				pCamera;
-
-    //vector<StarCatalog*>      catalog;
-
+    FindStar*			pFindStar;
+    PanelDebug*			pMouseCoord;
+	//-----------------------------------------------------------------
+	//-----------------------------------------------------------------
 public:
-    PanelCamera(Camera*);
+						~PanelCamera();
+						PanelCamera(Camera*);
 
-    virtual void		idle(float);
-    virtual void		update_stars();
-    virtual void        releaseLeft( int, int);
-    virtual void        releaseMiddle( int, int);
-    virtual void        motionRight( int, int);
-    virtual void        wheelUp( int, int);//                              {;};
-    virtual void        wheelDown( int, int);//                            {;};
+virtual	void			idle(float);
+virtual	void			update_stars();
+
+virtual	void			passiveMotionFunc( int, int);
+virtual	void			releaseLeft( int, int);
+virtual	void			releaseMiddle( int, int);
+virtual void			motionRight( int, int);
+virtual	void			releaseRight( int, int);
+virtual	void			wheelUp( int, int);//                              {;};
+virtual	void			wheelDown( int, int);//                            {;};
 	//-----------------------------------------------------------------
-    virtual void		updatePos();
+virtual void			updatePos();
 
-	void				clip(int&, int&);
-	void				compute_centre();
-    void                compute_echelle();
-    void				computeColor();
-/*	//-----------------------------------------------------------------
-    void                tex2screen(vec2&);
-
-
-*/	//-----------------------------------------------------------------
-    void                tex2screen(int&,int&);
-    void                tex2screen(double&,double&);
-    void                screen2tex(int&,int&);
-    void                screen2tex(double&,double&);
-
-/*
-    void                screen2tex( vec2& );
-    void                screen2panel( vec2& );
-    void                tex2screen( vec2& );
-    void                tex2panel( vec2& );
-    void                panel2tex( vec2& );
-    void                panel2screen( vec2& );
-*/    
-virtual void			screen_2_tex( vec2& );
-virtual void			screen_2_panel( vec2& );
-virtual void			tex_2_screen( vec2& );
-virtual void			tex_2_panel( vec2& );
-virtual void			panel_2_tex( vec2& );
-virtual void			panel_2_screen( vec2& );
-    
+		void			clip(int&, int&);
+		void			compute_centre();
+		void			compute_echelle();
+		void			computeColor();
 	//-----------------------------------------------------------------
-    void                glCercle(int x, int y, int rayon);
-    inline void         glCercle(vec2 v, int r)							{ glCercle( (int)v.x, (int)v.y, r ); }
-
-    void                glCarre( int x,  int y,  int dx,  int dy );
-
-    void                glCroix( int x,  int y,  int dx,  int dy );
-    inline void         glCroix( int x,  int y,  int dxy )				{ glCroix( x, y, dxy, dxy ); }
-    inline void         glCroix(vec2 v, int dxy)						{ glCroix( v.x, v.y, dxy, dxy ); }
-
-    void                displayGLTrace(void);
-    void                displayVecAD();
-    void                displayVecDC();
-
-    void				displayLigneSuivi();
-    void				displaySuivi();
-    void				displayCentre();
-    void				displayVizier();
-
-    virtual void		displayGL();
+		void			tex2screen(int&,int&);
+		void			tex2screen(double&,double&);
+		void			screen2tex(int&,int&);
+		void			screen2tex(double&,double&);
 	//-----------------------------------------------------------------
-    void                findAllStar();
-    bool                starExist(int, int);    
-    void                addStar(int,int);
+	// CLASS Compare
+ 	//-----------------------------------------------------------------
+virtual	void			screen_2_tex( vec2& );
+virtual	void			screen_2_panel( vec2& );
+virtual	void			tex_2_screen( vec2& );
+virtual	void			tex_2_panel( vec2& );
+virtual	void			panel_2_tex( vec2& );
+virtual	void			panel_2_screen( vec2& );
+virtual	double			get_echelle()                                    { return echelle; }
+	//-----------------------------------------------------------------
+    	void			glCercle(int x, int y, int rayon);
+inline	void			glCercle(vec2 v, int r)							{ glCercle( (int)v.x, (int)v.y, r ); }
 
-    void                setRB(rb_t* p);
-    vec2*               getSuivi();
-    void                add_catalogue(StarCatalog*);
-    void                setRefCatalog(double _0, double _1);
-    void				updateVizizePos();
-	//-----------------------------------------------------------------
-	void				recentreSuivi();   
-	//-----------------------------------------------------------------
+		void			glCarre( int x,  int y,  int dx,  int dy );
+
+		void			glCroix( int x,  int y,  int dx,  int dy );
+inline	void			glCroix( int x,  int y,  int dxy )				{ glCroix( x, y, dxy, dxy ); }
+inline	void			glCroix(vec2 v, int dxy)						{ glCroix( v.x, v.y, dxy, dxy ); }
+
+		void			displayGLTrace(void);
+		void			displayVecAD();
+		void			displayVecDC();
+
+		void			displayLigneSuivi();
+		void			displaySuivi();
+		void			displayCentre();
+		void			displayVizier();
+
+virtual	void			displayGL();
+		//-----------------------------------------------------------------
+		void			findAllStar();
+		bool			starExist(int, int);    
+		void			addStar(int,int);
+
+		void			setRB(rb_t* p);
+		vec2*			getSuivi();
+		void			add_catalogue(StarCatalog*);
+		void			setRefCatalog(double _0, double _1);
+		void			updateVizizePos();
+		//-----------------------------------------------------------------
+		void			recentreSuivi();   
+		//-----------------------------------------------------------------
+		void			create_find_star();   
+		void			update_mouse_coord(int, int);   
+		void			create_mouse_coord();   
+		//-----------------------------------------------------------------
+		void			printObjet();
+		//-----------------------------------------------------------------
 inline void				raz_ech_usr()                                   { ech_user = 1.0; }
-inline double           getEchelle()                                    { return echelle; }
 inline double           getCentX()                                      { return dx; }
 inline double           getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }

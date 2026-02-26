@@ -20,6 +20,17 @@ vcf4                colorTraces[] =
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+PanelCamera::~PanelCamera()
+{
+	if ( pMouseCoord )		delete pMouseCoord;
+	pMouseCoord = NULL;
+
+	if ( pFindStar )		delete pFindStar;
+	pFindStar = NULL;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 PanelCamera::PanelCamera(Camera* p)
 {
     VarManager& var = VarManager::getInstance();
@@ -32,6 +43,9 @@ PanelCamera::PanelCamera(Camera* p)
     _dy              	= 0.0;
     
     pReadBgr        	= NULL;
+    pFindStar			= NULL;
+    pMouseCoord			= NULL;
+    
     fTime           	= 0.5;
     fTime1          	= 0.0;
     bTime1         		= false;
@@ -238,6 +252,26 @@ void PanelCamera::update_stars()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::passiveMotionFunc(int xm, int ym)
+{
+
+	if( pMouseCoord == NULL )	return;
+    if ( pReadBgr == NULL )     return;
+
+    //logf( (char*)"PanelCamera::passiveMotionFunc(%d,%d) :%d", xm, ym, __LINE__ );
+    //log_tab(true);
+    VarManager& var = VarManager::getInstance();
+
+	pFindStar->setRB( pReadBgr );
+	update_mouse_coord( xm, ym );
+	if ( pFindStar && pMouseCoord )	pMouseCoord->setVisible( pFindStar->getPanelGraphDistri()->getVisible() );
+	
+    //log_tab(false);
+    //logf( (char*)"PanelCamera::passiveMotionFunc(%d,%d) ...", xm, ym );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::releaseLeft(int xm, int ym)
 {
     logf( (char*)"PanelCamera::releaseLeft(%d,%d) :%d", xm, ym, __LINE__ );
@@ -246,7 +280,7 @@ void PanelCamera::releaseLeft(int xm, int ym)
     VarManager& var = VarManager::getInstance();
 
     log_tab(true);
-    logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), (double)pReadBgr->w.load() );
+    //logf( (char*)"getDX=%d RB->w=%0.2f", getDX(), (double)pReadBgr->w.load() );
     
     double e = (double)getDX() / (double)pReadBgr->w.load(); 
     
@@ -256,6 +290,55 @@ void PanelCamera::releaseLeft(int xm, int ym)
     stars.setView( this );
     stars.setRB( pReadBgr );
     
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
+		logf( (char*)"CTRL+SHIFT+ALT " );
+		if ( pMouseCoord == NULL )	create_mouse_coord();
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->setRB( pReadBgr );
+		pFindStar->setName( pCamera->getName() );
+		pFindStar->click_all();
+    }
+    else
+    if ( iGlutModifier == (GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
+		logf( (char*)"SHIFT+ALT " );
+		if ( pMouseCoord == NULL )	create_mouse_coord();
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->setRB( pReadBgr );
+		pFindStar->setName( pCamera->getName() );
+
+		vec2 vTex = vec2( xm, ym );
+		screen_2_tex( vTex );
+		pFindStar->click_find_star(vTex);
+    }
+    else
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_SHIFT))    {
+		vec2 vTex = vec2( xm, ym );
+		screen_2_tex( vTex );
+		
+		logf( (char*)"CTRL + SHIFT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
+		if ( pMouseCoord == NULL )	create_mouse_coord();
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->setRB( pReadBgr );
+		pFindStar->setName( pCamera->getName() );
+		pFindStar->click_graph_distri( vTex );
+		
+    }
+    else
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT))    {
+		vec2 vTex = vec2( xm, ym );
+		screen_2_tex( vTex );
+		
+		logf( (char*)"CTRL+ALT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->setRB( pReadBgr );
+		pFindStar->setName( pCamera->getName() );
+		pFindStar->click_graph_lum( vTex );
+    }
+    else
     if( (iGlutModifier & GLUT_ACTIVE_CTRL ) )
     {
 		double xx = xm, yy = ym;
@@ -325,6 +408,23 @@ void PanelCamera::motionRight(int xm, int ym)
     Camera_mgr&     mgr = Camera_mgr::getInstance(); 
 	mgr.onBottom();
 	updatePos();    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::releaseRight(int xm, int ym)
+{
+    logf( (char*)"PanelCamera::releaseRight(%d,%d) ...", xm, ym );
+    
+    if ( iGlutModifier == GLUT_ACTIVE_ALT )
+    {
+		logf( (char*)"ALT modfier" );
+    }
+    else
+    {
+    	printObjet();
+		log( (char*)"Click Droit : affiche des infos de la fenetre" );
+    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -410,7 +510,6 @@ void PanelCamera::updatePos()
     dy_old = getDY();
     
     stars.update_stars( getX(), getY(), this, pReadBgr, echelle );
-
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -549,6 +648,7 @@ void PanelCamera::screen_2_tex(vec2& v)
 //----------------------------------
 // (x,y)  dans la texture (image astronomique)   =>    (x,y) ecran
 //
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::tex_2_screen(vec2& v)
 {
     if  ( pReadBgr==NULL )      return;
@@ -1090,6 +1190,9 @@ void PanelCamera::displayGL()
     }
     //else
     //	log( (char*)"Pleiade ss not current" );
+    
+    if ( pFindStar != NULL )		pFindStar->displayGL();
+    
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
@@ -1251,6 +1354,153 @@ void PanelCamera::recentreSuivi()
     updatePos();
     
     logf( (char*)"Suivi (%0.2lf,%0.2lf)", vSuiviTex.x, vSuiviTex.y );
+
+    log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::create_find_star()                         
+{
+	log( (char*)"PanelCamera::create_find_star()" );
+	log_tab(true);
+
+	pFindStar = new FindStar();
+	
+	pFindStar->setRB( pReadBgr );
+	pFindStar->setView( this );
+	pFindStar->setConvert( this );
+
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::update_mouse_coord( int xm, int ym )
+{
+	if ( pMouseCoord == NULL )			return;
+	
+	vec2 vScr = vec2( xm, ym );
+	vec2 vTex = vScr;
+
+	screen_2_tex( vTex );
+	xm = vTex.x;
+	ym = vTex.y;
+	
+	if ( 0>xm || xm>=pReadBgr->w )		return;
+	if ( 0>ym || ym>=pReadBgr->h )		return;
+	
+	//int offset = (xm + ym*pReadBgr->w) * pReadBgr->d;
+	int offset = pFindStar->getOffset( xm, ym );
+	
+    double r;
+    double g;
+    double b;
+    try
+    {
+        r = pReadBgr->ptr[offset+0]; 
+        g = pReadBgr->ptr[offset+1]; 
+        b = pReadBgr->ptr[offset+2]; 
+    }
+    catch ( const std::exception& e )
+    {
+        std::cout << e.what() << std::endl;
+        return;
+    }
+
+	double l =	(double)LUM(r,g,b);
+
+	pMouseCoord->reset_list();
+	pMouseCoord->add_textf( (char*)"vScr" VEC2_PRINTFN(0) "", VEC2_AFF(vScr) );
+	pMouseCoord->setColor( VCF4_2_COLOR32(cVert) );
+	pMouseCoord->add_textf( (char*)"vTex" VEC2_PRINTFN(0) "", VEC2_AFF(vTex) );
+	pMouseCoord->setColor( VCF4_2_COLOR32(cVert) );
+	
+	pMouseCoord->add_textf( (char*)"r,g,b" IVEC3_PRINTF "", IVEC3_AFF(ivec3(r ,g ,b)) );
+	pMouseCoord->setColor( VCF4_2_COLOR32(cJaune) );
+	
+	pMouseCoord->add_textf( (char*)"Lum = %0.2lf", l );
+	pMouseCoord->setColor( VCF4_2_COLOR32(cJaune) );
+
+	vScr += vec2( 20, 20 );
+	pMouseCoord->setPos( (int)vScr.x, (int)vScr.y );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::create_mouse_coord()                         
+{
+	if ( pMouseCoord != NULL )			return;
+	log( (char*)"PanelCapture::create_mouse_coord()" );
+	log_tab(true);
+
+	pMouseCoord = new PanelDebug();
+
+	pMouseCoord->setExtraString("Coordonnees souris Camera");
+	pMouseCoord->setVisible(true);
+	pMouseCoord->setSize( 140, 20 );
+	pMouseCoord->setPos( 40, 40 );
+	pMouseCoord->setTabSize( 70 );
+	pMouseCoord->loadSkin( PanelWindow::BLACK );
+	pMouseCoord->setBorderSize(4);
+
+	//WindowsManager::getInstance().add( pMouseCoord );
+
+
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::printObjet()
+{
+    logf( (char*)"PanelCamera::printObjet() \"%s\"", pCamera->getName().c_str() );
+    log_tab(true);
+    
+    logf( (char*)"Position de Panelindow" );
+    logf( (char*)"  this->pos (%d, %d)", getPosX(), getPosY() );
+    logf( (char*)"  this->dim %d x %d", getDX(), getDY() );
+
+    logf( (char*)"Echelle" );
+    logf( (char*)"  this->ech_geo=%0.2lf",  ech_geo );
+    logf( (char*)"  this->ech_user=%0.2lf", ech_user );
+    logf( (char*)"  this->ech=%0.2lf", echelle );
+    if ( pReadBgr == NULL )    {
+        logf( (char*)"pReadBgr = NULL" );
+    } else {
+	    logf( (char*)"Struct ReadBackGround" );
+        logf( (char*)"  this->pReadBgr->w %d", pReadBgr->w.load() );
+        logf( (char*)"  this->pReadBgr->h %d", pReadBgr->h.load() );
+        logf( (char*)"  this->pReadBgr->d %d", pReadBgr->d.load() );
+    }
+    /*
+    logf( (char*)"this->vAD=(%.6lf, %.6lf)", vAD.x, vAD.y );
+    logf( (char*)"this->vDE=(%.6lf, %.6lf)", vDE.x, vDE.y );
+    logf( (char*)"this->dAngleAD=%0.6lf", dAngleAD );
+    logf( (char*)"this->dAngleDE=%0.6lf", dAngleDE );
+
+	if ( pVizier )
+	    logf( (char*)"this->pVizier=%d", pVizier->size() );
+    logf( (char*)"this->stars=%d", stars.size() );
+
+    log( (char*)"" );
+    logf( (char*)"this->bAffCatalogPosition=%s", BOOL2STR(bAffCatalogPosition) );
+    logf( (char*)"this->pTelescope->bVisible=%s", BOOL2STR(pTelescope->getVisible()) );
+    logf( (char*)"this->pMouseCoord->bVisible=%s", BOOL2STR(pMouseCoord->getVisible()) );
+    logf( (char*)"this->pColor->bVisible=%s", BOOL2STR(pColor->getVisible()) );
+    logf( (char*)"this->pCoord->bVisible=%s", BOOL2STR(pCoord->getVisible()) );
+
+    log( (char*)"" );
+    logf( (char*)"this->pCapture->isIconized=%s", BOOL2STR(pCapture->isIconized()) );
+    logf( (char*)"this->pCapture->bAfficheInfoSouris=%s", BOOL2STR(pCapture->getAfficheInfoSouris()) );
+    logf( (char*)"this->pCapture->bAfficheGrille=%s", BOOL2STR(pCapture->getAfficheGrille()) );
+    logf( (char*)"this->pCapture->bAfficheInfoFits=%s", BOOL2STR(pCapture->getAfficheInfoFits()) );
+    logf( (char*)"this->pCapture->bFullScreen=%s", BOOL2STR(pCapture->getFullScreen()) );
+
+    log( (char*)"" );
+    logf( (char*)"%d ligne(s) AD", tAD.size() );
+    logf( (char*)"%d ligne(s) DE", tDE.size() );
+    */
 
     log_tab(false);
 }

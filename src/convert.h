@@ -15,6 +15,7 @@ virtual void			tex_2_screen( vec2& )				{};
 virtual void			tex_2_panel( vec2& )				{};
 virtual void			panel_2_tex( vec2& )				{};
 virtual void			panel_2_screen( vec2& )				{};
+virtual double			get_echelle()						{ return 1.0; };
 
 };
 
