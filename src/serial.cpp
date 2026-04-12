@@ -39,12 +39,11 @@ void Serial::init( string dev)
     dev_name = dev;
     idx = 0;
     nbZero = 0;
-
-    sopen();
-    start_thread();
-    
     bPrintInfo = true;
     sVersionArduino = "";
+
+    if ( sopen() )    start_thread();
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -161,13 +160,13 @@ void Serial::write_g_thread()
 	sleep( 1 );
 	if ( bConnect == false )		nbConnect++;
 	else	{
-		change_arduino( true );
+		arduino_online( true );
 		nbConnect = 0;
 	}
 	if ( nbConnect >= 2 )			
 	{
 		log_thread( (char*)"Connexion pas de reponse arduino" );
-		change_arduino( false );
+		arduino_online( false );
 		sclose();
 	}
 }
@@ -176,7 +175,9 @@ void Serial::write_g_thread()
 //--------------------------------------------------------------------------------------------------------------------
 void Serial::write_g()
 {
-	logf_thread( (char*)"[thread] Serial::write_g() !! %d", __LINE__ );
+    VarManager& var = VarManager::getInstance();
+	if ( var.getb("bVerboseArduino") )	logf_thread( (char*)"[thread] Serial::write_g() !! %d", __LINE__ );
+
     th_write_g = std::thread(&Serial::write_g_thread, this);
     th_write_g.detach();
 }
@@ -194,26 +195,6 @@ void Serial::push_cmd( string& cmd )
 {
     tCommandes.push_back( string(cmd) );
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Serial::sound()
-{
-    //aplay /home/rene/.astropilot/sounds/send.wav
-    char *arguments[] = { (char*)"aplay", (char*)"/home/rene/.astropilot/sounds/send.wav", (char*)NULL };
-    execv( "/usr/bin/aplay", arguments );
-
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Serial::sound_thread()
-{
-    th_sound = std::thread(&Serial::sound, this);
-    th_sound.detach();
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -282,6 +263,8 @@ void Serial::read_thread()
     int i=0;
     int bPremiereConnexion = true;
     
+    bVersionArduino = false;
+    
     logf_thread( (char*)"START Serial::read_thread" );
     VarManager& var= VarManager::getInstance();
     bConnect = false;
@@ -318,8 +301,10 @@ void Serial::read_thread()
                 buffer[idx++] = 0;
                 string test = buffer;
                 
-            	if ( buffer[0] != 'W' && var.getb("bVerboseArduino") ) 
+            	if ( buffer[0] != 'W' && var.getb("bVerboseArduino") )
+            	{
 		            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+		        }
                 
 				//-------------------------------------------------------------------
 				//
@@ -334,8 +319,6 @@ void Serial::read_thread()
                 {
 					if ( !bVersionArduino ) {		// pas de reception de version
 						logf_thread((char*)"[ Erreur ] Mauvaise version Arduino sur STOP" );
-						//logf_thread((char*)"[ Erreur ]   pas de version" );
-						//bVersionArduino = false;
 					}
 						
                     bPrintInfo = true;
@@ -351,7 +334,9 @@ void Serial::read_thread()
 				//
 				//-------------------------------------------------------------------
                 if ( test.find("dbl click") != string::npos )
-                    system( (char*)"aplay /home/rene/.astropilot/sounds/logout.wav" );
+                {
+                    son( "/home/rene/.astropilot/sounds/logout.wav" );
+                }
                 else
 				//-------------------------------------------------------------------
 				//
@@ -370,7 +355,7 @@ void Serial::read_thread()
 				//
                 if ( test.find("GOTO OK") != string::npos )
                 {
-                    if (bSound)     system( (char*)"aplay /home/rene/.astropilot/sounds/login.wav" );
+                    son( "/home/rene/.astropilot/sounds/login.wav" );
                     bFree = true;
                     emet_commande();
                     //PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
@@ -384,19 +369,19 @@ void Serial::read_thread()
 		        		logf_thread((char*)"[ Erreur ] Mauvaise version Arduino %s", test.c_str() );
 		        		logf_thread((char*)"[ Erreur ]   recherchée \"Version %s\"  | trouvée \"%s\"", VER_ARDUINO, buffer );
 		        		bVersionArduino = false;
-		        		change_arduino( false );
+		        		arduino_online( false );
 		        	}
 		        	else {
-		        		//logf_thread((char*)"  Version OK" );
+		        		if ( bVersionArduino == false )	logf_thread((char*)"  Version OK %s", test.c_str() );
  		        		bConnect = true;
 						bVersionArduino = true;
-		        		change_arduino( true );
+		        		arduino_online( true );
 		        	}
                 }
                 else
 				//-------------------------------------------------------------------
 				// Lecture des booleens
-				//  voir champ de bits
+				//  voir champ de bits (structure f_bool dans serial.h)
 				//-------------------------------------------------------------------
                 if ( buffer[0] == 'W' )
                 {
@@ -420,15 +405,16 @@ void Serial::read_thread()
 					changeSui( B.b.bRotSiderale );
 					changeRetourPos( B.b.bRetStellar );
 
+					//------------------------------------
+					// Sur  front montant
+					//------------------------------------
 		            if ( B.b.bJoy != bOldJoy )
 		            {
 		                changeJoy(B.b.bJoy);
 		                
-		                if ( bSound)
-		                {
-				            if ( B.b.bJoy )			system( (char*)"aplay /home/rene/.astropilot/sounds/receive.wav" );
-							else	                system( (char*)"aplay /home/rene/.astropilot/sounds/send.wav" );
-		                }
+			            if ( B.b.bJoy )			son( "/home/rene/.astropilot/sounds/receive.wav" );
+						else	                son( "/home/rene/.astropilot/sounds/send.wav" );
+
 		                bOldJoy = B.b.bJoy;
 		            }
                 }
@@ -462,13 +448,15 @@ void Serial::read_thread()
     } while( true );
 
     bConnect = false;
-	
+	/*
+	// change par arduino_online
 	changeJoy( false );
-    changeDec( true );
-    changeAsc( true );
+    changeDec( false );
+    changeAsc( false );
 	changeSui( false );
 	changeRetourPos( false );
-	system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
+	*/
+
     logf_thread( (char*)"FIN   Serial::read_thread" );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -478,7 +466,6 @@ void Serial::start_thread()
 {
     if ( fd != -1 )             
     {
-		system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
 		logf_thread( (char*)"[thread] Serial::start_thread() !! %d", __LINE__);
         th_serial = std::thread(&Serial::read_thread, this);
         th_serial.detach();
@@ -500,14 +487,14 @@ void Serial::start_thread()
 // and a baud rate (bps) and connects to that port at that speed and 8N1.
 // opens the port in fully raw mode so you can send binary data.
 // returns valid fd, or -1 on error
-void Serial::sopen()
+bool Serial::sopen()
 {
     logf_thread( (char*)"Serial::sopen()");
     
     if (fd != -1)
     {        
         logf_thread( (char*)"sopen fd != -1 !! " );
-        return;
+        return false;
     }
     
     
@@ -521,29 +508,29 @@ void Serial::sopen()
     if (fd == -1)  {
         logf_thread( (char*)"init_serialport: Unable to open port ");
         fd = -1;
-        return;
+        return false;
     }
     
     if (tcgetattr(fd, &toptions) < 0) {
         logf_thread( (char*)"init_serialport: Couldn't get term attributes");
         fd = -1;
-        return;
+        return false;
     }
     
     speed_t brate = baud; // let you override switch below if needed
     switch(baud) {
-    case 4800:   brate=B4800;   break;
-    case 9600:   brate=B9600;   break;
-#ifdef B14400
-    case 14400:  brate=B14400;  break;
-#endif
-    case 19200:  brate=B19200;  break;
-#ifdef B28800
-    case 28800:  brate=B28800;  break;
-#endif
-    case 38400:  brate=B38400;  break;
-    case 57600:  brate=B57600;  break;
-    case 115200: brate=B115200; break;
+		case 4800:   brate=B4800;   break;
+		case 9600:   brate=B9600;   break;
+	#ifdef B14400
+		case 14400:  brate=B14400;  break;
+	#endif
+		case 19200:  brate=B19200;  break;
+	#ifdef B28800
+		case 28800:  brate=B28800;  break;
+	#endif
+		case 38400:  brate=B38400;  break;
+		case 57600:  brate=B57600;  break;
+		case 115200: brate=B115200; break;
     }
     cfsetispeed(&toptions, brate);
     cfsetospeed(&toptions, brate);
@@ -569,9 +556,10 @@ void Serial::sopen()
     if( tcsetattr(fd, TCSANOW, &toptions) < 0) {
         logf_thread( (char*)"init_serialport: Couldn't set term attributes");
         fd = -1;
-        return;
+        return false;
     }
-
+    
+    return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

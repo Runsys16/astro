@@ -191,6 +191,7 @@ void PanelCamera::idle(float f)
     stars.set_delta( getPosX(), getPosY() );
     computeColor();
     
+	if ( pFindStar != NULL )			pFindStar->idle();
     //----------------------------------------------
     //                 Vizier
     //----------------------------------------------

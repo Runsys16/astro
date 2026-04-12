@@ -81,7 +81,7 @@ vector<string> t_sHelp1 =
 	"    F5\t: Console de log",
 	"    F6\t: Console arduino",
 	"    F7\t: Affiche/Cache les images",
-	"    F8\t: Prends une photo avec le pentax",
+	"    F8\t: Parametre APN",
 	"   F10\t: Mode DEBUG WindowManager",
 	"   F11\t: Charge la prochaine image",
 	"   F12\t: Efface la derniere image", 
@@ -96,6 +96,7 @@ vector<string> t_sHelp1 =
 	"     i\t: Prend une photo sur le PENTAX",
 	"     I\t: Inverse les couleur pour la recherhce d'une etoile",
 	"     j\t: Affichage info fits",
+	"     J\t: Lance ASI Studio",
 	"     l\t: List les ports /dev + les controles ",
 	"     L\t: List les variables",
 	"Ctrl+N\t: Mode nuit on/off",
@@ -105,7 +106,6 @@ vector<string> t_sHelp1 =
 	"Ctrl+o\t: Ouvrir un fichier image",
 	"     p\t: Pause de l'affichage camera",
 	"     P\t: Image suivante",
-	"     J\t: Lance ASI Studio",
 	"     q\t: Lance Polaris",
 	"     Q\t: Lance Stellarium",	
 	"   t/T\t: Coefficient comparaison etoile",
@@ -142,19 +142,20 @@ vector<string> t_sHelp2 =
 	"     h\t: Enregistre une image de la camera courante",
 	"     l\t: Liste les controles",
     "" ,    
-    "---- !!OBSOLETE!! ----",
-	"\tBrightness\tB/b" ,
-	"\tContrast\tC/c" ,
-	"\tSaturation\tS/s" ,
-	"\tHue\tH/h" ,
-	"\tGamma\tG/g" ,
-	"\tSharpness\tZ/z" ,
-	"\tExposure\tE/e" ,
-	"\tExposure auto\tD/d" ,
-	"\tWhite balance\tW/w" ,
-	"\tWhite balance auto\tX/x" ,
 };
 vector<string> t_sHelp3 = 
+{
+    "---- Click Gauche ----",
+	"ctrl+shift+alt Click\t: Recherche tt les etoile v1 " ,
+	"shift+alt      Click\t: Recherche tt les etoile v2" ,
+	"ctrl+shift     Click\t: Affiche la distribution de la ligne" ,
+	"ctrl+alt       Click\t: Affiche le graphisme flux" ,
+    //"---- Click Droit ----",
+    "",
+	"ctrl           Click\t: GOTO" ,
+	"alt            Click\t: SYNC" ,
+};
+vector<string> t_sHelp4 =
 {
 	"---- SUIVI ----",
 	"     K\t: Lance/Stop le suivi",
@@ -178,6 +179,7 @@ vector<string> t_sHelp3 =
 	"---- Vizier ----",
 	" Alt+e\t: Affiche catalog"   ,
 	" Alt+r\t: Affiche les etoiles"   ,
+	" Alt+t\t: Affiche les eoitles FindStar"   ,
 	"   a/z\t: Rotation"   ,
 	"   w/x\t: Translation X"   ,
 	"   c/v\t: Zoom X"   ,
@@ -296,6 +298,7 @@ bool                bFirstStart			= true;
 bool				bDesactiveLog		= true;
 bool				bAffColimation		= false;
 bool				bAffFindStar		= false;
+bool				bGmagChange			= false;
 
 int                 wImg;
 int                 hImg;
@@ -495,6 +498,10 @@ void arret_urgence()
 //--------------------------------------------------------------------------------------------------------------------
 void sound_alert()
 {
+	son( "/home/rene/.astropilot/sounds/alert.wav" );
+	son( "/home/rene/.astropilot/sounds/alert.wav" );
+	son( "/home/rene/.astropilot/sounds/alert.wav" );
+	return;
     string cmd = "aplay /home/rene/.astropilot/sounds/alert.wav;";
     cmd = cmd;
     system( (char*)cmd.c_str() );
@@ -677,11 +684,10 @@ void commande_magnitude( string filename )
 RA_ICRS (deg)   DE_ICRS (deg)   Source              mag (mag) (mas/yr)  as/yr) (mas/yr)  as/yr)
 --------------- --------------- ------------------- --------- --------- ------ --------- ------
 */
-//#define MOUV_PROPRE
 void vizier_parse_line( Catalog* pVizier, string & line )
 {
 	if ( line.size() == 0 )		return;
-    if ( line.size() < 61 )		{ logf_thread( (char*)"[ Erreur ] Ligne< 62 \"%s\"", line.c_str() ); return; }
+    if ( line.size() < 61 )		{ logf_thread( (char*)"[ Erreur ] Longueur ligne < 61 \"%s\"", line.c_str() ); return; }
 	//printf( (char*)"%s\n", line.c_str() );
 	
     double fRA	= stod( line.substr(0,15), 0 );
@@ -696,7 +702,7 @@ void vizier_parse_line( Catalog* pVizier, string & line )
 
     if ( line.size() < 95 )		
     { 
-    	logf_thread( (char*)"[ Erreur ] Ligne<95  %d - \"%s\"", line.size(), line.c_str() ); 
+    	logf_thread( (char*)"[ Warning ] Longueur ligne < 95  lg=%d - \"%s\"", line.size(), line.c_str() ); 
     }
     else
     {
@@ -723,35 +729,55 @@ void vizier_parse_line( Catalog* pVizier, string & line )
 //
 //--------------------------------------------------------------------------------------------------------------------
 #define ICRS
-
-#ifdef ICRS
-	#define COORD "RA_ICRS,DE_ICRS"
-#else
-	#define COORD "RAJ2000,DEJ2000"
-#endif
-
-
-#ifdef MOUV_PROPRE
-	#define MOUV ",pmRA,e_pmRA,pmDE,e_pmDE"
-#else
-	#define MOUV ""
-#endif
+// ------------------------------------
+	#ifdef ICRS
+		#define TYP_COORD "RA_ICRS,DE_ICRS"
+	#else
+		#define TYP_COORD "RAJ2000,DEJ2000"
+	#endif
+// ------------------------------------
+#define MOUV_PROPRE
+// ------------------------------------
+	#ifdef MOUV_PROPRE
+		#define MOUV ",pmRA,e_pmRA,pmDE,e_pmDE"
+	#else
+		#define MOUV ""
+	#endif
+// ------------------------------------
+#define GMAG_MAX "17.58"
+//#define GMAG_MAX "19.58"
 
 //--------------------------------------------------------------------------------------------------------------------
-void vizier_capture_thread( Catalog* pVizier, string s, PanelCapture* p_panel_capture )
+// Lance le script python find_gaia_dr3
+// ------------------------------------
+//
+// python3 find_gaia_dr3.py -m 6000 --add="RA_ICRS,DE_ICRS,Source,Gmag,pmRA,e_pmRA,pmDE,e_pmDE" --Gmag="<13" --sort -r 1742 M1 >client.txt; less client.txt 
+//
+//--------------------------------------------------------------------------------------------------------------------
+//
+// python3 find_gaia_dr3.py -m 6000 
+//							--add="RA_ICRS,DE_ICRS,Source,Gmag,pmRA,e_pmRA,pmDE,e_pmDE" 
+//							--Gmag="<13" 
+//							--sort 
+//							-r 1742
+//							M1 
+//--------------------------------------------------------------------------------------------------------------------
+void vizier_capture_thread( Catalog* pVizier, string sCoord, PanelCapture* p_panel_capture )
 {
     logf_thread( (char*)"main::vizier_capture_thread()" );
     log_tab(true);
     string find;
+    VarManager& var = VarManager::getInstance();
     
-    if ( s == "" )    {
+    if ( sCoord == "" )    {
         find = "find_gaia_dr3.py -r 10200 -m 3000 --Gmag=\"<8\" m45";
     }
     else    {
-       	find =  "find_gaia_dr3.py -m 6000 --add=\"" COORD ",Source,Gmag" MOUV "\" --Gmag=\"<17.58\"" + s ;
+    	string sGmagMax = to_string( var.getf("fGmagMax") );
+       	find =  "find_gaia_dr3.py -m 6000 --add=\"" TYP_COORD ",Source,Gmag" MOUV "\" --Gmag=\"<" +sGmagMax+ "\"" + sCoord ;
     }
    
-
+	bGmagChange = false;
 	string     rep = "/home/rene/Documents/astronomie/logiciel/python/cds.cdsclient/cdsclient/";
 	string     cmd = "python3 " + rep + find;
 	int        iRead = 0;
@@ -1498,6 +1524,17 @@ void write_image(void)
     //camera.mainloop();
 }
 //--------------------------------------------------------------------------------------------------------------------
+// peur-etre emis dans un temps thread
+//--------------------------------------------------------------------------------------------------------------------
+void son(string s)
+{
+	logf_thread( (char*)"Son : %s", s.c_str() );
+	if ( !bSound )		return;
+	
+	string cmd = "aplay -q " + s;// + "  2>&1 >/dev/null";
+	system( cmd.c_str() );
+}
+//--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void change_hertz(double hz)
@@ -1510,24 +1547,30 @@ void change_hertz(double hz)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void change_arduino(bool b)
+void arduino_online(bool b)
 {
 	if ( bArduino == b )			return;
 	
     logf( (char*)"main::Change Arduino %s", (char*)BOOL2STR(b) );
     
     bArduino = b;
-
-
-	if( b && bSound)			system( (char*)"aplay /home/rene/.astropilot/sounds/electric-piano-3.wav" );
-
     
-    if ( b )    pArduino->setColor(COLOR_WHITE);
-    else        pArduino->setColor(COLOR_GREY);
-    
-    if ( b )    PanelConsoleSerial::getInstance().setPrompt("Arduino> ");
-    else        PanelConsoleSerial::getInstance().setPrompt("No connect> ");
-
+    if ( !b )	
+    {
+		changeAsc( false );
+		changeDec( false );
+		changeSui( false );
+		changeRetourPos( false );
+		changeJoy( false);
+		
+		pArduino->setColor(COLOR_GREY);
+		PanelConsoleSerial::getInstance().setPrompt("No connect> ");
+	}    
+	else
+	{
+    	pArduino->setColor(COLOR_WHITE);
+		PanelConsoleSerial::getInstance().setPrompt("Arduino> ");
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2011,8 +2054,8 @@ static void idleGL(void)
 
             if ( l > fLimitCorrection0 ) {
                 logf( (char*)"[WARNING]Suivi l=%0.2f/%0.2f", l, fLimitCorrection0 ); 
+				son( "/home/rene/.astropilot/sounds/alert.wav" );
                 arret_urgence();
-                //system( (char*)"aplay /home/rene/.astropilot/sounds/logout.wav" );
                 thread( &sound_alert).detach();
             }
 
@@ -2160,6 +2203,44 @@ static void rotateVisible()
     //if ( pCapture == panelControl)    pCapture->setVisible(!pCapture->getVisible());
 }
 //--------------------------------------------------------------------------------------------------------------------
+static void glutKeyboardFuncCtrlAlt(unsigned char key, int x, int y)
+{
+#ifdef DEBUG_CALLBACK_OPENGL
+    logf( (char*)"    %02d\t%.8f glutKeyboardFuncCtrlAlt", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
+	logf( (char*)"main::glutKeyboardFuncCtrlAlt(%d, %d, %d)", (unsigned)key, x, y );
+#endif
+
+    bool bShift = (iGlutModifier & GLUT_ACTIVE_SHIFT ) ? true : false;
+
+    WindowsManager&     wm      = WindowsManager::getInstance(); 
+    //Camera_mgr&         cam_mgr = Camera_mgr::getInstance();
+	
+	switch(key)
+	{ 
+	//----------------------------------------------------------------------------
+	case 14:
+	    {
+	        logf( (char*)"Key = Ctrl+Alt+n : Magnitude limite" );
+            log_tab(true);
+            bGmagChange = true;
+            
+            float fGmagMax = var.getf("fGmagMax");
+            if ( bShift )			fGmagMax -= 0.1;
+            else					fGmagMax += 0.1;
+            var.set("fGmagMax", fGmagMax );
+	        
+	        logf( (char*)"fGmagMax = %0.2f", var.getf("fGmagMax") );
+	        
+            log_tab(false);
+		}
+	    break;
+	//----------------------------------------------------------------------------
+    default:
+		{
+		}
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
 //
 //Symboles de fonction  ASCII Touche CTRL
 //	décimal 	hexa. 	clavier 	terme anglais 	terme français
@@ -2202,6 +2283,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 {
 #ifdef DEBUG_CALLBACK_OPENGL
     logf( (char*)"    %02d\t%.8f glutKeyboardFuncCtrl", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime()  );
+	logf( (char*)"main::glutKeyboardFuncCtrl(%c, %d, %d)", (char)key, x, y );
 #endif
 
     WindowsManager&     wm      = WindowsManager::getInstance(); 
@@ -2341,6 +2423,7 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 {
 #ifdef DEBUG_CALLBACK_OPENGL
     logf( (char*)"    %02d\t%.8f glutKeyboardFuncAlt", ++appelIdle, Timer::getInstance().getCurrentTime()  );
+	logf( (char*)"main::glutKeyboardFuncAlt(%c, %d, %d)", (char)key, x, y );
 #endif
 
     WindowsManager&     wm      = WindowsManager::getInstance(); 
@@ -2765,13 +2848,26 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  ((byte) & 0x80 ? '1' : '0'), \
+  ((byte) & 0x40 ? '1' : '0'), \
+  ((byte) & 0x20 ? '1' : '0'), \
+  ((byte) & 0x10 ? '1' : '0'), \
+  ((byte) & 0x08 ? '1' : '0'), \
+  ((byte) & 0x04 ? '1' : '0'), \
+  ((byte) & 0x02 ? '1' : '0'), \
+  ((byte) & 0x01 ? '1' : '0')
+  
+  
 static void glutKeyboardFunc(unsigned char key, int x, int y) {
 #ifdef DEBUG_CALLBACK_OPENGL
     logf( (char*)"    %02d\t%.8f glutKeyboardFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
-    //logf( (char*)"*** glutKeyboardFunc( %d, %d, %d)", (int)key, x, y );
+    //logf( (char*)"main::glutKeyboardFunc(%c, %d, %d)", (char)key, x, y );
 	iGlutModifier = glutGetModifiers();
+    //logf( (char*)"  iGlutModifier = " BYTE_TO_BINARY_PATTERN BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(iGlutModifier>>8), BYTE_TO_BINARY(iGlutModifier) );
     bFileBrowser  = FileBrowser::getInstance().getVisible();
 
     Camera_mgr&  		cam_mgr = Camera_mgr::getInstance();
@@ -2815,20 +2911,27 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     //------------------------------------------------------------------------
 
     //------------------------------------------------------------------------
-	if (iGlutModifier & GLUT_ACTIVE_ALT)
+	if ( (iGlutModifier & GLUT_ACTIVE_CTRL_ALT) == GLUT_ACTIVE_CTRL_ALT )
 	{
-        //logf( (char*)" Touche ALT %c", key );
-        glutKeyboardFuncAlt(key,  x,  y);
-        return;
+   	    glutKeyboardFuncCtrlAlt(key,  x,  y);
+	    return;
 	}
-    //------------------------------------------------------------------------
     else
-	if (iGlutModifier & GLUT_ACTIVE_CTRL)
+    //------------------------------------------------------------------------
+	if ( (iGlutModifier & GLUT_ACTIVE_ALT) == GLUT_ACTIVE_ALT )
 	{
-        //logf( (char*)" Touche ALT %c", key );
+   	    glutKeyboardFuncAlt(key,  x,  y);
+	    return;
+	}
+    else
+    //------------------------------------------------------------------------
+	if ( (iGlutModifier & GLUT_ACTIVE_CTRL) == GLUT_ACTIVE_CTRL )
+	{
         glutKeyboardFuncCtrl(key,  x,  y);
         return;
 	}
+	//else
+    //------------------------------------------------------------------------
 	
     //------------------------------------------------------------------------
 	switch(key){ 
@@ -3753,8 +3856,10 @@ static void glutSpecialFunc(int key, int x, int y)	{
         break;
 	case GLUT_KEY_F2:
         {
-        Camera_mgr::getInstance().togglePanel();
         log( (char*)"Key F2: Toggle panelCamera " );
+        log_tab( true );
+        Camera_mgr::getInstance().togglePanel();
+        log_tab( false );
         }
         break;
     case GLUT_KEY_F3:
@@ -4251,6 +4356,21 @@ static void addString2( string s )
 static void addString3( string s )
 {
     if ( s.size() == 0 )       { y_help += 15; return; }
+    PanelText* p = new PanelText( (char*)"",  		PanelText::NORMAL_FONT, x_help+400, y_help );
+
+    p->razTabSize();
+    p->setTabSize(TAB_SIZE_HELP+10);
+    p->changeText( (char*)s.c_str() );
+	panelScrHelp->add( p );
+
+	y_help += 15;
+}	
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+static void addString4( string s )
+{
+    if ( s.size() == 0 )       { y_help += 15; return; }
     PanelText* p = new PanelText( (char*)"",  		PanelText::NORMAL_FONT, x_help+800, y_help );
 
     p->razTabSize();
@@ -4298,11 +4418,15 @@ static void CreateHelp()
 	{
     	addString2( t_sHelp2[i] );
 	}
-    //----------------------------------------------------------------------------------------------------------------
-    y_help = 0;
 	for( int i=0; i<t_sHelp3.size(); i++ )
 	{
     	addString3( t_sHelp3[i] );
+	}
+    //----------------------------------------------------------------------------------------------------------------
+    y_help = 0;
+	for( int i=0; i<t_sHelp4.size(); i++ )
+	{
+    	addString4( t_sHelp4[i] );
 	}
     //----------------------------------------------------------------------------------------------------------------
 
@@ -5078,6 +5202,7 @@ void charge_var()
     if ( !var.existe("fTimeCorrection"))		var.set("fTimeCorrection", 3.0 );
     fTimeCorrection = var.getf("fTimeCorrection" );
 
+    if ( !var.existe("fGmagMax"))		var.set("fGmagMax", 17.6 );
 
     if ( bPleiade )
     {

@@ -84,7 +84,7 @@ SINGLETON_BEGIN( Serial )
         void            init( string );
 
         void			idle(double);
-        void            sopen();
+        bool            sopen();
         void            sclose();
 
         int             write_byte(char b);

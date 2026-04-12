@@ -727,8 +727,9 @@ void Camera::setControlVisible(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::togglePanel()
 {
+	log((char*)"Camera::togglePanel()");
 	bPanelControl = ! bPanelControl;
-    panelControl->setVisible( bPanelControl );
+	if (panelControl )		panelControl->setVisible( bPanelControl );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -58,8 +58,8 @@ void PanelDebug::add_text( char* p)
 		pPanelText->razTabSize();
 		pPanelText->setTabSize(tab_size);
 		add( pPanelText );
-		int __DY = (idx+1) * 14 + 14;
-		setSize( getDX(), __DY );
+		//int __DY = (idx+1) * 14 + 14;
+		//setSize( getDX(), __DY );
 	}
 	else
 	{
@@ -68,6 +68,8 @@ void PanelDebug::add_text( char* p)
 	}
 	
 	pText[idx]->setColor( uColor );
+	int __DY = (idx+1) * 14 + 14;
+	setSize( getPosDX(), __DY );
 
 	idx ++;
 }

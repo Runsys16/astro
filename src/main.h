@@ -36,6 +36,10 @@
 #define COLOR32(RR, GG, BB, AA)	    ((RR<<24)|(GG<<16)|(BB<<8)|(AA))
 #define VCF4_2_COLOR32(_VVV)		(COLOR32((int)(_VVV.r*255.0),(int)(_VVV.g*255.0),(int)(_VVV.b*255.0),(int)(_VVV.a*255.0)))
 
+#define GLUT_ACTIVE_CTRL_ALT		(GLUT_ACTIVE_CTRL|GLUT_ACTIVE_ALT)
+#define GLUT_ACTIVE_SHIFT_CTRL_ALT	(GLUT_ACTIVE_SHIFT|GLUT_ACTIVE_CTRL|GLUT_ACTIVE_ALT)
+
+
 #ifdef MAIN_CPP
 	vcf4 cNoir		= vcf4( 0.0, 0.0, 0.0, 1.0);
 	vcf4 cBlanc		= vcf4( 1.0, 1.0, 1.0, 1.0);
@@ -175,6 +179,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bDesactiveLog;
 	extern bool						bAffColimation;
 	extern bool						bAffFindStar;
+	extern bool						bGmagChange;
 	
     extern int                      width;
     extern int                      height;
@@ -386,9 +391,10 @@ static void         reshapeGL(int newWidth, int newHeight);
 
 void                reset_camera(void);
 void                write_image(void);
+void                son(string);
 
 void                change_hertz(double);
-void                change_arduino(bool);
+void                arduino_online(bool);
 void                change_joy(int, int);
 void                change_ad_status(double);
 void                change_dc_status(double);
@@ -409,6 +415,7 @@ static void         initGL(int argc, char **argv);
 static void         rotateVisible();
 
 static void         glutKeyboardFunc(unsigned char key, int x, int y);
+static void         glutKeyboardFuncCtrlAlt(unsigned char key, int x, int y);
 static void         glutKeyboardFuncCtrl(unsigned char key, int x, int y);
 static void         glutKeyboardFuncAlt(unsigned char key, int x, int y);
 static void         glutKeyboardUpFunc(unsigned char key, int x, int y);

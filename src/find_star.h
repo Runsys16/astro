@@ -30,7 +30,9 @@ private:
 //---------------------------------------
     GLubyte*			ptr;
     rb_t*				pRB;
+//---------------------------------------
     Convert*			pConvert;
+//---------------------------------------
     PanelSimple*		pView;
     PanelDebug*			pInfo;
 //---------------------------------------
@@ -56,6 +58,7 @@ private:
 //---------------------------------------
 vector<etoile_line>		tStar;
 mutex					muStar;
+mutex					muFindStar;
 thread					thFindStar;
 //---------------------------------------
 public:
@@ -64,6 +67,7 @@ public:
 //---------------------------------------
 	void				create_graph_distri();
 	void				create_graph_lum();
+	void				create_info();
 //---------------------------------------
 	double				get_li_low_lvl(int);
 	double				getLum(int );
@@ -94,6 +98,8 @@ public:
 	void				glCroix(int,  int,  int );
 	void				display_segment(struct etoile_line&);
 	void				displayGL();
+//---------------------------------------
+	void				idle();
 //---------------------------------------
 inline int 				getOffset( int X, int Y )			{ return pRB->d*(X) + pRB->d*(Y)*pRB->w; }
 inline void				setRB(rb_t* p)						{ pRB = p; ptr = pRB->ptr; }

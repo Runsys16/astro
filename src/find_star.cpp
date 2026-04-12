@@ -20,6 +20,7 @@ FindStar::FindStar()
 	pRB				= NULL;
 	pView			= NULL;
 	pConvert		= NULL;
+	pInfo			= NULL;
 	//thFindStar		= -1;
 
 	dOffsetLow		= 5.0;
@@ -46,11 +47,18 @@ FindStar::~FindStar()
 		delete pGraphLum;
 	}
 	
+	if ( pInfo )
+	{
+		wm.sup(pInfo);
+		delete pInfo;
+	}
+	
 	pRB				= NULL;
 	pView			= NULL;
 	pConvert		= NULL;
 	pGraphDistri	= NULL;
 	pGraphLum		= NULL;
+	pInfo			= NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -93,6 +101,29 @@ void FindStar::create_graph_distri()
 	pGraphDistri->setVisible( false );
 
 	wm.add( pGraphDistri );
+
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::create_info()
+{
+	if( pInfo != NULL )		return;
+
+	log( (char*)"FindStar::create_info()" );
+	log_tab(true);
+
+	WindowsManager&     wm  = WindowsManager::getInstance();
+	
+	pInfo = new PanelDebug();
+	
+	pInfo->setExtraString( "pInfo findStar" );
+	pInfo->loadSkin( PanelWindow::BLACK );
+	pInfo->setBorderSize(2);
+	pInfo->setSize( 160, 2 );
+	pInfo->setTabSize( 70 );
+	wm.add( pInfo );
 
 	log_tab(false);
 }
@@ -156,8 +187,8 @@ double FindStar::getLum(int offset )
 //--------------------------------------------------------------------------------------------------------------------
 double FindStar::getLum( vec2 v )
 {
-	if ( 0.0 > v.x || v.x > pRB->w )			return 0.0;
-	if ( 0.0 > v.y || v.y > pRB->h )			return 0.0;
+	if ( 0.0 > v.x || v.x >= pRB->w )			return 0.0;
+	if ( 0.0 > v.y || v.y >= pRB->h )			return 0.0;
     int offset = getOffset( v.x, v.y );
     return getLum( offset );
 }
@@ -670,6 +701,9 @@ void FindStar::find_star_2(vec2 v)
 void FindStar::find_stars_2( vec2 v )
 {
 	if ( pRB == NULL )				return;
+	
+	muFindStar.lock();
+
 	//------------------------------------------------------
 	for( int y=0; y<pRB->h; y+=5 )
 	{
@@ -682,6 +716,7 @@ void FindStar::find_stars_2( vec2 v )
 		}
 	}
 	//thFindStar = NULL;
+	muFindStar.unlock();
 	logf_thread( (char*)"%d etoile(s)", tStar.size() );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -887,11 +922,18 @@ void FindStar::click_find_star( vec2 v)
 	log_tab(true);
 	
 	if ( pRB == NULL )		{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
-
-	//find_stars_2(v);
+	
+	if ( tStar.size() != 0 )
+	{
+		tStar.clear();
+	}
+	else
+	{
+		//find_stars_2(v);
         thFindStar = thread(&FindStar::find_stars_2, this, v); 
         thFindStar.detach();
         log_thread( (char*)"[thread] click_find_star() !! " );
+    }
 	
 	
 	logf( (char*)"%d etoile(s)", tStar.size() );
@@ -1068,6 +1110,46 @@ void FindStar::displayGL()
 		glCroix((int)v.x, (int)v.y, (int)(ech*4.0), (int)(ech*4.0));
 	}
 	muStar.unlock();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::idle()
+{
+	if ( pInfo )				pInfo->setVisible(false);
+	if ( tStar.size() == 0 )	return;
+	
+	if ( bAffFindStar  )
+	{
+		for( int i=0; i<tStar.size(); i++ )
+		{
+			vec2 v = tStar[i].centre;
+			pConvert->tex_2_screen(v);
+			v -= vec2(vMouse.x, vMouse.y);
+			
+			if ( v.length() < 20.0 )
+			{
+				if ( pInfo == NULL )		create_info();
+				
+				pInfo->onTop();
+				pInfo->reset_list();
+				pInfo->setVisible(true);
+				WindowsManager::getInstance().onTop(pInfo);
+				
+				pInfo->add_textf( (char*)"          IDX %d", i );
+				pInfo->add_text(  (char*)"------------------------------" );
+				pInfo->add_textf( (char*)"Centre\t: " VEC2_PRINTFN(0), VEC2_AFF(tStar[i].centre) );
+				pInfo->add_textf( (char*)"Deb\t: " VEC2_PRINTFN(0), VEC2_AFF(tStar[i].deb) );
+				pInfo->add_textf( (char*)"Fin\t: " VEC2_PRINTFN(0), VEC2_AFF(tStar[i].fin) );
+				pInfo->add_textf( (char*)"Li   \t: %d", tStar[i].li );
+				pInfo->add_textf( (char*)"Rayon\t: %d", tStar[i].rayon );
+				pInfo->add_textf( (char*)"Lum\t: %0.2lf", tStar[i].lum );
+				pInfo->setColorAll( VCF4_2_COLOR32(cBleuC) );
+				pInfo->setPos( vMouse.x+20, vMouse.y+20 );
+				break;	
+			}
+		}
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

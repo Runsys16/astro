@@ -197,8 +197,17 @@ void LX200::traite_command_G( char* buffer, int n)
 	///------------------------------------------------------
 	if ( strcmp( (char*)buffer, "#:GG#" ) == 0 )
 	{
-		logf_thread( (char*)"%s Get UTC offset time", buffer );
-		write_lx200( sock_lx200, (char*)"-01#", 4, true );
+		char 			sTime[80];
+		struct timeval	tv;
+		struct tm*		tm;
+
+		gettimeofday( &tv, NULL );
+		tm=localtime(&tv.tv_sec);
+		
+		snprintf( (char*)sTime, sizeof(sTime),"%+03ld#", tm->tm_gmtoff/-3600  );
+
+		logf_thread( (char*)"%s Get UTC offset  (offset = %s)",buffer, sTime );
+		write_lx200( sock_lx200, (char*)sTime, 4, true );
 	}
 	///------------------------------------------------------
 	// Commande inconnue
@@ -529,6 +538,8 @@ void LX200::traite_connexion_lx200()
     unsigned char buffer[255];
     int n;
 
+	son( "/home/rene/.astropilot/sounds/login.wav" );
+
     while( bLx200 )
     {
 		#ifdef PANEL_LX200_DEBUG
@@ -632,7 +643,8 @@ void LX200::traite_connexion_lx200()
 #endif
 	bLx200 = false;
     sock_lx200 = -1;
-	system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
+
+	son( "/home/rene/.astropilot/sounds/logout.wav" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -729,7 +741,7 @@ void LX200::thread_listen_lx200()
 		//panel_win.setVisible(bPanelStdOut);
 		//PANEL_LX200_DEBUG.setVisible(bPanelStdOut);
 		bLx200 = true;
-		system( (char*)"aplay /home/rene/.astropilot/sounds/cembalo-1.wav" );
+
 		traite_connexion_lx200();
 	}
     logf_thread( (char*)"Fermeture de sock_listen_lx200 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );

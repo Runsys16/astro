@@ -485,7 +485,7 @@ void Capture::create_preview()	{
 	// Ajoute les textes d'informations
 	// nombre d'etoile (star)
 	// nombre d'etoile (vizier)
-	// Titre de la fenetre (nm de fichier)
+	// Titre de la fenetre (nom de fichier)
 	pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
 	pTitre->setExtraString( "PanelText Titre" );
 

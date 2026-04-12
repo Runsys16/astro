@@ -590,6 +590,7 @@ void PanelCapture::displayCatalogMouseOver()
 {
 	if ( pVizier == NULL )			return;
 	glColor4fv( (GLfloat*)&cRouge );
+
 	displayMovePropre( pVizier->get(idxVizierMouseOver) );
 	
 
@@ -599,6 +600,7 @@ void PanelCapture::displayCatalogMouseOver()
 
 	if ( 	v.x != -1.0  )
 	{
+		//log( (char*)"displayCatalogMouseOver()" );
 		double r = 17.5 - 0.675*pVizier->get(idxVizierMouseOver)->fMag;
 		glCercle( v.x, v.y, r*ech );	
 	}
@@ -829,7 +831,8 @@ void PanelCapture::idle(float f)
 	if ( pCapture->isFits() )			bFits = true;
 	else								bFits = false;
 
-
+	if ( pFindStar != NULL )			pFindStar->idle();
+	
     VarManager& var = VarManager::getInstance();
     //----------------------------------------------
     dTimeAnim += f;
@@ -1348,31 +1351,33 @@ void PanelCapture::motionRight(int xm, int ym)
 void PanelCapture::releaseRight(int xm, int ym)
 {
     logf( (char*)"PanelCapture::releaseRight(%d,%d) ...", xm, ym );
+    log_tab(true);
     
     if ( iGlutModifier == GLUT_ACTIVE_ALT )
     {
-		logf( (char*)"ALT modfier" );
+		log( (char*)"ALT+click D : print_echelle_coordonnees" );
     	print_echelle_coordonnees();
     }
     else
     if ( iGlutModifier == GLUT_ACTIVE_CTRL )
     {
-		logf( (char*)"CTRL modfier" );
+		log( (char*)"CTRL+click D :  vizier print_all_stars" );
 		if ( pVizier )	pVizier->compute_print_all_stars();
     }
     else
     if ( iGlutModifier == GLUT_ACTIVE_SHIFT )
     {
-		logf( (char*)"SHIFT modfier" );
+		log( (char*)"SHIFT+click D : compute_print_all_stars" );
 		stars.compute_print_all_stars();
     }
     else
     {
+		log( (char*)"click D :printObjet" );
     	printObjet();
     }
     
     
-    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
+    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); log_tab(false); return; }
     
     if ( pCapture->getFullScreen() )
     {
@@ -1395,6 +1400,7 @@ void PanelCapture::releaseRight(int xm, int ym)
 		    if ( bFits )	       pCapture->afficheFits();
 		}
 	}
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2127,7 +2133,7 @@ void PanelCapture::findGaiaDR3()
 	// Si le fichier de donne existe
 	// on le charge
 	// if ( false && pVizier->charge( sFilename ) )		
-	if ( pVizier->charge( sFilename ) )		
+	if ( pVizier->charge( sFilename ) && bGmagChange == false)		
 	{
 		updatePos();
 		log_tab(false);
@@ -2465,7 +2471,7 @@ void PanelCapture::compute_points( pin_mode mode, struct coord_line& c, double c
 
 	c.p1 = p1;
 	c.p2 = p2;
-	
+	/*
 	if ( bOneFrame )
 	{
 		char		str0[80];
@@ -2476,11 +2482,11 @@ void PanelCapture::compute_points( pin_mode mode, struct coord_line& c, double c
 		p2.to_str(str1);
 		logf( (char*)"%s)\tcoef=%lf\tp1%s\tp2%s\t%s ", pin_mode_2_str(mode), coef, str0, str1, BOOL2STR(c.bContinue)   );
 		//deg2str_hms(cc, str0, sizeof(str0)), deg2str_dms(p1.y, str1, sizeof(str1))
-		/*
-		p1.to_str(str0);
-		logf( (char*)"%s  - %s", str0, BOOL2STR(c.bContinue), BOOL2STR(c.bBreak));
-		*/
+
+		//p1.to_str(str0);
+		//logf( (char*)"%s  - %s", str0, BOOL2STR(c.bContinue), BOOL2STR(c.bBreak));
 	}
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

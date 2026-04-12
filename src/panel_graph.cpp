@@ -668,7 +668,11 @@ void PanelGraph::displayAxeHlin()
 	_debY = dYmin * _pasY;
 	_finY = dYmax * _pasY;	
 	
-	double _ech = _dif / 5.0;
+	//double _ech = _dif / 5.0;
+	// floor(_dif) = nombre de division de l'echelle
+	
+	double _nb = _dif < 5.0 ? floor(_dif) : 5.0;
+	double _ech = _dif / _nb;
 	int n = 0;
 	
 	while( _ech >=10.0 )	{
@@ -688,7 +692,8 @@ void PanelGraph::displayAxeHlin()
 	{
 		vec2 v = vec2( dXmin, i*_ech );
 		graph2panel( v );
-				//logf( (char*)"%lf  %lf<%lf", v.y, fm, fM );
+		//logf( (char*)"displayAxeHlin() i=%d %lf  %lf<%lf", (int)i, v.y, fm, fM );
+		//logf( (char*)"  _ech = %lf (dYmin, dYmax) (%lf, %lf)", _ech, dYmin, dYmax );
 		if ( v.y > fm )	continue;
 		if ( v.y < fM )	break;
 

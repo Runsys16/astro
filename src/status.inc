@@ -379,8 +379,10 @@ void cb_rotationCheck(PanelCheckBox* p)	{
 	else
 	if ( p == pButtonControl )
 	{
+        log( (char*)"status::cb_rotationCheck() Toggle panelCamera !!!" );
+        log_tab( true );
         Camera_mgr::getInstance().togglePanel();
-        log( (char*)"Toggle panelCamera !!!" );
+        log_tab( false );
 
         Camera * p = Camera_mgr::getInstance().getCurrent();
         if ( p )
@@ -745,7 +747,7 @@ void create_windows_button()
 	//#define POLICE "fonts/IFAOGrecBold.ttf" ,
 	#define POLICE "fonts/greek-wsi-regular.ttf"   	// 360 glyphe voir alpha ...
 
-	pAlpha = new PanelText( 	(char*)"a", (char*)POLICE , 60, 0, 14, 0xFFFFFFFF );
+	pAlpha = new PanelText( 	(char*)"a", (char*)POLICE , 50, 0, 14, 0xFFFFFFFF );
 	pDelta = new PanelText( 	(char*)"d", (char*)POLICE , 200, 0, 14, 0xFFFFFFFF );
 	
 	/*

@@ -361,6 +361,7 @@ void  Camera_mgr::reOrder()
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::togglePanel()
 {
+	logf( (char*)"Camera_mgr::togglePanel()  %s", pCurrent==NULL ? (char*)"NULL" : pCurrent->getPanelName()->getText().c_str()  );
     if ( pCurrent )         pCurrent->togglePanel();
 }
 //--------------------------------------------------------------------------------------------------------------------

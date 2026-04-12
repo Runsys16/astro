@@ -60,25 +60,27 @@ void Connexion_mgr::add_port()
         }
         if ( !bFound ){
             if ( isExclude(t_port_polling[i])  )    continue;
+            logf_thread( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
+            log_tab(true);
+
+			son( "/home/rene/.astropilot/sounds/login.wav" );
 
             sleep( 1 );
             if ( t_port_polling[i].find("video") != string::npos )
             {
-                logf_thread( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
-                log_tab(true);
                 //if ( !isExclude(t_port_polling[i])  )
                 Camera_mgr::getInstance().add( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
-                log_tab(false);
                 logf_thread( (char*)"Connexion_mgr::add_port()  %s  END", t_port_polling[i].c_str() );
             }
             else if ( t_port_polling[i].find("ttyACM") != string::npos )
             {
-                logf_thread( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
+                //logf_thread( (char*)"Connexion_mgr::add_port()  %s", t_port_polling[i].c_str() );
                 Serial::getInstance().init( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
-                change_arduino(true);
+                arduino_online(true);
             }
+			log_tab(false);
             return;
         }
     }
@@ -105,19 +107,22 @@ void Connexion_mgr::sup_port()
         }
         if ( !bFound )
         {
+			logf_thread( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
+			log_tab( true);
+			son( "/home/rene/.astropilot/sounds/logout.wav" );
+        
             if ( t_port_current[i].find("video") != string::npos )
             {
-                logf_thread( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
                 Camera_mgr::getInstance().sup( t_port_current[i] );
                 t_port_current.erase(  t_port_current.begin() + i );
             }
             else if ( t_port_current[i].find("ttyACM") != string::npos )
             {
-                logf_thread( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
                 Serial::getInstance().sclose();
                 t_port_current.erase(  t_port_current.begin() + i );
-                change_arduino(false);
+                arduino_online(false);
             }
+			log_tab( false);
             return;
         }
     }
@@ -156,7 +161,7 @@ void Connexion_mgr::sup_port(string)
                 logf( (char*)"Connexion_mgr::sup_port()  %s", t_port_current[i].c_str() );
                 Serial::getInstance().sclose();
                 t_port_current.erase(  t_port_current.begin() + i );
-                change_arduino(false);
+                arduino_online(false);
             }
             return;
         }
