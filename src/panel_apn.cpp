@@ -93,20 +93,19 @@ PanelApn::PanelApn()
     add(pTimeOut);
     add(pNum);
 
-    if( var.existe("APN_Time") )                sTime       = string( *var.gets( "APN_Time" ) );
-    else                                        sTime       = "2";
+	string sT = string("1");
+    if ( !var.existe("APN_Time") )		var.set("APN_Time", sT );
+    
+    INIT_VARI( APN_Iso, 100.0 )
+    INIT_VARI( APN_Frames, 1 )
+    INIT_VARI( APN_TimeOut, 3 )
+    INIT_VARI( APN_Num, 1 )
 
-    if( var.existe("APN_Iso") )                 iIso        = var.geti( "APN_Iso" );
-    else                                        iIso        = 400;
-
-    if( var.existe("APN_Frames") )              iFrames     = var.geti( "APN_Frames" );
-    else                                        iFrames     = 1;
-
-    if( var.existe("APN_TimeOut") )             iTimeOut    = var.geti( "APN_TimeOut" );
-    else                                        iTimeOut    = 3;
-
-    if( var.existe("APN_Num") )                 iNum        = var.geti( "APN_Num" );
-    else                                        iNum        = 0;
+    sTime       = string( *var.gets( "APN_Time" ) );
+    iIso        = var.geti( "APN_Iso" );
+    iFrames     = var.geti( "APN_Frames" );
+    iTimeOut    = var.geti( "APN_TimeOut" );
+    iNum        = var.geti( "APN_Num" );
 
     pTime->changeText( sTime );
     pTime->set_val( stod(sTime) );

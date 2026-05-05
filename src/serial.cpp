@@ -23,11 +23,9 @@ Serial::Serial()
     
     VarManager& var = VarManager::getInstance();
     
-    sVersionArduinoValable = "PAS_VERSION";
+    string sVersionArduino = VERSION_PROG_ARDUINO;
     
-    if ( var.existe("VER_ARDUINO") )			sVersionArduinoValable = *var.gets("VER_ARDUINO");
-    else
-	    logf_thread( (char*)"[ Erreur ] VER_ARDUINO inconnu" );
+    LOAD_VARS( VER_ARDUINO, sVersionArduino );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -40,7 +38,6 @@ void Serial::init( string dev)
     idx = 0;
     nbZero = 0;
     bPrintInfo = true;
-    sVersionArduino = "";
 
     if ( sopen() )    start_thread();
     
@@ -365,7 +362,7 @@ void Serial::read_thread()
 				//
                 if ( test.find("V :") != string::npos )
                 {
-		        	if ( test.find( sVersionArduinoValable ) == string::npos )	{
+		        	if ( test.find( VER_ARDUINO ) == string::npos )	{
 		        		logf_thread((char*)"[ Erreur ] Mauvaise version Arduino %s", test.c_str() );
 		        		logf_thread((char*)"[ Erreur ]   recherchée \"Version %s\"  | trouvée \"%s\"", VER_ARDUINO, buffer );
 		        		bVersionArduino = false;
@@ -582,14 +579,6 @@ void Serial::reset()
 {
     tCommandes.clear();
     bFree = true;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Serial::testVersionArduino()
-{
-	bVersionArduino = true;
-	sVersionArduinoValable = VER_ARDUINO;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

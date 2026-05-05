@@ -36,8 +36,8 @@ Fits::Fits(string filename, PanelCapture* p)
     dCBLACK = -1.0;
     dCWHITE = -1.0;
     
-    dMIPS_HI = -1.0;
-    dMIPS_LO = -1.0;
+    dMIPS_HI = -9999999.0;
+    dMIPS_LO = -9999999.0;
 
     dDATAMAX = -1.0;
     dDATAMIN = -1.0;
@@ -47,8 +47,8 @@ Fits::Fits(string filename, PanelCapture* p)
     dCD2_1  = -1.0;
     dCD2_2  = -1.0;
 
-    dBZERO  = -1.0;
-    dBSCALE = -1.0;
+    dBZERO  = -9999999.0;
+    dBSCALE = -9999999.0;
     iOFFSET = -1;
 
 	bCD = bPC = false;
@@ -469,7 +469,7 @@ void Fits::read_RGB_8( float &C, uint8_t* pBuffer )
 	C = *pBuffer;
 	INTERVAL(C, 0)
 
-	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C - dBZERO) * dBSCALE;
+	if ( dBZERO!=-9999999.0 && dBSCALE!=-9999999.0 )	C = (C - dBZERO) * dBSCALE;
 	INTERVAL(C, 1)
 
 	NORMALIZE(C, 255.0)
@@ -492,11 +492,10 @@ void Fits::read_RGB_16( float &C, uint16_t* pBuffer )
 	INTERVAL(C, 0)
 
 
-	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C - dBZERO ) * dBSCALE;
+	if ( dBZERO!=-9999999.0 && dBSCALE!=-9999999.0 )	C = (C - dBZERO ) * dBSCALE;
 	INTERVAL(C, 1);
 
-
-
+	/*
 	if ( dCWHITE!=-1 && dCBLACK!=-1 )
 	{
 		C = clamp( C, dCBLACK, dCWHITE );
@@ -505,7 +504,6 @@ void Fits::read_RGB_16( float &C, uint16_t* pBuffer )
 	}
 	INTERVAL(C, 2);
 
-	/*
 	if ( dDATAMAX!=-1 && dDATAMIN!=-1 )
 	{
 		C -= dBZERO;
@@ -514,19 +512,27 @@ void Fits::read_RGB_16( float &C, uint16_t* pBuffer )
 		C *= 65535.0 / (dDATAMAX-dDATAMIN);
 	}
 	*/
-
-	if ( dMIPS_HI!=-1.0 && dMIPS_LO!=-1.0 )
+	
+	/*
+	if ( dMIPS_HI!=-9999999.0 && dMIPS_LO!=-9999999.0 )
 	{
 		//C = clamp( C, dMIPS_LO, dMIPS_HI );
 		C -= (dMIPS_LO);
 		C *= 65535.0 / (dMIPS_HI-dMIPS_LO);
 		//C = clamp( C, 0.0, 65535.0 );
 	}
-	INTERVAL(C, 3);
-	/*
 	*/
+	if ( dMIPS_LO!=-9999999.0 )
+	{
+		//C = clamp( C, dMIPS_LO, dMIPS_HI );
+		C -= (dMIPS_LO);
+		//printf( (char*)"dMIPS_LO" );
+		//C *= 65535.0 / (dMIPS_HI-dMIPS_LO);
+		//C = clamp( C, 0.0, 65535.0 );
+	}
+	INTERVAL(C, 3);
 	
-	NORMALIZE(C, 65535.0);
+	NORMALIZE(C, 65536.0);
 	INTERVAL(C, 4);
 	//clamp( C, 0, 65535.0 );
 }
@@ -548,7 +554,7 @@ void Fits::read_RGB_32( float &C, uint32_t* pBuffer )
 	INTERVAL(C, 0)
 
 
-	if ( dBZERO!=-1 && dBSCALE!=-1 )	C = (C - dBZERO ) * dBSCALE;
+	if ( dBZERO!=-9999999.0 && dBSCALE!=-9999999.0 )	C = (C - dBZERO ) * dBSCALE;
 	INTERVAL(C, 1);
 
 

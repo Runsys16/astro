@@ -146,6 +146,7 @@ void VarManager::sauve()
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::charge()
 {
+//#define DEBUG
     bool old_sauve = bSauve;
     bSauve = false;
     
@@ -176,13 +177,14 @@ void VarManager::charge()
 
 #ifdef DEBUG
         logf_thread( (char*)"%s\t = %s", key.c_str(), val.c_str() );
+        printf( "%s %s %s \n",type.c_str() ,key.c_str() ,val.c_str() );
 #endif
         
         if ( type.find("#") != string::npos )
         {
 			logf_thread( (char*)"******************************%s commentaire", key.c_str() );
-		#ifdef DEBUG
-		#endif
+			#ifdef DEBUG
+			#endif
         }
         else
         if ( type.find("float") != string::npos )
@@ -221,9 +223,12 @@ void VarManager::charge()
 //--------------------------------------------------------------------------------------------------------------------
 bool VarManager::existe(const std::string& name)
 {
+	//printf( (char*)"Test existe var : %s\n", name.c_str() );
+	
     dbMap& db = getDB();
 	if ( db.size() == 0 )
 	{
+		//printf( (char*)"Map = 0\n" );
 		logf( (char*)"%s n'existe pas", name.c_str() );
 		return false;
 	}
@@ -236,8 +241,11 @@ bool VarManager::existe(const std::string& name)
     for(p = db.begin(); p!=db.end(); ++p)
     {
         key = string( p->first );
+        //string val = string( p->second );
+        //cout << p->second.sVar << endl;
         if ( key.compare(name) == 0 )   return true;
     }
+	//printf( (char*)"  n'existe pas\n" );
 	logf( (char*)"%s n'existe pas", name.c_str() );
     return false;
 }

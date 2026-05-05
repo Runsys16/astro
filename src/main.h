@@ -39,6 +39,26 @@
 #define GLUT_ACTIVE_CTRL_ALT		(GLUT_ACTIVE_CTRL|GLUT_ACTIVE_ALT)
 #define GLUT_ACTIVE_SHIFT_CTRL_ALT	(GLUT_ACTIVE_SHIFT|GLUT_ACTIVE_CTRL|GLUT_ACTIVE_ALT)
 
+//--------------------------------------------------------------------------------------------------------------------
+#define INIT_VARF( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (float)__val__ );
+#define INIT_VARI( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (int)__val__ );
+#define INIT_VARB( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (bool)__val__ ); 
+#define INIT_VARS( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, __val__ ); 
+
+#define CHRG_VARF( __var )				__var =	var.getf( #__var );
+#define CHRG_VARI( __var )				__var =	var.geti( #__var );
+#define CHRG_VARB( __var )				__var =	var.getb( #__var );
+#define CHRG_VARS( __var )				__var =	*var.gets( #__var );
+
+#define LOAD_VARF( __VAR, __VAL )		if ( !var.existe( #__VAR ) )	var.set( #__VAR, (float)__VAL );  \
+									    __VAR =	var.getf( #__VAR );
+#define LOAD_VARI( __var, __val )		if ( !var.existe( #__var) )		var.set( #__var, (int)__val ); \
+									    __var =	var.geti( #__var );
+#define LOAD_VARB( __var, __val )		if ( !var.existe( #__var) )		var.set( #__var, (bool)__val ); \
+									    __var =	var.getb( #__var );
+#define LOAD_VARS( __var, __val )		if ( !var.existe( #__var) )		var.set( #__var, (string&)__val ); \
+									    __var =	*var.gets( #__var );
+
 
 #ifdef MAIN_CPP
 	vcf4 cNoir		= vcf4( 0.0, 0.0, 0.0, 1.0);
@@ -193,7 +213,6 @@ typedef struct readBackground       rb_t;
     extern double                    ySuivi0;
     extern double                    xSuivi1;
     extern double                    ySuivi1;
-	extern double				 	 fDiamSuivi1;
     extern double                    xSuiviSvg;
     extern double                    ySuiviSvg;
         
@@ -396,6 +415,7 @@ void                son(string);
 void                change_hertz(double);
 void                arduino_online(bool);
 void                change_joy(int, int);
+void                change_joy(double, double);
 void                change_ad_status(double);
 void                change_dc_status(double);
 void                compute_matrix();

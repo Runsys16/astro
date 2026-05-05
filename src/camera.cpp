@@ -294,7 +294,7 @@ void Camera::CreatePreview()	{
 
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
-    logf((char*)"wsc=%d hsc=%d", wsc, hsc);
+    logf_thread((char*)"wsc=%d hsc=%d", wsc, hsc);
 	iconSizePreview(wsc, hsc);
 	//panelCamera->setBackground( (char*)"frame-0.raw");
 	
@@ -325,7 +325,7 @@ void Camera::CreatePreview()	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizeControl(int width, int height)	{
-    logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName().c_str() );
+    logf_thread((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName().c_str() );
     int dx = panelControl->getDX();
     int dy = panelControl->getDY();
     
@@ -346,7 +346,7 @@ void Camera::resizeControl(int width, int height)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
-    logf((char*) "Camera::resizeControlFirst(%d, %d, %d, %d) %s", width, height, dx, dy, getDevName() );
+    logf_thread((char*) "Camera::resizeControlFirst(%d, %d, %d, %d) %s", width, height, dx, dy, getDevName() );
     
     //if ( dx==0)     return;
 
@@ -358,14 +358,15 @@ void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
     int nb = Camera_mgr::getInstance().getSize();
     int y = 10+nb * (20+dy);
 
-    logf((char*) "x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
+    logf_thread((char*) "x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
     panelControl->setPos( x, y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::iconSizePreview(int width, int height)	{
-    logf((char*) "Camera::iconSizePreview(%d, %d) %s", width, height, (char*)getDevName() );
+    logf_thread( (char*) "Camera::iconSizePreview(%d, %d) %s", width, height, (char*)getDevName() );
+    log_tab(true);
 	WindowsManager& wm = WindowsManager::getInstance();
 
 	int wsc = width;
@@ -378,7 +379,7 @@ void Camera::iconSizePreview(int width, int height)	{
     {
         vCameraSize.x = getWidth();
         vCameraSize.y = getHeight();
-        logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
+        logf_thread( (char*)"vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
     }
 
 
@@ -412,8 +413,8 @@ void Camera::iconSizePreview(int width, int height)	{
     dxCam /= 8;
     dyCam /= 8;
 
-    logf((char*) "   Screen  : %dx%d", wsc, hsc);
-    logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
+    logf_thread( (char*) "Screen  : %dx%d", wsc, hsc);
+    logf_thread( (char*) "Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
 	
 	panelCamera->setPosAndSize( xCam, yCam, dxCam, dyCam);
@@ -422,6 +423,7 @@ void Camera::iconSizePreview(int width, int height)	{
 	
 	if ( panelControl != NULL )			panelControl->setVisible(false);
 	//panelCamera->setDisplayGL(displayGLCamera_cb);
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

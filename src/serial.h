@@ -18,7 +18,7 @@
 #include "main.h"
 
 extern double fTimeMili;
-#define VER_ARDUINO		"1.0.7"
+#define VERSION_PROG_ARDUINO		"1.0.7"
 
 typedef union
 {
@@ -71,7 +71,7 @@ SINGLETON_BEGIN( Serial )
         string			sVersionArduino;
 
 		bool			bVersionArduino;
-		string			sVersionArduinoValable;
+		string			VER_ARDUINO;
 		
 		bool            bConnect;
 		int				nbConnect;
@@ -102,7 +102,7 @@ SINGLETON_BEGIN( Serial )
 
         void            start_thread();
         void            reset();
-	    void			testVersionArduino();
+	    //void			testVersionArduino();
 	    
 	    void			print_list();
 

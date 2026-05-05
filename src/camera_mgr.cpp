@@ -220,6 +220,57 @@ bool Camera_mgr::keyboard( char key )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::glutSpecialFunc(int key, int x, int y)	{
+
+    int n = nActive;
+    if ( n == -1)                   return;
+
+    VarManager&         var = VarManager::getInstance();
+	double incr = 1.0 / getCurrent()->getPanelCamera()->get_echelle();
+    
+    switch( key)
+    {
+	// right
+	case 102:	
+	    {
+	    	xSuivi += incr;
+	    	var.set("xSuivi", xSuivi );
+	    	change_joy( xSuivi, ySuivi );
+        }
+		break;
+	// left
+	case 100:	
+	    {
+	    	xSuivi -= incr;
+	    	var.set("xSuivi", xSuivi );
+	    	change_joy( xSuivi, ySuivi );
+	    }
+		break;
+	// up
+	case 101:	
+	    {
+	    	ySuivi -= incr;
+	    	var.set("ySuivi", ySuivi );
+	    	change_joy( xSuivi, ySuivi );
+		}
+		break;
+	// down
+	case 103:	
+	    {
+	    	ySuivi += incr;
+	    	var.set("ySuivi", ySuivi );
+	    	change_joy( xSuivi, ySuivi );
+		}	
+		break;
+    default:
+        return;
+    }
+    
+    logf( (char*)"Camera_mgr::glutSpecialFunc(key=%d, x=%d, y=%d )", key, x, y );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::resize(int width, int height)
 {
     logf_thread((char*)"Camera_mgr::resize(%d, %d) -------------", width, height);
@@ -285,7 +336,7 @@ void Camera_mgr::update()
 void Camera_mgr::active()
 {
 	// Si la camera est connecte au demarrage => Plantage
-    //logf_thread((char*)"Camera_mgr::active() -------------" );
+    logf_thread((char*)"Camera_mgr::active() -------------" );
 
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
@@ -294,7 +345,7 @@ void Camera_mgr::active()
 
     nActive++;
     int n = pCameras.size();
-    if ( n== 0 )    return;
+    if ( n == 0 )    { pCurrent = NULL; nActive=-1; return; }
 
     nActive = nActive % n;
     

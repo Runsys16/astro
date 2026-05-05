@@ -31,9 +31,10 @@ void Captures::init()
 
     VarManager&         var = VarManager::getInstance();
     mode =0;
-    if( var.existe("bShowIcones") )         bShowIcones = var.getb( "bShowIcones" );
-    if( var.existe("mode") )				mode = var.geti( "mode" );
-    else									var.set( "mode", 0 );
+    
+    LOAD_VARB( bShowIcones, false );
+    LOAD_VARI( mode, 0 );
+
     mode %= 4;
 
     charge2();
@@ -382,7 +383,7 @@ void Captures::reshapeGL(int width, int height)
 void Captures::glutSpecialFunc(int key, int x, int y)	{
 
     int n = current_capture;
-    if ( n == -1)                   return;
+    if ( n == -1 || captures.size() == 0 )                   return;
     
     
     switch( key)
@@ -393,11 +394,11 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         if ( n == -1 )          return;
         Capture&  c = *captures[n];
 
-	    logf( (char*)"Touche right !!" );
         float m = c.getCentX() + 10.0;
         c.setCentX( m );
 
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+	    logf( (char*)"Captures::glutSpecialFunc() Touche right !!" );
+        logf( (char*)"   Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
         
         }
 		break;
@@ -410,8 +411,8 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         float m = c.getCentX() - 10.0;
         c.setCentX( m );
 
-	    logf( (char*)"Touche left !!" );
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+	    logf( (char*)"Captures::glutSpecialFunc() Touche left !!" );
+        logf( (char*)"   Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 	    }
 		break;
@@ -424,8 +425,8 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
         float m = c.getCentY() - 10.0;
         c.setCentY( m );
 
-	    logf( (char*)"Touche up !!" );
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+	    logf( (char*)"Captures::glutSpecialFunc() Touche up !!" );
+        logf( (char*)"   Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 		}
 		break;
@@ -440,8 +441,8 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 
         float e = c.getEchelle();
 
-	    logf( (char*)"Touche down !!" );
-        logf( (char*)"Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
+	    logf( (char*)"Captures::glutSpecialFunc() Touche down !!" );
+        logf( (char*)"   Echelle=%0.2f  dx=%0.2f dy=%0.2f", c.getEchelle(), c.getCentX(), c.getCentY() );
 
 		}	
 		break;

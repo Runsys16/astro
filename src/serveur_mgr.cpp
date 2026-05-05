@@ -26,12 +26,12 @@ Serveur_mgr::Serveur_mgr()
 
 	#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
+	
+	string netIP = string( "127.0.0.1" );
 
-    if ( !var.existe("IP_INIT"))		var.set("IP_INIT", "127.0.0.1" );
-    sIP_listen_init = *(var.gets("IP_INIT"));
+	LOAD_VARS( IP_INIT, netIP );
+	LOAD_VARS( IP_DEPL, netIP );
 
-    if ( !var.existe("IP_DEPL"))		var.set("IP_DEPL", "127.0.0.1" );
-    sIP_listen_depl = *var.gets("IP_DEPL" );
 	#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -154,8 +154,8 @@ void Serveur_mgr::thread_listen_init()
 	adresse.sin_port = htons(uPort_init);
 	
 #ifdef VAR_GLOBAL
-	//sIP_listen_init = VarManager::getInstance().gets("IP_INIT");
-	inet_aton( sIP_listen_init.c_str(), &adresse.sin_addr ); 
+	//IP_INIT = VarManager::getInstance().gets("IP_INIT");
+	inet_aton( IP_INIT.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -212,10 +212,10 @@ void Serveur_mgr::thread_listen_init()
         some_addr = inet_ntoa( adresse.sin_addr); // return the IP
         sIP_init = string( some_addr );
 
-		//sIP_listen_init = string( some_addr );
+		//IP_INIT = string( some_addr );
 	
 		logf_thread( (char*)"Serveur_mgr::thread_listen_init() connexion" );
-		logf_thread( (char*)"  sock = %d  sock_listen_init = %d  IP = %s:%d sur %s", sock_listen_init, sock_init, some_addr, (int)adresse.sin_port, sIP_listen_init.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_init = %d  IP = %s:%d sur %s", sock_listen_init, sock_init, some_addr, (int)adresse.sin_port, IP_INIT.c_str() );
 
 		traite_connexion_init();
 	}
@@ -311,8 +311,8 @@ void Serveur_mgr::thread_listen_deplacement()
 	adresse.sin_port = htons(uPort_deplacement);
 	
 #ifdef VAR_GLOBAL
-	//sIP_listen_depl = VarManager::getInstance().gets("IP_DEPL");
-	inet_aton( sIP_listen_depl.c_str(), &adresse.sin_addr ); 
+	//IP_DEPL = VarManager::getInstance().gets("IP_DEPL");
+	inet_aton( IP_DEPL.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -370,7 +370,7 @@ void Serveur_mgr::thread_listen_deplacement()
         sIP_depl = string( some_addr );
 
 		logf_thread( (char*)"Serveur_mgr::thread_listen_deplacement() connexion" );
-		logf_thread( (char*)"  sock = %d  sock_listen_deplacement = %d  IP = %s:%d sur %s", sock_listen_deplacement, sock_deplacement, some_addr, (int)adresse.sin_port, sIP_listen_depl.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_deplacement = %d  IP = %s:%d sur %s", sock_listen_deplacement, sock_deplacement, some_addr, (int)adresse.sin_port, IP_DEPL.c_str() );
 
 		traite_connexion_deplacement();
 	}
@@ -654,13 +654,13 @@ void Serveur_mgr::print_list()
 {
     //logf( (char*)"---- Serveur_mgr::print_list()" );
 
-	if ( sock_listen_init == -1 )		logf( (char*)"  STEL Init\timpossible d'ouvrir : %s", sIP_listen_init.c_str() );
+	if ( sock_listen_init == -1 )		logf( (char*)"  STEL Init\timpossible d'ouvrir : %s", IP_INIT.c_str() );
 	else if ( sock_init != -1 )			logf( (char*)"  STEL Init\tconnexion de \t: %s", sIP_init.c_str() );
-	else								logf( (char*)"  STEL Init\tlisten sur \t\t: %s : %d", sIP_listen_init.c_str(), uPort_init );
+	else								logf( (char*)"  STEL Init\tlisten sur \t\t: %s : %d", IP_INIT.c_str(), uPort_init );
 
-	if ( sock_listen_deplacement == -1)	logf( (char*)"  STEL depl\timpossible d'ouvrir : %s", sIP_listen_depl.c_str() );
+	if ( sock_listen_deplacement == -1)	logf( (char*)"  STEL depl\timpossible d'ouvrir : %s", IP_DEPL.c_str() );
 	else if ( sock_deplacement != -1)	logf( (char*)"  STEL depl\tconnexion de \t: %s", sIP_depl.c_str() );
-	else								logf( (char*)"  STEL depl\tlisten sur \t\t: %s : %d", sIP_listen_depl.c_str(), uPort_deplacement );
+	else								logf( (char*)"  STEL depl\tlisten sur \t\t: %s : %d", IP_DEPL.c_str(), uPort_deplacement );
 }    
 //--------------------------------------------------------------------------------------------------------------------
 //

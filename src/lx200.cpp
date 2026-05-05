@@ -23,11 +23,11 @@ LX200::LX200()
 
 #ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
+	
+	string netIP = string( "192.168.1.220" );
 
-    if ( !var.existe("IP_LX200") )		printf( "IPLX200" );
-    if ( !var.existe("IP_LX200") )		var.set("IP_LX200", (char*)"127.0.0.1" );
-    sIP_listen_lx200 = *var.gets("IP_LX200" );
-
+	LOAD_VARS( IP_LX200, netIP );
+	
 #endif
 
 #ifdef PANEL_LX200_DEBUG
@@ -676,7 +676,7 @@ void LX200::thread_listen_lx200()
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
-	inet_aton( sIP_listen_lx200.c_str(), &adresse.sin_addr ); 
+	inet_aton( IP_LX200.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -736,7 +736,7 @@ void LX200::thread_listen_lx200()
 		//sIP_init = string( some_addr );
 	
 		logf_thread( (char*)"LX200::thread_listen_lx200() connexion SOCKET 2" );
-		logf_thread( (char*)"  sock = %d  sock_listen_lx200 = %d  IP = %s:%d sur %s", sock_listen_lx200, sock_lx200, some_addr, (int)adresse.sin_port, sIP_listen_lx200.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_lx200 = %d  IP = %s:%d sur %s", sock_listen_lx200, sock_lx200, some_addr, (int)adresse.sin_port, IP_LX200.c_str() );
 
 		//panel_win.setVisible(bPanelStdOut);
 		//PANEL_LX200_DEBUG.setVisible(bPanelStdOut);
@@ -865,9 +865,9 @@ void LX200::print_list()
 {
     //logf( (char*)"---- LX200::print_list()" );
 
-	if ( sock_listen_lx200 == -1 )		logf( (char*)"  LX200\timpossible d'ouvrir : %s", sIP_listen_lx200.c_str() );
+	if ( sock_listen_lx200 == -1 )		logf( (char*)"  LX200\timpossible d'ouvrir : %s", IP_LX200.c_str() );
 	else if ( sock_lx200 != -1 )		logf( (char*)"  LX200\tconnexion de \t: %s", sIP_lx200.c_str() );
-	else								logf( (char*)"  LX200\tlisten sur \t\t: %s : %d", sIP_listen_lx200.c_str(), uPort );
+	else								logf( (char*)"  LX200\tlisten sur \t\t: %s : %d", IP_LX200.c_str(), uPort );
 
 }    
 #ifdef PANEL_LX200_DEBUG

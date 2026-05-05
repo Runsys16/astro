@@ -68,9 +68,9 @@ protected:
     bool                        bTraite_depl;
     bool                        bTraite_init;
     
-    string						sIP_listen_init;
+    string						IP_INIT;
     string						sIP_init;
-    string						sIP_listen_depl;
+    string						IP_DEPL;
     string						sIP_depl;
 
 public:

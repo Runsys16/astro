@@ -67,7 +67,7 @@ protected:
     int							GMT;
     int							HETE;
     
-    string						sIP_listen_synscan;
+    string						IP_SYNSCAN;
     string						sIP_synscan;
     
     char						sHex[91];     // 3*30 + '0' terminal

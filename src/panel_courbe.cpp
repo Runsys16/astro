@@ -84,7 +84,7 @@ PanelCourbe::PanelCourbe()
     pYMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 70 );
     pYMin = new PanelText( (char*)"-err",		PanelText::NORMAL_FONT, 5, 80 );
     
-    err = var.getf("err");
+    err = var.getf("dErr");
 
     bDisplayCourbeX = true;
     bDisplayCourbeY = true;
@@ -102,27 +102,23 @@ PanelCourbe::PanelCourbe()
     decal_x			= 10;
     decal_y			= 10;
 
-    if ( var.existe("vOrigine.x") )        		vOrigine.x      = var.getf("vOrigine.x");
-    if ( var.existe("vOrigine.y") )        		vOrigine.y      = var.getf("vOrigine.y");
-    vOrigine.z      = 0.0;
+	LOAD_VARF( vOrigine.x, 1000 )
+	LOAD_VARF( vOrigine.y, 400 )
+	LOAD_VARF( vOrigine.z, 0 )
+	
+	LOAD_VARF( courbe1, 10 )
+	LOAD_VARF( courbe2, 10 )
+	LOAD_VARF( delta_courbe1, 120 )
+	LOAD_VARF( delta_courbe2, 120 )
 
-    if ( var.existe("courbe1") )        		courbe1         = var.getf("courbe1");
-    if ( var.existe("delta_courbe1") )        	delta_courbe1   = var.getf("delta_courbe1");
-    if ( var.existe("courbe2") )        		courbe2         = var.getf("courbe2");
-    if ( var.existe("delta_courbe2") )        	delta_courbe2   = var.getf("delta_courbe2");
+	LOAD_VARB( bDisplayCourbeX, true )
+	LOAD_VARB( bDisplayCourbeY, true )
+	LOAD_VARB( bDisplayfftX, true )
+	LOAD_VARB( bDisplayfftY, true )
+	LOAD_VARB( bDisplayPt, true )
 
-
-    if ( var.existe("bDisplayCourbeX") )        bDisplayCourbeX = var.getb("bDisplayCourbeX");
-    if ( var.existe("bDisplayCourbeY") )        bDisplayCourbeY = var.getb("bDisplayCourbeY");
-    if ( var.existe("bDisplayfftX") )           bDisplayfftX    = var.getb("bDisplayfftX");
-    if ( var.existe("bDisplayfftY") )           bDisplayfftY    = var.getb("bDisplayfftY");
-    if ( var.existe("bDisplayPt") )             bDisplayPt      = var.getb("bDisplayPt");
-
-    if ( var.existe("taille_mini_unite") )      taille_mini     = var.getf("taille_mini_unite");
-    if ( var.existe("filtre") )             	filtre          = var.getf("filtre");
-
-
-
+	LOAD_VARF( filtre, 10 )
+	
     ech_w           	= 1.0;
     ech_h           	= 1.0;
 
@@ -147,33 +143,27 @@ PanelCourbe::PanelCourbe()
     logf( (char*)"init_panel()" );
     init_panel();
 
-	string* pFile = NULL;
+	string tiret = string("---");
+    string FileResultat;
 	
-    if ( var.existe( "FileResultat" ) )					pFile = var.gets( "FileResultat" );
-    
-    logf( (char*)"init_panel()retour" );
-    if ( pFile != NULL)	    logf( (char*)"Chargement " );
-    else				    logf( (char*)"Fichier de guidage NULL" );
-
+	LOAD_VARS( FileResultat, tiret );
     
     t_vCourbe.reserve(512);
-	/*
-    */
-    if ( pFile!=NULL )
+    if ( FileResultat.length() != 0  )
     {
-        if ( pFile->find( "---" ) == std::string::npos )
+        if ( FileResultat.find( "---" ) == std::string::npos )
         {
-        	if ( f_exist( pFile->c_str() ) )
+        	if ( f_exist( FileResultat.c_str() ) )
         	{
- 	           charge_guidage( *pFile );
+ 	           charge_guidage( FileResultat );
  	        }
  	        else
-            	logf( (char*)"Fichier inexistant : %s", pFile->c_str() );
+            	logf( (char*)"Fichier inexistant : %s", FileResultat.c_str() );
         }
     }
-    
-    if ( var.existe("decal_x") )             	decal_x = var.geti( "decal_x" );
-    if ( var.existe("decal_y") )             	decal_y = var.geti( "decal_y" );
+
+    LOAD_VARI( decal_x, 66 )
+    LOAD_VARI( decal_y, 3 )
     
     setVisible( var.getb( "bPanelCourbe" ) );
 
@@ -288,7 +278,7 @@ void PanelCourbe::init_var()
 {
     VarManager&         var = VarManager::getInstance();
 
-    if (!var.existe("err"))                         var.set("err", (float)1.0);
+    if (!var.existe("dErr"))                        var.set("dErr", (float)1.0);
     if (!var.existe("courbe1"))                     var.set("courbe1", (float)1.0);
     if (!var.existe("delta_courbe1"))               var.set("delta_courbe1", (float)1.0);
     if (!var.existe("courbe2"))                     var.set("courbe2", (float)1.0);
@@ -298,7 +288,7 @@ void PanelCourbe::init_var()
     if (!var.existe("vOrigine.y"))                  var.set("vOrigine.y", (float)0.0);
 
     if (!var.existe("bPanelCourbe"))                var.set("bPanelCourbe", true);
-    if (!var.existe("FileResultat"))                var.set("FileResultat", "---");
+    //if (!var.existe("FileResultat"))                var.set("FileResultat", "---");
     if (!var.existe("decal_x"))                     var.set("decal_x", 0 );
     if (!var.existe("decal_y"))                     var.set("decal_y", 0 );
     if (!var.existe("taille_mini_unite"))           var.set("taille_mini_unite", (float)20.0);

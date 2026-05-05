@@ -581,8 +581,8 @@ void click_left_cercle_suivi1( int xm, int ym )
 //--------------------------------------------------------------------------------------------------------------------
 void release_left_cercle_suivi1( int xm, int ym ) 
 {
-    logf((char*)"release_left_cercle_suivi1( %d, %d)  val = %0.2f", xm, ym, (float)fDiamSuivi1 );
-    var.set( "fDiamSuivi1", (float)fDiamSuivi1 );
+    logf((char*)"release_left_cercle_suivi1( %d, %d)  val = %0.2f", xm, ym, (float)fLimitCorrection1 );
+    var.set( "fLimitCorrection1", (float)fLimitCorrection1 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -660,8 +660,8 @@ void create_windows_button()
 	X += 12;    pCercleErr->setPosAndSize( X, 2, 40, 20 );
 	
 
-    sprintf( s,"%0.2f", var.getf("err")  );
-    pCercleErr->changeText( s );
+    //sprintf( s,"%0.2f", var.getf("dErr")  );
+    pCercleErr->changeText( "0.0" );
 
     pCercleErr->set( 0.0, 5.0, 2, 4 );
     pCercleErr->set_ndecimal( 2 );
@@ -706,18 +706,18 @@ void create_windows_button()
     //pCercleSuivi1->setClickLeft( click_left_cercle_suivi1 );
     pCercleSuivi1->setReleaseLeft( release_left_cercle_suivi1 );
 
-    sprintf( s,"%0.0f", fDiamSuivi1 );
+    sprintf( s,"%0.0f", fLimitCorrection1 );
     pCercleSuivi1->changeText( s );
 
     //  Valeur de l'edition dimension de la
     pCercleSuivi1->set( 1, 600, 760, 4 );
     pCercleSuivi1->set_delta( 20, -100 );
     //pCercleAsserv->set_nb( 2 );
-    pCercleSuivi1->set_val( fDiamSuivi1 );
-    pCercleSuivi1->set_pVal( &fDiamSuivi1 );
+    pCercleSuivi1->set_val( fLimitCorrection1 );
+    pCercleSuivi1->set_pVal( &fLimitCorrection1 );
 
     panelStatus->add( pCercleSuivi1 );
-    pCercleSuivi1->setExtraString( string("SpinEdit fDiamSuivi1") );
+    pCercleSuivi1->setExtraString( string("SpinEdit fLimitCorrection1") );
 	//--------------------------------------------------------
 	//		pCercleTemps
 	//--------------------------------------------------------

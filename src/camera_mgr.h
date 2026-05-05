@@ -40,6 +40,7 @@ public:
     void                        start_camera();
     void                        stop_camera();
     bool                        keyboard( char key );
+    void                        glutSpecialFunc(int key, int x, int y);
     //void                        idleGL();
     void                        onBottom();
     void                        resize( int, int );

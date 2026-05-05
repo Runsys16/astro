@@ -295,7 +295,7 @@ bool                bSound				= true;
 bool                bInverseCouleur		= false;
 bool                bCentrageSuivi		= false;
 bool                bFirstStart			= true;
-bool				bDesactiveLog		= true;
+bool				bDesactiveLog		= false;
 bool				bAffColimation		= false;
 bool				bAffFindStar		= false;
 bool				bGmagChange			= false;
@@ -314,7 +314,6 @@ double				xSuivi;
 double				ySuivi;
 double				xSuivi1;
 double				ySuivi1;
-double				fDiamSuivi1 = 83.0;
 double				xSuiviSvg;
 double				ySuiviSvg;
 double				filtre      = 10.0;
@@ -369,9 +368,10 @@ mat3                mChange;
 vec3                vOri;
 vec3                vTr;
 bool                bCorrection = false;
-double              fTimeCorrection = 3.0;
 double				fTimeCpt = 0.0;
+double              fTimeCorrection = 3.0;
 double              fLimitCorrection0 = 80.0;
+double              fLimitCorrection1 = 82.0;
 double              pas_sideral;
 
 double				d_deg_ad = -1.0;
@@ -839,7 +839,7 @@ void vizier_capture_thread( Catalog* pVizier, string sCoord, PanelCapture* p_pan
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_load_stars( Catalog* pVizier, string s, double ra, double de )
 {
-    pVizier->efface();
+    if ( pVizier->size() != 0 )		pVizier->efface();
 
     PanelCapture* p_panel_capture = NULL;
     thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
@@ -850,8 +850,9 @@ void vizier_load_stars( Catalog* pVizier, string s, double ra, double de )
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_capture_load_stars( Catalog* pVizier, string s, PanelCapture* p_panel_capture )
 {
-    pVizier->efface();
+    if ( pVizier->size() != 0 )		pVizier->efface();
 
+    logf_thread( (char*)"vizier_capture_load_stars() %d etoile(s)", pVizier->size() );
     thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -859,7 +860,7 @@ void vizier_capture_load_stars( Catalog* pVizier, string s, PanelCapture* p_pane
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_load_stars( Catalog* pVizier, string s )
 {
-    pVizier->efface();
+    if ( pVizier->size() != 0 )		pVizier->efface();
 
     PanelCapture* p_panel_capture = NULL;
     thread( &vizier_capture_thread, pVizier, s, p_panel_capture ).detach();
@@ -869,6 +870,8 @@ void vizier_load_stars( Catalog* pVizier, string s )
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_load_stars( string s, double ra, double de )
 {
+    if ( vizier.size() != 0 )		vizier.efface();
+
 	vizier_load_stars( &vizier, s, ra, de );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -876,6 +879,8 @@ void vizier_load_stars( string s, double ra, double de )
 //--------------------------------------------------------------------------------------------------------------------
 void vizier_load_stars( string s )
 {
+    if ( vizier.size() != 0 )		vizier.efface();
+
 	vizier_load_stars( &vizier, s );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -3841,6 +3846,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 #endif
 
     Captures::getInstance().glutSpecialFunc(key, x, y);
+    Camera_mgr::getInstance().glutSpecialFunc(key, x, y);
     
     
     switch( key)
@@ -4435,10 +4441,22 @@ static void CreateHelp()
 	
 	DY = ++l*dy;
 	
+	/*
     if ( var.existe("xPanelHelp") )         X  = var.geti( "xPanelHelp");
     if ( var.existe("yPanelHelp") )         Y  = var.geti( "yPanelHelp");
     if ( var.existe("dxPanelHelp") )        DX = var.geti("dxPanelHelp");
     if ( var.existe("dyPanelHelp") )        DY = var.geti("dyPanelHelp");
+    */
+    
+    INIT_VARI( xPanelHelp, 10);
+    INIT_VARI( yPanelHelp, 10);
+    INIT_VARI( dxPanelHelp, 1400);
+    INIT_VARI( dyPanelHelp, 600);
+
+    X  = var.geti( "xPanelHelp");
+    Y  = var.geti( "yPanelHelp");
+    DX = var.geti("dxPanelHelp");
+    DY = var.geti("dyPanelHelp");
 
     panelHelp->setSize(DX, DY);
 	panelScrHelp->setSize(DX, DY);
@@ -4556,12 +4574,19 @@ static void CreateStdOut()	{
 static void CreateAllWindows()	{
     //CreatePreview();
     //CreateControl();
+    
+    bool Old = bDesactiveLog;
+    
+    bDesactiveLog = false;
+    
     if ( panelStdOut == NULL )		CreateStdOut();
     CreateHelp();
     CreateResultat();
     CreateStatus();
     CreateCourbe();
     panelApn = NULL;
+    
+    bDesactiveLog = Old;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -4722,7 +4747,7 @@ void log_thread_aff()
 	}
 
 	n = logs_string.size();
-	//printf( "nb log_thread_aff() = %d\n", n );
+	printf( "nb log_thread_aff() = %d\n", n );
 	//printf( "nb log_thread = %d\n", n );
     
 	try
@@ -4731,6 +4756,7 @@ void log_thread_aff()
 	}
 	catch(std::exception& e)
 	{
+		printf( "try catch nb log_thread \n" );
 		std::cout << e.what() << std::endl;
 		//return EXIT_FAILURE;
 	}
@@ -4968,242 +4994,101 @@ void getX11Screen()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void init_var()
-{
-    //VarManager& var = VarManager::getInstance();
-
-    var.set( "bModeManuel", bModeManuel );
-    var.set( "bSuivi", bSuivi );
-    var.set( "bPanelControl", bPanelControl );
-    var.set( "bPanelHelp", bPanelHelp );
-    var.set( "bPanelResultat", bPanelResultat );
-    var.set( "bPanelCourbe", bPanelCourbe );
-    var.set( "bPanelStdOut", bPanelStdOut );
-    var.set( "bPanelSerial", bPanelSerial );
-    var.set( "bAfficheVec", bAfficheVec);
-    var.set( "bCorrection", bCorrection);
-
-    var.set( "err", panelCourbe->get_err() );
-
-    var.set("bPause", bPause);
-    var.set("bFull", bFull);
-    var.set("bNuit", bNuit);
-
-    var.set("courbe1", panelCourbe->get_courbe1());
-    var.set("delta_courbe1", panelCourbe->get_delta_courbe1());
-    var.set("courbe2", panelCourbe->get_courbe2());
-    var.set("delta_courbe2", panelCourbe->get_delta_courbe2());
-
-    var.set("vecAD[0].x", vecAD[0].x);
-    var.set("vecAD[0].y", vecAD[0].y);
-    var.set("vecAD[1].x", vecAD[1].x);
-    var.set("vecAD[1].y", vecAD[1].y);
-
-    var.set("vecDC[0].x", vecDC[0].x);
-    var.set("vecDC[0].y", vecDC[0].y);
-    var.set("vecDC[1].x", vecDC[1].x);
-    var.set("vecDC[1].y", vecDC[1].y);
-
-    var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
-    var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
-
-    var.set("xSuivi", xSuivi);
-    var.set("ySuivi", ySuivi);
-
-    if ( !var.existe("fLimitCorrection0") )      var.set( "fLimitCorrection0", (double)80.0);
-    
-    /*
-    var.set("xPanelStdOut",  panelStdOut->getX() );
-    var.set("yPanelStdOut",  panelStdOut->getY() );
-    var.set("dxPanelStdOut", panelStdOut->getDX() );
-    var.set("dyPanelStdOut", panelStdOut->getDY() );
-    */
-    //if ( panelStdOut->getX() == 0 )    bAlert = true;
-    vMouse.x = 400;
-    vMouse.y = 400;
-
-
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void charge_var()
 {
     var.charge();
 
-    if ( var.existe("bModeManuel") )        bModeManuel         = var.getb( "bModeManuel" );
-    //bSuivi              = var.getb( "bSuivi" );
+	//------------------------------------------------------------------------------------
+	//                                BOOLEEN
+    LOAD_VARB( bModeManuel, false );
+    LOAD_VARB( bMouseDeplace, false );
+    LOAD_VARB( bSuivi, false );
+    LOAD_VARB( bPanelControl, false );
+    LOAD_VARB( bPanelCourbe, true );
+    LOAD_VARB( bPanelHelp, true );
+    LOAD_VARB( bPanelResultat, true );
+    LOAD_VARB( bPanelStdOut, true );
+    LOAD_VARB( bPanelSerial, true );
 
-    if ( !var.existe("bPanelCourbe") )		var.set( "bPanelCourbe", true );
-	bPanelCourbe = var.getb( "bPanelCourbe" );
-    if ( panelCourbe )      panelCourbe->setVisible(bPanelCourbe);
-    
-    if ( !var.existe("bPanelHelp") )		var.set( "bPanelHelp", true );
-    bPanelHelp = var.getb( "bPanelHelp" );
-    if (panelHelp)      panelHelp->setVisible( bPanelHelp );
-    
-    if ( var.existe("bPanelResultat") )		bPanelResultat = var.getb( "bPanelResultat" );
-    else									bPanelResultat = true;
-    if (panelResultat)  panelResultat->setVisible( bPanelResultat );
-    
-    if ( var.existe("bPanelStdOut") )		bPanelStdOut = var.getb( "bPanelStdOut" );
-    else									bPanelStdOut = true;
-    if (panelStdOut)   panelStdOut->setVisible( bPanelStdOut );
-    
-    if ( var.existe("bPanelSerial") )		bPanelSerial = var.getb( "bPanelSerial" );
-    else									bPanelSerial = true;
-    PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
-    
-    if ( !var.existe("bAfficheVec") )		var.set( "bAfficheVec", true );
-    bAfficheVec         = var.getb("bAfficheVec");
+    LOAD_VARB( bAfficheVec, true )
+    LOAD_VARB( bPause, true )
+    LOAD_VARB( bFull, true )
 
-    if ( !var.existe("bPause") )			var.set( "bPause", true );
-    bPause              = var.getb("bPause");
+    LOAD_VARB( bCorrection, true )
+    LOAD_VARB( bNuit, false )
 
-    if ( !var.existe("bFull") )				var.set( "bFull", true );
-    bFull               = var.getb("bFull");
+    LOAD_VARB( bSimu, false );
+	LOAD_VARB( bAffSuivi, false);
+	LOAD_VARB( bAffCentre, false);
+	LOAD_VARB( bSound, true); 
+	LOAD_VARB( bInverseCouleur, false); 
+
+	LOAD_VARB( bPleiade, false );
+	LOAD_VARB( bAffColimation, false );
+	LOAD_VARB( bAffFindStar, false );
+
+	INIT_VARB( bVerboseArduino, false );
+	INIT_VARB( bAffFitsCorrection, true );
+
+	//------------------------------------------------------------------------------------
+	//                                REEL
+    LOAD_VARF( vecAD[0].x, 0.0 )
+    LOAD_VARF( vecAD[0].y, 0.0 )
+    LOAD_VARF( vecAD[0].z, 0.0 )
+    
+    LOAD_VARF( vecAD[1].x, 0.0 )
+    LOAD_VARF( vecAD[1].y, 0.0 )
+    LOAD_VARF( vecAD[1].z, 0.0 )
+
+    LOAD_VARF( vecDC[0].x, 0.0 )
+    LOAD_VARF( vecDC[0].y, 0.0 )
+    LOAD_VARF( vecDC[0].z, 0.0 )
+    
+    LOAD_VARF( vecDC[1].x, 0.0 )
+    LOAD_VARF( vecDC[1].y, 0.0 )
+    LOAD_VARF( vecDC[1].z, 0.0 )
+
+    LOAD_VARF( xSuivi, 800.0 )
+    LOAD_VARF( ySuivi, 450.0 )
+
+	LOAD_VARF( fTimeCorrection, 3.0 );
+	LOAD_VARF( fLimitCorrection0, 45 );
+	LOAD_VARF( fLimitCorrection1, 45 );
+	LOAD_VARF( filtre, 14.0);
+
+	LOAD_VARF( d_deg_ad, 5.0);
+	LOAD_VARF( d_deg_dc, 5.0);
+
+	LOAD_VARF( Xref, 999);
+	LOAD_VARF( Yref, 555);
+	LOAD_VARF( ZrefX, 935);
+	LOAD_VARF( ZrefY, 1030 );
+	LOAD_VARF( Wref, 5.5);
+	LOAD_VARB( bAffCatalog, true);
+	LOAD_VARB( bAffStar, true);
+   	
+	LOAD_VARF( dErr, 0.63 );
+	INIT_VARF( fGmagMax, 17.6 );
+
+	//------------------------------------------------------------------------------------
 
     if ( bFull )        glutFullScreen();
-
-    if ( !var.existe("bCorrection") )		var.set( "bCorrection", true );
-    bCorrection         = var.getb("bCorrection");
-
-    if ( !var.existe("bNuit") )				var.set( "bNuit", true );
-    bNuit               = var.getb("bNuit");
-
+    if ( panelResultat )	panelResultat->setVisible( bPanelResultat );
+    if ( panelStdOut )		panelStdOut->setVisible( bPanelStdOut );
+    if ( panelCourbe )		panelCourbe->setVisible(bPanelCourbe);
+    if ( panelHelp )		panelHelp->setVisible( bPanelHelp );
     if ( panelCourbe == NULL )          logf( (char*)"[ERREUR] Erreur panelCourbe NULL ..." );
 
-	//------------------------------------------------------------------------------------
-    if ( !var.existe("vecAD[0].x") )				var.set( "vecAD[0].x", 0.0 );
-    vecAD[0].x          = var.getf("vecAD[0].x");
-
-    if ( !var.existe("vecAD[0].y") )				var.set( "vecAD[0].y", 0.0 );
-    vecAD[0].y          = var.getf("vecAD[0].y");
-
-    if ( !var.existe("vecAD[0].z") )				var.set( "vecAD[0].z", 0.0 );
-    vecAD[0].z          = 0.0;
-
-    if ( !var.existe("vecAD[1].x") )				var.set( "vecAD[1].x", 0.0 );
-    vecAD[1].x          = var.getf("vecAD[1].x");
-
-    if ( !var.existe("vecAD[1].y") )				var.set( "vecAD[1].y", 0.0 );
-    vecAD[1].y          = var.getf("vecAD[1].y");
-
-    if ( !var.existe("vecAD[1].z") )				var.set( "vecAD[1].z", 0.0 );
-    vecAD[1].z          = 0.0;
-	//------------------------------------------------------------------------------------
-    if ( !var.existe("vecDC[0].x") )				var.set( "vecDC[0].x", 0.0 );
-    vecDC[0].x          = var.getf("vecDC[0].x");
-    if ( !var.existe("vecDC[0].y") )				var.set( "vecDC[0].y", 0.0 );
-    vecDC[0].y          = var.getf("vecDC[0].y");
-    if ( !var.existe("vecDC[0].z") )				var.set( "vecDC[0].z", 0.0 );
-    vecDC[0].z          = 0.0;
-
-    if ( !var.existe("vecDC[1].x") )				var.set( "vecDC[1].x", 0.0 );
-    vecDC[1].x          = var.getf("vecDC[1].x");
-    if ( !var.existe("vecDC[1].y") )				var.set( "vecDC[1].y", 0.0 );
-    vecDC[1].y          = var.getf("vecDC[1].y");
-    if ( !var.existe("vecDC[1].z") )				var.set( "vecDC[1].z", 0.0 );
-    vecDC[1].z          = 0.0;
-	//------------------------------------------------------------------------------------
-    
     compute_matrix();
-    logf( (char*)"vecAD[0] (%02f,%0.2f)", vecAD[0].x, vecAD[0].y );
-    logf( (char*)"vecAD[1] (%02f,%0.2f)", vecAD[1].x, vecAD[1].y );
-    logf( (char*)"vecDC[0] (%02f,%0.2f)", vecDC[0].x, vecDC[0].y );
-    logf( (char*)"vecDC[1] (%02f,%0.2f)", vecDC[1].x, vecDC[1].y );
 
-    logf( (char*)"MATRIX %02f", mChange.mat[0] );
-
-
-    if ( !var.existe("xSuivi") )				var.set( "xSuivi", 0.0 );
-    xSuivi              = var.getf("xSuivi");
-    if ( !var.existe("ySuivi") )				var.set( "ySuivi", 0.0 );
-    ySuivi              = var.getf("ySuivi");
-    
-    //xSuivi              = panelCourbe->get_vOrigine().x;
-    //ySuivi              = panelCourbe->get_vOrigine().y;
+    PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
 
 	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
 	cam_mgr.active();
 
-    if ( !var.existe("bNuit") )            	var.set( "bNuit", false );
-    bNuit           = var.getb("bNuit");
-
-    if ( !var.existe("bSimu") )             var.set("bSimu", false);
-    bSimu           = var.getb("bSimu");
-
-    if ( !var.existe("bAffSuivi") )         var.set("bAffSuivi", false);
-    bAffSuivi       = var.getb("bAffSuivi");
-
-    if ( !var.existe("bAffCentre") )        var.set("bAffCentre", false);
-    bAffCentre      = var.getb("bAffCentre");
-
-    if ( !var.existe("bSound") )            var.set("bSound", true); 
-    bSound          = var.getb("bSound");
-
-    if ( !var.existe("bInverseCouleur"))    var.set("bInverseCouleur", false); 
-    bInverseCouleur = var.getb("bInverseCouleur");
-
-    if ( !var.existe("fLimitCorrection0"))   var.set("fLimitCorrection0", 45.0);
-    fLimitCorrection0 = var.getf("fLimitCorrection0");
-
-    if ( !var.existe("filtre"))             var.set("filtre", 14);
-    filtre          = var.geti("filtre");
-
-    if ( !var.existe("d_deg_ad"))            var.set("d_deg_ad", 5.0);
-    d_deg_ad         = var.getf("d_deg_ad");
     change_ad_status( d_deg_ad );
-    
-    if ( !var.existe("d_deg_dc"))            var.set("d_deg_dc", 5.0);
-    d_deg_dc         = var.getf("d_deg_dc");
     change_dc_status( d_deg_dc );
     
-    if ( !var.existe("Xref"))               var.set("Xref", 5.0);
-    Xref            = var.getf("Xref");
-    
-    if ( !var.existe("Yref"))               var.set("Yref", 5.0);
-    Yref            = var.getf("Yref");
-    
-    if ( !var.existe("ZrefX"))              var.set("ZrefX", 5.0);
-    ZrefX           = var.getf("ZrefX");
-    
-    if ( !var.existe("ZrefY"))              var.set("ZrefY", 5.0);
-    ZrefY           = var.getf("ZrefY");
-    
-    if ( !var.existe("Wref"))               var.set("Wref", 5.0);
-    Wref            = var.getf("Wref");
-    
-    if ( !var.existe("bAffCatalog"))        var.set("bAffCatalog", true);
-    bAffCatalog     = var.getb("bAffCatalog");
-    
-    if ( !var.existe("bAffStar"))       	var.set("bAffStar", true);
-    bAffStar	    = var.getb("bAffStar");
-   	
-   	if ( !var.existe("bVerboseArduino") )   var.set("bVerboseArduino", false);
-
-    if ( !var.existe("bAffFitsCorrection")) var.set("bAffFitsCorrection", true );
-
-    if ( !var.existe("err")) 				var.set("err", (float)0.63 );
-    dErr = var.getf("err" );
-
-    if ( !var.existe("fDiamSuivi1")) 		var.set("fDiamSuivi1", 63.0 );
-    fDiamSuivi1 = var.getf("fDiamSuivi1" );
-
-    if ( !var.existe("bPleiade")) 			var.set("bPleiade", false );
-    bPleiade = var.getb("bPleiade" );
-
-    if ( !var.existe("bAffColimation"))		var.set("bAffColimation", false );
-    bAffColimation = var.getb("bAffColimation" );
-
-    if ( !var.existe("bAffFindStar"))		var.set("bAffFindStar", false );
-    bAffFindStar = var.getb("bAffFindStar" );
-
-    if ( !var.existe("fTimeCorrection"))		var.set("fTimeCorrection", 3.0 );
-    fTimeCorrection = var.getf("fTimeCorrection" );
-
-    if ( !var.existe("fGmagMax"))		var.set("fGmagMax", 17.6 );
-
     if ( bPleiade )
     {
         pPleiade = new Pleiade();
@@ -5281,8 +5166,6 @@ int main(int argc, char **argv)
 	glutMotionFunc(glutMotionFunc);
 	glutPassiveMotionFunc(glutPassiveMotionFunc);
 
-    if ( bFull )        glutFullScreen();
-
 	initGL(argc, argv);
     glewInit();
     
@@ -5306,7 +5189,7 @@ int main(int argc, char **argv)
     //cam_mgr.getCurrent();
     //cam_mgr.active();
 
-    init_var();
+    //init_var();
 
     Connexion_mgr::getInstance().start();
     PanelConsoleSerial::getInstance();

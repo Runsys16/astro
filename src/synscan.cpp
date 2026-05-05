@@ -35,8 +35,8 @@ SYNSCAN::SYNSCAN()
 	#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
 
-    if ( !var.existe("IP_SYNSCAN"))		var.set("IP_SYNSCAN", "127.0.0.1" );
-    sIP_listen_synscan = *var.gets("IP_SYNSCAN" );
+	string netIP = string( "192.168.1.220" );
+	LOAD_VARS( IP_SYNSCAN, netIP );
 
 	#endif
 	
@@ -443,7 +443,7 @@ void SYNSCAN::thread_listen_synscan()
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
-	inet_aton( sIP_listen_synscan.c_str(), &adresse.sin_addr ); 
+	inet_aton( IP_SYNSCAN.c_str(), &adresse.sin_addr ); 
 #else
 #ifdef LOCALHOST
 	inet_aton("127.0.0.1", &adresse.sin_addr ); 
@@ -509,7 +509,7 @@ void SYNSCAN::thread_listen_synscan()
 		//sIP_init = string( some_addr );
 	
 		logf_thread( (char*)"SYNSCAN::thread_listen_SYNSCAN() connexion SOCKET 2" );
-		logf_thread( (char*)"  sock = %d  sock_listen_synscan = %d  IP = %s:%d sur %s", sock_listen_synscan, sock_synscan, some_addr, (int)adresse.sin_port, sIP_listen_synscan.c_str() );
+		logf_thread( (char*)"  sock = %d  sock_listen_synscan = %d  IP = %s:%d sur %s", sock_listen_synscan, sock_synscan, some_addr, (int)adresse.sin_port, IP_SYNSCAN.c_str() );
 
 		traite_connexion_synscan();
 	}
@@ -625,9 +625,9 @@ void SYNSCAN::print_list()
 {
     //logf( (char*)"---- SYNSCAN::print_list()" );
 
-	if ( sock_listen_synscan == -1 )		logf( (char*)"  SYNSCAN\timpossible d'ouvrir : %s", sIP_listen_synscan.c_str() );
+	if ( sock_listen_synscan == -1 )		logf( (char*)"  SYNSCAN\timpossible d'ouvrir : %s", IP_SYNSCAN.c_str() );
 	else if ( sock_synscan != -1 )			logf( (char*)"  SYNSCAN\t connexion de \t: %s", sIP_synscan.c_str() );
-	else									logf( (char*)"  SYNSCAN\tlisten sur \t\t: %s : %d", sIP_listen_synscan.c_str(), uPort );
+	else									logf( (char*)"  SYNSCAN\tlisten sur \t\t: %s : %d", IP_SYNSCAN.c_str(), uPort );
 
 }    
 //--------------------------------------------------------------------------------------------------------------------

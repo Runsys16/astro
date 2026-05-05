@@ -22,15 +22,16 @@ PanelConsoleSerial::PanelConsoleSerial()
     VarManager& var= VarManager::getInstance();
     int x, y, dx, dy;
 
-    if ( var.existe("xPanelSerial"))			x = var.geti("xPanelSerial");
-    else										x = 0;
-    if ( var.existe("yPanelSerial"))			y = var.geti("yPanelSerial");
-    else										y = 0;
-    if ( var.existe("dxPanelSerial"))			dx = var.geti("dxPanelSerial");
-    else										dx = 0;
-    if ( var.existe("dyPanelSerial"))			dy = var.geti("dyPanelSerial");
-    else										dy = 0;
-    
+	INIT_VARI( xPanelSerial, 10 );
+	INIT_VARI( yPanelSerial, 10 );
+	INIT_VARI( dxPanelSerial, 200 );
+	INIT_VARI( dyPanelSerial, 600 );
+
+	x  = var.geti( "xPanelSerial" );
+	y  = var.geti( "yPanelSerial" );
+	dx = var.geti( "dxPanelSerial" );
+	dy = var.geti( "dyPanelSerial" );
+
     if ( x<= 0 )        x = 10;
     if ( dx<= 100 )     dx = 500;
     if ( y<= 0 )        y = 10;
@@ -55,8 +56,6 @@ PanelConsoleSerial::PanelConsoleSerial()
     dc = -1.0;
     ad_change = -1.0;
     dc_change = -1.0;
-
-    if ( !var.existe("bNuit") )              var.set( "bNuit", false );
 
     if ( var.getb("bNuit") )    pc->setColor( 0xffff0000 );
     else                        pc->setColor( 0xffffffff );

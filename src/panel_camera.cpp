@@ -1025,7 +1025,7 @@ void PanelCamera::displaySuivi()
     if ( bAffColimation )
     {
     	glColor4fv( cRouge );
-	    glCercle( vSuiviScr, echelle*(fDiamSuivi1) );
+	    glCercle( vSuiviScr, echelle*(fLimitCorrection1) );
 	}
 
     if ( !bCorrection )			glEnable(GL_LINE_STIPPLE);    
