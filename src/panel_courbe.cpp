@@ -85,32 +85,14 @@ PanelCourbe::PanelCourbe()
     pYMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 70 );
     pYMin = new PanelText( (char*)"-err",		PanelText::NORMAL_FONT, 5, 80 );
     
-    err = var.getf("dErr");
-
-    bDisplayCourbeX = true;
-    bDisplayCourbeY = true;
-    bDisplayfftX    = true;
-    bDisplayfftY    = true;
-    bDisplayPt      = true;
-    courbe1         = 1.0;
-    courbe2         = 1.0;
-    delta_courbe1   = 1.0;
-    delta_courbe2   = 1.0;
-    vOrigine.x      = 0.0;
-    vOrigine.y      = 0.0;
-    taille_mini		= 10.0;
-    filtre			= 10.0;
-    decal_x			= 10;
-    decal_y			= 10;
-
-	LOAD_VARF( vOrigine.x, 1000 )
-	LOAD_VARF( vOrigine.y, 400 )
+	LOAD_VARF( vOrigine.x, 1000.0 )
+	LOAD_VARF( vOrigine.y, 400.0 )
 	LOAD_VARF( vOrigine.z, 0 )
 	
-	LOAD_VARF( courbe1, 10 )
-	LOAD_VARF( courbe2, 10 )
-	LOAD_VARF( delta_courbe1, 120 )
-	LOAD_VARF( delta_courbe2, 120 )
+	LOAD_VARF( courbe1, 8.0 )
+	LOAD_VARF( courbe2, 8.0 )
+	LOAD_VARF( delta_courbe1, 120.0 )
+	LOAD_VARF( delta_courbe2, 120.0 )
 
 	LOAD_VARB( bDisplayCourbeX, true )
 	LOAD_VARB( bDisplayCourbeY, true )
@@ -162,9 +144,9 @@ PanelCourbe::PanelCourbe()
             	logf( (char*)"Fichier inexistant : %s", FileResultat.c_str() );
         }
     }
-
-    LOAD_VARI( decal_x, 66 )
-    LOAD_VARI( decal_y, 3 )
+	// C'est variable sont modifié par charge_guidage
+    LOAD_VARI( decal_x, 0 )
+    LOAD_VARI( decal_y, 0 )
     
     setVisible( var.getb( "bPanelCourbe" ) );
 
@@ -289,27 +271,8 @@ void PanelCourbe::init_var()
 {
     VarManager&         var = VarManager::getInstance();
 
-    if (!var.existe("dErr"))                        var.set("dErr", (float)1.0);
-    if (!var.existe("courbe1"))                     var.set("courbe1", (float)1.0);
-    if (!var.existe("delta_courbe1"))               var.set("delta_courbe1", (float)1.0);
-    if (!var.existe("courbe2"))                     var.set("courbe2", (float)1.0);
-    if (!var.existe("delta_courbe2"))               var.set("delta_courbe2", (float)1.0);
-
-    if (!var.existe("vOrigine.x"))                  var.set("vOrigine.x", (float)0.0);
-    if (!var.existe("vOrigine.y"))                  var.set("vOrigine.y", (float)0.0);
-
-    if (!var.existe("bPanelCourbe"))                var.set("bPanelCourbe", true);
-    //if (!var.existe("FileResultat"))                var.set("FileResultat", "---");
-    if (!var.existe("decal_x"))                     var.set("decal_x", 0 );
-    if (!var.existe("decal_y"))                     var.set("decal_y", 0 );
-    if (!var.existe("taille_mini_unite"))           var.set("taille_mini_unite", (float)20.0);
-    
-    if (!var.existe("xPanelCourbe") )               var.set( "xPanelCourbe", 10);
-    if (!var.existe("yPanelCourbe") )               var.set( "yPanelCourbe", 10);
-    if (!var.existe("dxPanelCourbe") )              var.set("dxPanelCourbe", 400);
-    if (!var.existe("dyPanelCourbe") )              var.set("dyPanelCourbe", 400);
-
-    if (!var.existe("filtre") )                     var.set("filtre", (float)10.0);
+    err = var.getf("dErr");
+    taille_mini		= 10.0;
 
     pIn  = NULL;
     pOut = NULL;
@@ -641,16 +604,15 @@ void PanelCourbe::glEchelleAxe( int AXE, int SIZE, float max, float min, PanelTe
     
     if ( var.getb("bNuit") )
     {
-        color       = vcf4( gris, 0.0, 0.0, 1.0 );    
-        colorLimit  = vcf4( 0.8, 0.0, 0.0, 1.0 );    
-        colorAxe    = vcf4( 1.0, 0.0, 0.0, 1.0 );
+        color       = cRougeC;
+        colorLimit  = cRougeF;    
+        colorAxe    = cRouge;
     }
     else                            
     {
-        //gris = 0.4;
-        color       = vcf4( gris, gris, gris, 1.0 );
-        colorLimit  = vcf4( 1.0, 0.0, 0.0, 1.0 );
-        colorAxe    = vcf4( 1.0, 1.0, 1.0, 1.0 );
+        color		= cGrisF;
+        colorLimit	= cRouge;
+        colorAxe	= cGris;
     }
     
     glBegin(GL_LINES);
@@ -1091,11 +1053,11 @@ void PanelCourbe::displayGL(void)
     else                            color = 0xffffffff;
     
     pFiltreVal->setColor( color );
-
-
-    glEchelle();
     
     PanelWindow::displayGL();
+
+    pFiltreVal->setColor( color );
+    glEchelle();
 
     int DY = getY();
     
@@ -1147,17 +1109,13 @@ void PanelCourbe::updatePos()
     pCBCourbeY->setPos(     getDX()-120, pCourbeY->getPosY() );
 
     pAffFiltre->setPos(     getDX()-100, pAffFiltre->getPosY() );
-    //logf( (char*)"setPos %d, %d ", getDX()-180,  pAffFiltre->getPosY() );
     pFiltreVal->setPos(     getDX()-55,  pAffFiltre->getPosY() );
-    //pCBAffCourbe->setPos(   getDX()-120, pAffFiltre->getPosY() );
 
     pAffFFTX->setPos(        getDX()-100, pAffFFTX->getPosY() );
     pCBAffFFTX->setPos(      getDX()-120, pAffFFTX->getPosY() );
-    //logf( (char*)"updatePos()" );
 
     pAffFFTY->setPos(        getDX()-100, pAffFFTY->getPosY() );
     pCBAffFFTY->setPos(      getDX()-120, pAffFFTY->getPosY() );
-    //logf( (char*)"updatePos()" );
 
     char s[255];
     //--------------------------------------------------------------    
@@ -1167,7 +1125,6 @@ void PanelCourbe::updatePos()
         else                        sprintf( s, (char*)"Abcisse X Off" );
         
         pCourbeX->changeText( s, true );
-        //pCBCourbeX->setVal( bCBCourbeX );
         //--------------------------------------------------------------    
         var.set( "bDisplayCourbeX", bDisplayCourbeX );
     }
@@ -1177,23 +1134,14 @@ void PanelCourbe::updatePos()
         else                        sprintf( s, (char*)"Ordonnee Y Off" );
         
         pCourbeY->changeText( s, true );
-        //pCBCourbeY->setVal( bCBCourbeY );
         var.set( "bDisplayCourbeY", bDisplayCourbeY );
     }
-    //--------------------------------------------------------------    
-    if ( bDisplayCourbeX  )                 pCourbeX->setColor( (unsigned long)0x0808ffff );
-    else                                    pCourbeX->setColor( (unsigned long)0x808080ff );
-
-    if ( bDisplayCourbeY )                  pCourbeY->setColor( (unsigned long)0xffff00ff );
-    else                                    pCourbeY->setColor( (unsigned long)0x808080ff );
-
     //--------------------------------------------------------------    
     if ( bDisplayfftX != bDisplayfftX_old )  {
         if ( bDisplayfftX )         sprintf( s, (char*)"X fft On" );
         else                        sprintf( s, (char*)"X fft Off" );
 
         pAffFFTX->changeText( s, true );
-        pAffFFTX->setColor( (unsigned long)0xff00ff00 );
         pCBAffFFTX->setVal( bDisplayfftX );
         var.set( "bDisplayfftX", bDisplayfftX );
     }
@@ -1203,26 +1151,16 @@ void PanelCourbe::updatePos()
         else                        sprintf( s, (char*)"Y fft Off" );
 
         pAffFFTY->changeText( s, true );
-        pAffFFTY->setColor( (unsigned long)0x8000ff00 );
         pCBAffFFTY->setVal( bDisplayfftY );
         var.set( "bDisplayfftY", bDisplayfftY );
     }
     //--------------------------------------------------------------    
     if ( bDisplayPt != bDisplayPt_old )  {
-        if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
-        else                            pAffPt->setColor( (unsigned long)0x808080ff );
-        //pCBAffFFTY->setVal( bDisplayfftY );
         var.set( "bDisplayPt", bDisplayPt );
     }
     //--------------------------------------------------------------    
-    if ( bDisplayfftX  )            pAffFFTX->setColor( (unsigned long)0x0808ffff );
-    else                            pAffFFTX->setColor( (unsigned long)0x808080ff );
-
-    if ( bDisplayfftY )             pAffFFTY->setColor( (unsigned long)0xffff00ff );
-    else                            pAffFFTY->setColor( (unsigned long)0x808080ff );
-    //--------------------------------------------------------------    
-    filtre = (float)nb / dVal;
     
+    filtre = (float)nb / dVal;
     if ( filtre_old != filtre )
     {
         sprintf( s, (char*)"Filtre :" );
@@ -1238,28 +1176,17 @@ void PanelCourbe::updatePos()
 	    update_err();
     }
     //--------------------------------------------------------------    
-
-    bDisplayPt_old = bDisplayPt;
-
+    bDisplayPt_old		= bDisplayPt;
     bDisplayCourbeX_old = bDisplayCourbeX;
     bDisplayCourbeY_old = bDisplayCourbeY;
-
-    bDisplayfftX_old = bDisplayfftX;
-    bDisplayfftY_old = bDisplayfftY;
-    filtre_old = filtre;
+    bDisplayfftX_old	= bDisplayfftX;
+    bDisplayfftY_old	= bDisplayfftY;
+    filtre_old			= filtre;
     
 
     int l = pFilename->getTextLenght();
     pFilename->setPos( (getDX()-l)/2, 0 );
 
-    /*
-    PanelText*          pAffFiltre;
-    PanelText*          pValAffCourbe;
-    PanelText*          pAffFFT;
-    PanelText*          pCourbeX;
-    PanelText*          pCourbeY;
-    */
-    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1537,20 +1464,58 @@ void PanelCourbe::sinusoide_fft3(CArray& x, float* t)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::setColor(long l)
 {
-	PanelWindow::setColor(l);
 	
     VarManager& var = VarManager::getInstance();
 
 	if ( bNuit )
 	{
+		PanelWindow::setColor(0xff0000FF);
+		pAffFiltre->setColor( (unsigned long)0xff0000ff );
+		
 		if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xff0000ff );
 		else                            pAffPt->setColor( (unsigned long)0x800000ff );
 		
+		if ( bDisplayCourbeX  )			pCourbeX->setColor( (unsigned long)0xff0000ff );
+		else							pCourbeX->setColor( (unsigned long)0x800000ff );
+
+		if ( bDisplayCourbeY )			pCourbeY->setColor( (unsigned long)0xff0000ff );
+		else							pCourbeY->setColor( (unsigned long)0x800000ff );
+
+		//--------------------------------------------------------------    
+	    if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xff0000ff );
+	    else                            pAffPt->setColor( (unsigned long)0x800000ff );
+		//--------------------------------------------------------------    
+		if ( bDisplayfftX  )            pAffFFTX->setColor( (unsigned long)0xff0000ff );
+		else                            pAffFFTX->setColor( (unsigned long)0x800000ff );
+
+		if ( bDisplayfftY )             pAffFFTY->setColor( (unsigned long)0xff0000ff );
+		else                            pAffFFTY->setColor( (unsigned long)0x800000ff );
 	}
 	else
 	{
+		PanelWindow::setColor(0xffFFffFF);
+		pAffFiltre->setColor( (unsigned long)0x8080ffff );
+		
 		if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
 		else                            pAffPt->setColor( (unsigned long)0x808080ff );
+		
+		//--------------------------------------------------------------    
+		if ( bDisplayCourbeX  )			pCourbeX->setColor( (unsigned long)0x0808ffff );
+		else							pCourbeX->setColor( (unsigned long)0x808080ff );
+
+		if ( bDisplayCourbeY )			pCourbeY->setColor( (unsigned long)0xffff00ff );
+		else							pCourbeY->setColor( (unsigned long)0x808080ff );
+
+		//--------------------------------------------------------------    
+	    if ( bDisplayPt  )              pAffPt->setColor( (unsigned long)0xffffffff );
+	    else                            pAffPt->setColor( (unsigned long)0x808080ff );
+		//--------------------------------------------------------------    
+		if ( bDisplayfftX  )            pAffFFTX->setColor( (unsigned long)0x0808ffff );
+		else                            pAffFFTX->setColor( (unsigned long)0x808080ff );
+
+		if ( bDisplayfftY )             pAffFFTY->setColor( (unsigned long)0xffff00ff );
+		else                            pAffFFTY->setColor( (unsigned long)0x808080ff );
+    //--------------------------------------------------------------    
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

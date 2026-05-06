@@ -120,7 +120,7 @@ private:
     vector<float>       t_fOut;
     int                 nb;
 
-    PanelTextOmbre*     pAffFiltre;
+    PanelText*			pAffFiltre;
     PanelSpinEditText*  pFiltreVal;
     double              dVal;
     PanelCheckBox*      pCBAffCourbe;

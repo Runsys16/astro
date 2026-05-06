@@ -223,7 +223,9 @@ bool Camera_mgr::keyboard( char key )
 void Camera_mgr::glutSpecialFunc(int key, int x, int y)	{
 
     int n = nActive;
-    if ( n == -1)                   return;
+    if ( n == -1)					return;
+    if ( pCurrent == NULL)			return;
+    if ( pCameras.size() == 0 )		return;
 
     VarManager&         var = VarManager::getInstance();
 	double incr = 1.0 / getCurrent()->getPanelCamera()->get_echelle();

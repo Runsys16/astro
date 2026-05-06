@@ -135,8 +135,8 @@ void PanelDebug::setColor( uint32_t c )
 {
 	//int nb = pText.size();
 	if ( idx < 1 )	return;
-	
-	pText[idx-1]->setColor( c );
+	setColorAll( c );
+	//pText[idx-1]->setColor( c );
 }
 //----------------------------------------------------------------------------------------------------------
 //
