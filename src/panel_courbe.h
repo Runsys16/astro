@@ -166,8 +166,9 @@ static bool             bDebug;
     PanelText*          init_text( int, int, char* );
     PanelCheckBox*      init_check_box( int, int );
     void                init_panel();
-    
+    void                init_dir();
     void                init_var();
+    
     void                create_guidage(char*);
     void                sauve_guidage_1_1();
     void                sauve_guidage_1_0();

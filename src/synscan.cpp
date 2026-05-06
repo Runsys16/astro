@@ -28,17 +28,19 @@ SYNSCAN::SYNSCAN()
     listen_1 = true;
     traite_1 = true;
     
-    uPort = 10004;
-
+    uPort_synscan		= 10004;
     sock_synscan		= -1;
 
-	#ifdef VAR_GLOBAL
+#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
 
 	string netIP = string( "192.168.1.220" );
 	LOAD_VARS( IP_SYNSCAN, netIP );
-
-	#endif
+    LOAD_VARI( uPort_synscan, 10004 );
+#else	
+	IP_SYNSCAN		= "192.168.1.220";
+    uPort_synscan	= 10004;
+#endif
 	
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -439,7 +441,7 @@ void SYNSCAN::thread_listen_synscan()
 	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
 	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
-	adresse.sin_port = htons(uPort);
+	adresse.sin_port = htons(uPort_synscan);
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
@@ -627,7 +629,7 @@ void SYNSCAN::print_list()
 
 	if ( sock_listen_synscan == -1 )		logf( (char*)"  SYNSCAN\timpossible d'ouvrir : %s", IP_SYNSCAN.c_str() );
 	else if ( sock_synscan != -1 )			logf( (char*)"  SYNSCAN\t connexion de \t: %s", sIP_synscan.c_str() );
-	else									logf( (char*)"  SYNSCAN\tlisten sur \t\t: %s : %d", IP_SYNSCAN.c_str(), uPort );
+	else									logf( (char*)"  SYNSCAN\tlisten sur \t\t: %s : %d", IP_SYNSCAN.c_str(), uPort_synscan );
 
 }    
 //--------------------------------------------------------------------------------------------------------------------

@@ -323,6 +323,8 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void				test_creer_dir( char* );
+
 void                vizier_load_stars( string, double, double );
 void                vizier_load_stars( string );
 void                vizier_load_stars( Catalog*, string, double, double );

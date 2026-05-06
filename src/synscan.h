@@ -50,7 +50,7 @@ protected:
 
     int                         sock_listen_synscan;  
     int                         sock_synscan;
-    unsigned					uPort;
+    unsigned					uPort_synscan;
 
     bool                        listen_1;
     bool                        traite_1;

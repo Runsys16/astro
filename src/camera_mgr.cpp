@@ -391,6 +391,8 @@ void  Camera_mgr::reOrder()
 {
     logf_thread((char*)"Camera_mgr::reOrder() -------------" );
     int nb = pCameras.size();
+    
+    if ( nb == 0 )	pCurrent = NULL;
 
     for( int i=0, a=0; i<nb; i++, a++ )
     {

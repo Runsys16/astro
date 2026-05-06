@@ -72,8 +72,6 @@ void set_asservissement(void)
     var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
     var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
-
-
     pButtonAsserv->setVal(bCorrection);
     
     logf( (char*)"set_asservissement() bCorrection = %s", BOOL2STR(bCorrection) );

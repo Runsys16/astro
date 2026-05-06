@@ -19,7 +19,6 @@ LX200::LX200()
     bLx200 = true;
 
     sock_lx200		= -1;
-    uPort			= 10003;
 
 #ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
@@ -27,7 +26,10 @@ LX200::LX200()
 	string netIP = string( "192.168.1.220" );
 
 	LOAD_VARS( IP_LX200, netIP );
-	
+    LOAD_VARI( uPort_lx200, 10003 );
+#else	
+	IP_LX200 	= "192.168.1.220";
+    uPort_lx200	= 10003;
 #endif
 
 #ifdef PANEL_LX200_DEBUG
@@ -672,7 +674,7 @@ void LX200::thread_listen_lx200()
 	memset(& adresse, 0, sizeof(struct sockaddr));
 	adresse.sin_family = AF_INET;
 	//adresse.sin_addr.s_addr = htonl(INADDR_ANY);
-	adresse.sin_port = htons(uPort);
+	adresse.sin_port = htons(uPort_lx200);
 	
 #ifdef VAR_GLOBAL
 	//sIP_init = VarManager::getInstance().gets("IP_INIT");
@@ -867,7 +869,7 @@ void LX200::print_list()
 
 	if ( sock_listen_lx200 == -1 )		logf( (char*)"  LX200\timpossible d'ouvrir : %s", IP_LX200.c_str() );
 	else if ( sock_lx200 != -1 )		logf( (char*)"  LX200\tconnexion de \t: %s", sIP_lx200.c_str() );
-	else								logf( (char*)"  LX200\tlisten sur \t\t: %s : %d", IP_LX200.c_str(), uPort );
+	else								logf( (char*)"  LX200\tlisten sur \t\t: %s : %d", IP_LX200.c_str(), uPort_lx200 );
 
 }    
 #ifdef PANEL_LX200_DEBUG

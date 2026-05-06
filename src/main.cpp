@@ -211,13 +211,13 @@ string              currentDirectory = "/home/rene/Documents/astronomie/logiciel
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-PanelWindow *       panelHelp;
-PanelScrollY *      panelScrHelp;
-PanelWindow *       panelResultat;
-PanelCourbe *       panelCourbe;
-PanelStdOut *       panelStdOut;
-PanelApn*           panelApn;
-PanelSimple *       panelStatus;
+PanelWindow *       panelHelp		= NULL;
+PanelScrollY *      panelScrHelp	= NULL;
+PanelWindow *       panelResultat	= NULL;
+PanelCourbe *       panelCourbe		= NULL;
+PanelStdOut *       panelStdOut		= NULL;
+PanelApn*           panelApn		= NULL;
+PanelSimple *       panelStatus		= NULL;
 
 
 PanelText*          pCamFilename;
@@ -605,6 +605,42 @@ void commande_magnitude( string filename )
         logf( (char*)mes.c_str() );
     }
     
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void test_creer_dir( char* pathname )
+{
+	struct stat 	buf;
+
+	if ( mkdir( pathname, 0755 ) != 0 )
+	{
+		switch( errno ) {
+		case EEXIST:
+			logf( (char*)"Le dossier \"%s\" existe", pathname );
+			break;
+		default:
+			logf( (char*)"[ ERREUR ] Probleme avec le dosier \"%s\"", pathname );
+			break;
+		}
+	}
+	else
+		logf( (char*)"Le dossier \"%s\" a ete cree", pathname );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+bool test_dir( char* pathname )
+{
+	struct stat 	buf;
+
+	if ( stat( pathname, &buf ) != 0 )
+	{
+		logf( (char*)"Le dossier \"%s\" n'existe pas", pathname );
+		return false;
+	}
+	logf( (char*)"Le dossier \"%s\" existe", pathname );
+	return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2870,14 +2906,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     logf( (char*)"    %02d\t%.8f glutKeyboardFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 
-    //logf( (char*)"main::glutKeyboardFunc(%c, %d, %d)", (char)key, x, y );
 	iGlutModifier = glutGetModifiers();
-    //logf( (char*)"  iGlutModifier = " BYTE_TO_BINARY_PATTERN BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(iGlutModifier>>8), BYTE_TO_BINARY(iGlutModifier) );
     bFileBrowser  = FileBrowser::getInstance().getVisible();
 
     Camera_mgr&  		cam_mgr = Camera_mgr::getInstance();
     WindowsManager& 	wm 		= WindowsManager::getInstance();
     
+    //logf( (char*)"main::glutKeyboardFunc(%c, %d, %d)", (char)key, x, y );
+    logf( (char*)"  iGlutModifier = " BYTE_TO_BINARY_PATTERN BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(iGlutModifier>>8), BYTE_TO_BINARY(iGlutModifier) );
     //wm.setModifier(iGlutModifier);
     
     //------------------------------------------------------------------------
@@ -2893,11 +2929,14 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         alertBoxQuit();
         return;
     }
-    //------------------------------------------------------------------------
     else
-    if ( PanelConsoleSerial::getInstance().keyboard(key, x, y) )      return;
     //------------------------------------------------------------------------
+    if ( bPanelSerial && PanelConsoleSerial::getInstance().keyboard(key, x, y) )
+    {
+    	return;
+    }
     else
+    //------------------------------------------------------------------------
     if ( bFileBrowser )
     {
         FileBrowser::getInstance().keyboard( key, x, y);
@@ -4181,8 +4220,8 @@ void status_nuit( unsigned long );
 void setColor()	
 {
 static bool bNuitOld =  -2;
+	if (bNuitOld == bNuit && !bFirstStart)		return;
 
-	if (bNuitOld == bNuit)		return;
     logf( (char*)"main::setColor()  " );
 	
 	bNuitOld = bNuit;
@@ -4282,12 +4321,16 @@ void update_err()
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateCourbe()	{
+	if ( panelCourbe != NULL )		return;
+
     panelCourbe = new PanelCourbe();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateResultat()	{
+	if ( panelResultat != NULL )		return;
+	
 	WindowsManager& wm = WindowsManager::getInstance();
 
     panelResultat = new PanelWindow();
@@ -4307,13 +4350,15 @@ static void CreateResultat()	{
 	int dx0 = 50;
 	int l = 0;
 
-	pRef   = new PanelText( (char*)"Reference ",  PanelText::NORMAL_FONT, x0, y0+16*l++  );
-	pEtoile = new PanelText( (char*)"Etoile ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
-	pEcart = new PanelText( (char*)"Ecart ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	pRef	= new PanelText( (char*)"Reference ",  PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	pEtoile	= new PanelText( (char*)"Etoile ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	pEcart	= new PanelText( (char*)"Ecart ",      PanelText::NORMAL_FONT, x0, y0+16*l++  );
+	
 	pRef->razTabSize();
 	pRef->setTabSize(80);
 	pEtoile->razTabSize();
 	pEtoile->setTabSize(80);
+	
 	panelResultat->add( pRef ); 
 	panelResultat->add( pEtoile ); 
 	panelResultat->add( pEcart ); 
@@ -4391,6 +4436,8 @@ static void addString4( string s )
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateHelp()	
 {
+	if ( panelHelp != NULL )			return;
+	
     int X = width - 50;
     int Y = 50;
     int DX = 400;
@@ -4405,9 +4452,7 @@ static void CreateHelp()
 	panelHelp->setPosAndSize( X, Y, DX, DY);
 	panelScrHelp->setPosAndSize( 0, 0, DX, DY);
 	panelHelp->setVisible(bPanelHelp);
-	//panelHelp->setBackground( (char*)"/home/rene/programmes/opengl/video/images/background.tga");
 	panelHelp->setBackground( (char*)"images/background.tga");
-    //panelHelp->setBackground( (_Texture2D*)NULL);
     
 	int y = 10;
 	int dy = 15;
@@ -4556,6 +4601,7 @@ static void CreateStatus()	{
 
  	
  	create_windows_button();
+ 	set_asservissement();
 
 
 
@@ -4565,28 +4611,53 @@ static void CreateStatus()	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+static void CreatePleiades()
+{
+    if ( ! test_dir( (char*)"/home/rene/.astropilot/pleiades" ) )		
+    {
+		logf_thread( (char*)"[ ERREUR ] Repertoire \"/home/rene/.astropilot/pleiades\" " );
+    	bPleiade = false;
+    	return;
+    }
+    if ( bPleiade )
+    {
+        pPleiade = new Pleiade();
+        Camera_mgr::getInstance().add( pPleiade );
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void CreateStdOut()	{
-	panelStdOut = new PanelStdOut();
+    if ( panelStdOut != NULL )		return;
+    
+   	panelStdOut = new PanelStdOut();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 static void CreateAllWindows()	{
-    //CreatePreview();
-    //CreateControl();
-    
     bool Old = bDesactiveLog;
     
     bDesactiveLog = false;
     
-    if ( panelStdOut == NULL )		CreateStdOut();
+	CreateStdOut();
     CreateHelp();
     CreateResultat();
-    CreateStatus();
     CreateCourbe();
+    CreateStatus();
+    CreatePleiades();
     panelApn = NULL;
-    
+
+	// Initialise certaine variables    
+    panelCourbe->get_vOrigine().x = xSuivi;
+    panelCourbe->get_vOrigine().y = ySuivi;
+    panelCourbe->get_vOrigine().z = 0.0;
+    change_joy( xSuivi, ySuivi );
+    change_perr( &dErr );
+
     bDesactiveLog = Old;
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -4939,6 +5010,7 @@ void parse_option_size( int argc, char**argv )
 #include <X11/Xlib.h>
 void getX11Screen()
 {
+	logf_thread( (char*)"main.c::getX11Screen()" );
     Display *display;
     Screen *screen;
 
@@ -4948,13 +5020,13 @@ void getX11Screen()
     // return the number of available screens
     int count_screens = ScreenCount(display);
 
-	logf_thread( (char*)"Total count screens: %d", count_screens);
+	logf_thread( (char*)"|  Total count screens: %d", count_screens);
 
 
     for (int i = 0; i < count_screens; ++i) {
         screen = ScreenOfDisplay(display, i);
         
-        logf_thread( (char*)"main.c::getX11Screen() Screen %d: %dX%d", i + 1, screen->width, screen->height);
+        logf_thread( (char*)"|  Screen %d: %dX%d", i + 1, screen->width, screen->height);
         
         widthScreen = screen->width;
         heightScreen = screen->height;
@@ -4976,9 +5048,9 @@ void getX11Screen()
     //0 to get the first monitor   
     crtc_info = XRRGetCrtcInfo (dpy, scr, scr->crtcs[0]);         
 
-    logf_thread( (char*)"Nb crtc   : %d", scr->ncrtc );         
-    logf_thread( (char*)"Nb Output : %d", scr->noutput );         
-    logf_thread( (char*)"N  mode   : %d", scr->nmode );    
+    logf_thread( (char*)"|  Nb crtc   : %d", scr->ncrtc );         
+    logf_thread( (char*)"|  Nb Output : %d", scr->noutput );         
+    logf_thread( (char*)"|  N  mode   : %d", scr->nmode );    
     
     for( int i=0; i<scr->ncrtc; i++ )
     {
@@ -5004,11 +5076,11 @@ void charge_var()
     LOAD_VARB( bMouseDeplace, false );
     LOAD_VARB( bSuivi, false );
     LOAD_VARB( bPanelControl, false );
-    LOAD_VARB( bPanelCourbe, true );
+    LOAD_VARB( bPanelCourbe, false );
     LOAD_VARB( bPanelHelp, true );
-    LOAD_VARB( bPanelResultat, true );
-    LOAD_VARB( bPanelStdOut, true );
-    LOAD_VARB( bPanelSerial, true );
+    LOAD_VARB( bPanelResultat, false );
+    LOAD_VARB( bPanelStdOut, false );
+    LOAD_VARB( bPanelSerial, false );
 
     LOAD_VARB( bAfficheVec, true )
     LOAD_VARB( bPause, true )
@@ -5029,6 +5101,9 @@ void charge_var()
 
 	INIT_VARB( bVerboseArduino, false );
 	INIT_VARB( bAffFitsCorrection, true );
+
+	LOAD_VARB( bAffCatalog, true);
+	LOAD_VARB( bAffStar, true);
 
 	//------------------------------------------------------------------------------------
 	//                                REEL
@@ -5064,36 +5139,40 @@ void charge_var()
 	LOAD_VARF( ZrefX, 935);
 	LOAD_VARF( ZrefY, 1030 );
 	LOAD_VARF( Wref, 5.5);
-	LOAD_VARB( bAffCatalog, true);
-	LOAD_VARB( bAffStar, true);
    	
 	LOAD_VARF( dErr, 0.63 );
 	INIT_VARF( fGmagMax, 17.6 );
 
 	//------------------------------------------------------------------------------------
+	//                          POSITIONS DES FENETRES
+	INIT_VARI( xPanelCourbe, 10 );
+	INIT_VARI( yPanelCourbe, 10 );
+	INIT_VARI( dxPanelCourbe, 1496 );
+	INIT_VARI( dyPanelCourbe, 400 );
 
-    if ( bFull )        glutFullScreen();
-    if ( panelResultat )	panelResultat->setVisible( bPanelResultat );
-    if ( panelStdOut )		panelStdOut->setVisible( bPanelStdOut );
-    if ( panelCourbe )		panelCourbe->setVisible(bPanelCourbe);
-    if ( panelHelp )		panelHelp->setVisible( bPanelHelp );
-    if ( panelCourbe == NULL )          logf( (char*)"[ERREUR] Erreur panelCourbe NULL ..." );
+	INIT_VARI( xPanelHelp, 210 );
+	INIT_VARI( yPanelHelp, 100 );
+	INIT_VARI( dxPanelHelp, 1180 );
+	INIT_VARI( dyPanelHelp, 650 );
+
+	INIT_VARI( xPanelSerial, 10 );
+	INIT_VARI( yPanelSerial, 10 );
+	INIT_VARI( dxPanelSerial, 586 );
+	INIT_VARI( dyPanelSerial, 600 );
+
+	INIT_VARI( xPanelStdOut, 122 );
+	INIT_VARI( yPanelStdOut, 180 );
+	INIT_VARI( dxPanelStdOut, 867 );
+	INIT_VARI( dyPanelStdOut, 569 );
+
+	//------------------------------------------------------------------------------------
+
+    if ( bFull )        		glutFullScreen();
 
     compute_matrix();
 
-    PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
-
-	Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
-	cam_mgr.active();
-
     change_ad_status( d_deg_ad );
     change_dc_status( d_deg_dc );
-    
-    if ( bPleiade )
-    {
-        pPleiade = new Pleiade();
-        Camera_mgr::getInstance().add( pPleiade );
-    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -5106,17 +5185,24 @@ void exit_handler()
 	SYNSCAN::getInstance().close_all();
 	
 	WindowsManager& wm= WindowsManager::getInstance();
-	cout << "Nb Fenetre : " << wm.getChilds().size() << std::endl;
+	cout << "Nb Fenetre(s) ouverte(s) : " << wm.getChilds().size() << std::endl;
 
     cout <<"exit_handler()"<< endl;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//										MM   MM  AAAAA  II  NN    N
+//										M M M M  A   A  II  N N   N
+//										M  M  M  AAAAA  II  N  N  N
+//										M     M  A   A  II  N   N N
+//										M     M  A   A  II  N    NN
+//
 //--------------------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-    //var.setSauve();
-    //init_var();
+	//----------------------------------------------------------------------
+	// Parse ligne de commande
+	//----------------------------------------------------------------------
     parse_option(argc, argv);
     atexit(exit_handler);
     
@@ -5125,37 +5211,37 @@ int main(int argc, char **argv)
     dxCam = 1920;
     dyCam = 1080;
 
+	//----------------------------------------------------------------------
+	// Init info X11
+	//--------------
+	// resolution etc...
+	//----------------------------------------------------------------------
     getX11Screen();
 
+	//----------------------------------------------------------------------
+	// OPENGL
+	//--------
+	// Initialise les fonctions openGL
+	//----------------------------------------------------------------------
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    //width = getScreenDX() - 100;
-    //height = getScreenDY() - 40;
+	xPos = 0.0;
+	yPos = 0.0;
     width = getScreenDX();
     height = getScreenDY();
-
     
     logf_thread( (char*)"Screen size %dx%d", width, height );
-
-	//xPos = 1200 + (getScreenDX()-width)/2;
-	xPos = 0.0;//(getScreenDX()-width)/2;
-	yPos = 0.0;//(getScreenDY()-height)/2;
 
 	glutInitWindowPosition(xPos, yPos);
 	glutInitWindowSize( width, height );
 
-	if (glutCreateWindow("Astro Pilot") == 0){ 
-		return 1;
-	}
-
-	//glutFullScreen();
+	if (glutCreateWindow("AstroPilot") == 0)		return 1;
 
 	glutReshapeFunc(reshapeGL);
 	glutDisplayFunc(displayGL);
 	glutIdleFunc(idleGL);
 
-	
 	logf_thread( (char*)"Fenetre %d,%d %dx%d ", xPos, yPos, width, height );
 
 	glutKeyboardFunc(glutKeyboardFunc);
@@ -5169,64 +5255,63 @@ int main(int argc, char **argv)
 	initGL(argc, argv);
     glewInit();
     
+	//----------------------------------------------------------------------
+	// FENETRES
+	//-----------
+	// Init des repertoires (si il n'existe pas)
+	// Charge les variables
+	// Initialise les fenetres
+	//----------------------------------------------------------------------
+    test_creer_dir( (char*)"/home/rene/.astropilot" );
+    test_creer_dir( (char*)"/home/rene/.astropilot/vizier" );
     charge_var();
-    
     CreateAllWindows();
-    set_asservissement();
 
-    panelCourbe->get_vOrigine().x = xSuivi;
-    panelCourbe->get_vOrigine().y = ySuivi;
-    panelCourbe->get_vOrigine().z = 0.0;
-    change_joy( xSuivi, ySuivi );
-    // status.inc
-    change_perr( &dErr );
-    
-    logf ((char*)"############## START CAMERA MANAGER ###################");
-    
-    Camera_mgr& cam_mgr = Camera_mgr::getInstance();
-
-    cam_mgr.reOrder();
-    //cam_mgr.getCurrent();
-    //cam_mgr.active();
-
-    //init_var();
-
+	//----------------------------------------------------------------------
+	// CONNECTIONS
+	//---------------
+	// Initialise les traitement de connections
+	//   Arduino, Stellarium(PC), Stellarium(Android), Camera
+	//
+	//----------------------------------------------------------------------
+    Camera_mgr::getInstance().reOrder();
     Connexion_mgr::getInstance().start();
-    PanelConsoleSerial::getInstance();
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
     Serveur_mgr::getInstance().start_init();
     Serveur_mgr::getInstance().start_deplacement();
     LX200::getInstance().start_lx200();
     SYNSCAN::getInstance().start_synscan();
+	//----------------------------------------------------------------------
 
     var.setSauve();
-    
-    if ( panelStdOut )
-    {
-		if ( var.getb("bNuit") )    panelStdOut->setColor( 0xff0000ff );
-		else                        panelStdOut->setColor( COLOR_WHITE );
-	}
 	    
     double clearColor = 0.0;
     glClearColor( clearColor, clearColor, clearColor,1.0);
     
-    // Pre-Charge la texture pour eviter un bug
+	//----------------------------------------------------------------------
+    // FileBrowser
+    //------------
+    // Pre-Charge la texture pour eviter un bug 
+	//----------------------------------------------------------------------
     WindowsManager::getInstance().loadResourceImage( "images/file.png" );
     WindowsManager::getInstance().loadResourceImage( "images/dir.png" );
     FileBrowser::getInstance();
+
+	//----------------------------------------------------------------------
     //BluetoothManager::getInstance();
     WindowsManager::genereMipMap( false );
-
-    setColor();
-    
+	setColor();
     compute_matrix();
     bCorrection = false;
-    
 	vizier.charge();
+
+	// -----------------------------------
+	// -----------------------------------
 	// -----------------------------------         EN ROUTE    
     glutMainLoop();
 	// -----------------------------------         BYE BYE
-
+	// -----------------------------------
+	// -----------------------------------
 
 	return 0;
 }

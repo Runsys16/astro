@@ -918,7 +918,7 @@ void FindStar::update_graph_segment()
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::click_find_star( vec2 v)
 {
-	logf( (char*)"FindStar::click_graph_distri( " VEC2_PRINTFN(0) " )", VEC2_AFF(v) );
+	logf( (char*)"FindStar::click_find_star( " VEC2_PRINTFN(0) " )", VEC2_AFF(v) );
 	log_tab(true);
 	
 	if ( pRB == NULL )		{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
@@ -953,8 +953,7 @@ void FindStar::click_graph_distri( vec2 v)
 	if ( pGraphDistri->getVisible() )
 	{
 		pGraphDistri->setVisible(false);
-		pGraphLum->setVisible(false);
-		tStar.clear();
+		//tStar.clear();
 	}	
 	else
 	{
@@ -979,15 +978,27 @@ void FindStar::click_graph_lum( vec2 v)
 
 	if ( pRB == NULL )		{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
 
-	tStar.clear();
+	if ( ! pGraphLum->getVisible() )
+	{
+		logf( (char*)"|  Affiche les graphiques" );
+		tStar.clear();
+		
+		find_line( (int)v.y, true );
+		
+		WindowsManager::getInstance().onTop(pGraphDistri);
+		
+		pGraphLum->setVisible(true);
+		update_graph_segment();
+		logf( (char*)"|  %d etoiles trouvées", tStar.size() );
+	}
+	else
+	{
+		logf( (char*)"|  Efface les graphiques" );
+		pGraphLum->setVisible(false);
+		tStar.clear();
+	}
 	
-	find_line( (int)v.y, true );
 	
-	if ( pGraphDistri->getVisible() )		WindowsManager::getInstance().onTop(pGraphDistri);
-	
-	update_graph_segment();
-
-	logf( (char*)"|  %d etoiles trouvées", tStar.size() );
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------

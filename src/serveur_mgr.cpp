@@ -14,25 +14,29 @@
 Serveur_mgr::Serveur_mgr()
 {
     logf((char*)"----------- Constructeur Serveur_mgr() -------------" );
+
     listen_1 = true;
     listen_2 = true;
     bTraite_depl = true;
     bTraite_init = true;
 
     sock_deplacement	= -1;
-    uPort_deplacement	= 10001;
     sock_init			= -1;
-    uPort_init			= 10002;
 
-	#ifdef VAR_GLOBAL
+#ifdef VAR_GLOBAL
 	VarManager& var = VarManager::getInstance();
-	
 	string netIP = string( "127.0.0.1" );
 
 	LOAD_VARS( IP_INIT, netIP );
 	LOAD_VARS( IP_DEPL, netIP );
-
-	#endif
+    LOAD_VARI( uPort_deplacement, 10001 );
+    LOAD_VARI( uPort_init, 10002 );
+#else
+    uPort_init			= 10002;
+    uPort_deplacement	= 10001;
+    IP_INIT =  "127.0.0.1";
+    IP_DEPL =  "127.0.0.1";
+#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -66,6 +66,7 @@ PanelCourbe::PanelCourbe()
 	WindowsManager&     wm  = WindowsManager::getInstance();
     VarManager&         var = VarManager::getInstance();
 
+    init_dir();
     init_var();
     //setDisplayGL(displayGLnuit_cb);
     //resizeCourbe( width, height );
@@ -270,6 +271,16 @@ void PanelCourbe::init_panel()
     add( pFiltreVal );
     
     
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::init_dir()
+{
+	VarManager&         var = VarManager::getInstance();
+	struct stat 	buf;
+
+	test_creer_dir( (char*)"/home/rene/.astropilot/suivi" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

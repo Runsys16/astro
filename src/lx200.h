@@ -51,7 +51,7 @@ protected:
 
     int                         sock_lx200;
     int                         sock_listen_lx200;
-    unsigned					uPort;
+    unsigned					uPort_lx200;
     
     double						dRA;
     double						dDC;
