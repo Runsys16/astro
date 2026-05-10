@@ -57,6 +57,7 @@ protected:
 	vec2				vTelescopeJ2000;
 	vec2				vTelescopePanel;
 
+	bool				bEchGeo;
 	double				ech;
     double              ech_geo;
     double              ech_user;
@@ -79,8 +80,11 @@ protected:
     Stars               stars;
     Catalog*            pVizier;
     int					idxVizierMouseOver;
-    FindStar*			pFindStar;
+//    FindStar*			pFindStar;
     
+    PanelSimple*		pBandeau0;
+    PanelSimple*		pBandeau1;
+
     PanelDebug*			pInfoVizier;
     PanelSimple*		pTelescope;
     PanelWindow*		pMouseCoord;
@@ -114,6 +118,8 @@ public:
     virtual void		update_stars();
     		void		updateEchelle();
     		void		updateEchelleGeo();
+    		void		updateEchelleGeo(bool);
+    		void		updateEchelleGeo2(bool);
     		
     		void		updatePosInfoVizier();
     		void		updateInfoVizier();
@@ -210,6 +216,7 @@ virtual double			get_echelle()									{ return ech; }
 	void				create_find_star();
 
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
+inline readBackground*	getRB()											{ return pReadBgr; }
 inline int				getDX()											{ return pReadBgr->w; }
 inline int				getDY()											{ return pReadBgr->h; }
 inline double           getEchelle()                                    { return ech_user; }
@@ -221,9 +228,7 @@ inline void             setVecteurDE(vec2 v)                            { vDE = 
 inline Catalog*			getCatalog()									{ return pVizier; }
 inline Capture*			getCapture()									{ return pCapture; }
 inline StarCompare&		getStarCompare()								{ return starCompare; }
-//inline void				tex_2_J2000(vec2& v)							{ pCapture->getFits()->tex_2_J2000(v); }
-//inline void				J2000_2_tex(vec2& v)							{ pCapture->getFits()->J2000_2_tex(v); }
-//inline string&			getFilename()									{ if (pCapture) return pCapture->getBasename(); else return ""; }
+//inline FindStar*		getFindStar()									{ return pFindStar; }
 
 };
 

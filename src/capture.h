@@ -12,11 +12,12 @@
 #include "fits.h"
 #include "var_mgr.h"
 #include "catalog.h"
+#include "find_star.h"
 
 
 using namespace std;
 
-class Capture : public PanelWindow
+class Capture : public PanelWindow, PanelButtonCallback
 {
 protected:
     bool                        bNewBackground;
@@ -29,6 +30,7 @@ protected:
     bool						bAfficheGrille;
     bool						bAfficheCorrectionFits;
     bool						bAfficheGraph;
+    bool						bTraiteReleaseLeft;
     
     sPanelPos					sPosSvg;
     
@@ -37,6 +39,9 @@ protected:
     string                      dirname;
     string                      basename;
     
+    bool						bAffGraph;
+
+	FindStar*					pFindStar;
     PanelGraph*					pGraph;
     PanelDebug*					pInfoGraph;
     PanelCapture*               panelCapture;
@@ -106,6 +111,10 @@ public :
 	void						update_info_graph();
 	void						create_info_graph();
 	void						create_graph();
+	void						graph_on_top();
+	void						create_find_star();
+
+virtual void					cb_button_mouse_up(PanelButton*);
 
     
 inline bool	 					getAffGraph()                               { return bAfficheGraph; }
@@ -125,9 +134,10 @@ inline string&                  getDirname()                                { re
 inline PanelCapture*            getPanelCapture()							{ return panelCapture; }
 inline PanelGraph*            	getGraph()									{ return pGraph; }
 inline PanelText*	            getNbVizier()                               { return pNbVizier; }
+inline FindStar*	            getFindStar()                               { return pFindStar; }
 
 //	   void                     setIconized(bool b);
-inline bool                     getIconezed()                               { return bIconized; }
+inline bool                     getIconized()                               { return bIconized; }
 inline bool                     isIconized()                                { return bIconized; }
 
 inline void                     setFullScreen(bool b)                       { bFullScreen = b; }
@@ -144,6 +154,9 @@ inline bool						getAfficheGrille()							{ return bAfficheGrille; }
 inline bool						getAfficheInfoSouris()						{ return bAfficheInfoSouris; }
 inline bool						getAfficheInfoFits()						{ return bAfficheInfoFits; }
 inline void						invalide_panel()							{ sPosSvg.X = -1; }
+inline bool						getTraiteReleaseLeft()						{ return bTraiteReleaseLeft; }
+
+
 };
 
 

@@ -16,6 +16,7 @@
 #include <WindowsManager.h>
 #include "main.h"
 #include "var_mgr.h"
+#include "notification.h"
 //--------------------------------------------------------------------------------------------------------------------
 using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
@@ -25,6 +26,8 @@ typedef struct
 	int X, Y, DX, DY;
 } s;
 */
+#define CB_BUTTON_DIST	0x8000
+#define CB_BUTTON_LUMI	0x8001
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -44,6 +47,10 @@ public:
 private:
 	string				name;
 	PanelText*			pTitre;
+	Notification*		pCallback;
+	
+	int					old_dx;
+	int					old_dy;
 	
 	bool				bLogX;
 	bool				bLogY;
@@ -67,6 +74,7 @@ private:
 	int					iMouse;
 	int					iMouseCapture;
 	Panel*				pPanelCallback;
+	PanelButton*		pButtonQUIT;
 	vcf4				cColorStar;
 	vcf4				cColorVizi;
 
@@ -142,6 +150,7 @@ public :
 virtual void            displayGL( void );
 virtual void            updatePos( void );
 virtual void			passiveMotionFunc( int, int);
+	int					get_new_ID();
 /*
 virtual void            clickLeft( int, int);
 virtual void            motionLeft( int, int);
@@ -151,24 +160,26 @@ virtual void            clickMiddle( int, int);
 virtual void            motionMiddle( int, int);
 virtual void            releaseMiddle( int, int);
 */    
-inline void				setName( string s )				{ name = s; pTitre->changeText(name);  setExtraString("PanelGraph "+s);
-}
+inline void				setName( string s )					{ name = s; pTitre->changeText(name);  setExtraString("PanelGraph "+s); }
 
-inline void				setXmin(double d)				{ dXmin = d; }
-inline void				setXmax(double d)				{ dXmax = d; }
-inline void				setYmin(double d)				{ dYmin = d; }
-inline void				setYmax(double d)				{ dYmax = d; }
+inline void				setXmin(double d)					{ dXmin = d; }
+inline void				setXmax(double d)					{ dXmax = d; }
+inline void				setYmin(double d)					{ dYmin = d; }
+inline void				setYmax(double d)					{ dYmax = d; }
 
-inline void				setPanelCallback(Panel* p)		{ pPanelCallback = p; }
-inline int				getIndexMouse()					{ return iMouse; }
-inline void				setPtStar(PT p)					{ ptStar = p; }
-inline void				setLogX()						{ bLogX = true; }
-inline void				setLogY()						{ bLogY = true; }
-inline void				setLinearX()					{ bLogX = false; }
-inline void				setLinearY()					{ bLogY = false; }
-inline void				setColorStar(vcf4 c)			{ cColorStar = c; }
+inline void				setPanelCallback(Panel* p)			{ pPanelCallback = p; }
+inline int				getIndexMouse()						{ return iMouse; }
+inline void				setPtStar(PT p)						{ ptStar = p; }
+inline void				setLogX()							{ bLogX = true; }
+inline void				setLogY()							{ bLogY = true; }
+inline void				setLinearX()						{ bLogX = false; }
+inline void				setLinearY()						{ bLogY = false; }
+inline void				setColorStar(vcf4 c)				{ cColorStar = c; }
 
-inline void				debug_log()						{ bLogX = !bLogX; resetCourbes(); }
+inline void				setNotification(Notification*p)		{ pCallback = p; }
+inline void				setButtonCallback( PanelButtonCallback* p)	{ pButtonQUIT->setButtonCallback(p); }
+
+inline void				debug_log()							{ bLogX = !bLogX; resetCourbes(); }
 };
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -6,6 +6,7 @@
 #include "convert.h"
 #include "panel_graph.h"
 #include "panel_debug.h"
+#include "notification.h"
 #include <mutex>
 #include <thread>
 //----------------------------------------------------------------------
@@ -23,7 +24,7 @@ struct etoile_line
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class FindStar
+class FindStar : public Notification, PanelButtonCallback
 {
 //----------------------------------------------------------------------
 private:
@@ -37,6 +38,7 @@ private:
     PanelDebug*			pInfo;
 //---------------------------------------
 	PanelGraph*			pGraphDistri;
+	vector<PanelGraph*>	tGraphLum;
 	PanelGraph*			pGraphLum;
 	string				name;
 //---------------------------------------
@@ -56,10 +58,14 @@ private:
 //---------------------------------------
 	double				max_lum;
 //---------------------------------------
+	int					DX_LUM;
+	int					DY_LUM;
+//---------------------------------------
 vector<etoile_line>		tStar;
 mutex					muStar;
 mutex					muFindStar;
 thread					thFindStar;
+//---------------------------------------
 //---------------------------------------
 public:
 						~FindStar();
@@ -100,15 +106,21 @@ public:
 	void				displayGL();
 //---------------------------------------
 	void				idle();
+	void				on_top(bool);
+	void				setVisible(bool);
+	void				printObjet();
 //---------------------------------------
+virtual void			cb_button_mouse_up(PanelButton*);
+//---------------------------------------
+
 inline int 				getOffset( int X, int Y )			{ return pRB->d*(X) + pRB->d*(Y)*pRB->w; }
 inline void				setRB(rb_t* p)						{ pRB = p; ptr = pRB->ptr; }
 inline void				setView(PanelSimple* p	)			{ pView = p; }
 inline void				setConvert(Convert* p)				{ pConvert = p; }
 inline void				setName(string s)					{ name = s; }
-inline PanelGraph*		getPanelGraphDistri()						{ return pGraphDistri; }
+inline PanelGraph*		getPanelGraphDistri()				{ return pGraphDistri; }
 //---------------------------------------
-
+virtual void			notifie( unsigned, void *);
 };
 //----------------------------------------------------------------------
 #endif

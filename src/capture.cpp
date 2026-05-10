@@ -162,6 +162,8 @@ void Capture::init()
 	pGraph				= NULL;
 	pInfoGraph			= NULL;
 	sPosSvg.X			= -1;
+	
+	pFindStar			= NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -297,7 +299,7 @@ void Capture::clickLeft(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::releaseLeft(int xm, int ym)
 {
-
+	bTraiteReleaseLeft = true;
 	logf( (char*)"Capture::releaseLeft( %d, %d)", xm, ym );
 	log_tab(true);
 
@@ -334,6 +336,62 @@ void Capture::releaseLeft(int xm, int ym)
 		iconize( X, Y, cap.getDXIcon(), cap.getDYIcon());
 		//cap.resize_icone( this, X, Y, cap.getDXIcon(), cap.getDYIcon() );
 	}
+	else
+	//--------------------------------------------
+	// ctrl + shift + alt
+	// recherche all
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
+		logf( (char*)"CTRL+SHIFT+ALT " );
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->setName( getBasename() );
+		pFindStar->click_all();
+    }
+    else
+	//--------------------------------------------
+	// shift + alt
+	// recherche
+    if ( iGlutModifier == (GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
+		logf( (char*)"SHIFT+ALT " );
+		if ( pFindStar == NULL )	create_find_star();
+		
+		vec2 vTex = vec2( xm, ym );
+		panelCapture->screen_2_tex( vTex );
+
+		pFindStar->setName( getBasename() );
+		pFindStar->click_find_star(vTex);
+    }
+    else
+	//--------------------------------------------
+	// ctrl + shift
+	// distribution ligne
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_SHIFT))    {
+		if ( pFindStar == NULL )	create_find_star();
+		
+		vec2 vTex = vec2( xm, ym );
+		vec2 vJ2000;
+		panelCapture->screen_2_tex( vTex );
+		logf( (char*)"CTRL+SHIFT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
+
+		pFindStar->setName( getBasename() );
+		pFindStar->click_graph_distri(vTex);
+    }
+    else
+	//--------------------------------------------
+	// ctrl + alt
+	// recherche ligne
+    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT))    {
+		vec2 vTex = vec2( xm, ym );
+		panelCapture->screen_2_tex( vTex );
+		
+		logf( (char*)"CTRL+ALT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
+		if ( pFindStar == NULL )	create_find_star();
+		
+		pFindStar->setName( getBasename() );
+		pFindStar->click_graph_lum( vTex );
+    }
+    else
+	    bTraiteReleaseLeft = false;
 
 	log_tab(false);
 	logf( (char*)"Capture::releaseLeft(...)   ------END---------" );
@@ -676,6 +734,13 @@ void Capture::iconize( int xIcon, int yIcon, int dxIcon, int dyIcon)
 	}
 	panelCapture->iconize();
 
+	if ( pGraph && bAffGraph )	{ pGraph->setVisible(false); pInfoGraph->setVisible(false); }
+
+	if ( pFindStar )
+	{
+		pFindStar->on_top(true);
+	}
+
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -700,6 +765,7 @@ void Capture::restaure()
 		onTop();
 		
 	}
+	graph_on_top();
 
 	log_tab(false);
 }
@@ -737,6 +803,7 @@ void Capture::addStar( int x, int y )
 void Capture::show()
 {
     setVisible( true );
+	if ( pGraph && bAffGraph && !bIconized )	{ pGraph->setVisible(true); pInfoGraph->setVisible(true); }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -744,6 +811,7 @@ void Capture::show()
 void Capture::hide()
 {
     setVisible( false );
+	if ( pGraph && bAffGraph && !bIconized )	{ pGraph->setVisible(false); pInfoGraph->setVisible(false); }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -891,6 +959,8 @@ void Capture::setAffGraph( bool b )
 			//---------------------------
 			log_tab(true);
 			pGraph = new PanelGraph();
+			pGraph->setButtonCallback( this );
+			bAffGraph = true;
 			pGraph->setPosAndSize( 10, 10, width/2 -40, height/2 -40 );
 			WindowsManager& wm	= WindowsManager::getInstance();
 			pGraph->setPanelCallback( this );
@@ -1084,6 +1154,74 @@ void Capture::create_graph()
 		if ( pInfoGraph == NULL )		create_info_graph();	
 
 		log_tab(false);
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::graph_on_top()
+{
+	if ( bIconized )
+	{
+		if ( pGraph )		pGraph->setVisible(false);
+		if ( pFindStar )	pFindStar->setVisible(false);
+	}
+	else
+	{	
+		WindowsManager& wm	= WindowsManager::getInstance();
+		if ( pGraph && bAfficheGraph )
+		{
+			//logf( (char*)"Capture::create_on_top()" );
+			pGraph->setVisible(true);
+			pInfoGraph->setVisible(true);
+			wm.sup( pGraph );
+			wm.add( pGraph );
+		}
+
+		if ( pFindStar )	pFindStar->on_top(bIconized);
+
+		if ( bFits )
+		{
+			PanelFits*	pPanelFits = fits->getPanelFits();
+			wm.sup( pPanelFits );
+			wm.add( pPanelFits );
+			
+		}
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::create_find_star()                         
+{
+	log( (char*)"Capture::create_find_star()" );
+	log_tab(true);
+
+	pFindStar = new FindStar();
+	
+	pFindStar->setRB( panelCapture->getRB() );
+	pFindStar->setView( this );
+	pFindStar->setConvert( panelCapture );
+
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::cb_button_mouse_up(PanelButton*)
+{
+	logf( (char*)"Callback Button UP ");
+	if ( pGraph )
+	{
+		if (pInfoGraph)		{
+			pGraph->sup( pInfoGraph );
+			delete pInfoGraph;
+			pInfoGraph = NULL;
+		}
+		
+		WindowsManager::getInstance().sup( pGraph );		
+		delete pGraph;
+		pGraph = NULL;
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

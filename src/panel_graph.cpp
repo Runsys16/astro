@@ -26,6 +26,9 @@ PanelGraph::~PanelGraph()
 	for( int i=0; i<tOrdPanelD.size(); i++ )		sup( tOrdPanelD[i] );
 	for( int i=0; i<tOrdPanelD.size(); i++ )		delete tOrdPanelD[i];
 	tOrdPanelD.clear();
+
+	sup( pButtonQUIT );
+	delete pButtonQUIT;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -45,6 +48,15 @@ PanelGraph::PanelGraph()
 	pTitre = new PanelText( (char*)"",  PanelText::NORMAL_FONT, 10, 5  );
 	pTitre->setAlign( PanelText::CENTER );
 	add( pTitre );
+	
+	pButtonQUIT = new PanelButton();
+	pButtonQUIT->setUp(    (char*)"images/fermer.png" );
+	pButtonQUIT->setDown(  (char*)"images/fermer.png" );
+	pButtonQUIT->setOver(  (char*)"images/fermer.png" );
+	pButtonQUIT->setVisible(true);
+	pButtonQUIT->setExtraString("ButtonQUIT (graph)");
+	add( pButtonQUIT );
+	pButtonQUIT->setPosAndSize( 100, 10, 16, 16 ); 
     
     setExtraString("PanelGraph");
 
@@ -72,6 +84,7 @@ void PanelGraph::init_var()
 	ptVizi			= CARREE;
 	
 	pPanelCallback	= NULL;
+	pCallback		= NULL;
 
 	iMouseCapture	= -1;
 }
@@ -902,6 +915,17 @@ void PanelGraph::setStarOverMouse(int is)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::updatePos()
 {
+	if ( pCallback && (old_dx != dx_raw || old_dy != dy_raw) )
+	{
+		old_dx = dx_raw; 
+		old_dy = dy_raw;
+		
+		pCallback->notifie( 0, (void*)&old_dx );
+		pCallback->notifie( 1, (void*)&old_dy );
+	}
+
+	pButtonQUIT->setPos( dx_raw - 20, 4 );
+	
     PanelWindow::updatePos();
 	update_abs();
 	update_ord();
@@ -953,54 +977,18 @@ void PanelGraph::passiveMotionFunc( int mx, int my)
 		pPanelCallback->callback( (void*)&iMouse );
 	}
 }
-/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::clickLeft( int xm, int ym )
+int PanelGraph::get_new_ID()
 {
-    logf( (char*)"PanelGraph::clickLeft( %d, %d )", xm, ym );
+	static int nID = 0;
+	return nID++;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::motionLeft( int xm, int ym )
-{
-    //logf( (char*)"PanelGraph::motionLeft( %d, %d )", xm, ym );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::releaseLeft( int xm, int ym )
-{
-    logf( (char*)"PanelGraph::releaseLeft( %d, %d )", xm, ym );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::clickMiddle( int xm, int ym )
-{
-    //logf( (char*)"PanelGraph::clickMiddle( %d, %d )", xm, ym );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::motionMiddle( int xm, int ym )
-{
-    //logf( (char*)"PanelGraph::motionMiddle( %d, %d )", sc2winX(xm), sc2winY(ym) );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelGraph::releaseMiddle( int xm, int ym )
-{
-    logf( (char*)"PanelGraph::releaseMiddle( %d, %d )", xm, ym );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-*/
 #endif
 
 

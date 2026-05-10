@@ -2,7 +2,7 @@
 #include "panel_stdout.h"
 #include "captures.h"
 //--------------------------------------------------------------------------------------------------------------------
-//#define DEBUG_WHEEL
+#define DEBUG_WHEEL
 //--------------------------------------------------------------------------------------------------------------------
 #define DEG_SEXAGESIMAL
 //----------------------------------------------
@@ -85,8 +85,10 @@ PanelCapture::PanelCapture( struct readBackground*  pReadBgr, Capture* pc )
 //--------------------------------------------------------------------------------------------------------------------
 PanelCapture::~PanelCapture()
 {
+	/*
 	if ( pFindStar != NULL )			delete pFindStar;
 	pFindStar = NULL;
+	*/
 	
 	//---------------------------------------------------------------
 	for( int i=0; i<tAD.size(); i++ )
@@ -139,7 +141,7 @@ void PanelCapture::init()
 	bFits				= false;
 	    
     pVizier				= NULL;
-    pFindStar			= NULL;
+    //pFindStar			= NULL;
 
 	bAffCatalogPosition = false;
 }
@@ -169,31 +171,99 @@ void PanelCapture::updateEchelle()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::updateEchelleGeo()
 {
+	updateEchelleGeo2( true );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::updateEchelleGeo2(bool b)
+{
     double coef;
-    double coef0 = (double)pReadBgr->w / getParent()->getDX();// * ech_user;
-    double coef1 = (double)pReadBgr->h / getParent()->getDY();// * ech_user;
+    double coef0 = (double)pReadBgr->w / getParent()->getDX();
+    double coef1 = (double)pReadBgr->h / getParent()->getDY();
 
-    if ( coef0 > coef1 )        coef = 1.0/coef1;
-    else                        coef = 1.0/coef0;
+	if ( bEchGeo )
+	{
+		if ( coef0 > coef1 )		coef = 1.0/coef1;
+		else						coef = 1.0/coef0;
     
-    if ( coef != ech_geo )
-    {
-        // Ancienne valeur
-        ech = ech_user * ech_geo;
-        dx /= ech;
-        dy /= ech;
+		if ( coef != ech_geo )
+		{
+		    // Ancienne valeur
+		    ech = ech_user * ech_geo;
+		    dx /= ech;
+		    dy /= ech;
+
+			// Nouvelle valeur
+		    ech_geo = coef;
+
+		    ech = ech_user * ech_geo;
+		    dx *= ech;
+		    dy *= ech;
+			
+			//----------------------        
+		}
+	}
+	else
+	{
+		if ( coef0 > coef1 )	coef = 1.0/coef0;
+		else					coef = 1.0/coef1;
+		
+		ech = ech_geo = coef;
+
+		dx = fabs( (double)pReadBgr->w * ech - (double)getParent()->getDX() ) / 2.0;
+		dy = fabs( (double)pReadBgr->h * ech - (double)getParent()->getDY() ) / 2.0;
+
+		int parent_DX = getParent()->getDX();
+		int parent_DY = getParent()->getDY();
+		int w = pReadBgr->w;
+		int h = pReadBgr->h;
+
+		//logf( (char*)"wxh=%dx%d  DX=%d DY=%d", w, h, parent_DX, parent_DY );
+		//logf( (char*)"dx=%d  dy=%d", (int)dx, (int)dy );
+	}
+    setPos(dx, dy);
+	setSize( (double)pReadBgr->w * ech, (double)pReadBgr->h * ech );
+
+
+    if ( coef != ech_geo )    {
+        //stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
+    }
+    
+    ech = ech_user * ech_geo;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelCapture::updateEchelleGeo(bool b)
+{
+    double coef;
+    double coef0 = (double)pReadBgr->w / getParent()->getDX();
+    double coef1 = (double)pReadBgr->h / getParent()->getDY();
+
+	if ( coef0 > coef1 )		coef = 1.0/coef1;
+	else						coef = 1.0/coef0;
+    
+	if ( coef != ech_geo )
+	{
+	    // Ancienne valeur
+	    ech = ech_user * ech_geo;
+	    dx /= ech;
+	    dy /= ech;
 
 		// Nouvelle valeur
-        ech_geo = coef;
+	    ech_geo = coef;
 
-        ech = ech_user * ech_geo;
-        dx *= ech;
-        dy *= ech;
+	    ech = ech_user * ech_geo;
+	    dx *= ech;
+	    dy *= ech;
 		
 		//----------------------        
-        setPos(dx, dy);
-		setSize( (double)pReadBgr->w * ech, (double)pReadBgr->h * ech );
-    }
+	}
+
+    setPos(dx, dy);
+	setSize( (double)pReadBgr->w * ech, (double)pReadBgr->h * ech );
+
 
     if ( coef != ech_geo )    {
         //stars.update_stars( getPosX(), getPosY(), this, pReadBgr, ech_geo*ech_user );
@@ -797,7 +867,8 @@ void PanelCapture::displayGL()
     if ( !pCapture->isIconized() )
     {
     	stars.displayGL();
-		if ( pFindStar != NULL )		pFindStar->displayGL();
+
+		if ( pCapture->getFindStar() != NULL )		pCapture->getFindStar()->displayGL();
 
 		if ( bFits )	{
 			if ( !pCapture->isIconized() && pCapture->getAfficheGrille() )		displayAxe();
@@ -820,6 +891,7 @@ void PanelCapture::displayGL()
 	}	
 
 
+
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 }
@@ -831,7 +903,7 @@ void PanelCapture::idle(float f)
 	if ( pCapture->isFits() )			bFits = true;
 	else								bFits = false;
 
-	if ( pFindStar != NULL )			pFindStar->idle();
+//	if ( pFindStar != NULL )			pFindStar->idle();
 	
     VarManager& var = VarManager::getInstance();
     //----------------------------------------------
@@ -843,6 +915,8 @@ void PanelCapture::idle(float f)
 		stars.setVisible(bAffStar);
 		stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
 		stars.idle();
+
+	  	if ( pCapture )			pCapture->graph_on_top();
 	}	
 	else	{
 		stars.setVisible(false);
@@ -914,6 +988,8 @@ void PanelCapture::wheelUp(int xm, int ym)
     log_tab(true);
 #endif
     
+    bEchGeo = true;
+    
     double k = 1.1;
     ech_user *= k;
     
@@ -948,7 +1024,7 @@ void PanelCapture::wheelUp(int xm, int ym)
     stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
 
 #ifdef DEBUG_WHEEL
-	logf( (char*)"+Nouvelle echelle %.2f", (float)ech );
+	logf( (char*)"+Nouvelle echelle %.2f  ech_geo=%0.2f ech_user=%0.2f", (float)ech, (float)ech_geo, (float)ech_user );
 
     log_tab(false);
 #endif
@@ -965,7 +1041,21 @@ void PanelCapture::wheelDown(int xm, int ym)
 
     double k = 0.9;
     ech_user *= k;
-    if (ech_user<=1.0)           ech_user = 1.0;
+    
+    if (ech_user <= 1.0)
+    {
+		logf( (char*)"ech_geo=%0.2f", (float)ech_geo );
+		ech_user = 1.0;
+    	if ( bEchGeo )
+    	{
+			bEchGeo = false;
+		}
+		else
+		{ 
+			updateEchelleGeo( false );
+		}
+		logf( (char*)"ech_geo=%0.2f", (float)ech_geo );
+    }
     
     Panel* p = getParent();
 
@@ -978,11 +1068,6 @@ void PanelCapture::wheelDown(int xm, int ym)
     double Y1 = k*Y0 + (k-1)*YM;
 
     double ech = ech_user * ech_geo;
-    /*
-    double max_x = ech*pReadBgr->w - p->getDX();
-    double max_y = ech*pReadBgr->h - p->getDY();
-	*/
-    
 
     int x1 = X1;
     int y1 = Y1;
@@ -992,13 +1077,12 @@ void PanelCapture::wheelDown(int xm, int ym)
     dx = -x1;
     dy = -y1;
     
-    
-    updatePos();    
+    //updatePos();    
     passiveMotionFunc( xm, ym );
     pCapture->updatePosIcones();
     
 #ifdef DEBUG_WHEEL
-    logf( (char*)"+Nouvelle echelle %.2f", (float)ech );
+	logf( (char*)"+Nouvelle echelle %.2f  ech_geo=%0.2f ech_user=%0.2f", (float)ech, (float)ech_geo, (float)ech_user );
 #endif
 
     stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
@@ -1213,48 +1297,14 @@ void PanelCapture::releaseLeft(int xm, int ym)
     logf( (char*)"PanelCapture::releaseLeft(%d,%d) glutModifier=%d...", xm, ym, iGlutModifier );
 	log_tab(true);
 
-    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
-		logf( (char*)"CTRL+SHIFT+ALT " );
-		if ( pFindStar == NULL )	create_find_star();
-		
-		pFindStar->setName( pCapture->getBasename() );
-		pFindStar->click_all();
-    }
-    else
-    if ( iGlutModifier == (GLUT_ACTIVE_ALT+GLUT_ACTIVE_SHIFT))    {
-		logf( (char*)"SHIFT+ALT " );
-		if ( pFindStar == NULL )	create_find_star();
-		
-		vec2 vTex = vec2( xm, ym );
-		screen_2_tex( vTex );
-
-		pFindStar->setName( pCapture->getBasename() );
-		pFindStar->click_find_star(vTex);
-    }
-    else
-    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_SHIFT))    {
-		if ( pFindStar == NULL )	create_find_star();
-		
-		vec2 vTex = vec2( xm, ym );
-		vec2 vJ2000;
-		screen_2_tex( vTex );
-		logf( (char*)"CTRL+SHIFT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
-
-		pFindStar->setName( pCapture->getBasename() );
-		pFindStar->click_graph_distri(vTex);
-    }
-    else
-    if ( iGlutModifier == (GLUT_ACTIVE_CTRL+GLUT_ACTIVE_ALT))    {
-		vec2 vTex = vec2( xm, ym );
-		screen_2_tex( vTex );
-		
-		logf( (char*)"CTRL+ALT " VEC2_PRINTFN(0), VEC2_AFF(vTex) );
-		if ( pFindStar == NULL )	create_find_star();
-		
-		pFindStar->setName( pCapture->getBasename() );
-		pFindStar->click_graph_lum( vTex );
-    }
-    else
+	pCapture->releaseLeft(xm, ym);
+	if ( pCapture->getTraiteReleaseLeft() )
+	{
+	}
+	else
+	//--------------------------------------------
+	// ctrl 
+	// GOTO
     if ( bFits && iGlutModifier == GLUT_ACTIVE_CTRL)    {
 		vec2 vTex = vec2( xm, ym );
 		vec2 vJ2000;
@@ -1267,6 +1317,9 @@ void PanelCapture::releaseLeft(int xm, int ym)
 		Serveur_mgr::getInstance()._goto( vJ2000.x, vJ2000.y );
     }
     else
+	//--------------------------------------------
+	// alt
+	// SYNC
     if ( bFits && iGlutModifier == GLUT_ACTIVE_ALT)    {
 		vec2 vTex = vec2( xm, ym );
 		vec2 vJ2000;
@@ -1324,6 +1377,7 @@ void PanelCapture::clickRight(int xm, int ym)
 	else
 	{
 	    PanelSimple::clickRight(xm,ym);
+		pCapture->graph_on_top();
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1340,7 +1394,8 @@ void PanelCapture::motionRight(int xm, int ym)
 	else
 	{
 		PanelSimple::motionRight( xm, ym );
-		updatePos();    
+		updatePos();
+		pCapture->graph_on_top();
 	}
 	//stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
 	update_stars();
@@ -1374,6 +1429,7 @@ void PanelCapture::releaseRight(int xm, int ym)
     {
 		log( (char*)"click D :printObjet" );
     	printObjet();
+    	pCapture->getFindStar()->printObjet();
     }
     
     
@@ -1388,7 +1444,6 @@ void PanelCapture::releaseRight(int xm, int ym)
 	else
     {
 		double e = (double)getDX() / (double)pReadBgr->w; 
-		//double e = (double)getDX() / (double)1920.0; 
 		
 		int xx = ((double)xm-(double)getX()) / e;
 		int yy = ((double)ym-(double)getY()) / e;
@@ -2130,7 +2185,7 @@ void PanelCapture::findGaiaDR3()
 	snprintf( (char*)coord, sizeof(coord), "%0.2f-%0.2f", vCentre.x, vCentre.y );
 	string sFilename = "/home/rene/.astropilot/vizier/vizier_" + string(coord) + ".cat";
 	//---------------------------------------------------
-	// Si le fichier de donne existe
+	// Si le fichier de donnee existe
 	// on le charge
 	// if ( false && pVizier->charge( sFilename ) )		
 	if ( pVizier->charge( sFilename ) && bGmagChange == false)		
@@ -2756,6 +2811,7 @@ void PanelCapture::compute_angle()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::create_find_star()                         
 {
+/*
 	log( (char*)"PanelCapture::create_find_star()" );
 	log_tab(true);
 
@@ -2766,6 +2822,7 @@ void PanelCapture::create_find_star()
 	pFindStar->setConvert( this );
 
 	log_tab(false);
+	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

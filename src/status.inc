@@ -64,6 +64,7 @@ void set_courbe(void)
 //--------------------------------------------------------------------------------------------------------------------
 void set_asservissement(void)
 {
+	unsigned long 		color_light, color;
 	//logf( (char*)"set_asservissement()" );
 	
     var.set("bCorrection", bCorrection);
@@ -74,6 +75,20 @@ void set_asservissement(void)
 
     pButtonAsserv->setVal(bCorrection);
     
+	if ( bNuit )
+	{
+		color_light	= VCF4_2_COLOR32(cRougeF);
+		color		= VCF4_2_COLOR32(cRouge);
+	}
+	else
+	{
+		color_light	= VCF4_2_COLOR32(cGris);//COLOR32(128, 0, 0, 255);
+		color		= VCF4_2_COLOR32(cJaune);
+	}
+
+    if (bCorrection)                				pAsservi->setColor(color);
+    else                            				pAsservi->setColor(color_light);
+
     logf( (char*)"set_asservissement() bCorrection = %s", BOOL2STR(bCorrection) );
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -824,6 +839,7 @@ void idleStatus()
 		
 		old_bNuit = bNuit;
 	}
+
     /*
     if ( bFirstStatus )
     {
@@ -844,8 +860,8 @@ void idleStatus()
 	    pCercleErr->set_pVal( pErr );
 	}
 
-	unsigned long 		color		= COLOR_WHITE;
-	unsigned long 		color_light = COLOR_GREY;
+	unsigned long 		color		= VCF4_2_COLOR32( cJaune );
+	unsigned long 		color_light = VCF4_2_COLOR32( cGris );
 	if ( bNuit )		 {
 		color_light = COLOR32(128, 0, 0, 255);
 		color		= COLOR32(255, 0, 0, 255);
@@ -877,6 +893,21 @@ void idleStatus()
 //--------------------------------------------------------------------------------------------------------------------
 void status_nuit(unsigned long color )
 {
+	
+	unsigned long 		color_light = COLOR_GREY;
+	
+	if ( bNuit )
+	{
+		color_light	= VCF4_2_COLOR32(cRougeF);
+		color		= VCF4_2_COLOR32(cRouge);
+	}
+	else
+	{
+		color_light	= VCF4_2_COLOR32(cGris);
+		color		= VCF4_2_COLOR32(cBlanc);
+	}
+
+
 	pCercleAsserv->setColor( color );
 	pCercleErr->setColor( color );
 	pCercleTemps->setColor( color );
@@ -887,11 +918,8 @@ void status_nuit(unsigned long color )
 
 	pUrgentUp->setColor( color );
 	pUrgentDown->setColor( color );
-	
-	unsigned long 		color_light = COLOR_GREY;
-	
-	if ( bNuit )		color_light = COLOR32(128, 0, 0, 255);
 
+	if ( !bNuit )		color = VCF4_2_COLOR32( cJaune );
 
 	if (bMouseDeplace)              				pDeplacement->setColor(color);
     else                            				pDeplacement->setColor(color_light);

@@ -1192,7 +1192,7 @@ void PanelCamera::displayGL()
     //else
     //	log( (char*)"Pleiade ss not current" );
     
-    if ( pFindStar != NULL )		pFindStar->displayGL();
+    if ( pFindStar != NULL )		{  pFindStar->on_top(pCamera->getIconized()); pFindStar->displayGL(); }
     
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

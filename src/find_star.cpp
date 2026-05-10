@@ -2,6 +2,7 @@
 #define FIND_STAR_CPP
 //--------------------------------------------------------------------------------------------------------------------
 #define OFFSET(__x, __y)		((int__x+(int)__y*pRB->w)
+//#define DEBUG_FIND_LINE
 //--------------------------------------------------------------------------------------------------------------------
 #include "find_star.h"
 //--------------------------------------------------------------------------------------------------------------------
@@ -13,9 +14,9 @@ FindStar::FindStar()
 	WindowsManager&     wm  = WindowsManager::getInstance();
 	
 	pGraphDistri	= NULL;
-	create_graph_distri();
 	pGraphLum		= NULL;
-	create_graph_lum();
+	//create_graph_distri();
+	//create_graph_lum();
 
 	pRB				= NULL;
 	pView			= NULL;
@@ -25,6 +26,10 @@ FindStar::FindStar()
 
 	dOffsetLow		= 5.0;
 	max_lum			= 0.0;
+	
+	DX_LUM			= width/2 -40;
+	DY_LUM			= height/2 -40;
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -65,7 +70,8 @@ FindStar::~FindStar()
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::create_graph_lum()
 {
-	if( pGraphLum != NULL )		return;
+	static int	ID	= 0;
+	//if( pGraphLum != NULL )		return;
 
 	log( (char*)"FindStar::create_graph_lum()" );
 	log_tab(true);
@@ -74,11 +80,12 @@ void FindStar::create_graph_lum()
 	
 	pGraphLum = new PanelGraph();
 	
-	pGraphLum->setExtraString( "pGraph Etoiles" );
+	pGraphLum->setExtraString( "pGraph luminosite" );
 	pGraphLum->setVisible( false );
-	pGraphLum->setPosAndSize( 10, 10, width/2 -40, height/2 -40 );
-
+	pGraphLum->setPosAndSize( 10, 10, DX_LUM, DY_LUM );
+	pGraphLum->setButtonCallback( this );
 	wm.add( pGraphLum );
+	pGraphLum->setID( CB_BUTTON_LUMI  + pGraphLum->get_new_ID() );
 
 	log_tab(false);
 }
@@ -97,10 +104,11 @@ void FindStar::create_graph_distri()
 	pGraphDistri = new PanelGraph();
 	
 	pGraphDistri->setExtraString( "pGraph distribution" );
-	pGraphDistri->setPosAndSize( 10, 10, width/2 -40, height/2 -40 );
+	pGraphDistri->setPosAndSize( 10, 10, DX_LUM, DY_LUM );
 	pGraphDistri->setVisible( false );
-
+	pGraphDistri->setButtonCallback( this );
 	wm.add( pGraphDistri );
+	pGraphDistri->setID( CB_BUTTON_DIST );
 
 	log_tab(false);
 }
@@ -787,8 +795,10 @@ void FindStar::find_line( int li, bool bAff)
 				if ( vMin.x<v.x && v.x<vMax.x && vMin.y<v.y && v.y<vMax.y )
 				{
 					//logf( (char*)"v" VEC2_PRINTFN() " vMin" VEC2_PRINTFN() " vMax" VEC2_PRINTFN() , VEC2_AFF(v), VEC2_AFF(vMin), VEC2_AFF(vMax) );
+					#ifdef DEBUG_FIND_LINE
 					if ( prev == 0.0 )		log( (char*)"-----" );
 					print_local(x);
+					#endif
 				}				
 			}
 			prev = l;
@@ -822,7 +832,8 @@ void FindStar::find_line( int li, bool bAff)
 					vMax	= vMin + vec2(pView->getPosDX(), pView->getPosDY() );
 
 					pConvert->tex_2_screen(v);
-					
+
+					#ifdef DEBUG_FIND_LINE
 					if ( vMin.x<v.x && v.x<vMax.x && vMin.y<v.y && v.y<vMax.y )
 					{
 						logf( (char*)"*** ETOILE *** " );
@@ -830,6 +841,7 @@ void FindStar::find_line( int li, bool bAff)
 						logf( (char*)"\tmin=%0.2lf max=%0.2lf dif_p=%0.2lf dif_m=%0.2lf ", local_min, local_max, local_dif_p, local_dif_m );
 						logf( (char*)"\tlum_min=%0.2lf vStar" VEC2_PRINTFN(1) "", lum_min, VEC2_AFF(e.centre) );
 					}
+					#endif
 				}
 				/*
 				*/
@@ -845,6 +857,7 @@ void FindStar::find_line( int li, bool bAff)
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::update_graph_segment()
 {
+	logf( (char*)"FindStar::update_graph_segment()" );
 	
 	double ech	= pConvert->get_echelle();
 	
@@ -888,7 +901,7 @@ void FindStar::update_graph_segment()
 		}
 	}
 
-	logf( (char*) " Xminmax" VEC2_PRINTFN(1) " Yminmax" VEC2_PRINTFN(1), VEC2_AFF( vec2(xMin, xMax) ), VEC2_AFF( vec2(yMin, yMax) ) );
+	logf( (char*) "|  Xminmax" VEC2_PRINTFN(1) " Yminmax" VEC2_PRINTFN(1), VEC2_AFF( vec2(xMin, xMax) ), VEC2_AFF( vec2(yMin, yMax) ) );
 	//-----------------------------------------------------------------
 	// Affichage de la courbe
 	//pGraphLum->resetCourbes();
@@ -901,13 +914,13 @@ void FindStar::update_graph_segment()
 	pGraphLum->setLinearX();
 	pGraphLum->setLinearY();
 	pGraphLum->setPtStar(PanelGraph::POINT);
-	pGraphLum->setColorStar(cMagentaC);
+	pGraphLum->setColorStar(cMagentaCC);
 
 
 	pGraphLum->sort_all();
 	pGraphLum->setVisible(true);
 	char str[128];
-	snprintf( str, sizeof(str), "%s - etoile(s) %d", name.c_str(), li );
+	snprintf( str, sizeof(str), "%s - %d etoile(s) %d", name.c_str(), (int)tStar.size(), li );
 	pGraphLum->setName(string(str));
 
 	WindowsManager&     wm  = WindowsManager::getInstance();
@@ -948,22 +961,23 @@ void FindStar::click_graph_distri( vec2 v)
 	logf( (char*)"FindStar::click_graph_distri( " VEC2_PRINTFN(0) " )", VEC2_AFF(v) );
 	log_tab(true);
 	
-	if ( pRB == NULL )		{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
+	if ( pRB == NULL )				{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
 
-	if ( pGraphDistri->getVisible() )
+	if ( pGraphDistri )
 	{
 		pGraphDistri->setVisible(false);
-		//tStar.clear();
+		WindowsManager::getInstance().sup(pGraphDistri);
+		delete pGraphDistri;
+		pGraphDistri = NULL;
 	}	
 	else
 	{
+		create_graph_distri();
 		
 		pGraphDistri->setVisible(true);
 		get_li_distribution( (int)v.y );
 
-		WindowsManager&     wm  = WindowsManager::getInstance();
-		wm.onTop(pGraphLum);
-		wm.onTop(pGraphDistri);
+		WindowsManager::getInstance().onTop(pGraphDistri);
 	}
 
 	log_tab(false);
@@ -976,26 +990,44 @@ void FindStar::click_graph_lum( vec2 v)
 	logf( (char*)"FindStar::click_graph_lum( " VEC2_PRINTFN(0) " )", VEC2_AFF(v) );
 	log_tab(true);
 
-	if ( pRB == NULL )		{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
 
-	if ( ! pGraphLum->getVisible() )
+	if ( pRB == NULL )			{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
+
+	//if ( pGraphLum )
+	if ( v.x < 10 )
 	{
+		logf( (char*)"|  Efface les graphiques" );
+		int n = tGraphLum.size() - 1;
+
+		if ( n != -1 )
+		{
+			pGraphLum = tGraphLum[n];
+			DX_LUM = pGraphLum->getPosDX();
+			DY_LUM = pGraphLum->getPosDY();
+			WindowsManager::getInstance().sup(pGraphLum);
+			tGraphLum.pop_back();			
+			//delete pGraphLum;
+			pGraphLum = NULL;
+			tStar.clear();
+		}
+	}		//pGraphLum->setVisible(false);
+	else
+	{
+		create_graph_lum();
+
 		logf( (char*)"|  Affiche les graphiques" );
-		tStar.clear();
+		if ( tStar.size() != 0 )	tStar.clear();
 		
 		find_line( (int)v.y, true );
 		
-		WindowsManager::getInstance().onTop(pGraphDistri);
-		
 		pGraphLum->setVisible(true);
+		tGraphLum.push_back( pGraphLum );
+		pGraphLum->setNotification( this );
+
+		WindowsManager::getInstance().onTop(pGraphLum);
+		
 		update_graph_segment();
 		logf( (char*)"|  %d etoiles trouvées", tStar.size() );
-	}
-	else
-	{
-		logf( (char*)"|  Efface les graphiques" );
-		pGraphLum->setVisible(false);
-		tStar.clear();
 	}
 	
 	
@@ -1160,6 +1192,130 @@ void FindStar::idle()
 				break;	
 			}
 		}
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::on_top(bool bIconized)
+{
+	//logf( (char*)"FindStar::on_top(%s)", BOOL2STR(bIconized) );
+	//logf( (char*)"|  %d Graph Lum)", tGraphLum.size() );
+
+	if ( bIconized )
+	{
+		if ( pGraphDistri )		pGraphDistri->setVisible(false);
+		//if ( pGraphLum )		pGraphLum->setVisible(false);
+		for( int i=0; i<tGraphLum.size(); i++ )			tGraphLum[i]->setVisible(false);
+	}
+	else
+	{
+		if ( pGraphDistri )		pGraphDistri->setVisible(true);
+		//if ( pGraphLum )		pGraphLum->setVisible(true);
+		for( int i=0; i<tGraphLum.size(); i++ )			tGraphLum[i]->setVisible(true);
+	}
+
+	WindowsManager& wm	= WindowsManager::getInstance();
+	if ( pGraphDistri && pGraphDistri->getVisible() )
+	{
+		//pGraphDistri->setVisible(true);
+		wm.sup( pGraphDistri );
+		wm.add( pGraphDistri );
+	}
+	
+	for( int i=0; i<tGraphLum.size(); i++ )
+	{
+		//tGraphLum[i]->setVisible(true);
+		wm.sup( tGraphLum[i] );
+		wm.add( tGraphLum[i] );
+	}
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::setVisible(bool b)
+{
+	if ( pGraphDistri )		pGraphDistri->setVisible(b);
+	//if ( pGraphLum )		pGraphLum->setVisible(b);
+
+	for( int i=0; i<tGraphLum.size(); i++ )			tGraphLum[i]->setVisible(b);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Fonction call back appele par panelGraph
+// 
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::notifie( unsigned key, void* pVal )
+{
+	switch( key )
+	{
+	case 0:
+		{
+		DX_LUM = *(int*)pVal;
+		//logf( (char*)"notifie : %d", DX_LUM );
+		break;
+		}
+	case 1:
+		{
+		DY_LUM = *(int*)pVal;
+		//logf( (char*)"notifie : %d", DY_LUM );
+		break;
+		}
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::printObjet()
+{
+	logf( (char*)"Nombre de Graph Lum ; %d", tGraphLum.size() );
+	for( int i=0; i<tGraphLum.size(); i++ )
+	{
+		logf( (char*)"|  %02d - '%s'", i, tGraphLum[i]->getExtraString().c_str() );
+	}
+	
+	if ( pGraphDistri )
+		logf( (char*)"Graph distribution  '%s'", pGraphDistri->getExtraString().c_str() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::cb_button_mouse_up(PanelButton* panelButton)
+{
+	int             iID	= panelButton->getParent()->getID();
+	WindowsManager& wm	= WindowsManager::getInstance();
+	
+	logf( (char*)"FindStar::cb_button_mouse_up() ID = %04X", iID ); 
+
+	if ( iID >= CB_BUTTON_LUMI )
+	{
+		
+		for( int i=0; i<tGraphLum.size(); i++ )
+		{
+			PanelGraph* panelGraph = (PanelGraph*) panelButton->getParent();
+			PanelGraph* p = tGraphLum[i];
+			//if ( p->isMouseOver(vMouse.x, vMouse.y) )
+			if ( p == panelGraph )
+			{
+				logf( (char*)"'%s' ID=%04X", panelGraph->getExtraString().c_str(), panelGraph->getID() );
+				wm.sup( panelGraph );
+				logf( (char*)"Delete LUM no=%d", i );
+				tGraphLum.erase(tGraphLum.begin() + i);
+
+				delete panelGraph;			
+				panelGraph = NULL;
+				pGraphLum = NULL;
+			}
+		}
+	}
+	else
+	if ( iID == CB_BUTTON_DIST )
+	{
+		wm.sup( pGraphDistri );
+		delete pGraphDistri;
+		pGraphDistri = NULL;
+		logf( (char*)"Delete DISTRI" );
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------

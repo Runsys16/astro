@@ -5,7 +5,7 @@
 #define ECHELLE 10.0
 #define FONTSIZE	10
 #define INTERLIGNE	12
-#define DY_MAX  (60*INTERLIGNE)
+#define DY_MAX  (30*INTERLIGNE)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -51,22 +51,6 @@ void PanelFits::add_key_value(string k, string v )
 	int i = fits_keys.size();
 	string val = ": " + v;
 
-	//fits_keys.push_back(   new PanelText((char*)k.c_str() ,  PanelText::NORMAL_FONT, 0,   i*14 ) );
-	//fits_values.push_back( new PanelText((char*)val.c_str() ,  PanelText::NORMAL_FONT, 100, i*14 ));
-
-	
-	/*
-	#define POLICE "/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf"
-	#define POLICE "/usr/share/fonts/truetype/msttcorefonts/Andale_Mono.ttf"
-	#define POLICE "/usr/share/fonts/truetype/msttcorefonts/andalemo.ttf"
-	#define POLICE "/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf"
-	#define POLICE "/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMoBd.ttf"
-	#define POLICE "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
-	#define POLICE "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
-	#define POLICE "/usr/share/fonts/truetype/tlwg/TlwgMono.ttf"
-	#define POLICE "/usr/share/fonts/truetype/tlwg/TlwgMono-Bold.ttf"
-	#define POLICE "fonts/Nintendo-DS-BIOS.ttf"
-	*/
 	
 	#define POLICE "fonts/DOS-VGA.ttf"
 	//#define POLICE "fonts/UbuntuMono-R.ttf"
@@ -109,12 +93,12 @@ void PanelFits::displayGL()
     VarManager&         var = VarManager::getInstance();
 
     if ( bNuit )		{
-    	setColor( COLOR32(255, 0, 0, 255) );
-    	pScroll->setColor( COLOR32(255, 0, 0, 255) );
+    	setColor( VCF4_2_COLOR32(cRouge) );
+    	pScroll->setColor( VCF4_2_COLOR32(cRouge) );
     }
     else	{
-    	setColor( COLOR32(255, 255, 255, 255) );    
-    	pScroll->setColor( COLOR32(255, 255, 255, 255) );
+    	setColor( VCF4_2_COLOR32(cBlanc) );    
+    	pScroll->setColor( VCF4_2_COLOR32(cBlanc) );
     }
 
     PanelWindow::displayGL();

@@ -91,6 +91,7 @@
 	vcf4 cMagentaF	= vcf4( 0.5, 0.0, 0.45, 1.0);
 	vcf4 cMagenta	= vcf4( 1.0, 0.0, 0.85, 1.0);
 	vcf4 cMagentaC	= vcf4( 1.0, 0.5, 0.92, 1.0);
+	vcf4 cMagentaCC	= vcf4( 1.0, 0.7, 0.98, 1.0);
 #else
 	extern	vcf4 cNoir;
 	extern	vcf4 cBlanc;
@@ -122,6 +123,7 @@
 	extern	vcf4 cMagentaF;
 	extern	vcf4 cMagenta;
 	extern	vcf4 cMagentaC;
+	extern	vcf4 cMagentaCC;
 #endif
 
 
@@ -404,7 +406,7 @@ void                getSkyPoint(struct sky_point*, int, int, int);
 
 
 
-
+void				status_nuit(unsigned long color );
 
 void                change_fov( void );
 static void         displayGL(void);

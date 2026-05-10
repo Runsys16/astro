@@ -125,6 +125,7 @@ inline void                     setRefCatalog(double _0, double _1) { panelCamer
 
 inline	bool					getOnScreen()						{ return bOnScreen;}
 inline	void					setOnScreen(bool b)					{ bOnScreen = b;}
+inline	bool					getIconized()						{ return bIconized;}
 
 };
 
