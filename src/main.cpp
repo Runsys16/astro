@@ -299,6 +299,7 @@ bool				bDesactiveLog		= false;
 bool				bAffColimation		= false;
 bool				bAffFindStar		= false;
 bool				bGmagChange			= false;
+bool				bPleiadeVizier		= false;
 
 int                 wImg;
 int                 hImg;
@@ -2933,7 +2934,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     Camera_mgr&  		cam_mgr = Camera_mgr::getInstance();
     WindowsManager& 	wm 		= WindowsManager::getInstance();
     
-    //logf( (char*)"main::glutKeyboardFunc(%c, %d, %d)", (char)key, x, y );
+    logf( (char*)"main::glutKeyboardFunc(%c, %d, %d)", (char)key, x, y );
     //logf( (char*)"  iGlutModifier = " BYTE_TO_BINARY_PATTERN BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(iGlutModifier>>8), BYTE_TO_BINARY(iGlutModifier) );
     //wm.setModifier(iGlutModifier);
     
@@ -3480,15 +3481,23 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'n':
         {
-	        logf( (char*)"Key (n) : Requete GAIA");
+	        logf( (char*)"Key (n) : Affiche GAIA");
 	        log_tab(true);
-        	Capture*  p = Captures::getInstance().getCurrentCapture();
-        	if ( p && p->isFits() )	{
-        		p->getPanelCapture()->findGaiaDR3();
-        	}
-        	else
-		        logf( (char*)"[Warning]Fenetre non valable");
-
+		    Captures& caps = Captures::getInstance();
+		    if ( caps.isMouseOverCapture(x, y)  )
+		    {
+		    	Capture*  p = Captures::getInstance().getCurrentCapture();
+		    	if ( p && p->isFits() )	{
+		    		p->getPanelCapture()->findGaiaDR3();
+		    	}
+		    }
+		    
+		    else
+		    {
+		        logf( (char*)"[Warning]Fenetre camera");
+		        if ( Camera_mgr::getInstance().getCurrent() != NULL )
+				    Camera_mgr::getInstance().getCurrent()->chargeGaiaDR3();
+			}
 	        log_tab(false);
         }
         break;
@@ -3497,10 +3506,23 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
 	        logf( (char*)"Key (N) : Efface les etoiles GAIA");
 	        log_tab(true);
-        	Capture*  p = Captures::getInstance().getCurrentCapture();
-        	if ( p && p->isFits() )	{
-        		p->getPanelCapture()->eraseGaiaDR3();
-        	}
+		    Captures& caps = Captures::getInstance();
+		    if ( caps.isMouseOverCapture(x, y)  )
+		    {
+		    	Capture*  p = Captures::getInstance().getCurrentCapture();
+		    	if ( p && p->isFits() )	{
+		    		p->getPanelCapture()->eraseGaiaDR3();
+		    	}
+		    }
+		    
+		    else
+		    {
+		        logf( (char*)"[Warning]Fenetre camera");
+		        if ( Camera_mgr::getInstance().getCurrent() != NULL )
+				    Camera_mgr::getInstance().getCurrent()->eraseGaiaDR3();
+		    }
+		    
+
 	        log_tab(false);
         }
         break;
@@ -3822,32 +3844,30 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	
         	if ( capture )	
         	{
-        		bGraph = capture->getGraph() == NULL;
-        		bool b = !capture->getAffGraph();
-        		capture->setAffGraph( b );
-        		
-        		if ( b && bGraph )
-        		{
-        			/*
-		    		p->getPanelCapture()->findGaiaDR3();
-		    		p->getPanelCapture()->deleteAllStars();
-		            p->getPanelCapture()->findAllStars();
-			    	p->compareStar();
-			    	*/
-			        //logf( (char*)"Key (x) : Graphique etoile" );
-			    	capture->create_graph();
-			    }
+				logf( (char*)"bGraph = %s", BOOL2STR(capture->getGraph()) );
+        		capture->setAffGraph(true);
+		    	capture->create_graph();
         	}
         log_tab(false);
         }
         break;
 
-	/*
     case 'X':
-        {
-        }
+		{
+        logf( (char*)"Key (X) : Fermeture graphique etoile" );
+        log_tab(true);
+        	Captures& 	captures 	= Captures::getInstance();
+        	Capture* 	capture		= captures.getCurrentCapture();
+        	bool		bGraph;
+        	
+        	if ( capture )	
+        	{
+				logf( (char*)"bGraph = %s", BOOL2STR(capture->getGraph()) );
+        		capture->deleteGraph();
+        	}
+        log_tab(false);
+		}
         break;
-	*/
     case 'y':
         {
         bAfficheVec = !bAfficheVec;
@@ -3877,7 +3897,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     default:
         {
-        if ( key != 14 )
+        //if ( key != 14 )
             logf((char*)"main::glutKeyboardFunc() key: %d", key);
         }
         break;
@@ -3916,16 +3936,20 @@ static void glutSpecialFunc(int key, int x, int y)	{
         {
         bPanelHelp = !bPanelHelp;
         var.set("bPanelHelp", bPanelHelp);
+        logf( (char*)"Key F1: Toggle panelHelp %s", BOOL2STR(bPanelHelp) );
+        log_tab( true );
+
         panelHelp->setVisible(bPanelHelp);
         if ( bPanelHelp )       WindowsManager::getInstance().onTop(panelHelp);
-        logf( (char*)"Key 1: Toggle panelHelp %s", BOOL2STR(bPanelHelp) );
+
+        log_tab( false );
         }
         break;
 	case GLUT_KEY_F2:
         {
         log( (char*)"Key F2: Toggle panelCamera " );
         log_tab( true );
-        Camera_mgr::getInstance().togglePanel();
+	        Camera_mgr::getInstance().togglePanel();
         log_tab( false );
         }
         break;
@@ -3933,60 +3957,77 @@ static void glutSpecialFunc(int key, int x, int y)	{
         {
         bPanelResultat = !bPanelResultat;
         var.set("bPanelResultat", bPanelResultat);
+        logf( (char*)"Key F3: Toggle panelResultat %s", BOOL2STR(bPanelResultat) );
+        log_tab( true );
+
         panelResultat->setVisible(bPanelResultat);
         if ( bPanelResultat )       WindowsManager::getInstance().onTop(panelResultat);
-        logf( (char*)"Key F3: Toggle panelResultat %s", BOOL2STR(bPanelResultat) );
+
+        log_tab( false );
         }
         break;
     case GLUT_KEY_F4:
         {
         bPanelCourbe = !bPanelCourbe;
         var.set("bPanelCourbe", bPanelCourbe);
+        logf( (char*)"Key F4: Toggle panelCourbe %s", BOOL2STR(bPanelCourbe) );
+        log_tab( true );
+
         panelCourbe->setVisible(bPanelCourbe);
-        //( pButtonCourbe,  bPanelCourbe,       "courbe" );
         set_courbe();
         
         if ( bPanelCourbe )       WindowsManager::getInstance().onTop(panelCourbe);
-        logf( (char*)"Key F4: Toggle panelCourbe %s", BOOL2STR(bPanelCourbe) );
+
+        log_tab( false );
         }
         break;
     case GLUT_KEY_F5:
         {
         bPanelStdOut = !bPanelStdOut;
         var.set("bPanelStdOut", bPanelStdOut);
+        logf( (char*)"Key F5: Toggle panelStdOut %s", BOOL2STR(bPanelStdOut) );
+        log_tab( true );
+
         if ( panelStdOut )		panelStdOut->setVisible(bPanelStdOut);
         if ( panelStdOut )		WindowsManager::getInstance().onTop(panelStdOut);
 
 		LX200& lx200 = LX200::getInstance();
-		//if ( lx200.is_connect() )	lx200.affiche_trace(bPanelStdOut);
-		//else						lx200.affiche_trace(false);
-		
-        logf( (char*)"Key F5: Toggle panelStdOut %s", BOOL2STR(bPanelStdOut) );
+
+        log_tab( false );
         }
         break;
     case GLUT_KEY_F6:
         {
         bPanelSerial = !bPanelSerial;
         var.set("bPanelSerial", bPanelSerial);
-        PanelConsoleSerial::getInstance().setVisible(bPanelSerial);
         logf( (char*)"Key F6: Toggle serial (%s)", BOOL2STR(bPanelSerial) );
+        log_tab( true );
+
+        PanelConsoleSerial::getInstance().setVisible(bPanelSerial);
+
+        log_tab( false );
         }
         break;
     case GLUT_KEY_F7:
         {
         bAffIconeCapture = !bAffIconeCapture;
-        logf( (char*)"Key F7: Affiche/cache les capture %s", BOOL2STR(bAffIconeCapture));
-        //logf( (char*)"  bAffIconeCapture = %s", BOOL2STR(bAffIconeCapture) );
+        var.set( "bAffIconeCapture", bAffIconeCapture );
+        logf( (char*)"Key F7: Affiche/cache les captures (bAffIconeCapture = %s)", BOOL2STR(bAffIconeCapture));
+
+        log_tab( true );
         Captures::getInstance().switchAffIcones();
+        log_tab( false );
         }
         break;
     case GLUT_KEY_F8:
         {
-            if ( panelApn == NULL )         panelApn = new PanelApn();
-            else
-                panelApn->setVisible( !panelApn->getVisible() );
+        if ( panelApn == NULL )         panelApn = new PanelApn();
+		logf( (char*)"Key F8: Toggle panelAPN", BOOL2STR(!panelApn->getVisible()) );
+    	log_tab( true );
+		panelApn->setVisible( !panelApn->getVisible() );
 
-	        logf( (char*)"Key F8: Toggle panelAPN", BOOL2STR(panelApn->getVisible()) );
+	    log_tab( false );
+
         }
         break;
 
@@ -4545,6 +4586,9 @@ static void CreateHelp()
 #include "status.inc"
 
 static void CreateStatus()	{
+	logf((char*)"main::CreateStatus()  width : %d", width);
+	log_tab(true);
+
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( width, height );
 
@@ -4558,7 +4602,6 @@ static void CreateStatus()	{
 	panelStatus->setExtraString( (char*)"PanelStatus");
 	panelStatus->setPosAndSize( x, y, dx, dy );
 
-    logf((char*)"** CreateStatus()  panelStatuts  largeur : %d", width);
 
 	//-------------------------------------------------------------------------------------------
 
@@ -4620,15 +4663,12 @@ static void CreateStatus()	{
     pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, _x, 2 );
 	panelStatus->add( pCoordSuivi );
 
-
  	
  	create_windows_button();
  	set_asservissement();
 
-
-
-
-    logf((char*)"** CreateStatus()  panelSatuts  %d,%d %dx%d", x, y, dx, dy);
+    //logf((char*)"** CreateStatus()  panelSatuts  %d,%d %dx%d", x, y, dx, dy);
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -4840,8 +4880,7 @@ void log_thread_aff()
 	}
 
 	n = logs_string.size();
-	printf( "nb log_thread_aff() = %d\n", n );
-	//printf( "nb log_thread = %d\n", n );
+	//printf( "nb log_thread_aff() = %d\n", n );
     
 	try
 	{
@@ -5077,7 +5116,7 @@ void getX11Screen()
     for( int i=0; i<scr->ncrtc; i++ )
     {
         crtc_info = XRRGetCrtcInfo (dpy, scr, scr->crtcs[i]);
-        logf_thread( (char*)"%d - %dx%d", i, crtc_info->width, crtc_info->height );
+        logf_thread( (char*)"|  XRRGetCrtcInfo %d - %dx%d", i, crtc_info->width, crtc_info->height );
         if ( i == 0 )
         {
             widthScreen  = crtc_info->width;
@@ -5127,6 +5166,7 @@ void charge_var()
 	LOAD_VARB( bAffCatalog, true);
 	LOAD_VARB( bAffStar, true);
 
+	LOAD_VARB( bAffIconeCapture, true );
 	//------------------------------------------------------------------------------------
 	//                                REEL
     LOAD_VARF( vecAD[0].x, 0.0 )
@@ -5213,7 +5253,7 @@ void exit_handler()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
-//										MM   MM  AAAAA  II  NN    N
+//										MM   MM   AAA   II  NN    N
 //										M M M M  A   A  II  N N   N
 //										M  M  M  AAAAA  II  N  N  N
 //										M     M  A   A  II  N   N N
@@ -5305,7 +5345,7 @@ int main(int argc, char **argv)
     SYNSCAN::getInstance().start_synscan();
 	//----------------------------------------------------------------------
 
-    var.setSauve();
+    var.startSauve();
 	    
     double clearColor = 0.0;
     glClearColor( clearColor, clearColor, clearColor,1.0);
@@ -5324,8 +5364,6 @@ int main(int argc, char **argv)
     WindowsManager::genereMipMap( false );
 	setColor();
     compute_matrix();
-    bCorrection = false;
-	vizier.charge();
 
 	// -----------------------------------
 	// -----------------------------------

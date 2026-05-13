@@ -39,6 +39,9 @@ public :
 
 	virtual void				togglePanel()			{};
 
+	void						chargeGaiaDR3();
+	void						eraseGaiaDR3();
+
 };
 
 

@@ -65,7 +65,7 @@ void set_courbe(void)
 void set_asservissement(void)
 {
 	unsigned long 		color_light, color;
-	//logf( (char*)"set_asservissement()" );
+	logf( (char*)"status::set_asservissement()" );
 	
     var.set("bCorrection", bCorrection);
     fTimeCpt = 0.0; 
@@ -89,7 +89,7 @@ void set_asservissement(void)
     if (bCorrection)                				pAsservi->setColor(color);
     else                            				pAsservi->setColor(color_light);
 
-    logf( (char*)"set_asservissement() bCorrection = %s", BOOL2STR(bCorrection) );
+    logf( (char*)"status::set_asservissement() bCorrection = %s", BOOL2STR(bCorrection) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -635,6 +635,7 @@ void change_perr( double* pDouble )
 //--------------------------------------------------------------------------------------------------------------------
 void create_windows_button()
 {
+	logf((char*)"status::create_windows_button()" );
     char s[55];
 	int pos = 0;
 	

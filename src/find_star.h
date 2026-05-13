@@ -7,6 +7,7 @@
 #include "panel_graph.h"
 #include "panel_debug.h"
 #include "notification.h"
+#include "notification_capture.h"
 #include <mutex>
 #include <thread>
 //----------------------------------------------------------------------
@@ -38,7 +39,9 @@ private:
     PanelDebug*			pInfo;
 //---------------------------------------
 	PanelGraph*			pGraphDistri;
+	int					iGraphDistriLigne;
 	vector<PanelGraph*>	tGraphLum;
+	vector<int>			tGraphLumLigne;
 	PanelGraph*			pGraphLum;
 	string				name;
 //---------------------------------------
@@ -60,6 +63,8 @@ private:
 //---------------------------------------
 	int					DX_LUM;
 	int					DY_LUM;
+	Notification*		pCapture;
+	bool				bParentIconized;
 //---------------------------------------
 vector<etoile_line>		tStar;
 mutex					muStar;
@@ -71,8 +76,10 @@ public:
 						~FindStar();
 						FindStar();
 //---------------------------------------
-	void				create_graph_distri();
+	void				create_graph_lum( Notification*, int, int, int, int, int );
 	void				create_graph_lum();
+	void				create_graph_distri( Notification*, int, int, int, int, int );
+	void				create_graph_distri( int );
 	void				create_info();
 //---------------------------------------
 	double				get_li_low_lvl(int);
@@ -106,21 +113,28 @@ public:
 	void				displayGL();
 //---------------------------------------
 	void				idle();
+	void				show_panel_graph(bool);
 	void				on_top(bool);
+	void				on_top();
 	void				setVisible(bool);
+	void				save_vars();
 	void				printObjet();
 //---------------------------------------
+	void				sup_lum(int);
+	void				sup_distri();
 virtual void			cb_button_mouse_up(PanelButton*);
+virtual void			notifie( unsigned, void *);
 //---------------------------------------
 
-inline int 				getOffset( int X, int Y )			{ return pRB->d*(X) + pRB->d*(Y)*pRB->w; }
-inline void				setRB(rb_t* p)						{ pRB = p; ptr = pRB->ptr; }
-inline void				setView(PanelSimple* p	)			{ pView = p; }
-inline void				setConvert(Convert* p)				{ pConvert = p; }
-inline void				setName(string s)					{ name = s; }
-inline PanelGraph*		getPanelGraphDistri()				{ return pGraphDistri; }
+inline int 				getOffset( int X, int Y )				{ return pRB->d*(X) + pRB->d*(Y)*pRB->w; }
+inline void				setRB(rb_t* p)							{ pRB = p; ptr = pRB->ptr; }
+inline void				setView(PanelSimple* p	)				{ pView = p; }
+inline void				setConvert(Convert* p)					{ pConvert = p; }
+inline void				setName(string s)						{ name = s; }
+inline PanelGraph*		getPanelGraphDistri()					{ return pGraphDistri; }
+inline void				setNotificationCapture(Notification* p)	{ pCapture = p; }
+inline void				setParentIconized(bool b)				{ bParentIconized = b; on_top(b); }
 //---------------------------------------
-virtual void			notifie( unsigned, void *);
 };
 //----------------------------------------------------------------------
 #endif

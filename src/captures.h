@@ -15,6 +15,7 @@ using namespace std;
 
 SINGLETON_BEGIN( Captures )
 private:
+static int 						ID;
     vector<Capture*>            captures;
     int                         current_capture;
     string                      sCurrentDir;
@@ -36,7 +37,7 @@ public:
     void						init();
     void						invalide_all();
     bool                        isMouseOverCapture(int, int);
-    void                        charge_image(string, string);
+	void                        charge_image(string, string);
     void                        update();
     void                        rotate_capture_plus(bool);
     void                        rotate_capture_moins(bool);
@@ -61,8 +62,7 @@ public:
     void                        deleteAllStars();
     void                        print_list();
     void                        sauve();
-//    void                        charge();
-    void                        charge2();
+    void                        charge();
     void                        position(double, double);
     void                        setCurrent(Capture*);
 	int							get_n_capture(Capture*);
@@ -91,6 +91,7 @@ public:
 inline bool						isCurrent(Capture*p)	{ return p == captures[current_capture]; }
 inline int						getDXIcon()				{ return dxIcon; }
 inline int						getDYIcon()				{ return dyIcon; }
+inline int						getID()					{ return Captures::ID; }
 
 SINGLETON_END()
 

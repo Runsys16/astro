@@ -1,8 +1,7 @@
 #include "capture.h"
 #include "captures.h"
-
-
-
+#include "notification_capture.h"
+//--------------------------------------------------------------------------------------------------------------------
 static int                      num;
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -144,7 +143,11 @@ Capture::~Capture()
 	if ( pGraph )	{
 		wm.sup( pGraph );
 		delete pGraph;
-	}	
+	}
+	
+	delete_vars();
+
+	if ( pFindStar )		delete pFindStar;
 
     log_tab(false);
     logf((char*)"Destructeur Capture::~Capture() -----END------" );
@@ -154,6 +157,9 @@ Capture::~Capture()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::init()
 {
+	//-----------------------------------
+	// Valeur d par defaut des variables
+	//-----------------------------------
 	bAfficheInfoFits	= false;
 	bAfficheGraph		= false;
     bIconized			= false;
@@ -161,9 +167,14 @@ void Capture::init()
 
 	pGraph				= NULL;
 	pInfoGraph			= NULL;
-	sPosSvg.X			= -1;
-	
 	pFindStar			= NULL;
+
+	sPosSvg.X			= -1;
+
+	sPosGraph.X			= 10;
+	sPosGraph.Y			= 10;
+	sPosGraph.DX		= width/2 -40;
+	sPosGraph.DY		= height/2 -40;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -186,6 +197,104 @@ void Capture::charge(string dir_name, string base_name)
 
     log_tab(false);
     logf((char*)"Capture::charge(%s, %s) -----END------", (char*)dirname.c_str(), (char*)basename.c_str() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::charge_findstar()
+{
+    logf((char*)"Capture::charge_findstar() -- %d", __LINE__ );
+    log_tab(true);
+
+	VarManager& var = VarManager::getInstance();
+	bool bSauveVar = var.getSauve();
+	var.stopSauve();
+	
+	int i = 0;
+	char st[255];
+
+	if ( pFindStar == NULL )	create_find_star();
+	pFindStar->setName( getBasename() );
+
+	logf( (char*)"Ech %0.2lf Ech_user %0.2lf Ech_geo %0.2lf", panelCapture->getEch(), panelCapture->getEch_user(), panelCapture->getEch_geo() );
+	pFindStar->setConvert( panelCapture );
+	
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_li", ID );
+	if ( var.existe( string(st) ) )
+	{
+
+																				int l  = var.geti( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_X", ID );		int x  = var.geti( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_Y", ID );		int y  = var.geti( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_DX", ID );		int dx = var.geti( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_DY", ID );		int dy = var.geti( string(st) );
+
+		logf( (char*)"GRPH_Dis %d (%d, %d, %d, %d)  ligne=%d", ID, x, y, dx, dy, l );
+
+		pFindStar->create_graph_distri( this, l, x, y, dx, dy );
+	}
+	
+
+
+	while( true )
+	{
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_li", ID, i );
+		
+		if ( var.existe( string(st) ) )
+		{
+			int l = var.geti( string(st) );
+			
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_X", ID, i );
+			int x = var.geti( string(st) );
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_Y", ID, i );
+			int y = var.geti( string(st) );
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DX", ID, i );
+			int dx = var.geti( string(st) );
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DY", ID, i );
+			int dy = var.geti( string(st) );
+			
+			logf( (char*)"GRPH_Lum_%d-%d (%d, %d, %d, %d)  ligne=%d", ID, i, x, y, dx, dy, l );
+			
+			pFindStar->create_graph_lum( this, l, x, y, dx, dy );
+		}
+		else
+			break;
+
+		i++;
+		if ( i >= 10 )	break;
+	}
+
+	var.setSauve( bSauveVar );
+
+    log_tab(false);
+    logf((char*)"Capture::charge_findstar() -----END------" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::charge_graph()
+{
+	VarManager& var = VarManager::getInstance();
+	char st[255];
+	int ID = getInfo();
+
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_X", ID );
+	if ( var.existe( string(st) ) )
+	{
+		logf( (char*)"%s existe", st );
+		
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_X", ID );  sPosGraph.X  = var.geti(string(st));
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_Y", ID );  sPosGraph.Y  = var.geti(string(st));
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DX", ID ); sPosGraph.DX = var.geti(string(st));
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DY", ID ); sPosGraph.DY = var.geti(string(st));
+		
+
+		logf_thread( (char*)"charge_grpah %d %d %d %d", sPosGraph.X, sPosGraph.Y,sPosGraph.DX, sPosGraph.DY );
+
+		if ( pGraph )	pGraph->setPosition( sPosGraph );
+		
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -293,6 +402,7 @@ void Capture::updatePosIcones()
 void Capture::clickLeft(int xm, int ym)
 {
     logf( (char*)"Capture::clickLeft ..." );
+    on_top();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -335,6 +445,12 @@ void Capture::releaseLeft(int xm, int ym)
 		cap.compute_pos_icone( X, Y, cap.get_n_capture(this) );
 		iconize( X, Y, cap.getDXIcon(), cap.getDYIcon());
 		//cap.resize_icone( this, X, Y, cap.getDXIcon(), cap.getDYIcon() );
+	}
+	else
+	if ( bIconized )
+	{
+		logf( (char*)"Iconized => traitement impossible" );
+	    bTraiteReleaseLeft = false;
 	}
 	else
 	//--------------------------------------------
@@ -393,25 +509,28 @@ void Capture::releaseLeft(int xm, int ym)
     else
 	    bTraiteReleaseLeft = false;
 
+	on_top();
 	log_tab(false);
 	logf( (char*)"Capture::releaseLeft(...)   ------END---------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+// Notification de pGraph lorsque la souris pointe sur une etoile
+// void *p  :  p pointe sur l'indice de l'etoile
+// 
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::callback( void* p )
 {
 	Stars*			pStars	= panelCapture->getStars();
 	StarCompare&	sc		= panelCapture->getStarCompare();
 	vector<ivec2>&	cmp		= sc.getCmpViziStar();
+	
+	if ( pStars == NULL || pStars->size() == 0 )		return;
 
 	for( int i=0; i<pStars->size(); i++ )	pStars->get(i)->setGraph(false);
 	
 	int idx = *(int*)p;
 	int iii = cmp[idx].y;
-
-	//logf( (char*)"Found %d %0.2lf", iii, pStars->get(iii)->getPonderation() );
-	//logf( (char*)"Capture::callback() found %d-%d %0.2lf", idx, iii, pStars->get(iii)->getPonderation() );
 
 	pStars->get(iii)->setGraph(true);
 }
@@ -739,6 +858,30 @@ void Capture::iconize( int xIcon, int yIcon, int dxIcon, int dyIcon)
 	if ( pFindStar )
 	{
 		pFindStar->on_top(true);
+		pFindStar->setParentIconized(true);
+	}
+
+	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::iconize()
+{
+	//if ( bIconized )	return;
+	
+	logf( (char*)"Capture::iconize()" );
+	log_tab(true);
+
+	//----------------------------------------------
+	panelCapture->iconize();
+
+	if ( pGraph && bAffGraph )	{ pGraph->setVisible(false); pInfoGraph->setVisible(false); }
+
+	if ( pFindStar )
+	{
+		pFindStar->on_top(true);
+		//pFindStar->setParentIconized(true);
 	}
 
 	log_tab(false);
@@ -762,32 +905,34 @@ void Capture::restaure()
 
 	if ( bFits )	{
 		if ( bAfficheInfoFits )		fits->afficheInfoFits(true);
-		onTop();
+		on_top();
 		
 	}
 	graph_on_top();
+
 
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::onTop()
+void Capture::on_top()
 {
-	logf( (char*)"Capture::onTop() %s", basename.c_str() );
+	//logf( (char*)"Capture::on_top() %s", basename.c_str() );
     WindowsManager& wm	= WindowsManager::getInstance();
     VarManager& 	var	= VarManager::getInstance();
 
     wm.onTop( this );
     if ( isFits() )	{
 		wm.onTop( fits->getPanelFits() );
-		//fits->getPanelCorrectionFits()->onTop();
 		if ( pGraph && pGraph->getVisible() )
 		{
-			logf( (char*)"|  Active pGraph" );
+			//logf( (char*)"|  Active pGraph" );
 			WindowsManager& wm = WindowsManager::getInstance();
 			wm.onTop( pGraph );
 		}
+		
+		if ( pFindStar )		pFindStar->on_top();
 	}	
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -945,6 +1090,32 @@ void Capture::setNbVizier( unsigned u )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Capture::createGraph()
+{
+	logf( (char*)"Capture::createGraph()" );
+	if ( pGraph != NULL )		return;
+	//---------------------------
+	log_tab(true);
+	WindowsManager& wm	= WindowsManager::getInstance();
+
+	pGraph = new PanelGraph();
+	pGraph->setPosition( sPosGraph );
+	logf_thread( (char*)"create_graph %d %d %d %d", sPosGraph.X, sPosGraph.Y,sPosGraph.DX, sPosGraph.DY );
+	
+	pGraph->setButtonCallback( this );
+	pGraph->setPanelCallback( this );
+	pGraph->setNotification( this );
+	pGraph->setID( CB_BUTTON_STAR  + pGraph->get_new_ID() );
+	wm.add( pGraph );
+
+	//---------------------------
+	create_info_graph();
+	log_tab(false);
+	//---------------------------
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Capture::setAffGraph( bool b )
 {
 	logf( (char*)"Capture::setAffGraph(%s)", BOOL2STR(b) );
@@ -952,38 +1123,48 @@ void Capture::setAffGraph( bool b )
 	bAfficheGraph = b;
 	WindowsManager& wm = WindowsManager::getInstance();
 	
-	if ( b)
+	if ( b )
 	{
-		if ( pGraph == NULL )		
-		{
-			//---------------------------
-			log_tab(true);
-			pGraph = new PanelGraph();
-			pGraph->setButtonCallback( this );
-			bAffGraph = true;
-			pGraph->setPosAndSize( 10, 10, width/2 -40, height/2 -40 );
-			WindowsManager& wm	= WindowsManager::getInstance();
-			pGraph->setPanelCallback( this );
-			wm.add( pGraph );
-			//---------------------------
-			create_info_graph();
-			log_tab(false);
-			//---------------------------
-		}
+		if ( pGraph == NULL )					createGraph();
+		
 		pGraph->setVisible( true ) ;
+		bAffGraph = true;
 		pGraph->debug_log();
 		compareStar();
 		if (pInfoGraph)		pInfoGraph->setVisible( true ) ;
 		wm.onTop( pGraph );
+
+		//panelCapture->eraseGaiaDR3();
+		//panelCapture->deleteAllStars();
 	} 
 	else
 	{
 		Stars* pStars = panelCapture->getStars();
 		for( int i=0; i<pStars->size(); i++ )	pStars->get(i)->setGraph(false);
 
-		pGraph->setVisible( false ) ;
+		if ( pGraph )		pGraph->setVisible( false ) ;
 		if (pInfoGraph)		pInfoGraph->setVisible( false ) ;
 	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::deleteGraph()
+{
+	logf( (char*)"Capture::deleteGraph()" );
+
+	if ( pGraph == NULL )	return;
+	//int             iID	= pGraph->getID();
+	WindowsManager& wm			= WindowsManager::getInstance();
+	
+	if ( pInfoGraph )	{
+		pGraph->sup( pInfoGraph );
+		delete pInfoGraph;
+	}	pInfoGraph = NULL;
+	
+	wm.sup( pGraph );
+	delete pGraph;
+	pGraph = NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1117,6 +1298,8 @@ void Capture::create_info_graph()
 	pInfoGraph->setBorderSize(0);
 	if (pGraph)	pInfoGraph->setVisible(pGraph->getVisible());
 	pInfoGraph->setPos( 50, pGraph->getPosDY() - 110 );
+	pInfoGraph->setBackground( (_Texture2D*)NULL );
+	//pInfoGraph->setID( CB_BUTTON_STAR  + pInfoGraph->get_new_ID() );
 	pInfoGraph->setTabSize( 60 );
 
 	pGraph->add( pInfoGraph );
@@ -1130,6 +1313,17 @@ void Capture::create_info_graph()
 void Capture::create_graph()
 {
 	logf( (char*)"Capture::create_graph()" );
+	
+	int nbGaia = 0;
+	int nbStar = panelCapture->getStars()->size();	
+	
+	if ( panelCapture->getCatalog() != NULL )
+	{
+		nbGaia = panelCapture->getCatalog()->size();
+	}
+
+	logf( (char*)"Nb Gaia = %d, nb Star = %d", nbGaia, nbStar );
+
 	
 	if ( 		( (panelCapture->getStars() == NULL ) || ( panelCapture->getStars()->size() == 0 ) )
 		&&		( (panelCapture->getCatalog() == NULL ) || ( panelCapture->getCatalog()->size() == 0 ) )
@@ -1152,6 +1346,9 @@ void Capture::create_graph()
 		bAffCatalog = bAffCatalogSvg;
 
 		if ( pInfoGraph == NULL )		create_info_graph();	
+		
+		if ( nbGaia == 0 )		panelCapture->eraseGaiaDR3();
+		if ( nbStar == 0 )		panelCapture->deleteAllStars();
 
 		log_tab(false);
 	}
@@ -1161,6 +1358,7 @@ void Capture::create_graph()
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::graph_on_top()
 {
+	//log( (char*)"Capture::graph_on_top()" );
 	if ( bIconized )
 	{
 		if ( pGraph )		pGraph->setVisible(false);
@@ -1171,14 +1369,20 @@ void Capture::graph_on_top()
 		WindowsManager& wm	= WindowsManager::getInstance();
 		if ( pGraph && bAfficheGraph )
 		{
-			//logf( (char*)"Capture::create_on_top()" );
 			pGraph->setVisible(true);
 			pInfoGraph->setVisible(true);
 			wm.sup( pGraph );
 			wm.add( pGraph );
 		}
 
-		if ( pFindStar )	pFindStar->on_top(bIconized);
+		if ( pFindStar )	
+		{
+			if ( !bIconized )	{	pFindStar->on_top( false );	}
+			else
+			{
+				if ( !bAffIconeCapture )			pFindStar->on_top( true );
+			}
+		}
 
 		if ( bFits )
 		{
@@ -1191,38 +1395,130 @@ void Capture::graph_on_top()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//  Creation de l'objet unique FindStar
+//
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::create_find_star()                         
 {
 	log( (char*)"Capture::create_find_star()" );
+	if ( pFindStar )		return;
+	
 	log_tab(true);
 
-	pFindStar = new FindStar();
+	pFindStar = new FindStar();						// Nouveau FindStar
 	
-	pFindStar->setRB( panelCapture->getRB() );
+	pFindStar->setRB( panelCapture->getRB() );		// Transmission adresse buffer image
 	pFindStar->setView( this );
-	pFindStar->setConvert( panelCapture );
+	pFindStar->setConvert( panelCapture );			// Objet convertissant des coordonnees
+	pFindStar->setNotificationCapture( this );		// Pour les notificaitons de FindStar
 
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+// Notificaiton de l'appui sur le bouton fermer d'un graphique FindStar
+//
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::cb_button_mouse_up(PanelButton*)
+void Capture::cb_button_mouse_up(PanelButton* panelButton)
 {
-	logf( (char*)"Callback Button UP ");
-	if ( pGraph )
+	int             iID	= panelButton->getParent()->getID();
+	logf( (char*)"Callback Button UP   ID = %04X", iID );
+
+	if ( iID >= CB_BUTTON_STAR )
 	{
-		if (pInfoGraph)		{
-			pGraph->sup( pInfoGraph );
-			delete pInfoGraph;
-			pInfoGraph = NULL;
-		}
-		
-		WindowsManager::getInstance().sup( pGraph );		
-		delete pGraph;
-		pGraph = NULL;
+		deleteGraph();
+	}	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::setGraphPosAndSize( int x, int y, int dx, int dy )
+{
+	logf( (char*)"Capture::setGraphPosAndSize()" );
+
+	if ( pGraph )	pGraph->setPosAndSize( x, y, dx, dy );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::save_vars()
+{
+	logf( (char*)"Capture::save_vars()" );
+
+	VarManager& var = VarManager::getInstance();
+	var.stopSauve();
+
+	char st[255];
+	int ID = getInfo();
+
+	//snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_li", ID );
+	//var.set( string(st), iGraphDistriLigne );
+	pGraph->getPosition( sPosGraph );
+
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_X", ID );	var.set( string(st), sPosGraph.X );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_Y", ID );	var.set( string(st), sPosGraph.Y );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DX", ID );	var.set( string(st), sPosGraph.DX );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DY", ID );	var.set( string(st), sPosGraph.DY );
+	
+	var.startSauve();
+	var.sauve();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::delete_vars()
+{
+	logf( (char*)"Capture::save_vars()" );
+	if ( pGraph == NULL )		return;
+
+	VarManager& var = VarManager::getInstance();
+	var.stopSauve();
+
+	char st[255];
+	int ID = getInfo();
+
+	//snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_li", ID );
+	//var.set( string(st), iGraphDistriLigne );
+	pGraph->getPosition( sPosGraph );
+
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_X", ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_Y", ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DX", ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DY", ID );	var.erase( string(st) );
+	
+	var.startSauve();
+	var.sauve();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// notification de FindStar
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::notifie( unsigned key, void* p )
+{
+	//logf( (char*)"ID=%d Notification SAVE_VARS", key );
+	switch(key)
+	{
+	case CHANGE_X:
+	case CHANGE_Y:
+	case CHANGE_DX:
+	case CHANGE_DY:
+		logf( (char*)"ID=%d Notification SAVE_VARS", key );
+		save_vars();
+		break;
 	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Affiche des informations de l'objet 
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::printObjet()
+{
+	if( pFindStar )		pFindStar->printObjet();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -202,6 +202,8 @@ typedef struct readBackground       rb_t;
 	extern bool						bAffColimation;
 	extern bool						bAffFindStar;
 	extern bool						bGmagChange;
+	extern bool						bAffIconeCapture;
+	extern bool						bPleiadeVizier;
 	
     extern int                      width;
     extern int                      height;

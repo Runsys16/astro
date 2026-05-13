@@ -2,7 +2,7 @@
 #include "panel_stdout.h"
 #include "captures.h"
 //--------------------------------------------------------------------------------------------------------------------
-#define DEBUG_WHEEL
+//#define DEBUG_WHEEL
 //--------------------------------------------------------------------------------------------------------------------
 #define DEG_SEXAGESIMAL
 //----------------------------------------------
@@ -131,15 +131,17 @@ PanelCapture::~PanelCapture()
 void PanelCapture::init()
 {
 	vTelescopeJ2000 	= vec2(0.0, 0.0);
-    ech_geo				= 1.0;
+    ech					= 1.0;
     ech_user			= 1.0;
+    ech_geo				= 1.0;
     dx					= 0.0;
     dy					= 0.0;
     xm_old				= -1;
     ym_old				= -1;
     dTimeAnim			= 0.0;
 	bFits				= false;
-	    
+	dAngleAD			= 0.0;
+	dAngleDE			= 0.0;
     pVizier				= NULL;
     //pFindStar			= NULL;
 
@@ -916,7 +918,7 @@ void PanelCapture::idle(float f)
 		stars.updateScreenPos( dx+pCapture->getX(), dy+pCapture->getY(), ech);
 		stars.idle();
 
-	  	if ( pCapture )			pCapture->graph_on_top();
+	  	//if ( pCapture )			pCapture->graph_on_top();
 	}	
 	else	{
 		stars.setVisible(false);
@@ -1288,6 +1290,7 @@ void PanelCapture::clickLeft(int xm, int ym)
 	//    Captures::getInstance().active( pCapture );
 
     //Panel::clickLeft(xm,ym);
+	pCapture->on_top();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1377,8 +1380,9 @@ void PanelCapture::clickRight(int xm, int ym)
 	else
 	{
 	    PanelSimple::clickRight(xm,ym);
-		pCapture->graph_on_top();
+		//pCapture->graph_on_top();
 	}
+	pCapture->on_top();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1395,7 +1399,7 @@ void PanelCapture::motionRight(int xm, int ym)
 	{
 		PanelSimple::motionRight( xm, ym );
 		updatePos();
-		pCapture->graph_on_top();
+		//pCapture->graph_on_top();
 	}
 	//stars.update_stars( getX(), getY(), this, pReadBgr, ech_geo*ech_user );
 	update_stars();
@@ -1405,6 +1409,8 @@ void PanelCapture::motionRight(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::releaseRight(int xm, int ym)
 {
+	pCapture->on_top();
+
     logf( (char*)"PanelCapture::releaseRight(%d,%d) ...", xm, ym );
     log_tab(true);
     
@@ -1429,7 +1435,7 @@ void PanelCapture::releaseRight(int xm, int ym)
     {
 		log( (char*)"click D :printObjet" );
     	printObjet();
-    	pCapture->getFindStar()->printObjet();
+    	if ( pCapture )		pCapture->printObjet();
     }
     
     
@@ -1455,6 +1461,7 @@ void PanelCapture::releaseRight(int xm, int ym)
 		    if ( bFits )	       pCapture->afficheFits();
 		}
 	}
+	pCapture->on_top();
     log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1462,6 +1469,8 @@ void PanelCapture::releaseRight(int xm, int ym)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::clickMiddle(int xm, int ym)
 {
+	pCapture->on_top();
+
     xm_old = xm;
     ym_old = ym;
     logf( (char*)"PanelCapture::clickMiddle(%d,%d) ...", xm, ym );
@@ -2026,7 +2035,7 @@ void PanelCapture::print_echelle_coordonnees()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCapture::printObjet()
 {
-    logf( (char*)"PanelCapture::printObjet() \"%s\"", pCapture->getBasename().c_str() );
+    logf( (char*)"PanelCapture::printObjet() %02d - \"%s\"", pCapture->getID(), pCapture->getBasename().c_str() );
     log_tab(true);
     logf( (char*)"this->pos (%d, %d)", getPosX(), getPosY() );
     logf( (char*)"this->dim %d x %d", getDX(), getDY() );
@@ -2805,24 +2814,6 @@ void PanelCapture::compute_angle()
     dAngleDE = dAngleAD - 90.0;
 
 	return;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void PanelCapture::create_find_star()                         
-{
-/*
-	log( (char*)"PanelCapture::create_find_star()" );
-	log_tab(true);
-
-	pFindStar = new FindStar();
-	
-	pFindStar->setRB( pReadBgr );
-	pFindStar->setView( pCapture );
-	pFindStar->setConvert( this );
-
-	log_tab(false);
-	*/
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

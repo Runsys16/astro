@@ -7,6 +7,8 @@
 #define BORDER_ICON			5
 #define N_ICON 				7
 //--------------------------------------------------------------------------------------------------------------------
+int Captures::ID = 0;
+//--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Captures::Captures()
@@ -37,7 +39,7 @@ void Captures::init()
 
     mode %= 4;
 
-    charge2();
+    charge();
     setMode();
     
     bFullScreen 		= false;
@@ -96,6 +98,13 @@ void Captures::charge_image( string dirname, string filename )
     rotate_capture_plus(false);
     active( captures.size() - 1 );
     
+	Captures::ID = 0;
+	for( int i=0; i<captures.size(); i++ )
+	{
+		Captures::ID = i;
+		captures[i]->setID(i);
+	}
+
     log_tab( false );
     logf( (char*)"Captures::charge_image() ...END..." );
 }
@@ -234,11 +243,12 @@ void Captures::active( int n )
 	compute_size_normal( DX, DY, n );
 	
 	p->show();
+	onTop();
+	p->onTop();
+
 	if ( bFullScreen )			p->fullscreen();
 	else						resize_normal( p, DX, DY);
 	
-	onTop();
-	p->onTop();
 
 	//-------------------------------------------------------------
 	//bDesactiveLog = false;
@@ -250,6 +260,10 @@ void Captures::active( int n )
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::iconize_all()
 {
+    logf((char*)"Captures::invalide_all()" );
+    int nb = captures.size();
+    for( int n=0; n<nb; n++ )		captures[n]->iconize();
+
 	return;
     logf( (char*)"Captures::iconize_all()    ------------ curr=%d", current_capture );
 
@@ -265,7 +279,7 @@ void Captures::iconize_all()
     
     current_capture = -1;
 }
-    void                        iconize_all();
+//    void                        iconize_all();
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -512,10 +526,19 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 void Captures::ajoute()
 {
     logf( (char*)"Captures::ajoute()" );
+ 
     captures.push_back( new Capture() );
     sauve();
     setMode();
     active( captures.size()-1 );
+
+	Captures::ID = 0;
+	for( int i=0; i<captures.size(); i++ )
+	{
+		Captures::ID = i;
+		captures[i]->setID(i);
+	}
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -523,10 +546,18 @@ void Captures::ajoute()
 void Captures::ajoute(string filename)
 {
     logf( (char*)"Captures::ajoute(\"%s\")", filename.c_str() );
+ 
     captures.push_back( new Capture(filename) );
     sauve();
     setMode();
     current_capture = captures.size() - 1;
+    
+	Captures::ID = 0;
+	for( int i=0; i<captures.size(); i++ )
+	{
+		Captures::ID = i;
+		captures[i]->setID(i);
+	}   
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -557,6 +588,13 @@ void Captures::supprime()
         showIcones();
     }
 
+	Captures::ID = 0;
+	for( int i=0; i<captures.size(); i++ )
+	{
+		Captures::ID = i;
+		captures[i]->setID(i);
+	}
+	
     log_tab(false);
     logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
 }
@@ -666,56 +704,12 @@ void Captures::sauve(void)
         	logf( (char*)"Creation de var[\"%s\"]", key.c_str() );
     }
 }
-/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::charge(void)
 {
-    VarManager&         var = VarManager::getInstance();
-
-    string filename = "/home/rene/.astropilot/captures.txt";
-    logf( (char*)"Chargement des valeurs dans '%s'", (char*)filename.c_str() );
-    
-    std::ifstream fichier;
-    fichier.open(filename, std::ios_base::app);
-
-    if ( !fichier ) 
-    {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
-        return;
-    }
-
-    string line;
-    int nbLigne = 0;
-    int noFile = 0;
-    
-    
-    while ( getline (fichier, line) )
-    {
-        //sscanf( line.c_str(), "( %f , %f ) / ( %f , %f )", &rx, &ry, &ox, &oy );
-        //ajoute(line);
-        string filename = line;
-        captures.push_back( new Capture(filename) );
-        current_capture = captures.size() - 1;
-        //captures[current_capture]->iconize();
-        captures[current_capture]->setFullScreen(false);
-        
-        //logf( (char*)"charge : %s", (char*)filename.c_str() );
-        string name = "FileCapture" + to_string( noFile++ );
-        logf( (char*)"charge : %s %s ", (char*)name.c_str(), (char*)filename.c_str() );
-        var.set( name, filename );
-        
-    }    
-    fichier.close();
-}
-*/
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Captures::charge2(void)
-{
-    logf( (char*)"Captures::charge2()" );
+    logf( (char*)"Captures::charge()" );
 	log_tab( true );      
 
     VarManager&         var = VarManager::getInstance();
@@ -742,9 +736,14 @@ void Captures::charge2(void)
 			struct stat buffer;
 			if ( stat (filename.c_str(), &buffer) == 0 )
 			{
+				Captures::ID = captures.size();
 		        captures.push_back( new Capture(filename) );
 		        current_capture = captures.size() - 1;
 		        captures[current_capture]->setFullScreen(false);
+		        captures[current_capture]->setID( Captures::ID );
+		        captures[current_capture]->charge_findstar();
+		        captures[current_capture]->charge_graph();
+		        //captures[current_capture]->setIconized(true);
 		    }
 		    else
 		    {
@@ -839,7 +838,7 @@ void Captures::hideIcones()
 //--------------------------------------------------------------------------------------------------------------------
 void Captures::switchAffIcones()
 {
-    bShowIcones = !bShowIcones;
+    bShowIcones = bAffIconeCapture;
 
     VarManager&         var = VarManager::getInstance();
     

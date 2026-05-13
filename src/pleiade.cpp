@@ -1,4 +1,5 @@
 #include "pleiade.h"
+//#include "main.h"
 
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -33,15 +34,19 @@ Pleiade::Pleiade()
     bNewBackground  = false; 
 
     setDevName( (char*)"/dev/pleiades" );
-    //charge_background();
-    //change_background_camera();
     
     if( bPause )                bOneFrame = true;
 
-    //bFreePtr = true;
     bStartThread = false;
     bExitThread = false;
     start_thread();
+    
+    VarManager& var = VarManager::getInstance();
+    INIT_VARB( bPleiadeVizier, true );
+    CHRG_VARB( bPleiadeVizier );
+
+    if ( bPleiadeVizier )	chargeGaiaDR3();
+    else					eraseGaiaDR3();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -219,6 +224,33 @@ void Pleiade::haveUseFrame(bool b)
 {
     bNewBackground = false;
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Pleiade::chargeGaiaDR3()
+{
+    logf((char*)"Pleiade::eraseGaiaDR3()" );
+	vizier.charge();
+	bPleiadeVizier  = true;
+
+    VarManager& var = VarManager::getInstance();
+    var.set( "bPleiadeVizier", bPleiadeVizier );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Pleiade::eraseGaiaDR3()
+{
+    logf((char*)"Pleiade::eraseGaiaDR3()" );
+    vizier.efface();
+	bPleiadeVizier = false;
+	
+    VarManager& var = VarManager::getInstance();
+    var.set( "bPleiadeVizier", bPleiadeVizier );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 
 
 

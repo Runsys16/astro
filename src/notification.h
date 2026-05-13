@@ -7,6 +7,7 @@ class Notification
 {
 public:
 	virtual void	notifie( unsigned, void*  )		{}
+	virtual int		getInfo()						{ return -1; }
 };
 //----------------------------------------------------------------------------------------------
 

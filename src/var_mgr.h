@@ -43,10 +43,12 @@ public:
 	inline bool     getb(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].bval;}
 	inline string*  gets(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].sval;}
 	
-	inline dbMap &											getDB()			{return	m_VarDB;}
+	inline dbMap &	getDB()								{ return	m_VarDB; }
 
-    inline void setSauve()                                  { bSauve = true; }
-    inline void stopSauve()                                 { bSauve = false; }
+    inline void setSauve(bool b)						{ bSauve = b; }
+    inline void startSauve()							{ bSauve = true; }
+    inline void stopSauve()								{ bSauve = false; }
+    inline bool getSauve() 								{ return bSauve; }
 
     void charge();
     void sauve();

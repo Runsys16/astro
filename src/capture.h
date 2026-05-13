@@ -13,13 +13,17 @@
 #include "var_mgr.h"
 #include "catalog.h"
 #include "find_star.h"
+#include "notification.h"
+#include "notification_capture.h"
+
 
 
 using namespace std;
 
-class Capture : public PanelWindow, PanelButtonCallback
+class Capture : public PanelWindow, PanelButtonCallback, Notification
 {
 protected:
+	int							ID;
     bool                        bNewBackground;
     bool                        bFirst;
     bool                        bIconized;
@@ -32,7 +36,7 @@ protected:
     bool						bAfficheGraph;
     bool						bTraiteReleaseLeft;
     
-    sPanelPos					sPosSvg;
+    sPos						sPosSvg;
     
     vector<string>              filenames;
     string                      filename;
@@ -43,6 +47,7 @@ protected:
 
 	FindStar*					pFindStar;
     PanelGraph*					pGraph;
+    sPos						sPosGraph;
     PanelDebug*					pInfoGraph;
     PanelCapture*               panelCapture;
     PanelText*                  pTitre;
@@ -65,6 +70,8 @@ public :
     
     void						init();
     void						charge( string, string );
+    void						charge_findstar();
+	void						charge_graph();
     
     void                        pooling();
     
@@ -84,9 +91,10 @@ public :
     void                        resize(int,int,int,int);
     void                        fullscreen();
     void						iconize(int, int, int, int);
+	void                     	iconize();
 	void						restaure();
 
-    void                        onTop();
+    void                        on_top();
     void                        addStar(int,int);
 
     void                        show();
@@ -103,7 +111,9 @@ public :
 	void						export_vizier();
 	
 	void						setNbVizier(unsigned);
+	void						createGraph();
 	void						setAffGraph(bool);
+	void						deleteGraph();
 	bool						cmp(vec2, vec2);
 	void						compareStar();
 	void						affine_compareStar(bool);
@@ -113,9 +123,15 @@ public :
 	void						create_graph();
 	void						graph_on_top();
 	void						create_find_star();
-
+	
 virtual void					cb_button_mouse_up(PanelButton*);
+	void						setGraphPosAndSize(int, int, int, int);
+	void						save_vars();
+	void						delete_vars();
+virtual void					notifie( unsigned, void* );
+	void						printObjet();
 
+virtual int						getInfo()									{ return ID; }
     
 inline bool	 					getAffGraph()                               { return bAfficheGraph; }
 inline rb_t *                   getRB()                                     { return &readBgr; }
@@ -138,6 +154,7 @@ inline FindStar*	            getFindStar()                               { retur
 
 //	   void                     setIconized(bool b);
 inline bool                     getIconized()                               { return bIconized; }
+inline void                     setIconized(bool b)                         { bIconized = b; }
 inline bool                     isIconized()                                { return bIconized; }
 
 inline void                     setFullScreen(bool b)                       { bFullScreen = b; }
@@ -156,6 +173,8 @@ inline bool						getAfficheInfoFits()						{ return bAfficheInfoFits; }
 inline void						invalide_panel()							{ sPosSvg.X = -1; }
 inline bool						getTraiteReleaseLeft()						{ return bTraiteReleaseLeft; }
 
+inline void						setID( int i )								{ ID = i; }
+inline int						getID()										{ return ID; }
 
 };
 

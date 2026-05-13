@@ -213,13 +213,14 @@ virtual double			get_echelle()									{ return ech; }
 	double				compute_div_ad(double);
 	void				compute_angle();
 
-	void				create_find_star();
-
 inline void             setRB(struct readBackground*p)                  { pReadBgr = p; }
 inline readBackground*	getRB()											{ return pReadBgr; }
 inline int				getDX()											{ return pReadBgr->w; }
 inline int				getDY()											{ return pReadBgr->h; }
 inline double           getEchelle()                                    { return ech_user; }
+inline double           getEch()     									{ return ech; }
+inline double           getEch_user()                                   { return ech_user; }
+inline double           getEch_geo()                                    { return ech_geo; }
 inline double           getCentX()                                      { return dx; }
 inline double           getCentY()                                      { return dy; }
 inline Stars*           getStars()                                      { return &stars; }

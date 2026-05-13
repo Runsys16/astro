@@ -2,6 +2,7 @@
 #define PANEL_GRAPH_CPP
 //--------------------------------------------------------------------------------------------------------------------
 #include "panel_graph.h"
+#include "notification_capture.h"
 //--------------------------------------------------------------------------------------------------------------------
 #define DELTA_AXE_Y	16.0
 #define DELTA_AXE_X	40
@@ -920,8 +921,16 @@ void PanelGraph::updatePos()
 		old_dx = dx_raw; 
 		old_dy = dy_raw;
 		
-		pCallback->notifie( 0, (void*)&old_dx );
-		pCallback->notifie( 1, (void*)&old_dy );
+		pCallback->notifie( CHANGE_DX, (void*)&old_dx );
+		pCallback->notifie( CHANGE_DY, (void*)&old_dy );
+	}
+	if ( pCallback && (old_x != x_raw || old_y != y_raw) )
+	{
+		old_x = x_raw; 
+		old_y = y_raw;
+		
+		pCallback->notifie( CHANGE_X, (void*)&old_x );
+		pCallback->notifie( CHANGE_Y, (void*)&old_y );
 	}
 
 	pButtonQUIT->setPos( dx_raw - 20, 4 );

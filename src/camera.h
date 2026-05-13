@@ -108,6 +108,8 @@ virtual void 					changeValueDouble( double val, void *p );
     
     void                        setColor(long);
 
+virtual	void					chargeGaiaDR3()						{};
+virtual	void					eraseGaiaDR3()						{};
 	void						compareStar();
 	void						saveCompareStar();
 	
