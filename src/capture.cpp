@@ -115,31 +115,33 @@ Capture::~Capture()
     sup( panelCapture );
 
 
-    logf((char*)"Capture::~Capture() delete icons de fenetre" );
+    logf((char*)"delete icons de fenetre" );
 	delete		pFermer;
 	delete		pIconiser;
 	delete		pMaximiser;
 
-    logf((char*)"Capture::~Capture() delete le titre" );
+    logf((char*)"delete le titre" );
 	delete pTitre;
-    logf((char*)"Capture::~Capture() delete pNbStars" );
+    logf((char*)"delete pNbStars" );
 	delete pNbStars;
-    logf((char*)"Capture::~Capture() delete pNbVizier" );
+    logf((char*)"delete pNbVizier" );
 	delete pNbVizier;
-    logf((char*)"Capture::~Capture() delete le panelCapture" );
+    logf((char*)"delete le panelCapture" );
 	delete panelCapture;
 	
 	filenames.clear();
-    logf((char*)"Destructeur Capture::~Capture() reste %d fenetre", getNbPanel() );
+    logf((char*)"Reste %d fenetre", getNbPanel() );
 
     
 	wm.sup( this );
 
+    logf((char*)"delete pInfoGraph" );
 	if ( pInfoGraph )	{
-		wm.sup( pInfoGraph );
+		if ( pGraph) 	pGraph->sup( pInfoGraph );
 		delete pInfoGraph;
 	}	
 	
+    logf((char*)"delete pGraph" );
 	if ( pGraph )	{
 		wm.sup( pGraph );
 		delete pGraph;
@@ -201,7 +203,7 @@ void Capture::charge(string dir_name, string base_name)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::charge_findstar()
+void Capture::charge_vars_findstar()
 {
     logf((char*)"Capture::charge_findstar() -- %d", __LINE__ );
     log_tab(true);
@@ -242,16 +244,11 @@ void Capture::charge_findstar()
 		
 		if ( var.existe( string(st) ) )
 		{
-			int l = var.geti( string(st) );
-			
-			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_X", ID, i );
-			int x = var.geti( string(st) );
-			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_Y", ID, i );
-			int y = var.geti( string(st) );
-			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DX", ID, i );
-			int dx = var.geti( string(st) );
-			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DY", ID, i );
-			int dy = var.geti( string(st) );
+																						int l  = var.geti( string(st) );
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_X", ID, i );	int x  = var.geti( string(st) );
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_Y", ID, i );	int y  = var.geti( string(st) );
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DX", ID, i );	int dx = var.geti( string(st) );
+			snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DY", ID, i );	int dy = var.geti( string(st) );
 			
 			logf( (char*)"GRPH_Lum_%d-%d (%d, %d, %d, %d)  ligne=%d", ID, i, x, y, dx, dy, l );
 			
@@ -273,7 +270,7 @@ void Capture::charge_findstar()
 //
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::charge_graph()
+void Capture::charge_vars_graph()
 {
 	VarManager& var = VarManager::getInstance();
 	char st[255];
@@ -418,6 +415,8 @@ void Capture::releaseLeft(int xm, int ym)
 		logf( (char*)"Capture::releaseLeft() Fermeture" );
 		Captures::getInstance().setCurrent(this);
 		Captures::getInstance().supprime();
+		log_tab(false);
+		return;		// evite le on_top => CRASH fenetre disoparu
 	}
 	else
 	if ( pMaximiser == pMaximiser->isMouseOver(xm, ym ) )
@@ -925,11 +924,14 @@ void Capture::on_top()
     wm.onTop( this );
     if ( isFits() )	{
 		wm.onTop( fits->getPanelFits() );
-		if ( pGraph && pGraph->getVisible() )
+		if ( pGraph )
 		{
-			//logf( (char*)"|  Active pGraph" );
-			WindowsManager& wm = WindowsManager::getInstance();
-			wm.onTop( pGraph );
+			if ( pGraph->getVisible() )
+			{
+				//logf( (char*)"|  Active pGraph" );
+				WindowsManager& wm = WindowsManager::getInstance();
+				wm.onTop( pGraph );
+			}
 		}
 		
 		if ( pFindStar )		pFindStar->on_top();
@@ -1443,18 +1445,32 @@ void Capture::setGraphPosAndSize( int x, int y, int dx, int dy )
 //
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Capture::save_vars()
+void Capture::save_all_vars_graph( int ID )
 {
-	logf( (char*)"Capture::save_vars()" );
-
+	logf( (char*)"Capture::save_all_vars_graph( %d )", ID );
 	VarManager& var = VarManager::getInstance();
+
+	var.stopSauve();
+
+	if ( pGraph )		save_vars_graph_starCompare( ID );
+	if ( pFindStar )	pFindStar->save_vars( ID );
+
+	var.startSauve();
+	var.sauve();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Capture::save_vars_graph_starCompare( int ID)
+{
+	logf( (char*)"Capture::save_vars_graph_starCompare( %d )", ID );
+	VarManager& var = VarManager::getInstance();
+
 	var.stopSauve();
 
 	char st[255];
-	int ID = getInfo();
 
-	//snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_li", ID );
-	//var.set( string(st), iGraphDistriLigne );
 	pGraph->getPosition( sPosGraph );
 
 	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_X", ID );	var.set( string(st), sPosGraph.X );
@@ -1469,9 +1485,18 @@ void Capture::save_vars()
 //
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Capture::save_vars_graph_starCompare()
+{
+	save_vars_graph_starCompare( getInfo() );
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Capture::delete_vars()
 {
-	logf( (char*)"Capture::save_vars()" );
+	logf( (char*)"Capture::delete_vars()" );
 	if ( pGraph == NULL )		return;
 
 	VarManager& var = VarManager::getInstance();
@@ -1494,7 +1519,7 @@ void Capture::delete_vars()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
-// notification de FindStar
+// notification de pGraph (starCompare )
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Capture::notifie( unsigned key, void* p )
@@ -1507,7 +1532,7 @@ void Capture::notifie( unsigned key, void* p )
 	case CHANGE_DX:
 	case CHANGE_DY:
 		logf( (char*)"ID=%d Notification SAVE_VARS", key );
-		save_vars();
+		save_vars_graph_starCompare();
 		break;
 	}
 }

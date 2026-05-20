@@ -22,15 +22,15 @@ PanelConsoleSerial::PanelConsoleSerial()
     VarManager& var= VarManager::getInstance();
     int x, y, dx, dy;
 
-	INIT_VARI( xPanelSerial, 10 );
-	INIT_VARI( yPanelSerial, 10 );
-	INIT_VARI( dxPanelSerial, 200 );
-	INIT_VARI( dyPanelSerial, 600 );
+	INIT_VARI( PanelSerial_X, 10 );
+	INIT_VARI( PanelSerial_Y, 10 );
+	INIT_VARI( PanelSerial_DX, 200 );
+	INIT_VARI( PanelSerial_DY, 600 );
 
-	x  = var.geti( "xPanelSerial" );
-	y  = var.geti( "yPanelSerial" );
-	dx = var.geti( "dxPanelSerial" );
-	dy = var.geti( "dyPanelSerial" );
+	x  = var.geti( "PanelSerial_X" );
+	y  = var.geti( "PanelSerial_Y" );
+	dx = var.geti( "PanelSerial_DX" );
+	dy = var.geti( "PanelSerial_DY" );
 
     if ( x<= 0 )        x = 10;
     if ( dx<= 100 )     dx = 500;
@@ -226,10 +226,10 @@ void PanelConsoleSerial::idleGL()
         pw->resetHaveMove();
         VarManager& var= VarManager::getInstance();
 
-        var.set("xPanelSerial",  pw->getX() );
-        var.set("yPanelSerial",  pw->getY() );
-        var.set("dxPanelSerial", pw->getDX() );
-        var.set("dyPanelSerial", pw->getDY() );
+        var.set("PanelSerial_X",  pw->getX() );
+        var.set("PanelSerial_Y",  pw->getY() );
+        var.set("PanelSerial_DX", pw->getDX() );
+        var.set("PanelSerial_DY", pw->getDY() );
     }
     
     

@@ -117,6 +117,7 @@ public:
 	void				on_top(bool);
 	void				on_top();
 	void				setVisible(bool);
+	void				save_vars(int);
 	void				save_vars();
 	void				printObjet();
 //---------------------------------------

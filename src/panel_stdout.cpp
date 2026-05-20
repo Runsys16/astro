@@ -14,15 +14,15 @@ PanelStdOut::PanelStdOut()	{
 	int dx=350;
 	int dy=400;
 
-	INIT_VARI( xPanelStdOut, x );
-	INIT_VARI( yPanelStdOut, y );
-	INIT_VARI( dxPanelStdOut, dx );
-	INIT_VARI( dyPanelStdOut, dy );
+	INIT_VARI( PanelStdOut_X, x );
+	INIT_VARI( PanelStdOut_Y, y );
+	INIT_VARI( PanelStdOut_DX, dx );
+	INIT_VARI( PanelStdOut_DY, dy );
 	
-	x  = var.geti( "xPanelStdOut" );
-	y  = var.geti( "yPanelStdOut" );
-	dx = var.geti( "dxPanelStdOut" );
-	dy = var.geti( "dyPanelStdOut" );
+	x  = var.geti( "PanelStdOut_X" );
+	y  = var.geti( "PanelStdOut_Y" );
+	dx = var.geti( "PanelStdOut_DX" );
+	dy = var.geti( "PanelStdOut_DY" );
 
     logf( (char*)"dy=%d", dy );
     if ( x<= 0 )        x = 10;

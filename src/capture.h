@@ -70,8 +70,8 @@ public :
     
     void						init();
     void						charge( string, string );
-    void						charge_findstar();
-	void						charge_graph();
+    void						charge_vars_findstar();
+	void						charge_vars_graph();
     
     void                        pooling();
     
@@ -126,7 +126,9 @@ public :
 	
 virtual void					cb_button_mouse_up(PanelButton*);
 	void						setGraphPosAndSize(int, int, int, int);
-	void						save_vars();
+	void						save_all_vars_graph(int);
+	void						save_vars_graph_starCompare(int);
+	void						save_vars_graph_starCompare();
 	void						delete_vars();
 virtual void					notifie( unsigned, void* );
 	void						printObjet();

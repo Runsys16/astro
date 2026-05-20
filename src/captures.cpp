@@ -343,7 +343,7 @@ void Captures::resize_all()
         else
         {
 			//--------------------------------------------------
-			// Affiche l'image choisie
+			// Affiche l'image choisie (current_capture)
 			//--------------------------------------------------
 			if ( current_capture != -1  )
 			{
@@ -373,13 +373,6 @@ void Captures::reshapeGL(int width, int height)
     logf( (char*)"Captures::reshapeGL()" );
     float ratio = (float)width/(float)height;
 	
-	/*
-    dxIcon				= (float)(width  / N_ICON);
-    dxIcon				= (float)(width -((N_ICON)*2*BORDER_ICON))  / N_ICON;
-    //dyIcon				= height / 6;
-    dyIcon				= dxIcon / ratio;
-    dyIcon				= (float)(height -((N_ICON)*2*BORDER_ICON))  / N_ICON;
-    */
     height -= 20; // panel_status
     dyIcon	= (float)(height -((N_ICON)*2*BORDER_ICON))  / N_ICON;
     dxIcon	= dyIcon * ratio;
@@ -526,6 +519,7 @@ void Captures::glutSpecialFunc(int key, int x, int y)	{
 void Captures::ajoute()
 {
     logf( (char*)"Captures::ajoute()" );
+    log_tab( true );
  
     captures.push_back( new Capture() );
     sauve();
@@ -538,7 +532,7 @@ void Captures::ajoute()
 		Captures::ID = i;
 		captures[i]->setID(i);
 	}
-    
+    log_tab( false );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -562,31 +556,78 @@ void Captures::ajoute(string filename)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Captures::supprime_capture_graph( int ID )
+{
+    logf( (char*)"Captures::supprime_capture_graph( %d )", ID );
+	VarManager&         var = VarManager::getInstance();
+	
+	char st[255];
+	var.stopSauve();
+	
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_X",  ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_Y",  ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DX", ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Str_%03d_DY", ID );	var.erase( string(st) );
+
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_li", ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_X",  ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_Y",  ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_DX", ID );	var.erase( string(st) );
+	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_DY", ID );	var.erase( string(st) );
+	
+	int n = 0;
+	while( true )
+	{
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_li", ID, n );
+		if ( ! var.existe( string(st) ) )		break;
+
+		var.erase( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_X",  ID, n );		var.erase( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_Y",  ID, n );		var.erase( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DX", ID, n );		var.erase( string(st) );
+		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_DY", ID, n );		var.erase( string(st) );
+		
+		n++;
+	}
+
+	var.startSauve();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Captures::supprime()
 {
-    logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
+    if ( current_capture == -1 )		return;
+    log( (char*)"Captures::supprime()" );
     log_tab(true);
-    int n = captures.size();
-    if ( current_capture != -1 )
-    {
-        logf( (char*)"supprime()  current_capture = %d/%d", current_capture, n );
-        int  current_capture_svg = current_capture;
-        
-        Capture* p = captures[current_capture];
-        if ( p == NULL )		logf( (char*)"[ERROR] Capture no %d pointeur NULL ", current_capture );
-        delete p;
-
-        captures.erase(captures.begin()+current_capture);
-        sauve();
-
-        //int n = captures.size();
-        current_capture = current_capture_svg;
-        n--;
-        current_capture = --current_capture % n;
     
-        if ( n <= 0 )           current_capture  = -1;
-        showIcones();
-    }
+    int n = captures.size();
+    
+    logf( (char*)"supprime()  current_capture = %d/%d", current_capture, n );
+    int  current_capture_svg = current_capture;
+    
+	supprime_capture_graph( n-1 );
+
+    Capture* p = captures[current_capture];
+	
+    if ( p == NULL )		{ logf( (char*)"[ERROR] Capture no %d pointeur NULL ", current_capture ); return; }
+	
+    delete p;
+
+    captures.erase(captures.begin()+current_capture);
+    sauve();
+
+	n = captures.size();
+	if  ( n != 0 )
+	{
+		current_capture--;
+		while( current_capture<0 )	current_capture += n;
+		logf( (char*)"current_capture = %d ", current_capture );
+	}
+	else
+		current_capture = -1;
+
+    showIcones();
 
 	Captures::ID = 0;
 	for( int i=0; i<captures.size(); i++ )
@@ -595,8 +636,10 @@ void Captures::supprime()
 		captures[i]->setID(i);
 	}
 	
+	for( int i=0; i<captures.size(); i++ )		captures[i]->save_all_vars_graph( i );
+		
     log_tab(false);
-    logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
+    //logf( (char*)"Captures::supprime() current_capture = %d ", current_capture );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -738,11 +781,11 @@ void Captures::charge(void)
 			{
 				Captures::ID = captures.size();
 		        captures.push_back( new Capture(filename) );
-		        current_capture = captures.size() - 1;
+		        current_capture = Captures::ID;
 		        captures[current_capture]->setFullScreen(false);
 		        captures[current_capture]->setID( Captures::ID );
-		        captures[current_capture]->charge_findstar();
-		        captures[current_capture]->charge_graph();
+		        captures[current_capture]->charge_vars_findstar();
+		        captures[current_capture]->charge_vars_graph();
 		        //captures[current_capture]->setIconized(true);
 		    }
 		    else
@@ -921,22 +964,6 @@ void Captures::afficheInfoFits(int n)
 	}
 
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Captures::afficheInfoSouris()
-{
-	bAfficheInfoSouris = !bAfficheInfoSouris;
-	
-    for(int i=0; i<captures.size(); i++)
-    {
-    	Capture*		pCapture = captures[i];
-        PanelCapture*	p = pCapture->getPanelCapture();
-        if ( p )		p->setInfoSouris(bAfficheInfoSouris);
-    }
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

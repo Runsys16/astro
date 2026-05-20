@@ -56,6 +56,7 @@ public:
     void                        glutSpecialFunc(int key, int x, int y);
     void                        ajoute();
     void                        ajoute(string);
+    void                        supprime_capture_graph( int );
     void                        supprime();
     void                        onTop(Capture*);
     void                        findAllStar();

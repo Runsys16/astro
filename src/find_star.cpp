@@ -40,23 +40,28 @@ FindStar::FindStar()
 FindStar::~FindStar()
 {
 	log( (char*)"FindStar::~FindStar()" );
+	log_tab(true);
 
 	WindowsManager&     wm  = WindowsManager::getInstance();
 
 	if ( pGraphDistri )
 	{
+		log( (char*)"destruction pGraphDistri" );
 		wm.sup(pGraphDistri);
 		delete pGraphDistri;
 	}
 	
-	if ( pGraphLum )
+	for ( int i=0; i<tGraphLum.size(); i++ )
 	{
-		wm.sup(pGraphLum);
-		delete pGraphLum;
+		logf( (char*)"destruction tGraphLum[%d]", i );
+		wm.sup(tGraphLum[i]);
+		delete tGraphLum[i];
 	}
+	tGraphLum.clear();
 	
 	if ( pInfo )
 	{
+		log( (char*)"destruction pInfo" );
 		wm.sup(pInfo);
 		delete pInfo;
 	}
@@ -67,13 +72,16 @@ FindStar::~FindStar()
 	pGraphDistri	= NULL;
 	pGraphLum		= NULL;
 	pInfo			= NULL;
+
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::create_graph_lum( Notification* p, int l, int x, int y, int dx, int dy )
 {
-	log( (char*)"FindStar::create_graph_lum()" );
+	logf_thread( (char*)"FindStar::create_graph_lum( %d, %d, %d, %d ) ligne = %d", x, y, dx, dy, l );
+	//log( (char*)"FindStar::create_graph_lum()" );
 	log_tab(true);
 
 	WindowsManager&     wm	= WindowsManager::getInstance();
@@ -797,6 +805,7 @@ void FindStar::find_stars_2( vec2 v )
 	for( int y=0; y<pRB->h; y+=5 )
 	{
 		max_lum = get_li_low_lvl( (int)y );
+		logf_thread( (char*)"find_stars_2(vec2) y=%d max_lum %0.2lf", y, max_lum );
 		
 		for( int x=0; x<pRB->w; x+=5 )
 		{
@@ -1194,12 +1203,16 @@ void FindStar::displayGL()
 		pConvert->tex_2_screen(v);
 		if ( !(vMin.x<v.x && v.x<vMax.x && vMin.y<v.y && v.y<vMax.y) )		continue;
 
-		glColor4fv( (GLfloat*)&cBleuC );
+		if ( bNuit)				glColor4fv( (GLfloat*)&cRouge );
+		else					glColor4fv( (GLfloat*)&cBleuC );
+
 		if ( tStar[i].deb.x != -1.0 )		display_segment( tStar[i] );
 
 		if ( tStar[i].rayon != 0.0	)
 		{
-			glColor4fv( (GLfloat*)&cBleuC );
+			if ( bNuit)				glColor4fv( (GLfloat*)&cRouge );
+			else					glColor4fv( (GLfloat*)&cBleuC );
+
 			glCercle(v, ech * tStar[i].rayon );
 			glCroix((int)v.x, (int)v.y, (int)(ech * tStar[i].rayon * 2.0) );
 		}
@@ -1208,7 +1221,9 @@ void FindStar::displayGL()
 		if ( tStar[i].deb.x==-1.0 )											continue;
 
 		//continue;		
-		glColor4fv( (GLfloat*)&cVert );
+		if ( bNuit)				glColor4fv( (GLfloat*)&cRouge );
+		else					glColor4fv( (GLfloat*)&cVert );
+		//glColor4fv( (GLfloat*)&cVert );
 		glCercle(v, ech * 2.0);
 		glCroix((int)v.x, (int)v.y, (int)(ech*4.0), (int)(ech*4.0));
 	}
@@ -1311,7 +1326,7 @@ void FindStar::setVisible(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void FindStar::save_vars()
+void FindStar::save_vars( int ID )
 {
 	//logf( (char*)"FindStar::save_vars()" );
 	
@@ -1319,7 +1334,6 @@ void FindStar::save_vars()
 	var.stopSauve();
 	
 	char st[255];
-	int ID = pCapture->getInfo();
 
 	for( int i=0; i<tGraphLum.size(); i++ )
 	{
@@ -1356,6 +1370,13 @@ void FindStar::save_vars()
 	var.startSauve();
 	var.sauve();
 	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FindStar::save_vars()
+{
+	save_vars( pCapture->getInfo() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -189,7 +189,7 @@ vector<string> t_sHelp4 =
 	" Alt+N\t: Compare les etoiles et  affiche la courbe"   ,
 	"      \t  limite la magnitude d'affichage"   ,
 	"Ctrl+H\t: Restaure la magnitude d'affichage a 20.0"   ,
-	"     x\t: Affiche la courbe de calcul de la magnitude"   ,
+	"   x/X\t: Affiche/Ferme la courbe de calcul de la magnitude"   ,
 	"",
 	"Alt+l/L\t: Correction du calcul magnitude"   ,
 	"Alt+k/K\t: Correction du calcul magnitude"   ,
@@ -2003,10 +2003,10 @@ static void idleGL(void)
     {
         panelStdOut->resetHaveMove();
 
-        var.set("xPanelStdOut",  panelStdOut->getX() );
-        var.set("yPanelStdOut",  panelStdOut->getY() );
-        var.set("dxPanelStdOut", panelStdOut->getDX() );
-        var.set("dyPanelStdOut", panelStdOut->getDY() );
+        var.set("PanelStdOut_X",  panelStdOut->getX() );
+        var.set("PanelStdOut_Y",  panelStdOut->getY() );
+        var.set("PanelStdOut_DX", panelStdOut->getDX() );
+        var.set("PanelStdOut_DY", panelStdOut->getDY() );
         
     }
 
@@ -2015,10 +2015,10 @@ static void idleGL(void)
         panelHelp->resetHaveMove();
 	    panelScrHelp->setSize( panelHelp->getDX(), panelHelp->getDY() );
 
-        var.set("xPanelHelp",  panelHelp->getX() );
-        var.set("yPanelHelp",  panelHelp->getY() );
-        var.set("dxPanelHelp", panelHelp->getDX() );
-        var.set("dyPanelHelp", panelHelp->getDY() );
+        var.set("PanelHelp_X",  panelHelp->getX() );
+        var.set("PanelHelp_Y",  panelHelp->getY() );
+        var.set("PanelHelp_DX", panelHelp->getDX() );
+        var.set("PanelHelp_DY", panelHelp->getDY() );
         
     }
 
@@ -2027,10 +2027,10 @@ static void idleGL(void)
         panelCourbe->resetHaveMove();
         panelCourbe->build_unites_text();
 
-        var.set("xPanelCourbe",  panelCourbe->getX() );
-        var.set("yPanelCourbe",  panelCourbe->getY() );
-        var.set("dxPanelCourbe", panelCourbe->getDX() );
-        var.set("dyPanelCourbe", panelCourbe->getDY() );
+        var.set("PanelCourbe_X",  panelCourbe->getX() );
+        var.set("PanelCourbe_Y",  panelCourbe->getY() );
+        var.set("PanelCourbe_DX", panelCourbe->getDX() );
+        var.set("PanelCourbe_DY", panelCourbe->getDY() );
         
     }
 #ifdef DEBUG_CALLBACK_OPENGL
@@ -4039,12 +4039,18 @@ static void glutSpecialFunc(int key, int x, int y)	{
         break;
     case GLUT_KEY_F11:
         {
+		logf( (char*)"Key F11: Affiche l'image suivante" );
+		log_tab( true );
         Captures::getInstance().ajoute();
+		log_tab( false );
         }
         break;
     case GLUT_KEY_F12:
         {
+		logf( (char*)"Key F12: Efface l'image courante" );
+		log_tab( true );
         Captures::getInstance().supprime();
+		log_tab( false );
         }
         break;
         
@@ -4338,8 +4344,8 @@ void resizeHelp(int width, int height)	{
     int x = width - dx - 20;
     int y = 20 + 20 ;
 
-    if ( var.existe("xPanelHelp") )         x  = var.geti( "xPanelHelp");
-    if ( var.existe("yPanelHelp") )         y  = var.geti( "yPanelHelp");
+    if ( var.existe("PanelHelp_X") )         x  = var.geti( "PanelHelp_X");
+    if ( var.existe("PanelHelp_Y") )         y  = var.geti( "PanelHelp_Y");
 
     panelHelp->setPos( x,  y );
 	panelScrHelp->setSize( width, height );
@@ -4353,10 +4359,10 @@ void resizeCourbe(int width, int height)	{
     int x = 10;
     int y = height - 10 - 20 - dy;
 
-    if ( var.existe("xPanelCourbe") )         x  = var.geti( "xPanelCourbe");
-    if ( var.existe("yPanelCourbe") )         y  = var.geti( "yPanelCourbe");
-    if ( var.existe("dxPanelCourbe") )        dx = var.geti("dxPanelCourbe");
-    if ( var.existe("dyPanelCourbe") )        dy = var.geti("dyPanelCourbe");
+    if ( var.existe("PanelCourbe_X") )         x  = var.geti( "PanelCourbe_X");
+    if ( var.existe("PanelCourbe_Y") )         y  = var.geti( "PanelCourbe_Y");
+    if ( var.existe("PanelCourbe_DX") )        dx = var.geti("PanelCourbe_DX");
+    if ( var.existe("PanelCourbe_DY") )        dy = var.geti("PanelCourbe_DY");
 
 
     panelCourbe->setPosAndSize( x,  y, dx, dy );
@@ -4550,21 +4556,21 @@ static void CreateHelp()
 	DY = ++l*dy;
 	
 	/*
-    if ( var.existe("xPanelHelp") )         X  = var.geti( "xPanelHelp");
-    if ( var.existe("yPanelHelp") )         Y  = var.geti( "yPanelHelp");
-    if ( var.existe("dxPanelHelp") )        DX = var.geti("dxPanelHelp");
-    if ( var.existe("dyPanelHelp") )        DY = var.geti("dyPanelHelp");
+    if ( var.existe("PanelHelp_X") )         X  = var.geti( "PanelHelp_X");
+    if ( var.existe("PanelHelp_Y") )         Y  = var.geti( "PanelHelp_Y");
+    if ( var.existe("PanelHelp_DX") )        DX = var.geti("PanelHelp_DX");
+    if ( var.existe("PanelHelp_DY") )        DY = var.geti("PanelHelp_DY");
     */
     
-    INIT_VARI( xPanelHelp, 10);
-    INIT_VARI( yPanelHelp, 10);
-    INIT_VARI( dxPanelHelp, 1400);
-    INIT_VARI( dyPanelHelp, 600);
+    INIT_VARI( PanelHelp_X, 10);
+    INIT_VARI( PanelHelp_Y, 10);
+    INIT_VARI( PanelHelp_DX, 1400);
+    INIT_VARI( PanelHelp_DY, 600);
 
-    X  = var.geti( "xPanelHelp");
-    Y  = var.geti( "yPanelHelp");
-    DX = var.geti("dxPanelHelp");
-    DY = var.geti("dyPanelHelp");
+    X  = var.geti( "PanelHelp_X");
+    Y  = var.geti( "PanelHelp_Y");
+    DX = var.geti("PanelHelp_DX");
+    DY = var.geti("PanelHelp_DY");
 
     panelHelp->setSize(DX, DY);
 	panelScrHelp->setSize(DX, DY);
@@ -5207,25 +5213,25 @@ void charge_var()
 
 	//------------------------------------------------------------------------------------
 	//                          POSITIONS DES FENETRES
-	INIT_VARI( xPanelCourbe, 10 );
-	INIT_VARI( yPanelCourbe, 10 );
-	INIT_VARI( dxPanelCourbe, 1496 );
-	INIT_VARI( dyPanelCourbe, 400 );
+	INIT_VARI( PanelCourbe_X, 10 );
+	INIT_VARI( PanelCourbe_Y, 10 );
+	INIT_VARI( PanelCourbe_DX, 1496 );
+	INIT_VARI( PanelCourbe_DY, 400 );
 
-	INIT_VARI( xPanelHelp, 210 );
-	INIT_VARI( yPanelHelp, 100 );
-	INIT_VARI( dxPanelHelp, 1180 );
-	INIT_VARI( dyPanelHelp, 650 );
+	INIT_VARI( PanelHelp_X, 210 );
+	INIT_VARI( PanelHelp_Y, 100 );
+	INIT_VARI( PanelHelp_DX, 1200 );
+	INIT_VARI( PanelHelp_DY, 650 );
 
-	INIT_VARI( xPanelSerial, 10 );
-	INIT_VARI( yPanelSerial, 10 );
-	INIT_VARI( dxPanelSerial, 586 );
-	INIT_VARI( dyPanelSerial, 600 );
+	INIT_VARI( PanelSerial_X, 10 );
+	INIT_VARI( PanelSerial_Y, 10 );
+	INIT_VARI( PanelSerial_DX, 586 );
+	INIT_VARI( PanelSerial_DY, 600 );
 
-	INIT_VARI( xPanelStdOut, 122 );
-	INIT_VARI( yPanelStdOut, 180 );
-	INIT_VARI( dxPanelStdOut, 867 );
-	INIT_VARI( dyPanelStdOut, 569 );
+	INIT_VARI( PanelStdOut_X, 122 );
+	INIT_VARI( PanelStdOut_Y, 180 );
+	INIT_VARI( PanelStdOut_DX, 867 );
+	INIT_VARI( PanelStdOut_DY, 569 );
 
 	//------------------------------------------------------------------------------------
 
