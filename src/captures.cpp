@@ -163,6 +163,8 @@ void Captures::compute_size_normal( int& DX, int& DY, int n )
 
     DY = height- 60;
     DX = width - 60;
+
+    logf( (char*)"|  Resultat : DX=%d, DY=%d", DX, DY );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -180,7 +182,7 @@ void Captures::compute_pos_icone( int& X, int& Y, int n )
 	Y = ny*(dyIcon + 2*BORDER_ICON) + BORDER_ICON;
 	X = width - ((nx+1)*( dxIcon + 2*BORDER_ICON) + BORDER_ICON);
 
-    logf( (char*)"Resultat : %d, %d -> %d %d", nx, ny, X, Y );
+    logf( (char*)"|  Resultat : %d, %d -> X=%d, Y=%d", nx, ny, X, Y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

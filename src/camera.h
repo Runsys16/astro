@@ -12,6 +12,7 @@
 #include <atomic>
 #include "button_callback.h"
 #include "star_compare.h"
+#include "notification.h"
 
 
 
@@ -20,7 +21,7 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Camera : public Device_cam , public ChangeValue 
+class Camera : public Device_cam, ChangeValue, NotificationFindStar 
 {
 protected:
     PanelWindow *               panelControl;

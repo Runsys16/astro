@@ -160,7 +160,7 @@ Capture::~Capture()
 void Capture::init()
 {
 	//-----------------------------------
-	// Valeur d par defaut des variables
+	// Valeur par defaut des variables
 	//-----------------------------------
 	bAfficheInfoFits	= false;
 	bAfficheGraph		= false;
@@ -224,7 +224,6 @@ void Capture::charge_vars_findstar()
 	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_li", ID );
 	if ( var.existe( string(st) ) )
 	{
-
 																				int l  = var.geti( string(st) );
 		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_X", ID );		int x  = var.geti( string(st) );
 		snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_Y", ID );		int y  = var.geti( string(st) );
@@ -260,7 +259,10 @@ void Capture::charge_vars_findstar()
 		i++;
 		if ( i >= 10 )	break;
 	}
+	// Supprime les etoiles selectionnées (cercle bleu)
+	pFindStar->efface_stars();
 
+	// retour a la configuration d'avent
 	var.setSauve( bSauveVar );
 
     log_tab(false);

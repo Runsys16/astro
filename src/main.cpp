@@ -141,19 +141,20 @@ vector<string> t_sHelp2 =
 	"     H\t: Change le nom d une image de la camera",
 	"     h\t: Enregistre une image de la camera courante",
 	"     l\t: Liste les controles",
+	"   HOME\t: Fullscreen",
     "" ,    
 };
 vector<string> t_sHelp3 = 
 {
     "---- Click Gauche ----",
-	"ctrl+shift+alt Click\t: Recherche tt les etoile v1 " ,
-	"shift+alt      Click\t: Recherche tt les etoile v2" ,
-	"ctrl+shift     Click\t: Affiche la distribution de la ligne" ,
-	"ctrl+alt       Click\t: Affiche le graphisme flux" ,
+	"Ctrl+Shift+Alt Click\t: Recherche tt les etoile v1 " ,
+	"Shift+Alt      Click\t: Recherche tt les etoile v2" ,
+	"Ctrl+Shift     Click\t: Affiche la distribution de la ligne" ,
+	"Ctrl+Alt       Click\t: Affiche le graphisme flux" ,
     //"---- Click Droit ----",
     "",
-	"ctrl           Click\t: GOTO" ,
-	"alt            Click\t: SYNC" ,
+	"Ctrl           Click\t: GOTO" ,
+	"Alt            Click\t: SYNC" ,
 };
 vector<string> t_sHelp4 =
 {
@@ -166,7 +167,7 @@ vector<string> t_sHelp4 =
 	"     S\t: Efface toutes les etoiles",
     "     U\t: Affichage du centre de la camera on/off",
     "     u\t: Affichage du suivi on/off",
-	" alt+u\t: Suivi au centre de l'ecran",
+	" Alt+u\t: Suivi au centre de l'ecran",
 	"     V\t: Initialise les coordonnees de suivi",
 	"     v\t: Sauvegarde fichier de suivi (.guid)",
 	"     w\t: Centre l'asservissement",
@@ -198,7 +199,7 @@ vector<string> t_sHelp4 =
 	" Alt+g\t: Info fits"   ,
 	"",
 	"",
-	"ctrl+q\t: --- SORTIE DU LOGICIEL ---",
+	"Ctrl+q\t: --- SORTIE DU LOGICIEL ---",
 };
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -4065,6 +4066,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
 	// Touche HOME
     case 106:
     	{
+        logf( (char*)"Key HOME : Camera fullscreen" );
 	    Camera_mgr&     mgr = Camera_mgr::getInstance(); 
 	    mgr.cam_full_screen();
 	    }
@@ -4072,8 +4074,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         
     default:	
 	    {
-        //logf( (char*)"glutSpecialFunc %d", key );
-        logf( (char*)"glutSpecialFunc (%d) \'%c\'", (int)key, key );
+        logf( (char*)"glutSpecialFunc default (%d) \'%c\'", (int)key, key );
 
 		}
 		break;

@@ -265,8 +265,12 @@ void PanelCamera::passiveMotionFunc(int xm, int ym)
 
 	pFindStar->setRB( pReadBgr );
 	update_mouse_coord( xm, ym );
-	if ( pFindStar && pMouseCoord )	pMouseCoord->setVisible( pFindStar->getPanelGraphDistri()->getVisible() );
-	
+
+	if ( pFindStar!= NULL && pMouseCoord != NULL )	
+	{
+		PanelGraph* pGraphDistri = pFindStar->getPanelGraphDistri();
+		if ( pGraphDistri != NULL )		pMouseCoord->setVisible( pGraphDistri->getVisible() );
+	}
     //log_tab(false);
     //logf( (char*)"PanelCamera::passiveMotionFunc(%d,%d) ...", xm, ym );
 }

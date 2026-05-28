@@ -30,6 +30,8 @@ FindStar::FindStar()
 	
 	DX_LUM			= width/2 -40;
 	DY_LUM			= height/2 -40;
+	
+	tStar.clear();
 
 	tGraphLum.clear();
 	tGraphLumLigne.clear();
@@ -713,8 +715,10 @@ int FindStar::exist(vec2 v, double r)
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::find_star_2(vec2 v)
 {
-	//logf( (char*)"FindStar::find_star_2" VEC2_PRINTFN(0), VEC2_AFF(v) );
-	log_tab(true);
+	#ifdef DEBUG_FIND_STAR_2
+	  logf( (char*)"FindStar::find_star_2" VEC2_PRINTFN(0), VEC2_AFF(v) );
+	  log_tab(true);
+	#endif
 
 	//double	lum_min 	= get_li_low_lvl( (int)v.y );
 	//max_lum = lum_min;
@@ -733,9 +737,18 @@ void FindStar::find_star_2(vec2 v)
 		if ( l < (lMax-5.0) )	break;
 	}
 	
-	if ( !bOk )		{ log_tab(false); return; }
+	if ( !bOk )		{ 
+		#ifdef DEBUG_FIND_STAR_2
+		  log_tab(false);
+		#endif
+		return;
+	}
+
 	//if ( r == 20.0 and l <= 5.0 )	{ log( (char*)"Pas d'eoitle" ); log_tab(false); return; }
-	//logf( (char*)"r=%.0lf  l=%0.2lf/%0.2lf " VEC2_PRINTFN(0), r, l, lMax, VEC2_AFF(vMax) );
+
+	#ifdef DEBUG_FIND_STAR_2
+	  logf( (char*)"r=%.0lf  l=%0.2lf/%0.2lf " VEC2_PRINTFN(0), r, l, lMax, VEC2_AFF(vMax) );
+	#endif
 	
 	double	l1	= 0.0;
 	double	l0	= 0.0;
@@ -749,7 +762,9 @@ void FindStar::find_star_2(vec2 v)
 		r = rr;
 		double l0 = get_lum_cercle( vMax, (double)rr );
 
-		//logf( (char*)"Etoile " VEC2_PRINTFN(0) " l0=%0.2lf  l1=%0.2lf r=%d", VEC2_AFF(vMax), l0, l1, rr );
+		#ifdef DEBUG_FIND_STAR_2
+		  logf( (char*)"Etoile " VEC2_PRINTFN(0) " l0=%0.2lf  l1=%0.2lf r=%d", VEC2_AFF(vMax), l0, l1, rr );
+		#endif
 
 		l += l0;
 		
@@ -757,9 +772,16 @@ void FindStar::find_star_2(vec2 v)
 		l1 = l0;
 		
 	}
-	if ( rr <= 2 )	{ log_tab(false); return; }
+	if ( rr <= 2 )	{ 
+		#ifdef DEBUG_FIND_STAR_2
+		  log_tab(false);
+		#endif
+		return;
+	}
 
-	//logf( (char*)"Etoile " VEC2_PRINTFN(0) " lum=%0.2lf r=%d", VEC2_AFF(vMax), l, rr );
+	#ifdef DEBUG_FIND_STAR_2
+	  logf( (char*)"Etoile " VEC2_PRINTFN(0) " lum=%0.2lf r=%d", VEC2_AFF(vMax), l, rr );
+	#endif
 	int idx;
 	if ( idx=exist(vMax, rr) == -1 )
 	{
@@ -780,7 +802,9 @@ void FindStar::find_star_2(vec2 v)
 	{
 		if ( rr > tStar[idx].rayon  )
 		{
-			//logf( (char*)"Etoile " VEC2_PRINTFN(0) "  \tlum=%0.2lf r=%d  \tidx=%d", VEC2_AFF(vMax), l, rr, idx );
+			#ifdef DEBUG_FIND_STAR_2
+			  logf( (char*)"Etoile " VEC2_PRINTFN(0) "  \tlum=%0.2lf r=%d  \tidx=%d", VEC2_AFF(vMax), l, rr, idx );
+			#endif
 			tStar[idx].centre	= vMax;
 			tStar[idx].deb		= vMax - vec2(0.0,0.0);
 			tStar[idx].fin		= vMax + vec2(0.0,0.0);
@@ -790,7 +814,9 @@ void FindStar::find_star_2(vec2 v)
 			tStar[idx].deb.x	= -1.0;
 		}
 	}
-	log_tab(false);
+	#ifdef DEBUG_FIND_STAR_2
+	  log_tab(false);
+	#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1031,6 +1057,7 @@ void FindStar::click_find_star( vec2 v)
 	
 	if ( tStar.size() != 0 )
 	{
+		logf( (char*)"Efface %d etoile(s)", tStar.size() );
 		tStar.clear();
 	}
 	else
@@ -1042,7 +1069,7 @@ void FindStar::click_find_star( vec2 v)
     }
 	
 	
-	logf( (char*)"%d etoile(s)", tStar.size() );
+	logf( (char*)"reste %d etoile(s)", tStar.size() );
 		
 	log_tab(false);
 }
@@ -1328,6 +1355,7 @@ void FindStar::setVisible(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::save_vars( int ID )
 {
+	if ( pCapture == NULL )			return;
 	//logf( (char*)"FindStar::save_vars()" );
 	
 	VarManager& var = VarManager::getInstance();
@@ -1376,7 +1404,7 @@ void FindStar::save_vars( int ID )
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::save_vars()
 {
-	save_vars( pCapture->getInfo() );
+	if ( pCapture )		save_vars( pCapture->getInfo() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1488,7 +1516,7 @@ void FindStar::sup_distri()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
-// Bouton Fermer de GraphLum ou GraphDistri
+// Bouton Fermer de GraphLum(s) ou GraphDistri
 //
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::cb_button_mouse_up(PanelButton* panelButton)

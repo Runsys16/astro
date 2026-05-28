@@ -20,7 +20,7 @@
 
 using namespace std;
 
-class Capture : public PanelWindow, PanelButtonCallback, Notification
+class Capture : public PanelWindow, public PanelButtonCallback, public Notification
 {
 protected:
 	int							ID;
