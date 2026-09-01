@@ -85,7 +85,7 @@ void PanelGraph::init_var()
 	ptVizi			= CARREE;
 	
 	pPanelCallback	= NULL;
-	pCallback		= NULL;
+	pNotification		= NULL;
 
 	iMouseCapture	= -1;
 }
@@ -916,21 +916,21 @@ void PanelGraph::setStarOverMouse(int is)
 //--------------------------------------------------------------------------------------------------------------------
 void PanelGraph::updatePos()
 {
-	if ( pCallback && (old_dx != dx_raw || old_dy != dy_raw) )
+	if ( pNotification && (old_dx != dx_raw || old_dy != dy_raw) )
 	{
 		old_dx = dx_raw; 
 		old_dy = dy_raw;
 		
-		pCallback->notifie( CHANGE_DX, (void*)&old_dx );
-		pCallback->notifie( CHANGE_DY, (void*)&old_dy );
+		pNotification->notifie( CHANGE_DX, (void*)&old_dx );
+		pNotification->notifie( CHANGE_DY, (void*)&old_dy );
 	}
-	if ( pCallback && (old_x != x_raw || old_y != y_raw) )
+	if ( pNotification && (old_x != x_raw || old_y != y_raw) )
 	{
 		old_x = x_raw; 
 		old_y = y_raw;
 		
-		pCallback->notifie( CHANGE_X, (void*)&old_x );
-		pCallback->notifie( CHANGE_Y, (void*)&old_y );
+		pNotification->notifie( CHANGE_X, (void*)&old_x );
+		pNotification->notifie( CHANGE_Y, (void*)&old_y );
 	}
 
 	pButtonQUIT->setPos( dx_raw - 20, 4 );

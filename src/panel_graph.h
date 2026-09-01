@@ -38,7 +38,7 @@ public:
 private:
 	string				name;
 	PanelText*			pTitre;
-	Notification*		pCallback;
+	Notification*		pNotification;
 	
 	int					old_dx;
 	int					old_dy;
@@ -169,7 +169,7 @@ inline void				setLinearX()						{ bLogX = false; }
 inline void				setLinearY()						{ bLogY = false; }
 inline void				setColorStar(vcf4 c)				{ cColorStar = c; }
 
-inline void				setNotification(Notification*p)		{ pCallback = p; }
+inline void				setNotification(Notification*p)		{ pNotification = p; }
 inline void				setButtonCallback( PanelButtonCallback* p)	{ pButtonQUIT->setButtonCallback(p); }
 
 inline void				debug_log()							{ bLogX = !bLogX; resetCourbes(); }

@@ -22,7 +22,7 @@ FindStar::FindStar()
 	pView			= NULL;
 	pConvert		= NULL;
 	pInfo			= NULL;
-	pCapture		= NULL;
+	pNotification		= NULL;
 	//thFindStar		= -1;
 
 	dOffsetLow		= 5.0;
@@ -89,7 +89,7 @@ void FindStar::create_graph_lum( Notification* p, int l, int x, int y, int dx, i
 	WindowsManager&     wm	= WindowsManager::getInstance();
 	VarManager&		    var	= VarManager::getInstance();
 	
-	pCapture = p;
+	pNotification = p;
 	pGraphLum = new PanelGraph();
 	pGraphLum->setExtraString( "pGraph luminosite" );
 	pGraphLum->setPosAndSize( x, y, dx, dy );
@@ -152,7 +152,7 @@ void FindStar::create_graph_distri( Notification* p, int l, int x, int y, int dx
 
 	WindowsManager&     wm  = WindowsManager::getInstance();
 	
-	pCapture = p;
+	pNotification = p;
 	pGraphDistri = new PanelGraph();
 	pGraphDistri->setExtraString( "pGraph distribution" );
 	pGraphDistri->setPosAndSize( x, y, dx, dy );
@@ -830,7 +830,7 @@ void FindStar::find_stars_2( vec2 v )
 	//------------------------------------------------------
 	for( int y=0; y<pRB->h; y+=5 )
 	{
-		max_lum = get_li_low_lvl( (int)y );
+		max_lum = get_li_low_lvl( (int)y ) * 4.0;
 		logf_thread( (char*)"find_stars_2(vec2) y=%d max_lum %0.2lf", y, max_lum );
 		
 		for( int x=0; x<pRB->w; x+=5 )
@@ -1089,7 +1089,11 @@ void FindStar::click_graph_distri( vec2 v )
 		WindowsManager::getInstance().sup(pGraphDistri);
 		delete pGraphDistri;
 		pGraphDistri = NULL;
-		save_vars();
+
+		if ( pNotification->getTypePanel() == TYPE_CAPTURE )
+		{
+			save_vars();
+		}
 	}	
 	else
 	{
@@ -1355,7 +1359,8 @@ void FindStar::setVisible(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::save_vars( int ID )
 {
-	if ( pCapture == NULL )			return;
+	if ( pNotification == NULL )								return;
+	if ( pNotification->getTypePanel() == TYPE_CAMERA )		return;
 	//logf( (char*)"FindStar::save_vars()" );
 	
 	VarManager& var = VarManager::getInstance();
@@ -1404,7 +1409,11 @@ void FindStar::save_vars( int ID )
 //--------------------------------------------------------------------------------------------------------------------
 void FindStar::save_vars()
 {
-	if ( pCapture )		save_vars( pCapture->getInfo() );
+	// Si camera pas de sauvegarde
+	if ( pNotification == NULL )								return;
+	if ( pNotification->getTypePanel() == TYPE_CAMERA )		return;
+
+	save_vars( pNotification->getInfo() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1414,7 +1423,7 @@ void FindStar::printObjet()
 	logf( (char*)"FindStar::printObjet()" );
 	logf( (char*)"Nombre de Graph Lum ; %d", tGraphLum.size() );
 	log_tab(true);
-	int ID = pCapture->getInfo();
+	int ID = pNotification->getInfo();
 
 	for( int i=0; i<tGraphLum.size(); i++ )
 	{
@@ -1455,26 +1464,26 @@ void FindStar::notifie( unsigned key, void* pVal )
 	case CHANGE_DX:
 		{
 		DX_LUM = *(int*)pVal;
-		if ( pCapture )		pCapture->notifie( SAVE_VARS, NULL );
+		if ( pNotification )		pNotification->notifie( SAVE_VARS, NULL );
 		save_vars();
 		break;
 		}
 	case CHANGE_DY:
 		{
 		DY_LUM = *(int*)pVal;
-		if ( pCapture )		pCapture->notifie( SAVE_VARS, NULL );
+		if ( pNotification )		pNotification->notifie( SAVE_VARS, NULL );
 		save_vars();
 		break;
 		}
 	case CHANGE_X:
 		{
-		if ( pCapture )		pCapture->notifie( SAVE_VARS, NULL );
+		if ( pNotification )		pNotification->notifie( SAVE_VARS, NULL );
 		save_vars();
 		break;
 		}
 	case CHANGE_Y:
 		{
-		if ( pCapture )		pCapture->notifie( SAVE_VARS, NULL );
+		if ( pNotification )		pNotification->notifie( SAVE_VARS, NULL );
 		save_vars();
 		break;
 		}
@@ -1489,7 +1498,7 @@ void FindStar::sup_lum( int n )
 {
 	VarManager& var = VarManager::getInstance();
 	char st[255];
-	int ID = pCapture->getInfo();
+	int ID = pNotification->getInfo();
 	
 	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_li", ID, n );	var.erase( string(st) );
 	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Lum_%03d-%03d_X",  ID, n );	var.erase( string(st) );
@@ -1506,7 +1515,7 @@ void FindStar::sup_distri()
 {
 	VarManager& var = VarManager::getInstance();
 	char st[255];
-	int ID = pCapture->getInfo();
+	int ID = pNotification->getInfo();
 
 	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_li", ID );	var.erase( string(st) );
 	snprintf( (char*)st, sizeof(st), (char*)"GRPH_Dis_%03d_X",  ID );	var.erase( string(st) );
@@ -1526,6 +1535,20 @@ void FindStar::cb_button_mouse_up(PanelButton* panelButton)
 	
 	logf( (char*)"FindStar::cb_button_mouse_up() ID = %04X", iID ); 
 	
+	if ( iID >= CB_BUTTON_DIST )
+	{
+		wm.sup( pGraphDistri );
+		delete pGraphDistri;
+		
+		pGraphDistri = NULL;
+		
+		sup_distri();		
+
+		save_vars();
+		
+		logf( (char*)"Delete DISTRI" );
+	}
+	else
 	if ( iID >= CB_BUTTON_LUMI )
 	{
 		
@@ -1536,7 +1559,7 @@ void FindStar::cb_button_mouse_up(PanelButton* panelButton)
 			//if ( p->isMouseOver(vMouse.x, vMouse.y) )
 			if ( p == panelGraph )
 			{
-				logf( (char*)"'%s' ID=%04X", panelGraph->getExtraString().c_str(), panelGraph->getID() );
+				logf( (char*)"Find : '%s' ID=%04X", panelGraph->getExtraString().c_str(), panelGraph->getID() );
 				wm.sup( panelGraph );
 				logf( (char*)"Delete LUM no=%d", i );
 				tGraphLum.erase(tGraphLum.begin() + i);
@@ -1545,24 +1568,18 @@ void FindStar::cb_button_mouse_up(PanelButton* panelButton)
 				delete panelGraph;			
 				panelGraph = NULL;
 				pGraphLum = NULL;
-
-				sup_lum( tGraphLum.size() );		
-				save_vars();
+				
+				if ( pNotification->getTypePanel() == TYPE_CAPTURE )		log( (char*)"Parent capture" );
+				if ( pNotification->getTypePanel() == TYPE_CAMERA )			log( (char*)"Parent camera" );
+				
+				if ( pNotification->getTypePanel() == TYPE_CAPTURE )		
+				{
+					sup_lum( tGraphLum.size() );		
+					save_vars();
+				}
+				break;
 			}
 		}
-	}
-	else
-	if ( iID >= CB_BUTTON_DIST )
-	{
-		wm.sup( pGraphDistri );
-		delete pGraphDistri;
-		
-		pGraphDistri = NULL;
-		
-		sup_distri();		
-		save_vars();
-		
-		logf( (char*)"Delete DISTRI" );
 	}
 	
 	//printObjet();

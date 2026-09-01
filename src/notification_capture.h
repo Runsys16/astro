@@ -5,6 +5,9 @@
 #define CB_BUTTON_DIST	0x9000
 #define CB_BUTTON_STAR	0xA000
 //----------------------------------------------------------------------------------------------
+#define TYPE_CAMERA		0x0000
+#define TYPE_CAPTURE	0x0001
+//----------------------------------------------------------------------------------------------
 #define CHANGE_X		0x0000
 #define CHANGE_Y		0x0001
 #define CHANGE_DX		0x0002

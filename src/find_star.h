@@ -63,7 +63,7 @@ private:
 //---------------------------------------
 	int					DX_LUM;
 	int					DY_LUM;
-	Notification*		pCapture;
+	Notification*		pNotification;
 	bool				bParentIconized;
 //---------------------------------------
 vector<etoile_line>		tStar;
@@ -133,7 +133,7 @@ inline void				setView(PanelSimple* p	)				{ pView = p; }
 inline void				setConvert(Convert* p)					{ pConvert = p; }
 inline void				setName(string s)						{ name = s; }
 inline PanelGraph*		getPanelGraphDistri()					{ return pGraphDistri; }
-inline void				setNotificationCapture(Notification* p)	{ pCapture = p; }
+inline void				setNotificationCapture(Notification* p)	{ pNotification = p; }
 inline void				setParentIconized(bool b)				{ bParentIconized = b; on_top(b); }
 inline void				efface_stars()							{ tStar.clear(); }
 //---------------------------------------

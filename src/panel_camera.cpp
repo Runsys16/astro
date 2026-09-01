@@ -1375,6 +1375,7 @@ void PanelCamera::create_find_star()
 	pFindStar->setRB( pReadBgr );
 	pFindStar->setView( this );
 	pFindStar->setConvert( this );
+	pFindStar->setNotificationCapture( this );
 
 	log_tab(false);
 }
@@ -1436,7 +1437,7 @@ void PanelCamera::update_mouse_coord( int xm, int ym )
 void PanelCamera::create_mouse_coord()                         
 {
 	if ( pMouseCoord != NULL )			return;
-	log( (char*)"PanelCapture::create_mouse_coord()" );
+	log( (char*)"PanelCamera::create_mouse_coord()" );
 	log_tab(true);
 
 	pMouseCoord = new PanelDebug();

@@ -8,6 +8,7 @@ class Notification
 public:
 	virtual void	notifie( unsigned, void*  )		{;}
 	virtual int		getInfo()						{ return -1; }
+	virtual int		getTypePanel()					{ return -1; }
 };
 //----------------------------------------------------------------------------------------------
 class NotificationFindStar

@@ -20,7 +20,7 @@
 
 using namespace std;
 
-class Capture : public PanelWindow, public PanelButtonCallback, public Notification
+class Capture : public PanelWindow, PanelButtonCallback, Notification
 {
 protected:
 	int							ID;
@@ -134,6 +134,7 @@ virtual void					notifie( unsigned, void* );
 	void						printObjet();
 
 virtual int						getInfo()									{ return ID; }
+virtual int						getTypePanel()								{ return TYPE_CAPTURE; }
     
 inline bool	 					getAffGraph()                               { return bAfficheGraph; }
 inline rb_t *                   getRB()                                     { return &readBgr; }

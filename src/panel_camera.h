@@ -13,6 +13,8 @@
 #include "convert.h"
 #include "find_star.h"
 #include "panel_debug.h"
+#include "notification.h"
+#include "notification_capture.h"
 
 class Camera;
 class Camera_mgr;
@@ -20,7 +22,7 @@ class Camera_mgr;
 using namespace std;
 
 
-class PanelCamera : public PanelWindow, public Convert
+class PanelCamera : public PanelWindow, Convert, Notification
 {
 	//-----------------------------------------------------------------
 	//-----------------------------------------------------------------
@@ -139,6 +141,7 @@ inline double           getCentY()                                      { return
 inline Stars*           getStars()                                      { return &stars; }
 inline rb_t*            getRB()                                         { return pReadBgr; }
 inline int              getNbStars()                                    { return stars.size(); }
+virtual int				getTypePanel()                                  { return TYPE_CAMERA; }
 
 };
 
