@@ -101,7 +101,7 @@ public:
 	void				reset_local();
 	void				print_local(int);
 	void				find_line(int, bool);
-	void				click_find_star(vec2);
+	bool				click_find_star(vec2);
 	void				click_graph_distri(vec2);
 	void				click_graph_lum(vec2);
 	void				click_all();

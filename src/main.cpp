@@ -1102,7 +1102,7 @@ void callback_enregistre( bool b, int ii, char* str)
     }
     
     Camera* p = Camera_mgr::getInstance().getCurrent();
-    if ( p )        p->setFilenameRec( string(str) );
+    if ( p )        p->setFilename( string(str) );
 
     FileBrowser::getInstance().cache();    
     /*
@@ -2213,6 +2213,7 @@ static void quit(void)
 	Serveur_mgr::getInstance().close_all();
 	Camera_mgr::getInstance().stopAllCameras();
 	Connexion_mgr::getInstance().stopThread();
+	Connexion_mgr::getInstance().stopThreadZWO();
 
     WindowsManager& 		wm 		= WindowsManager::getInstance();
     int 					nbPanel	= wm.getNbPanel();
@@ -2936,6 +2937,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     WindowsManager& 	wm 		= WindowsManager::getInstance();
     
     logf( (char*)"main::glutKeyboardFunc(%c, %d, %d)", (char)key, x, y );
+    /*
+    Panel* pC = wm.getCapture();
+    logf( (char*)"  Capture : %s", (pC == NULL ? (char*)"NULL": (char*)pC->getExtraString().c_str()) );
+    Panel* pF = wm.getFocus();
+    logf( (char*)"  Focus   : %s", (pF == NULL ? (char*)"NULL": (char*)pF->getExtraString().c_str()) );
+	*/    
     //logf( (char*)"  iGlutModifier = " BYTE_TO_BINARY_PATTERN BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(iGlutModifier>>8), BYTE_TO_BINARY(iGlutModifier) );
     //wm.setModifier(iGlutModifier);
     
@@ -2967,10 +2974,13 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     }
     //------------------------------------------------------------------------
     else
-    if (        cam_mgr.getCurrent() 
-            &&  cam_mgr.getCurrent()->getControlVisible()       )
+    if (        cam_mgr.getCurrent() != NULL
+//            &&  cam_mgr.getCurrent()->getControlVisible()       )
+            &&  cam_mgr.getCurrent()->getPanelCamera() == wm.getCapture()       )
     {
-        if ( cam_mgr.getCurrent()->keyboard(key) )      return;
+        if ( cam_mgr.keyboard(key) )	{
+        	return;
+        }
     }
     //------------------------------------------------------------------------
     else
@@ -3322,17 +3332,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         
     case 'H':
         {
-        logf( (char*)"Key (H) : Choisir le repertoire pour enregistre" );
-        Camera* pCam = Camera_mgr::getInstance().getCurrent();
-        if ( pCam != NULL )
+        logf( (char*)"Key (H) : Enregistre une video la camera courante" );
+        Camera* p = Camera_mgr::getInstance().getCurrent();
+        if ( p!=NULL )
         {
-            FileBrowser::getInstance().setCallBack( pCam );
-            FileBrowser::getInstance().setExtra( 0 );
-            if ( var.existe("DirSurveillance") )    workDirCaptures = *var.gets( "DirSurveillance" );
-            FileBrowser::getInstance().change_dir( workDirCaptures );
-            FileBrowser::getInstance().setNewline(true);
-            FileBrowser::getInstance().affiche();
-            //p->enregistre();
+		if ( typeid(*p) == typeid(CameraZWO) )
+			((CameraZWO*)p)->video();	        
         }
         }
         break;
@@ -3343,7 +3348,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
-            p->enregistre();
+			p->enregistre();
+	        
         }
         }
         break;
@@ -5345,6 +5351,7 @@ int main(int argc, char **argv)
 	//----------------------------------------------------------------------
     Camera_mgr::getInstance().reOrder();
     Connexion_mgr::getInstance().start();
+    Connexion_mgr::getInstance().startZWO();
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
     Serveur_mgr::getInstance().start_init();
     Serveur_mgr::getInstance().start_deplacement();

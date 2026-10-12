@@ -32,6 +32,7 @@ private:
     int             step;
     int             def;
     int             value;
+    int             extraValue;
     string          name;
     
     Device_cam*     dev;
@@ -47,6 +48,8 @@ public:
     void            printValue();
     
     inline void     setPanelText( PanelText* p)         { pt = p; }
+    inline int      getExtraValue()                     { return extraValue; }
+    inline void     setExtraValue(int n)				{ extraValue = n; }
     inline int      getValue()                          { return value; }
     inline int      getId()                             { return id; }
     inline string&  getName()                           { return name; }

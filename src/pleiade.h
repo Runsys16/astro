@@ -38,6 +38,7 @@ public :
     virtual void                haveUseFrame(bool);
 
 	virtual void				togglePanel()			{};
+	virtual void				setColor(long);
 
 	void						chargeGaiaDR3();
 	void						eraseGaiaDR3();

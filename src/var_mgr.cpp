@@ -246,7 +246,7 @@ bool VarManager::existe(const std::string& name)
         if ( key.compare(name) == 0 )   return true;
     }
 	//printf( (char*)"  n'existe pas\n" );
-	logf( (char*)"%s n'existe pas", name.c_str() );
+	//logf( (char*)"%s n'existe pas", name.c_str() );
     return false;
 }
 //--------------------------------------------------------------------------------------------------------------------

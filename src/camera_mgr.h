@@ -3,6 +3,7 @@
 
 
 #include "camera.h"
+#include "camera_zwo.h"
 #include "serial.h"
 #include "star_catalogue.h"
 
@@ -32,6 +33,8 @@ public:
     bool                        camera_exist( string dev_name );
     void                        add( string dev_name );
     void                        add( Camera* );
+    void                        add_zwo( int );
+    void                        sup_zwo( int );
     void                        addImages( Camera* );
     void                        sup( string );
     void                        sup( Camera * );
@@ -46,6 +49,7 @@ public:
     void                        resize( int, int );
     void                        active();
     void                        active( Camera*);
+    void                        active( Camera*, bool);
     void                        reOrder();
     void                        togglePanel();
 

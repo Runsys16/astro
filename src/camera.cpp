@@ -148,13 +148,21 @@ int Camera::addControl()	{
 void Camera::changeValueDouble( double val, void *p )	{
 	//logf( (char*)"changeValueDouble %lf", val );
 	Control* pControl = (Control*)p;
+	//pControl->setValue( (int)val );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::changeValueDoubleClick( double val, void *p )	{
+	//logf( (char*)"changeValueDouble %lf", val );
+	Control* pControl = (Control*)p;
 	pControl->setValue( (int)val );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
-    //logf( (char*)"Ajout de '%s'", str );
+    logf( (char*)"Camera::createControlID(PanelSimple Ajout de '%s'", str );
 
 	p->add( new PanelTextOmbre( (char*)str,  	   PanelText::NORMAL_FONT, x, y ) );
 
@@ -186,7 +194,9 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{   
+    logf( (char*)"Camera::createControlIDminmax(PanelSimple Ajout de '%s'", str0 );
 	p->add( new PanelTextOmbre( (char*)str0,  	   PanelText::NORMAL_FONT, x, y ) );
+	//p->add( new PanelText( (char*)str0,  	   PanelText::NORMAL_FONT, x, y ) );
 
     Control* pControl = getControl(str0);
 
@@ -214,7 +224,7 @@ void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{
 		char str1[256];
 		//snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t\ %.0lf", min, max, step );
 		snprintf( (char*)str1, sizeof(str1), "%.0lf~%.0lf\t %.0lf", min, max, step );
-		PanelText* pp = new PanelText( (char*)"  ", PanelText::NORMAL_FONT, x + 150, y );
+		PanelText* pp = new PanelText( (char*)" hh ", PanelText::NORMAL_FONT, x + 150, y );
 		pp->razTabSize();
 		pp->setTabSize(85);
 		pp->setColor(0x808080ff);
@@ -489,14 +499,16 @@ void Camera::fullSizePreview(int width, int height)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool*     pCharging;
+//bool*     pCharging;
 //
+/*
 void charge_camera()
 {
     write_image();
 
     *pCharging = true;
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -683,7 +695,7 @@ return false;
         logf( (char*)"capability_save()" );
         FileBrowser::getInstance().setFiltre(".cam");
         FileBrowser::getInstance().setFilename("");
-        setExtra(10);
+        FileBrowser::getInstance().setExtra(10);
         FileBrowser::getInstance().setNewline(true);
         FileBrowser::getInstance().change_dir(sSauveDir);
         FileBrowser::getInstance().setCallBack(this);
@@ -694,7 +706,7 @@ return false;
         //capability_load();
         logf( (char*)"capability_load()" );
         FileBrowser::getInstance().setFiltre(".cam");
-        setExtra(11);
+        FileBrowser::getInstance().setExtra(11);
         FileBrowser::getInstance().setNewline(true);
         FileBrowser::getInstance().change_dir(sSauveDir);
         FileBrowser::getInstance().setCallBack(this);
@@ -813,8 +825,10 @@ vec2* Camera::getSuivi()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::setColor( long color )
 {
-    panelCamera->setColor( color );
-    panelControl->setColor( color );
+    if ( panelCamera )		panelCamera->setColor( color );
+    if ( panelControl )		panelControl->setColor( color );
+	if ( pCamFilename )		pCamFilename->setColor(color);
+	if ( pNbStars )			pNbStars->setColor(color);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -846,7 +860,7 @@ void Camera::compareStar()
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::saveCompareStar()
 {
-   	log( (char*)"PanelCapture::saveCompareStar()");
+   	log( (char*)"Camera::saveCompareStar()");
 
 	starCompare.setStars(  panelCamera->getStars() );
 	starCompare.setVizier( &vizier);

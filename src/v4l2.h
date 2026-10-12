@@ -81,6 +81,13 @@ enum FMT
     H264,
     MJPG
 };
+//----------------------
+enum ERROR_DECODE_JPG
+{
+    ERROR_DECODE_JPG_OK = 0,
+    ERROR_DECODE_JPG_READ_HEADER,
+    ERROR_DECODE_JPG_SET_JUMP
+};
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -126,7 +133,8 @@ protected:
     bool                    bEnregistre;
     bool                    bCapture;
     bool                    bHaveNew;
-    string                  filenameRec;
+    string                  filename;
+	string					dirname;
 
 protected:
     rb_t                    readBgr;
@@ -171,8 +179,13 @@ public :
     Control*                getControl( int id );
     bool                    isControl( string s );
 
+
+	bool					is_file_exist(const std::string& );
+    void					new_filename(string);
+    
+    char*					str_error_decode( ERROR_DECODE_JPG );
     //inline  void            enregistre()            { bEnregistre = true; }
-    void                    enregistre(); //            { bEnregistre = true; }
+virtual    void                    enregistre(); //            { bEnregistre = true; }
 
     
     inline  char*           getErr()                { return strErr; }
@@ -189,6 +202,7 @@ public :
     inline  void            setHaveNew(bool b)      { bHaveNew = b; }
 
     inline  void            setName( char * s)      { name = string(s); }
+    inline  void            setName( string& s)		{ name = string(s); }
     inline  string&         getName()               { return name; }
 
     inline int              getWidth()              { return width; }
@@ -199,13 +213,13 @@ public :
     inline void             setSizeChoix()          {  sizeChoix = ++sizeChoix % nSize; }
     inline int              getSizeChoix()          {  return sizeChoix; }
 
-    inline void             setFilenameRec(string s) { filenameRec = s; }
+    inline void             setFilename(string s)	{ filename = s; }
 
 virtual void                callback(bool, int, char*);
 virtual struct readBackground*      getRB()     {return &readBgr;}
 
 private:
-    void                    decompressJpeg();
+    int						decompressJpeg();
 };
 
 #endif

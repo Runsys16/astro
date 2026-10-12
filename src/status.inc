@@ -393,14 +393,16 @@ void cb_rotationCheck(PanelCheckBox* p)	{
 	if ( p == pButtonControl )
 	{
         log( (char*)"status::cb_rotationCheck() Toggle panelCamera !!!" );
+        /*
         log_tab( true );
         Camera_mgr::getInstance().togglePanel();
         log_tab( false );
+        */
 
         Camera * p = Camera_mgr::getInstance().getCurrent();
         if ( p )
         {
-            bool b = p->getControlVisible();
+			p->enregistre();
         }
 	}
 	else

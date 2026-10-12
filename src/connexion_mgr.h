@@ -33,19 +33,27 @@ SINGLETON_BEGIN( Connexion_mgr )
    
 private:
     std::thread                 th_poll_connexion;
+    std::thread                 th_poll_connexionZWO;
     vector<string>              t_port_polling;
     vector<string>              t_port_current;
     
     bool                        bStart;
+    bool                        bStartZWO;
     atomic<bool>				bExitThread;  
+    atomic<bool>				bExitThreadZWO;  
     
+    int							pCamZWO[16];
+    int							nCamZWO;
 
 public:
     Connexion_mgr();
 
     void                        start();
+    void                        startZWO();
     void                        pooling();
     void                        threadPooling();
+    void                        poolingZWO();
+    void                        threadPoolingZWO();
 //    std::thread                 startThread();
     bool                        isExclude(string);  
     void                        add_port();
@@ -53,6 +61,7 @@ public:
     
     void                        print_list();
     void						stopThread()					{ bExitThread = true; }
+    void						stopThreadZWO()					{ bExitThreadZWO = true; }
     
 SINGLETON_END()
 

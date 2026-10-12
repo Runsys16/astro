@@ -1,4 +1,5 @@
 #include "connexion_mgr.h"
+#include <ASICamera2.h>
 
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -7,6 +8,10 @@ Connexion_mgr::Connexion_mgr()
 {
     bStart = false;
     bExitThread = false;
+    bStartZWO = false;
+    bExitThreadZWO = false;
+    
+    nCamZWO  = 0;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -16,6 +21,19 @@ void Connexion_mgr::start()
     if ( !bStart )
     {
         th_poll_connexion = std::thread(&Connexion_mgr::threadPooling, this); 
+        th_poll_connexion.detach();
+        log_thread( (char*)"[thread] Connexion_mgr::start() !! " );
+        bStart = true;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Connexion_mgr::startZWO()
+{
+    if ( !bStartZWO )
+    {
+        th_poll_connexion = std::thread(&Connexion_mgr::threadPoolingZWO, this); 
         th_poll_connexion.detach();
         log_thread( (char*)"[thread] Connexion_mgr::start() !! " );
         bStart = true;
@@ -69,8 +87,10 @@ void Connexion_mgr::add_port()
             if ( t_port_polling[i].find("video") != string::npos )
             {
                 //if ( !isExclude(t_port_polling[i])  )
+                log_tab(true);
                 Camera_mgr::getInstance().add( t_port_polling[i] );
                 t_port_current.push_back(  t_port_polling[i] );
+                log_tab(false);
                 logf_thread( (char*)"Connexion_mgr::add_port()  %s  END", t_port_polling[i].c_str() );
             }
             else if ( t_port_polling[i].find("ttyACM") != string::npos )
@@ -272,7 +292,53 @@ void Connexion_mgr::print_list()
     {
         logf( (char*)"    %s", t_port_current[i].c_str() );
     }
+
+	logf( (char*)"  %d camera(s) ZWO connected", nCamZWO);
 }    
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Connexion_mgr::poolingZWO()
+{
+    sleep(1);
+    //logf( (char*)"Connexion_mgr::pooling()" );
+    while (1) {
+    
+		int n = ASIGetNumOfConnectedCameras();
+		
+		if( n != nCamZWO )	{
+			logf( (char*)"%d camera(s) ZWO connected", n);
+			if ( n > nCamZWO )	{
+				Camera_mgr::getInstance().add_zwo( n-1 );
+			}
+			else {
+				logf( (char*)"suppression ZWO no %d", n);
+				Camera_mgr::getInstance().sup_zwo( n );
+			}
+			nCamZWO = n;
+		}
+    
+        if ( bExitThreadZWO.load() )		break;
+	
+	    sleep(1);
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Connexion_mgr::threadPoolingZWO()
+{
+    logf_thread( (char*)"[ THREAD ] start Connexion_mgr::threadPoolingZWO()" );
+    bExitThreadZWO = false;
+
+    while( 1 )
+    {   
+        poolingZWO();
+        if ( bExitThreadZWO.load() )		break;
+    }
+    bStartZWO = false;
+    logf_thread( (char*)"[ THREAD ] stop Connexion_mgr::threadPoolingZWO()" );
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

@@ -68,10 +68,16 @@ virtual	void			idle(float);
 virtual	void			update_stars();
 
 virtual	void			passiveMotionFunc( int, int);
+virtual void			clickLeft( int, int);
 virtual	void			releaseLeft( int, int);
+
+virtual void			clickMiddle( int, int);
 virtual	void			releaseMiddle( int, int);
+
+virtual void			clickRight( int, int);
 virtual void			motionRight( int, int);
 virtual	void			releaseRight( int, int);
+
 virtual	void			wheelUp( int, int);//                              {;};
 virtual	void			wheelDown( int, int);//                            {;};
 	//-----------------------------------------------------------------
@@ -132,6 +138,7 @@ virtual	void			displayGL();
 		void			create_find_star();   
 		void			update_mouse_coord(int, int);   
 		void			create_mouse_coord();   
+		void			delete_mouse_coord();   
 		//-----------------------------------------------------------------
 		void			printObjet();
 		//-----------------------------------------------------------------

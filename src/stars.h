@@ -4,6 +4,7 @@
 #include "main.h"
 #include "MathlibD.h"
 #include "star.h"
+#include "convert.h"
 
 #include <WindowsManager.h>
 #include <thread>
@@ -80,11 +81,13 @@ inline double				getA()						{ return dCoefA; }
 inline double				getB()						{ return dCoefB; }
 //inline double				getC()						{ printf("%lf\n",dCoefC); return dCoefC; }
 inline double				getC()						{ return dCoefC; }
+inline void					setConvert(Convert* p)		{ pConvert = p; }
 
 private:
     vector<Star*>           v_tStars;
     rb_t*                   RB;
     PanelSimple*            pView;
+    Convert*				pConvert;
     PanelText*              pNbStars;
     
     int                     dx;

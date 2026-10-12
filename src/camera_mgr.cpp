@@ -1,8 +1,10 @@
 #include "camera_mgr.h"
 #include "pleiade.h"
 #include "main.h"
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+#define INTERN_CAM
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -21,7 +23,7 @@ bool Camera_mgr::camera_exist( string sdev )
     for( int i=0; i<nb; i++ )
     {
 
-        //logf_thread( (char*)"    [%d/%d] %s compare %s", i, nb, pCameras[i]->getDevName(), sdev.c_str() );
+        logf_thread( (char*)"    [%d/%d] %s compare %s", i, nb, pCameras[i]->getDevName(), sdev.c_str() );
         
         if ( sdev.find( (char*)pCameras[i]->getDevName() ) != std::string::npos )
         {
@@ -36,10 +38,13 @@ bool Camera_mgr::camera_exist( string sdev )
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::add( string sdev_name )
 {
-//#define INTERN_CAM
 
     logf_thread((char*)"Camera_mgr::add( \"%s\" ) -------------", sdev_name.c_str());
-    if ( camera_exist( sdev_name ) )            return;
+    if ( camera_exist( sdev_name ) )  
+    {
+	    logf_thread((char*)"[ WARNING ] \"%s\"  existant !!", sdev_name.c_str());
+    	return;
+    }
 
 	log_tab(true);
 
@@ -121,6 +126,52 @@ void Camera_mgr::add( Camera* p )
     
     log_tab(false);
     logf_thread((char*)"Camera_mgr::add(Camera*) END" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Utiliser par la camera speciale pleiade
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::add_zwo( int n )
+{
+    logf_thread((char*)"Camera_mgr::add_zwo( %d )", n	 );
+    log_tab(true);
+    
+	CameraZWO* p = new CameraZWO( n );
+    pCameras.push_back( p );
+    
+    log_tab(false);
+    logf_thread((char*)"Camera_mgr::add_zwo(Camera*) END" );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Utiliser par la camera speciale pleiade
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::sup_zwo( int n )
+{
+    logf_thread((char*)"Camera_mgr::sup_zwo( %d )", n	 );
+    log_tab(true);
+    
+    for( int i=0; i<pCameras.size(); i++ )
+    {
+	    if ( typeid(*pCameras[i]) == typeid(CameraZWO) )
+	    {
+	    	CameraZWO* p = (CameraZWO*)pCameras[i];
+		    logf_thread((char*)"camera trouve %d/%d - %s", i, p->get_zwo_ID(), p->getName().c_str() );
+	    	if ( n == p->get_zwo_ID() )
+	    	{
+			    logf_thread((char*)"SUP camera trouve %d - ", i, p->getName().c_str() );
+				pCameras.erase(pCameras.begin()+i);
+				delete p;
+				break;
+	    	}
+	    	
+	    }
+	}
+    
+    log_tab(false);
+    logf_thread((char*)"Camera_mgr::sup_zwo(Camera*) END" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -213,8 +264,14 @@ void Camera_mgr::change_background_camera( void )
 //--------------------------------------------------------------------------------------------------------------------
 bool Camera_mgr::keyboard( char key )
 {
-    //logf_thread((char*)"Camera_mgr::change_background_camera() -------------");
-    if ( pCurrent )                 return pCurrent->keyboard( key );
+    logf((char*)"Camera_mgr::keyboard(%d)", (int)key );
+    
+    if ( pCurrent )	{
+    	log_tab(true);
+    	bool bRet = pCurrent->keyboard( key );
+    	log_tab(false);
+    	return bRet;
+    }
     return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -385,6 +442,39 @@ void Camera_mgr::active( Camera* pCamera)
 
 
     pCamera->fullSizePreview( w, h );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::active( Camera* pCamera, bool bFull)
+{
+	// Si la camera est connecte au demarrage => Plantage
+    //logf_thread((char*)"Camera_mgr::active() -------------" );
+    if ( pCamera == NULL )			return;
+
+    int w = WindowsManager::getInstance().getWidth();
+    int h = WindowsManager::getInstance().getHeight();
+
+    //if ( pCurrent != NULL )         pCurrent->iconSizePreview( w, h );
+
+    int n = pCameras.size();
+    nActive = -1;
+	for( int i=0; i<n; i++ )
+	{
+		if ( pCameras[i] == pCamera )		nActive = i;
+		else {
+			if ( bFull )         pCameras[i]->iconSizePreview( w, h );
+		}
+	}
+	if ( nActive == -1 )			logf_thread( (char*)"[Erreur] Camera_mgr::active(Camera*) nAtive = -1" );
+
+    pCurrent = pCamera;
+	//WindowsManager::getInstance().onBottom( pCurrent->getPanelCamera() );
+    
+	reOrder();
+
+
+	if ( bFull )	pCamera->fullSizePreview( w, h );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

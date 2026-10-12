@@ -21,7 +21,7 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Camera : public Device_cam, ChangeValue, NotificationFindStar 
+class Camera : public Device_cam, public ChangeValue, public NotificationFindStar 
 {
 protected:
     PanelWindow *               panelControl;
@@ -48,6 +48,7 @@ protected:
     bool						bPanelControl;
     bool						bFullScreen;
     bool						bIconized;
+	bool*						pCharging;
 
 	StarCompare					starCompare;
     //Stars                       stars;
@@ -61,6 +62,7 @@ virtual    ~Camera();
     Camera(int, int);
     
 virtual void 					changeValueDouble( double val, void *p );
+virtual void 					changeValueDoubleClick( double val, void *p );
 
     void                        init();
     
@@ -82,9 +84,8 @@ virtual void 					changeValueDouble( double val, void *p );
     void                        resizeControlFirst(int, int, int, int);
 
     void                        threadExtractImg();
-    virtual void                change_background();
-    
-    bool                        keyboard( char );
+virtual void					change_background();
+virtual bool					keyboard( char );
     
     //std::thread                 memberThread();
     
@@ -107,8 +108,7 @@ virtual void 					changeValueDouble( double val, void *p );
     vec2*                       getSuivi();
     void						recentreSuivi();
     
-    void                        setColor(long);
-
+virtual void                    setColor(long);
 virtual	void					chargeGaiaDR3()						{};
 virtual	void					eraseGaiaDR3()						{};
 	void						compareStar();

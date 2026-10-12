@@ -49,7 +49,7 @@ Device_cam::Device_cam()
     bHaveNew        = false;
     
     name ="";
-    filenameRec = "/home/rene/Documents/astronomie/logiciel/script/images/frame";
+    dirname			= "/home/rene/.astropilot/capture/";
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -428,29 +428,15 @@ bool fileExists(const std::string& file) {
 void Device_cam::process_image(const void *p, int size)
 {
     if (fd == -1)       return;
-    if ( filenameRec == "" )     return;
 
-    char filename[155];
-    int nm;
+    new_filename(".jpg");
+    string sFile = dirname + filename;
     
-    for( nm=0; nm<1000; nm++ )
-    {
-        sprintf(filename, "%s-%d.jpg", (char*)filenameRec.c_str(), nm);
-        //logf_thread( (char*)filename );
-
-        if ( !fileExists(filename) )        break;
-    }    
-    //logf_thread( (char*)filename );
-    //return;
-    if (nm>=1000)
-    {
-        logf_thread( (char*)"[Erreur] framme-1000.jpg atteind " );
-    }
-    frame_number++;
+	
     
-    logf_thread( (char*)"Enregistre : %s", filename);
+    logf_thread( (char*)"Enregistre : %s", sFile.c_str());
     
-    FILE *fp=fopen(filename,"wb");
+    FILE *fp=fopen(sFile.c_str(),"wb");
     
     if (out_buf)
             fwrite(p, size, 1, fp);
@@ -464,6 +450,8 @@ void Device_cam::process_image(const void *p, int size)
 int Device_cam::read_frame(void)
 {
     if (fd == -1)       return -1;
+	
+	int err;
 
 	//logf_thread((char*)"read_frame");
 
@@ -488,8 +476,11 @@ int Device_cam::read_frame(void)
             }
         }
 
-        if ( bEnregistre )      process_image(buffers[0].start, buffers[0].length);
-        bEnregistre = false;
+        if ( bEnregistre ){
+            logf_thread( (char*)"IO_METHOD_READ Enregistre l'image (jpg)" );
+            process_image(buffers[0].start, buffers[0].length);
+	        bEnregistre = false;
+	    }
         break;
 
     case IO_METHOD_MMAP:
@@ -519,11 +510,13 @@ int Device_cam::read_frame(void)
         jpg_buffer = (unsigned char*)buffers[buf.index].start;
         jpg_size = buf.bytesused;
 
-        decompressJpeg();
+        if( err=decompressJpeg() != (int)ERROR_DECODE_JPG_OK )	logf_thread( (char*)"[ ERREUR ] IO_METHOD_MMAP : %s", str_error_decode((ERROR_DECODE_JPG)err) );
 
-        if ( bEnregistre )      process_image(buffers[buf.index].start, buf.bytesused);
-        bEnregistre = false;
-        //printf( "%d %d\n", buffers[buf.index].start, buf.bytesused);
+        if ( bEnregistre ){
+            logf_thread( (char*)"IO_METHOD_MMAP Enregistre l'image (jpg)" );
+            process_image(buffers[buf.index].start, buf.bytesused);
+	        bEnregistre = false;
+	    }
 
         if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
         {
@@ -570,14 +563,14 @@ int Device_cam::read_frame(void)
 
         if ( bEnregistre )      
         {
-            logf_thread( (char*)"Enregistre l'image lu" );
+            logf_thread( (char*)"IO_METHOD_USERPTR Enregistre l'image (jpg)" );
             process_image((void *)buf.m.userptr, buf.bytesused);
             bEnregistre = false;
         }
 
         //logf_thread( (char*)"lit image" );
 
-        decompressJpeg();
+        if( err=decompressJpeg() != (int)ERROR_DECODE_JPG_OK )	logf_thread( (char*)"[ ERREUR ] IO_METHOD_USERPTR : %s", str_error_decode((ERROR_DECODE_JPG)err) );
         
         
         
@@ -1314,7 +1307,7 @@ struct jpeg_error_mgr * my_jpeg_std_error(struct jpeg_error_mgr * jerr)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::decompressJpeg() {
+int Device_cam::decompressJpeg() {
 	//printf("Proc: %d--------------------------------------\n", nbJPG++);
 
 	wBmp = -1;
@@ -1355,7 +1348,7 @@ void Device_cam::decompressJpeg() {
     if (setjmp(jerr.setjmp_buffer)) {
         jpeg_destroy_decompress(&cinfo);
         //printf("Error Handler (setjump)  %d images decode\n", nbJPG);
-        return;
+		return ERROR_DECODE_JPG_SET_JUMP;
     }
 
 
@@ -1369,7 +1362,7 @@ void Device_cam::decompressJpeg() {
 	if (rc != 1) {
 		printf("File does not seem to be a normal JPEG\n");
 		//exit(EXIT_FAILURE);
-		return;
+		return ERROR_DECODE_JPG_READ_HEADER;
 	}
 
 	jpeg_start_decompress(&cinfo);
@@ -1418,6 +1411,8 @@ void Device_cam::decompressJpeg() {
 	jpeg_destroy_decompress(&cinfo);
 
     readBgr.bReadError = bReadError;
+    
+    return ERROR_DECODE_JPG_OK;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1462,11 +1457,64 @@ void Device_cam::callback(bool b, int ii, char* str)
     }
     
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+/**
+ * Check if a file exists
+ * @return true if and only if the file exists, false else
+ */
+bool Device_cam::is_file_exist(const std::string& file) {
+    struct stat buf;
+    return (stat(file.c_str(), &buf) == 0);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Genere un nouveau nom de fichier pour la sauvegarde image
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::new_filename( string ext )
+{
+   	logf_thread( (char*)"Camera::new_filename( %s )", ext.c_str() );
+   	
+    int no;
+    string sName = string( name );
+    
+    while ( name.find(" ") != string::npos )
+    	name.replace( name.find(" "), 1, "_");
 
+    
+    for( no=0; no<100000; no++ )
+    {
+    	char tmp[128];
+        snprintf(tmp, sizeof(tmp), "%s-%06d%s", (char*)name.c_str(), no, ext.c_str() );
+    	filename = string(tmp);
 
+        if ( !is_file_exist(dirname+filename) )        break;
+    }    
 
-
-
+    if (no>=100000)
+    {
+        logf_thread( (char*)"[ WARNING ] indice 100000 atteind " );
+    }
+    
+    logf_thread( (char*)"Nouveau nom : %s", filename.c_str() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Genere un nouveau nom de fichier pour la sauvegarde image
+//
+//--------------------------------------------------------------------------------------------------------------------
+char * Device_cam::str_error_decode( ERROR_DECODE_JPG error )
+{
+	switch( (int)error )
+	{
+    case ERROR_DECODE_JPG_OK:		    	return (char*)"ERROR_DECODE_JPG_OK";
+    case ERROR_DECODE_JPG_READ_HEADER:		return (char*)"ERROR_DECODE_JPG_READ_HEADER";
+    case ERROR_DECODE_JPG_SET_JUMP:			return (char*)"ERROR_DECODE_JPG_SET_JUMP";
+	}
+	return (char*)"ERROR_DECODE_inconnu";
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

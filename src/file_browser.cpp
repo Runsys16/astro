@@ -996,6 +996,7 @@ void ButtonOK::releaseLeft( int xm, int ym )
 
     
     logf( (char*)"  Extra %d", getExtra() );
+    /*
     switch(getExtra())
     {
     case 0:
@@ -1020,6 +1021,13 @@ void ButtonOK::releaseLeft( int xm, int ym )
     }    
     break;
     }
+    */
+
+    if ( pCallBack == NULL )                setCurrentDirectory( s );
+    else {
+    	pCallBack->callback( true, getExtra(), (char*)s.c_str() );
+    }
+
 
     pFB->cache();
 }

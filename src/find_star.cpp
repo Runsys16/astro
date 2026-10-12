@@ -830,7 +830,7 @@ void FindStar::find_stars_2( vec2 v )
 	//------------------------------------------------------
 	for( int y=0; y<pRB->h; y+=5 )
 	{
-		max_lum = get_li_low_lvl( (int)y ) * 4.0;
+		max_lum = get_li_low_lvl( (int)y );
 		logf_thread( (char*)"find_stars_2(vec2) y=%d max_lum %0.2lf", y, max_lum );
 		
 		for( int x=0; x<pRB->w; x+=5 )
@@ -1048,17 +1048,20 @@ void FindStar::update_graph_segment()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void FindStar::click_find_star( vec2 v)
+bool FindStar::click_find_star( vec2 v)
 {
 	logf( (char*)"FindStar::click_find_star( " VEC2_PRINTFN(0) " )", VEC2_AFF(v) );
+	if ( pRB == NULL )		{ log( (char*)"[ Erreur ] pRG = NULL" ); return false; }
+
 	log_tab(true);
-	
-	if ( pRB == NULL )		{ log( (char*)"[ Erreur ] pRG = NULL" ); return; }
 	
 	if ( tStar.size() != 0 )
 	{
 		logf( (char*)"Efface %d etoile(s)", tStar.size() );
 		tStar.clear();
+		
+		log_tab(false);
+		return false;
 	}
 	else
 	{
@@ -1072,6 +1075,8 @@ void FindStar::click_find_star( vec2 v)
 	logf( (char*)"reste %d etoile(s)", tStar.size() );
 		
 	log_tab(false);
+	
+	return true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

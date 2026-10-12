@@ -37,7 +37,7 @@ void Control::init( struct v4l2_queryctrl* queryctrl)
     if (0 == ioctl(dev->getFd(), VIDIOC_G_CTRL, &control)) {
         value = control.value;
         //printf( "%08X %s  %d   (%d<%d)\n", id, name, value, min, max );
-        logf( (char*)"%s %08X\t%d\t(%d<%d)", name.c_str(), id, value, min, max );
+        logf_thread( (char*)"%s %08X\t%d\t(%d<%d)", name.c_str(), id, value, min, max );
     }
     //}    
 }
@@ -98,7 +98,7 @@ void Control::printValue()
     //logf( (char*)"Control::printValue() : %s %d", name.c_str(), value);
     if (pt)     {
         char text[] = "00000000";
-        sprintf( text, "%d", value ); 
+        snprintf( text, sizeof(text), "%d", value ); 
         pt->changeText(text);
     }
     else

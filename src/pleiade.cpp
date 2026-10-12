@@ -162,7 +162,8 @@ void Pleiade::change_background(void)
         pCamFilename->changeText( (char*)titre.c_str() );
         pCamFilename->setAlign( PanelText::LEFT );
         pCamFilename->setVisible( true );
-        pCamFilename->setColor(0xffFFffFF );
+        if ( !bNuit )		pCamFilename->setColor(0xffFFffFF );
+        else				pCamFilename->setColor(0xff0000FF );
 
         sPleiade = sPleiades + string(num) + ".png";
 
@@ -223,6 +224,16 @@ bool  Pleiade::haveNewFrame()
 void Pleiade::haveUseFrame(bool b)
 {
     bNewBackground = false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Pleiade::setColor( long color )
+{
+    if ( panelCamera )		panelCamera->setColor( color );
+    if ( panelControl )		panelControl->setColor( color );
+	if ( pCamFilename )		pCamFilename->setColor(color);
+	if ( pNbStars )			pNbStars->setColor(color);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
