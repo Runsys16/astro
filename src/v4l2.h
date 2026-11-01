@@ -1,6 +1,7 @@
 #ifndef V4L2_H
 #define V4L2_H  1
 
+//#define JMESSAGE(code, string)  ((char*)string)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -145,8 +146,9 @@ public :
 
     Device_cam();
     
-    bool                    getIOCapability();
+    void					set_filtre_name( string &);
     bool                    isDevice(int);
+    bool                    getIOCapability();
     void                    enumerate_menu(__u32 id);
     void                    capability_list( void );
     void                    capability_save( void );
@@ -184,8 +186,8 @@ public :
     void					new_filename(string);
     
     char*					str_error_decode( ERROR_DECODE_JPG );
-    //inline  void            enregistre()            { bEnregistre = true; }
-virtual    void                    enregistre(); //            { bEnregistre = true; }
+
+virtual    void				enregistre(); //            { bEnregistre = true; }
 
     
     inline  char*           getErr()                { return strErr; }

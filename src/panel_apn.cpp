@@ -1,17 +1,12 @@
 #include "panel_apn.h"
-
 //--------------------------------------------------------------------------------------------------------------------
 //
-/*
-    string filename = " -o /home/rene/Documents/astronomie/logiciel/script/image/atmp/2000-01-01/k200d/test";
-    string iso = " -i 400";
-    string stime = " -t " + to_string(timePentax);
-    string frames = " -F 1";
-    string timeout = " --timeout=3";
-    string focus = " -f";
-    string command = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli";
-*/
-
+//--------------------------------------------------------------------------------------------------------------------
+char		sUS[] = "us";
+char		sMS[] = "ms";
+char		sSC[] = "s";
+//--------------------------------------------------------------------------------------------------------------------
+//
 //--------------------------------------------------------------------------------------------------------------------
 PanelApn::PanelApn()
 {
@@ -33,18 +28,23 @@ PanelApn::PanelApn()
     float gris = 0.7;
     vcf4 c  = vcf4(gris, gris, gris, 1.0);
 	
-	add( new PanelTextOmbre( (char*)"Temps (s)\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
+	add(    new PanelTextOmbre( (char*)"Temps (s)\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c)) );
     pTime = new PanelSpinEditText();
-    pTime->set( 1, 60*15, 100,  1);
+    pTime->setExtraString( "SpinEdit : pTime" );
+    pTime->set( 0, 1000, 300,  1);
     pTime->set_delta( 20, 8 );
-    pTime->changeText( "200" );
+    pTime->changeText( "1 ms" );
     pTime->setPos( x+dx, p*dy );
     pTime->setSize( 160-dx, dy );
-    pTime->setExtraString( "pTime" );
+    pTime->setChangeValue( this );
+    pTime->setID( (void*)pTime );
+
+    //pUnite = new PanelText((char*)"us",		    PanelText::NORMAL_FONT,x+dx+20, p*dy    , get_color(c) );
     p++;
 
-	add( new PanelTextOmbre( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add(   new PanelTextOmbre( (char*)"ISO\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pIso = new PanelSpinEditText();
+    pIso->setExtraString( "pIso" );
     pIso->set( 100, 3200, 100, 1 );
     pIso->set_delta( 20, 8 );
     vector<double> t_iso{ 100, 200, 400, 800, 1600 };
@@ -52,10 +52,9 @@ PanelApn::PanelApn()
     pIso->changeText( "800" );
     pIso->setPos( x+dx, p*dy );
     pIso->setSize( 160-dx, dy );
-    pIso->setExtraString( "pIso" );
     p++;
     
-	add( new PanelTextOmbre( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add(      new PanelTextOmbre( (char*)"Frames\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pFrames = new PanelSpinEditText();
     pFrames->set( 1, 200, 200, 2 );
     pFrames->set_delta( 20, 8 );
@@ -65,7 +64,7 @@ PanelApn::PanelApn()
     pFrames->setExtraString( "pFrames" );
     p++;
 
-	add( new PanelTextOmbre( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add(       new PanelTextOmbre( (char*)"TimeOut\t:",		PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pTimeOut = new PanelSpinEditText();
     pTimeOut->set( 1, 10, 10, 2);
     pTimeOut->set_delta( 20, 8 );
@@ -75,7 +74,7 @@ PanelApn::PanelApn()
     pTimeOut->setExtraString( "pTimeOut" );
     p++;
 
-	add( new PanelTextOmbre( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
+	add(   new PanelTextOmbre( (char*)"Num\t\t:",		    PanelText::NORMAL_FONT, x, p*dy, get_color(c) ) );
     pNum = new PanelSpinEditText();
     pNum->set( 0, 200, 20 , 1 );
     pNum->set_delta( 20, 8 );
@@ -92,6 +91,7 @@ PanelApn::PanelApn()
     add(pFrames);
     add(pTimeOut);
     add(pNum);
+    //add(pUnite);
 
 	string sT = string("1");
     if ( !var.existe("APN_Time") )		var.set("APN_Time", sT );
@@ -107,8 +107,9 @@ PanelApn::PanelApn()
     iTimeOut    = var.geti( "APN_TimeOut" );
     iNum        = var.geti( "APN_Num" );
 
-    pTime->changeText( sTime );
+	/*
     pTime->set_val( stod(sTime) );
+    */
     pIso->changeText( to_string(iIso) );
     pIso->set_val( iIso );
     pFrames->changeText( to_string(iFrames) );
@@ -123,8 +124,15 @@ PanelApn::PanelApn()
     wm.changeFocus(pTime);
     
     loadSkinPath( "images/astro" );
-	setBorderSize(16);
+	setBorderSize(6);
+	
+	iUnite = MICRO;
+	dTime = 1.0;
 
+	change_unite(false, pTime);
+    pTime->set_val( 1.0 );
+	
+	//pos_unite();
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -175,15 +183,6 @@ bool PanelApn::keyboard(char key, int x, int y)
    
     Panel* p = wm.getFocus();
     
-    /*
-    if ( p!= NULL && p->getID() == 9010 )
-        logf( (char*)"Focus %s", (char*)p->getExtraString().c_str() );
-    
-    if      ( p == this )            logf( (char*)"PanelApn::keyboard() focus panel console" );
-    else if ( p == NULL )            logf( (char*)"PanelApn::keyboard() focus NULL" );
-    else                             logf( (char*)"PanelApn::keyboard() focus autre chose ID=%d", p->getID() );
-    */
-    
     if ( p == pTime || p == pIso || p == pFrames || p == pTimeOut || p == pNum )
     {
         supCallBacks();
@@ -197,11 +196,7 @@ bool PanelApn::keyboard(char key, int x, int y)
         
 
     wm.startKeyboard();
-    //wm.keyboard(key, int x, int y)
 
-    //logf( (char*)"PanelApn::keyboard(%d) %c", key, key );
-
-    //if (   0 <= key &&  key <  32  )                wm.keyboardFunc( key, x, y);
     if (        key ==  '.'        )                wm.keyboardFunc( key, x, y);
     if ( '0' <= key &&  key <= '9' )                wm.keyboardFunc( key, x, y);
     if ( ' ' <= key &&  key <= 126 )                return true;
@@ -279,7 +274,6 @@ void PanelApn::commande_photo()
     string focus = " -f";
     string mode = " -m M";
     string format = " --file_format=JPG";
-    //string format = " --file_format=DNG";
     string command = "/home/rene/Documents/astronomie/logiciel/k200d/pktriggercord-0.84.04/pktriggercord-cli";
 
     command = command + filename + iso + stime + frames +  timeout + mode + format;
@@ -308,7 +302,97 @@ void PanelApn::photo()
     string dir = "/home/rene/Documents/astronomie/k200d/";
 
     thread( &PanelApn::commande_photo, this ).detach();
-    //Surveillance::getInstance().start(dir);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelApn::change_unite( bool bPlus, PanelSpinEditText* pSpin )
+{
+    logf( (char*)"PanelApn::change_unite(%s, %s)", BOOL2STR(bPlus), pSpin->getExtraString().c_str() );
+
+	int i = iUnite;
+	if( bPlus )			i++;
+	else				i--;
+	
+	if (i<0)		i = 0;
+	if (i>2)		i = 2;
+	
+	iUnite = (UNITE)i;
+	switch( iUnite )
+	{
+	case MICRO:
+		//pUnite->changeText( (char*)"us" );
+	    logf( (char*)"%s", sUS );
+		pTime->set_unite( sUS );
+		break;
+	case MILI:
+		//pUnite->changeText( (char*)"ms" );
+	    logf( (char*)"%s", sMS );
+		pTime->set_unite( sMS );
+		break;
+	case SEC:
+		//pUnite->changeText( (char*)"s" );
+	    logf( (char*)"%s", sSC );
+		pTime->set_unite( sSC );
+		break;
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//													FONTCTIONS VIRTUELLES
+//
+//--------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelApn::changeValueDouble( double val, void *p )
+{
+	PanelSpinEditText* pSpin = (PanelSpinEditText*)p;
+    logf( (char*)"PanelApn::changeValueDouble(%lf, %s)", val, pSpin->getExtraString().c_str() );
+
+	dTime = val;
+	
+	if       ( dTime < 1.0   && iUnite != MICRO )		{ dTime = 999.0; 	change_unite(false, pSpin); }
+	else if  ( dTime > 999.0 && iUnite != SEC )			{ dTime = 1.0;		change_unite(true,  pSpin); }
+	
+	if ( dTime < 1.0 )			dTime = 1.0;
+	if ( dTime > 999.0 )		dTime = 999.0;
+	
+	pSpin->set_val( dTime );
+	
+	exposure = (long)dTime;
+	switch( iUnite )
+	{
+	case MICRO:		exposure *= 1;				break;
+	case MILI:		exposure *= 1000;			break;
+	case SEC:		exposure *= 1000000;		break;
+	}
+    logf( (char*)"|  exposure = %ld", exposure );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelApn::changeValueDoubleClick( double val, void *p )
+{
+	if ( p == pTime )
+	{
+		changeValueDouble(val, p);
+	}
+	exposure = (long)dTime;
+	switch( iUnite )
+	{
+	case MICRO:		exposure *= 1;				break;
+	case MILI:		exposure *= 1000;			break;
+	case SEC:		exposure *= 1000000;		break;
+	}
+    logf( (char*)"|  exposure = %ld", exposure );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelApn::updatePos()
+{
+	Panel::updatePos();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

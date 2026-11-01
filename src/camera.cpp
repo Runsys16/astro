@@ -1,4 +1,4 @@
-#include "camera.h"
+ #include "camera.h"
 
 
 #include "camera_mgr.h"
@@ -25,13 +25,21 @@ Camera::~Camera()
     //panelCamera->deleteBackground();
 
 	if ( panelCamera != NULL )	{
+	    logf_thread( (char*)"fermeture panelCamera" );
+	    log_tab(true);
 		vm.sup( panelCamera );
 	    delete panelCamera;
+	    panelCamera = NULL;
+	    log_tab(false);
     }
     
 	if ( panelControl != NULL )	{
+	    logf_thread( (char*)"fermeture panelControl" );
+	    log_tab(true);
 		vm.sup( panelControl );
 		delete panelControl;
+	    panelControl = NULL;
+	    log_tab(false);
 	}
     log_tab(false);
 }
@@ -58,25 +66,22 @@ Camera::Camera(int w, int h)
 {
     logf_thread((char*)"Constructeur Camera(%d, %d) -------------", w, h);
     log_tab(true);
-    //Device_cam();
     
     init();
-    //setWidth(w);
-    //setHeight(h);
-	//if ( bNuit ) 	setColor( VCF4_2_COLOR32(cRouge) );
+
     log_tab(false);
-    //logf_thread((char*)"Constructeur Camera(%d, %d) ---- END ----", w, h);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::init()
 {
-    //logf_thread((char*)"Camera::init() -------------");
+	logf_thread( (char*)"Camera::init() %s", name.c_str() ); 
 
 	hz					= 0.0;
 
     bCharging			= true;
+    bIconized			= false;
     bExitThread			= false;
     vCameraSize.x		= -1;
     vCameraSize.y		= -1;
@@ -90,6 +95,12 @@ void Camera::init()
     
 	panelCamera			= NULL;
 	panelControl		= NULL;
+	
+	pPanelName			= NULL;
+    pCamFilename		= NULL;
+    pNbStars			= NULL;
+	
+	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -135,7 +146,7 @@ int Camera::addControl()	{
     n += addControlName( string("Temperature"),			xt, yt + n*dyt );
 
     int dy = ++n*dyt;
-    panelControl->setSize( 200+150, dy);
+    panelControl->setSize( panelControl->getPosDX(), dy);
     
     logf_thread( (char*)"dy=%d", dy);
     log_tab(false);
@@ -248,8 +259,10 @@ void Camera::CreateControl()	{
     panelControl = new PanelWindow();
     panelControl->setDisplayGL(displayGLnuit_cb);
     panelControl->setExtraString( getDevName() );
-    panelControl->loadSkinPath( "images/astro" );
-	panelControl->setBorderSize(8);
+    //panelControl->loadSkinPath( "images/astro" );
+	//panelControl->setBorderSize(8);
+    panelControl->loadSkin( PanelWindow::YELLOW );
+	panelControl->setBorderSize(6);
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
@@ -334,46 +347,6 @@ void Camera::CreatePreview()	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera::resizeControl(int width, int height)	{
-    logf_thread((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName().c_str() );
-    int dx = panelControl->getDX();
-    int dy = panelControl->getDY();
-    
-    //if ( dx==0)     return;
-    dx = 200+150;
-    dy = 192;
-    
-    //int x = width - dx - 20;
-    int x = 20;
-
-    int nb = Camera_mgr::getInstance().getNum(this);
-    int y = 10+nb * (20+dy);
-
-    logf((char*) "                          x=%d y=%d nb=%d", x, y, nb );
-    panelControl->setPos( x, y );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
-    logf_thread((char*) "Camera::resizeControlFirst(%d, %d, %d, %d) %s", width, height, dx, dy, getDevName() );
-    
-    //if ( dx==0)     return;
-
-    dx = 200+150;
-    dy = 192;
-
-    int x = width - dx - 20;
-
-    int nb = Camera_mgr::getInstance().getSize();
-    int y = 10+nb * (20+dy);
-
-    logf_thread((char*) "x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
-    panelControl->setPos( x, y );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void Camera::iconSizePreview(int width, int height)	{
     logf_thread( (char*) "Camera::iconSizePreview(%d, %d) %s", width, height, (char*)getDevName() );
     log_tab(true);
@@ -445,8 +418,8 @@ void Camera::fullSizePreview(int width, int height)	{
 	bFullScreen	= true;
 	bIconized	= false;
 
-	int wsc = width;
-	int hsc = height;
+	int wsc = width  - panelCamera->getBorderSize() * 2;
+	int hsc = height - panelCamera->getBorderSize() * 2;
     //logf((char*) "Screen (%d, %d)", wsc, hsc);
 
 
@@ -485,11 +458,13 @@ void Camera::fullSizePreview(int width, int height)	{
 	    yCam = modY = (hsc - dyCam) / 2;
 	} 
 
+	int bx, by;
+	bx = by = panelCamera->getBorderSize();
 
     logf((char*) "   Screen  : %dx%d", wsc, hsc);
     logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
-	panelCamera->setPosAndSize( xCam, yCam, dxCam, dyCam);
+	panelCamera->setPosAndSize( xCam+bx, yCam+by, dxCam, dyCam);
 	panelCamera->raz_ech_usr();
 	panelCamera->compute_echelle();
 	
@@ -499,16 +474,51 @@ void Camera::fullSizePreview(int width, int height)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-//bool*     pCharging;
-//
-/*
-void charge_camera()
-{
-    write_image();
+void Camera::resizeControl(int width, int height)	{
+    logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName().c_str() );
 
-    *pCharging = true;
+    int DX = panelControl->getDX();
+    int DY = panelControl->getDY();
+    
+    //if ( dx==0)     return;
+    //dx = 200+150;
+    //dy = 192;
+    
+    //int x = width - dx - 20;
+    int x = 20;
+
+    int nb = Camera_mgr::getInstance().getNum(this);
+    int y = 10+nb * (20+DY);
+
+    //logf((char*) "                          x=%d y=%d nb=%d", x, y, nb );
+    panelControl->setPos( x, y );
 }
-*/
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
+#define COIN_HD  20
+    logf((char*) "Camera::resizeControlFirst(%d, %d, %d, %d) %s", width, height, dx, dy, getDevName() );
+    
+    int DX = panelControl->getPosDX();
+    int DY = panelControl->getPosDY();
+    //logf((char*) "Camera::resizeControlFirst(%d, %d)", DX, DY );
+
+    int nb = Camera_mgr::getInstance().getCount();
+
+
+    int x = width - DX - (2* panelControl->getBorderSize()) - COIN_HD;
+    int y = COIN_HD;
+
+    panelControl->setPos( x, y );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::enregistre_name()
+{
+	enregistre();
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -521,11 +531,11 @@ void Camera::threadExtractImg()
         
         if ( ( !bPause || bOneFrame ) && bCharging == false ) 
         {
+		    //logf_thread((char*)"[THREAD] Camera::threadExtractImg() %s", (char*)getName().c_str());
             mainloop();
             if ( getFd() != -1 )            bCharging = true;
             bOneFrame = false;
         }
-        
         if ( bExitThread )  break;
     }
     logf_thread((char*)"[THREAD] Camera::threadExtractImg()  stop %s", (char*)getName().c_str());
@@ -578,7 +588,7 @@ void Camera::change_background(void)
         float t = Timer::getInstance().getCurrentTime();
         if ( previousTime != -1 )
         {
-            if ( nb_images++ >= 10 )
+            if ( ++nb_images >= 10 )
             {
                 hz = 10.0 / (t - previousTime);
                 previousTime = t;
@@ -812,14 +822,16 @@ void Camera::recentreSuivi()
     else
     	logf( (char*)"Pas de panel preview !!");
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-vec2* Camera::getSuivi()
+vec2& Camera::getSuivi()
 {
     if ( panelCamera!=NULL )           return panelCamera->getSuivi();
     return NULL;
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

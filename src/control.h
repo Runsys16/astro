@@ -33,6 +33,7 @@ private:
     int             def;
     int             value;
     int             extraValue;
+    void*			pSpinEditText = NULL;
     string          name;
     
     Device_cam*     dev;
@@ -50,6 +51,9 @@ public:
     inline void     setPanelText( PanelText* p)         { pt = p; }
     inline int      getExtraValue()                     { return extraValue; }
     inline void     setExtraValue(int n)				{ extraValue = n; }
+	inline void*	getSpinEditText()					{ return pSpinEditText; }
+	inline void		setSpinEditText(void * p)			{ pSpinEditText = p; }
+
     inline int      getValue()                          { return value; }
     inline int      getId()                             { return id; }
     inline string&  getName()                           { return name; }

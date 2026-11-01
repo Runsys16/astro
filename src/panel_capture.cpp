@@ -1361,6 +1361,8 @@ void PanelCapture::releaseLeft(int xm, int ym)
 		{            
 		    Captures::getInstance().active( pCapture );
 		}
+		/*
+		*/
 	}
 	log_tab(false);
 }

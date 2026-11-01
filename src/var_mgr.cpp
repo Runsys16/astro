@@ -1,6 +1,7 @@
 #include "var_mgr.h"
 //--------------------------------------------------------------------------------------------------------------------
 //#define DEBUG
+//#define DEBUG_SAUVE
 //--------------------------------------------------------------------------------------------------------------------
 #define TYPE2STR(t)			(t=='f'?"FLOAT":t=='i'?"INTEGER":t=='b'?"BOOL":"UNKNOW")
 //--------------------------------------------------------------------------------------------------------------------
@@ -16,52 +17,97 @@ VarManager::VarManager()
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, double val)
 {
+	#ifdef DEBUG_SAUVE
+	printf( (char*)"String '%s'", (char*)name.c_str() );
+	#endif
     //logf((char*)"set float");
     m_VarDB[name].type = 'f';
-    m_VarDB[name].fval = val;
-    sauve();
+    if ( m_VarDB[name].fval != val )
+    {
+		m_VarDB[name].fval = val;
+		sauve();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, float val)
 {
+	#ifdef DEBUG_SAUVE
+	printf( (char*)"String '%s'", (char*)name.c_str() );
+	#endif
     //logf((char*)"set float");
     m_VarDB[name].type = 'f';
-    m_VarDB[name].fval = val;
-    sauve();
+    if ( m_VarDB[name].fval != val )
+    {
+		m_VarDB[name].fval = val;
+		sauve();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, int val)
 {
+	#ifdef DEBUG_SAUVE
+	printf( (char*)"String '%s'", (char*)name.c_str() );
+	#endif
     //logf((char*)"set integer");
     m_VarDB[name].type = 'i';
-    m_VarDB[name].ival = val;
-    sauve();
+    if ( m_VarDB[name].ival != val )
+    {
+		m_VarDB[name].ival = val;
+		sauve();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, bool val)
 {
+	#ifdef DEBUG_SAUVE
+	printf( (char*)"String '%s'", (char*)name.c_str() );
+	#endif
     //logf((char*)"set boolean");
     m_VarDB[name].type = 'b';
-    m_VarDB[name].bval = val;
-    sauve();
+    if ( m_VarDB[name].bval != val )
+    {
+		m_VarDB[name].bval = val;
+		sauve();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void VarManager::set(const std::string& name, const std::string& val)
 {
+	#ifdef DEBUG_SAUVE
+	printf( (char*)"String '%s'", (char*)name.c_str() );
+	#endif
+
     string* p = new string(val);
-    
-    //logf((char*)"set boolean");
     m_VarDB[name].type = 's';
-    m_VarDB[name].sval = p;
-    sauve();
+	m_VarDB[name].sval = p;
+	//sauve();
+	return;
+	/*
+    string* p = new string(val);
+    if ( m_VarDB.find(name) == m_VarDB.end() )
+    {
+	    printf( (char*)"String inconnue '%s'", (char*)name.c_str() );
+    }
+    else
+	    printf( (char*)"String connue '%s'", (char*)name.c_str() );
+    m_VarDB[name].type = 's';
+    
+    string s = *(m_VarDB[name].sval);
+    //logf((char*)"set boolean");
+    if ( val.compare(*(m_VarDB[name].sval)) != 0 )
+    {
+		m_VarDB[name].sval = p;
+		sauve();
+    }
+    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -72,8 +118,10 @@ void VarManager::sauve()
     if (!bSauve)        return;
 
     string filename = "/home/rene/.astropilot/var.ini";
-    //logf( (char*)"Sauvegarde des variables dans '%s'", (char*)filename.c_str() );
-    
+	#ifdef DEBUG_SAUVE
+    logf( (char*)"Sauvegarde des variables dans '%s'", (char*)filename.c_str() );
+	#endif
+	    
     std::ofstream fichier;
     fichier.open(filename);
     if ( !fichier ) 

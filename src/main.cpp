@@ -118,9 +118,9 @@ vector<string> t_sHelp2 =
 	"---- TRANSFORM MATRIX ----",
 	"   a/A\t: Vecteur en ascension droite",
 	"   d/D\t: Vecteur en declinaison",
-	"     m\t: Deplacement à la souris",
+	"     O\t: Deplacement à la souris",
 	"     M\t: Calcul la matrice de transformation",
-	"     O\t: Mode souris / mode suivi",
+	"     m\t: Mode souris / mode suivi",
 	"     y\t: Affiche les vecteurs",
 	"",
 	"Depl. souris :",
@@ -138,8 +138,9 @@ vector<string> t_sHelp2 =
 	"---- CAMERA ----",
 	"     a\t: rappelle les parametres de la camera",
 	"     A\t: enregistre les parametres de la camera",
-	"     H\t: Change le nom d une image de la camera",
+	"     H\t: Start/Stop affiche la camera (video)",
 	"     h\t: Enregistre une image de la camera courante",
+	" alt+h\t: Enregistre une image en demandant le nom",
 	"     l\t: Liste les controles",
 	"   HOME\t: Fullscreen",
     "" ,    
@@ -178,9 +179,9 @@ vector<string> t_sHelp4 =
 	"     X\t: Choix de l'abcisse ou de l'ordonnée",
 	"",
 	"---- Vizier ----",
-	" Alt+e\t: Affiche catalog"   ,
+	" Alt+e\t: Affiche catalog (CDS)"   ,
 	" Alt+r\t: Affiche les etoiles"   ,
-	" Alt+t\t: Affiche les eoitles FindStar"   ,
+	" Alt+t\t: Affiche les etoiles FindStar"   ,
 	"   a/z\t: Rotation"   ,
 	"   w/x\t: Translation X"   ,
 	"   c/v\t: Zoom X"   ,
@@ -188,7 +189,7 @@ vector<string> t_sHelp4 =
 	"   d/f\t: Zoom Y"   ,
 	" Alt+n\t: Compare les etoiles avec le catalogue Vizier"   ,
 	" Alt+N\t: Compare les etoiles et  affiche la courbe"   ,
-	"      \t  limite la magnitude d'affichage"   ,
+	"Ct+Al+n\t: Limite la magnitude d'affichage"   ,
 	"Ctrl+H\t: Restaure la magnitude d'affichage a 20.0"   ,
 	"   x/X\t: Affiche/Ferme la courbe de calcul de la magnitude"   ,
 	"",
@@ -369,7 +370,7 @@ vec3                vDepl[2];
 mat3                mChange;
 vec3                vOri;
 vec3                vTr;
-bool                bCorrection = false;
+bool                bAsservissement = false;
 double				fTimeCpt = 0.0;
 double              fTimeCorrection = 3.0;
 double              fLimitCorrection0 = 80.0;
@@ -479,21 +480,23 @@ static void usage(FILE *fp, int argc, char **argv)
 //--------------------------------------------------------------------------------------------------------------------
 void arret_urgence()
 {
-    logf((char*)"**[ARRET D'URGENCE]**" );
-    // arrete le suivi
-    bSuivi = false;
-    var.set( "bSuivi", bSuivi );
-    change_joy( xSuivi, ySuivi );
+	logf((char*)"**[ARRET D'URGENCE]**" );
+	// arrete le suivi
+	bSuivi = false;
+	var.set( "bSuivi", bSuivi );
+	change_joy( xSuivi, ySuivi );
 
-    // envoi la commande arduino  arret urgence
-    char cmd[]="n";
+	// envoi la commande arduino  arret urgence
+	char cmd[]="n";
 
-    Serial::getInstance().reset();
-    Serial::getInstance().write_string(cmd);
-    Serial::getInstance().reset();
+	Serial::getInstance().reset();
+	Serial::getInstance().write_string(cmd);
+	Serial::getInstance().reset();
 
-    // Arrete l'asservissment
-    bCorrection = false;
+	// Arrete l'asservissment
+	bAsservissement = false;
+	set_asservissement();
+	Camera_mgr::getInstance().setAsserv( NULL );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1438,6 +1441,9 @@ void updatePanelResultat()
 
     char sStr[255];
 
+	if ( Camera_mgr::getInstance().getCurrent() == NULL )			return;
+	
+	
     vec2* pv = Camera_mgr::getInstance().getSuivi();
     if ( pv != NULL )
     {
@@ -1459,7 +1465,7 @@ void updatePanelResultat()
         sprintf( sStr, "Etoile\t(%0.2f, %0.2f)", pv->x, pv->y );
         pEtoile->changeText(sStr);
 
-        if ( bCorrection )
+        if ( bAsservissement )
         {
             sprintf( sStr, "Asserv\t\t%0.1f/%0.1fpx", l, fLimitCorrection0 );
         }
@@ -1528,7 +1534,7 @@ static void reshapeGL(int newWidth, int newHeight)
 {
     logf((char*) "main::reshapeGL(%d, %d) ---------------", newWidth, newHeight);
     log_tab(true);
-    bDesactiveLog = true;
+    //bDesactiveLog = true;
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	wm.setScreenSize( newWidth, newHeight );
@@ -1583,7 +1589,7 @@ void son(string s)
 void change_hertz(double hz)
 {
     static char sHz[255];
-    sprintf( sHz, "%.0fHz", hz);
+    sprintf( sHz, "%.0fHz", round(hz));
     pHertz->changeText(sHz);
     //camera.mainloop();
 }
@@ -1620,8 +1626,12 @@ void arduino_online(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void change_joy(int x, int y)
 {
+    logf( (char*)"main::change_joy(%d,%d)", x, y );
     static char sJoyXY[255];
-    sprintf( sJoyXY, "(%d, %d)", x, y );//, BOOL2STR(bSuivi) );
+    
+    vec2 v = vec2( x, y );
+	snprintf( sJoyXY, sizeof(sJoyXY), "" VEC2_PRINTFN(0) , VEC2_AFF(v) );
+
     pCoordSuivi->changeText((char*)sJoyXY );
 
 	if ( bNuit)
@@ -1642,19 +1652,7 @@ void change_joy(int x, int y)
 //--------------------------------------------------------------------------------------------------------------------
 void change_joy(double x, double y)
 {
-    static char sJoyXY[255];
-    sprintf( sJoyXY, "(%0.2f, %0.2f)", x, y );//, BOOL2STR(bSuivi) );
-    pCoordSuivi->changeText((char*)sJoyXY );
-    if ( bNuit)
-	{
-		if ( bSuivi )           pSuivi->setColor(VCF4_2_COLOR32(cRouge));
-		else                    pSuivi->setColor(VCF4_2_COLOR32(cRougeF));
-	}
-    else
-    {
-		if ( bSuivi )           pSuivi->setColor(VCF4_2_COLOR32(cJaune));
-		else                    pSuivi->setColor(VCF4_2_COLOR32(cGris));
-	}
+	change_joy( (int)x, (int)y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1720,6 +1718,13 @@ void change_dc_status(double dc)
 //--------------------------------------------------------------------------------------------------------------------
 void compute_matrix()
 {
+	Camera_mgr& 	cams = Camera_mgr::getInstance();
+	Camera* 		pCam = cams.getCurrent();
+	if ( pCam )
+	{
+		pCam->compute_matrix();
+	}
+	
     vec3 v0 = vecAD[1] - vecAD[0];
     vec3 v1 = vecDC[1] - vecDC[0];
     vec3 v2 = vec3( 0.0, 0.0, 1.0 );
@@ -2041,8 +2046,9 @@ static void idleGL(void)
     // Mise a jour des buffers de la camera
     // et des pointeurs vers la texture background
     //-----------------------------------------------------------------------
-    Camera_mgr::getInstance().update();
-    Captures::getInstance().update();
+    Camera_mgr& cams = Camera_mgr::getInstance();
+    
+    cams.update();
 #ifdef DEBUG_CALLBACK_OPENGL
     logf( (char*)"\t\t%.8f",  +Timer::getInstance().getGlutTime() -timerAppelIdle  );
 #endif
@@ -2095,6 +2101,9 @@ static void idleGL(void)
         //Captures::getInstance().rotate_capture_plus(true);
     }
 
+	cams.idleGL( timer.getElapsedTime() );
+
+	/*
     //------------------------------------------------------
     //------------------------------------------------------
 	// CALCUL DE L' ASSERVISSEMENT
@@ -2104,9 +2113,10 @@ static void idleGL(void)
 	{
 	    fTimeCpt += elapsedTime;
 	    //logf( (char*)"Temps ecoule : %0.2f", fTimeCpt );
-	    //if ( bCorrection && fTimeCpt > 0.0 && !bModeManuel)
+	    //if ( bAsservissement && fTimeCpt > 0.0 && !bModeManuel)
         vec2* pv = Camera_mgr::getInstance().getSuivi();
-        if ( pv != NULL && bCorrection )
+        
+        if ( pv != NULL && bAsservissement )
         {
             vec3 res, v, w;  double l;
 
@@ -2148,6 +2158,7 @@ static void idleGL(void)
             }
 	    }
 	}
+	*/
     //------------------------------------------------------
     //------------------------------------------------------
     PanelConsoleSerial::getInstance().idleGL();
@@ -2176,6 +2187,32 @@ static void idleGL(void)
         bOneFrame = false;
     }
     bFirstStart = false;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+static void print_all_panels(void)
+{
+    //cout <<"exit_handler()"<< endl;
+	//bStdOut = false;
+    logf( (char*)"main::print_all_panels()" );
+
+    WindowsManager& 		wm 		= WindowsManager::getInstance();
+    int 					nbPanel	= wm.getNbPanel();
+	std::vector<Panel*>& 	childs 	= wm.getChilds();
+	
+    logf( (char*)"Affiche toutes les fenetres" );
+	log_tab(true);
+    logf( (char*)"Nb Fenetre %d", nbPanel );
+    for( int i=nbPanel-1; i>=0; i-- )
+    {
+    	Panel *	p = childs[i];
+	    //logf( (char*)"Panel ID %d-%s, %d enfants %s", p->getID(), p->getExtraString().c_str(), p->getNbPanel(), typeid(*p).name() );
+	    logf( (char*)"Panel ID %03d-%s, %d enfants", p->getID(), p->getExtraString().c_str(), p->getNbPanel() );
+		//delete_all_panels( p );
+		//childs.erase( childs.begin()+i );
+    }
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -2212,7 +2249,7 @@ static void quit(void)
 	SYNSCAN::getInstance().close_all();
 	Serveur_mgr::getInstance().close_all();
 	Camera_mgr::getInstance().stopAllCameras();
-	Connexion_mgr::getInstance().stopThread();
+	Connexion_mgr::getInstance().stopThreadDEV();
 	Connexion_mgr::getInstance().stopThreadZWO();
 
     WindowsManager& 		wm 		= WindowsManager::getInstance();
@@ -2394,7 +2431,8 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
     case 6:
 		{
             logf( (char*)"Key (ctrl+f) : FullScreen" );
-            Captures::getInstance().fullscreen();
+            if ( !Captures::getInstance().fullscreen() )
+            	Camera_mgr::getInstance().fullscreen();
         }
         break;
 	// CTRL+H
@@ -2434,19 +2472,26 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
     case 15:
 		{
 		    logf( (char*)"Key (Ctrl+o) : File browser affiche une image" );
-		    bFileBrowser = FileBrowser::getInstance().getVisible();
-		    FileBrowser::getInstance().setFiltre( "" );
+		    FileBrowser& fb = FileBrowser::getInstance();
+		    fb.getVisible();
+		    fb.setFiltre( "" );
+
 		    if ( var.existe("DirFileBrowser") )
 		    {
 		        workDirFileBrowser = *var.gets( "DirFileBrowser" );
 		    }
 
-		    FileBrowser::getInstance().change_dir( workDirFileBrowser );
+		    fb.change_dir( workDirFileBrowser );
+		    fb.setFilename( "" );
 		    bFileBrowser = !bFileBrowser;
-		    FileBrowser::getInstance().setCallBack( &cb_file_browser );
+		    fb.setCallBack( &cb_file_browser );
+		    fb.setTitle( "Ouvre une image" );
+            fb.loadSkin( PanelWindow::VERT );
+            fb.setBorderSize( 6 );
+		    fb.setSTitle( "Selectionnez une image FITS FIT PNG JPG JPEG" );
 		    
-		    if ( bFileBrowser )         FileBrowser::getInstance().affiche();
-		    else                        FileBrowser::getInstance().cache();
+		    if ( bFileBrowser )         fb.affiche();
+		    else                        fb.cache();
        	}
        	break;
 	// CTRL P
@@ -2544,6 +2589,14 @@ static void glutKeyboardFuncAlt(unsigned char key, int x, int y)
             log_tab(false);
 	    }
 	    break;
+	//----------------------------------------------------------------------------
+    case 'h':
+        {
+        logf( (char*)"Key (Alt+h) : Charge une image de la camera courante" );
+        Camera_mgr& cams = Camera_mgr::getInstance();
+		cams.enregistre_name();	        
+        }
+        break;
 	//----------------------------------------------------------------------------
     case 'j':
         {
@@ -2936,7 +2989,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     Camera_mgr&  		cam_mgr = Camera_mgr::getInstance();
     WindowsManager& 	wm 		= WindowsManager::getInstance();
     
-    logf( (char*)"main::glutKeyboardFunc(%c, %d, %d)", (char)key, x, y );
+    logf( (char*)"main::glutKeyboardFunc( '%c', %d, %d)", (char)key, x, y );
     /*
     Panel* pC = wm.getCapture();
     logf( (char*)"  Capture : %s", (pC == NULL ? (char*)"NULL": (char*)pC->getExtraString().c_str()) );
@@ -3031,6 +3084,8 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	// CTRL M  CR
 	case 13:
         logf( (char*)"Key (CR) : Plein ecran" );
+		log_tab(true);
+        
 	    bFull = !bFull;
         var.set("bFull", bFull);
 
@@ -3046,6 +3101,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 		    glutReshapeWindow( width, height );
             log( (char*)"NormalScreen !!!" );
 		}
+		log_tab(false);
     	break;
 	// touche escape
 	case 27:
@@ -3058,8 +3114,6 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 	//  touche ² 
     case 178:
     	{
-            //Captures::getInstance().showIcones();
-	        //Captures::getInstance().rotate_capture_plus(true);
             logf( (char*)"Key (2) : Image precedente" );
             log_tab(true);
 	        Captures::getInstance().rotate_capture_moins(false);
@@ -3095,10 +3149,20 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             logf( (char*)"Key (A) : Pt1 Ascension droite si les vecteurs sont affiches (y)" );
             break; 
         }
+
+
+
+
         logf( (char*)"Key (A) : Pt1 Ascension droite" );
+        Camera_mgr& 		cams = Camera_mgr::getInstance();
+
+
+
+
+
         if ( !bModeManuel )
         {
-            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            vec2* pv = cams.getSuivi();
             if ( pv != NULL )
             {
                 double x   = pv->x;
@@ -3117,9 +3181,29 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vecAD[1].y = yClick;
             vecAD[1].z = 0.0;
         }
+
+
+
+        logf( (char*)"AD[1] (%0.2f,%0.2f)", vecAD[1].x, vecAD[1].y );
+      	Camera* pCam = cams.getCurrent();
+        if ( pCam )
+        {
+        	string name = pCam->getName();
+        	
+	        logf( (char*)"Camera : %s", name.c_str() );
+		    var.set( name + "_vecAD[1].x", vecAD[1].x);
+		    var.set( name + "_vecAD[1].y", vecAD[1].y);
+		    
+	    	pCam->setptAD1( vecAD[1] );
+	    }
+
+
+
+
         var.set("vecAD[1].x", vecAD[1].x);
         var.set("vecAD[1].y", vecAD[1].y);
-        logf( (char*)"AD[1] (%0.2f,%0.2f)", vecAD[1].x, vecAD[1].y );
+        
+        	
         }
         break;
     case 'a':
@@ -3131,9 +3215,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
 
         logf( (char*)"Key (a) : Pt0 Ascension droite" );
+        Camera_mgr& 		cams = Camera_mgr::getInstance();
+
         if ( !bModeManuel )
         {
-            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            vec2* pv = cams.getSuivi();
             if ( pv != NULL )
             {
                 double x   = pv->x;
@@ -3152,13 +3238,26 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             vecAD[0].y = yClick;
             vecAD[0].z = 0.0;
         }
+
+      	Camera* pCam = cams.getCurrent();
+        if ( pCam )
+        {
+        	string name = pCam->getName();
+	        logf( (char*)"Camera : %s", name.c_str() );
+		    var.set( name + "_vecAD[0].x", vecAD[0].x);
+		    var.set( name + "_vecAD[0].y", vecAD[0].y);
+
+	    	pCam->setptAD0( vecAD[0] );
+	    }
+
         var.set("vecAD[0].x", vecAD[0].x);
         var.set("vecAD[0].y", vecAD[0].y);
-        logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
 
+
+        logf( (char*)"AD[0] (%0.2f,%0.2f)", vecAD[0].x, vecAD[0].y );
         char cmd[255];
         sprintf( cmd, "a-1000p" );
-        logf( (char*)"Envoi de la commande",  cmd );
+        logf( (char*)"Envoi de la commande : %s",  cmd );
         Serial::getInstance().write_string(cmd);
         }
         break;
@@ -3199,9 +3298,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
 
         logf( (char*)"Key (D) : Pt1 Declinaison" );
+        Camera_mgr& 		cams = Camera_mgr::getInstance();
+
         if ( !bModeManuel )
         {
-            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            vec2* pv = cams.getSuivi();
             if ( pv != NULL )
             {
                 double x   = pv->x;
@@ -3224,7 +3325,20 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         var.set("vecDC[1].y", vecDC[1].y);
         logf( (char*)"DC[1] (%0.2f,%0.2f)", vecDC[1].x, vecDC[1].y );
 
+      	Camera* pCam = cams.getCurrent();
+        if ( pCam )
+        {
+        	string name = pCam->getName();
+	        logf( (char*)"Camera : %s", name.c_str() );
+		    var.set( name + "_vecDC[1].x", vecDC[1].x);
+		    var.set( name + "_vecDC[1].y", vecDC[1].y);
+	    
+	    	pCam->setptDC1( vecDC[1] );
+	        logf( (char*)"matrix = " MAT3_PRINTF , MAT3_AFF(pCam->get_matrix()) );
+	    }
+
         compute_matrix();
+        logf( (char*)"m3main = " MAT3_PRINTF , MAT3_AFF(mChange) );
         
         //bMouseDeplace = true;
         }
@@ -3239,10 +3353,11 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         }
 
         logf( (char*)"Key (d) : Pt0 Declinaison" );
+        Camera_mgr& 		cams = Camera_mgr::getInstance();
         
         if ( !bModeManuel )
         {
-            vec2* pv = Camera_mgr::getInstance().getSuivi();
+            vec2* pv = cams.getSuivi();
             if ( pv != NULL )
             {
                 double x   = pv->x;
@@ -3265,9 +3380,20 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         var.set("vecDC[0].y", vecDC[0].y);
         logf( (char*)"DC[0] (%0.2f,%0.2f)", vecDC[0].x, vecDC[0].y );
 
+      	Camera* pCam = cams.getCurrent();
+        if ( pCam )
+        {
+        	string name = cams.getCurrent()->getName();
+	        logf( (char*)"Camera : %s", name.c_str() );
+		    var.set( name + "_vecDC[0].x", vecDC[0].x);
+		    var.set( name + "_vecDC[0].y", vecDC[0].y);
+
+	    	pCam->setptDC0( vecDC[0] );
+	    }
+
         char cmd[255];
         sprintf( cmd, "d1000p" );
-        logf( (char*)"Envoi de la commande",  cmd );
+        logf( (char*)"Envoi de la commande : %s",  cmd );
         Serial::getInstance().write_string(cmd);
         }
         break;
@@ -3332,7 +3458,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         
     case 'H':
         {
-        logf( (char*)"Key (H) : Enregistre une video la camera courante" );
+        logf( (char*)"Key (H) : Charge les images en continue de la camera courante" );
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
@@ -3344,7 +3470,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'h':
         {
-        logf( (char*)"Key (h) : Enregistre une image de la camera courante" );
+        logf( (char*)"Key (h) : Charge une image de la camera courante" );
         Camera* p = Camera_mgr::getInstance().getCurrent();
         if ( p!=NULL )
         {
@@ -3356,6 +3482,7 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'i':
         {
+        	print_all_panels();
         /*
         	string name = "";
 	        Camera* p = Camera_mgr::getInstance().getCurrent();
@@ -3400,9 +3527,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'k':
         {
-        bCorrection = !bCorrection; 
-        logf( (char*)"Key (k) : Asservissement de monture %s", BOOL2STR(bCorrection) );
+        bAsservissement = !bAsservissement; 
+        logf( (char*)"Key (k) : Asservissement de monture %s", BOOL2STR(bAsservissement) );
         set_asservissement();
+        if ( bAsservissement ) 		cam_mgr.setAsserv( cam_mgr.getCurrent() );
+        else					cam_mgr.setAsserv( NULL );
+        
         setColor();
         }
         break;
@@ -3472,18 +3602,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         break;
     case 'm':
         {
-        if ( !bModeManuel )	{
-        	bModeManuel = true;
+        logf( (char*)"Key (O) : Mode manuel (%s)", BOOL2STR(bModeManuel) );
+        set_mode(!bModeManuel);
         }
 
-
-	    logf( (char*)"Key (m) : Autorisation du deplcament par la souris (bouton du milieu) ...");
-	    bMouseDeplace = !bMouseDeplace;
-	    logf( (char*)"  bMouseDeplace = %s", BOOL2STR(bMouseDeplace) );
-
-	    if ( bMouseDeplace )			bMouseDeplaceVers = false;
-
-        }
         break;
 
     case 'n':
@@ -3560,9 +3682,18 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'O':
         {
-        logf( (char*)"Key (O) : Mode manuel (%s)", BOOL2STR(bModeManuel) );
-        set_mode(!bModeManuel);
+	    logf( (char*)"Key (m) : Autorisation du deplcament par la souris (bouton du milieu) ...");
+
+        if ( !bModeManuel )	        	bModeManuel = true;
+
+	    bMouseDeplace = !bMouseDeplace;
+	    var.set( "bMouseDeplace", bMouseDeplace );
+	    logf( (char*)"  bMouseDeplace = %s", BOOL2STR(bMouseDeplace) );
+
+	    if ( bMouseDeplace )			bMouseDeplaceVers = false;
+
         }
+
     	break;
 
     case 'p':  // '-'
@@ -3600,6 +3731,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
             
             fb.setCallBack(&cb_cguidage);
             fb.setFiltre( ".guid" );
+            fb.setTitle( "Charge un fichier de guidage" );
+            fb.loadSkin( PanelWindow::BLUE );
+            fb.setBorderSize( 6 );
+            fb.setSTitle( "Selectionnez un fichier .guid" );
             if ( var.existe("DirSauveCourbe") )     workDirSauveCourbe = *var.gets( "DirSauveCourbe" );
             fb.change_dir( workDirSauveCourbe );
             fb.setNewline( true );
@@ -3730,6 +3865,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
             bFileBrowser = fb.getVisible();
             fb.setFiltre( ".guid" );
+            fb.setTitle( "Sauve un fichier de guidage" );
+            fb.loadSkin( PanelWindow::BLUE );
+            fb.setBorderSize( 6 );
+            fb.setSTitle( "Sauvegarde un fichier .guid" );
             fb.change_dir( workDirSauveCourbe );
             fb.setCallBack( &cb_sguidage );
             fb.setNewline( true );
@@ -3754,11 +3893,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 int y = yClick;
                 //tex2screen(x,y);
 
-                xSuivi = x;
-                ySuivi = y;
+				vec2 vSuivi = vec2( x, y);
 
-                var.set("xSuivi", xSuivi );
-                var.set("ySuivi", ySuivi );
+                var.set("xSuivi", vSuivi.x );
+                var.set("ySuivi", vSuivi.y );
 
                 panelCourbe->get_vOrigine().x = x;
                 panelCourbe->get_vOrigine().y = y;
@@ -3767,26 +3905,38 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
                 change_joy( x, y );
 
                 logf( (char*)"initialise vOrigine(click) : (%d,%d)", x, y);
+                Camera_mgr::getInstance().setRefSuivi( vSuivi );
             }
             else
             {
-                vec2* pv = Camera_mgr::getInstance().getSuivi();
-                if ( pv != NULL )
-                {
-                    xSuivi = pv->x;
-                    ySuivi = pv->y;
+                Camera_mgr& cams = Camera_mgr::getInstance();
+            	if ( cams.getCurrent() != NULL )
+            	{
+		            vec2* pv = cams.getCurrent()->getPanelCamera()->getStars()->getSuivi();
+					
+		            if ( pv != NULL )
+		            {
+						vec2 vSuivi = *pv;
+		                xSuivi = pv->x;
+		                ySuivi = pv->y;
 
-                    change_joy( xSuivi, ySuivi );
 
-                    var.set("xSuivi", xSuivi );
-                    var.set("ySuivi", ySuivi );
-                }
-                panelCourbe->get_vOrigine().x = xSuivi;
-                panelCourbe->get_vOrigine().y = ySuivi;
-                panelCourbe->get_vOrigine().z = 0.0;
-                
-                
-                logf( (char*)"initialise vOrigine(suivi) : (%0.2f,%0.2f)", xSuivi, ySuivi);
+		                change_joy( xSuivi, ySuivi );
+
+		                var.set("xSuivi", xSuivi );
+		                var.set("ySuivi", ySuivi );
+		                
+			            Camera_mgr::getInstance().setRefSuivi( vSuivi );
+			            logf( (char*)"Init reference suivi  : " VEC2_PRINTFN(0), VEC2_AFF(vSuivi) );
+
+						// mise a jour de panelCourbe et convertion en vec3
+				        panelCourbe->get_vOrigine() = vec3( vSuivi, 0.0 );
+		            }
+		            else
+		            {
+			            logf( (char*)"Pas d'etoiles de suivi (click milieu sur l'etoile)" );
+		            }
+				}                
             }
             bCentrageSuivi = false;
         }
@@ -3828,6 +3978,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
             bFileBrowser = fb.getVisible();
             fb.setFiltre( "" );
+            fb.setTitle( "Surveille un repertoire" );
+            fb.loadSkin( PanelWindow::ORANGE );
+            fb.setBorderSize( 6 );
+            fb.setSTitle( "Selectionnez le repertoire de surveillance" );
             fb.setNewline( true );
             if ( var.existe("DirSurveillance") )
             {
@@ -3933,6 +4087,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
     logf( (char*)"    %02d\t%.8f glutSpecialFunc", ++appelIdle, -timerAppelIdle + Timer::getInstance().getCurrentTime() );
 #endif
 
+	WindowsManager::getInstance().keyboardSpecialFunc( key, x, y);
     Captures::getInstance().glutSpecialFunc(key, x, y);
     Camera_mgr::getInstance().glutSpecialFunc(key, x, y);
     
@@ -4117,8 +4272,8 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     vMouse.x = x;
     vMouse.y = y;
 
-    WindowsManager& wm  = WindowsManager::getInstance();
-    Camera_mgr&     mgr = Camera_mgr::getInstance(); 
+    WindowsManager& wm  	= WindowsManager::getInstance();
+    Camera_mgr&     cams	= Camera_mgr::getInstance(); 
 
 	wm.mouseFunc(button, state, x, y);
 
@@ -4129,30 +4284,36 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
     if ( panelStatus->isMouseOver(x, y) )
     {
         //logf( (char*)"Souris sur la barre de status" );
-        goto endglutMouseFunc;
+        //goto endglutMouseFunc;
         return;
     }
-    
-    if ( bModeManuel && mgr.getCurrent() != NULL  &&  mgr.getCurrent()->getPanelCamera() != NULL )
+    //-------------------------------------
+    // Deplacement telescope a la souris
+    // bouton du mileu
+    // ( mode monuel )
+	Camera* 	pCam = cams.getCurrent();
+    if ( bModeManuel && pCam != NULL  &&  pCam->getPanelCamera() != NULL )
     {
-        pPreviewCam = mgr.getCurrent()->getPanelCamera();
+	    logf( (char*)"main::glutMouseFunc( %d, %d, %d )", button, x, y );
+        pPreviewCam = pCam->getPanelCamera();
         pCapture    = wm.getCapture();
         //pMouseOver  = wm.findPanelMouseOver(x, y);
     
     
 		if( (iGlutModifier & GLUT_ACTIVE_CTRL ) == 0 )
 		{
+			log_tab(true);
 			if ( bMouseDeplace && button == GLUT_MIDDLE_BUTTON && state == 0 )
 			{
 				bMouseDeplaceVers = true;
 				getSuiviParameter();
 
-				mgr.onBottom();
+				cams.onBottom();
 				
 				int X = x;
 				int Y = y;
 				
-				mgr.screen2tex(X,Y);
+				cams.screen2tex(X,Y);
 				
 				vDepl[0].x = xClick;
 				vDepl[0].y = yClick;
@@ -4166,12 +4327,12 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 				bMouseDeplaceVers = false;
 				getSuiviParameter();
 
-				mgr.onBottom();
+				cams.onBottom();
 				
 				int X = x;
 				int Y = y;
 				
-				mgr.screen2tex(X,Y);
+				cams.screen2tex(X,Y);
 				
 				xClick = X;
 				yClick = Y;
@@ -4179,11 +4340,14 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 				vDepl[1].x = xClick;
 				vDepl[1].y = yClick;
 				vDepl[1].z = 0.0;
-				logf( (char*)"vDepl[1](%0.2f, %0.2f)",  vDepl[1].x, vDepl[1].y );
+				
+				logf( (char*)"Button middle state = 1" );
+				logf( (char*)"vDepl[0] " VEC3_PRINTFN(0), VEC3_AFF(vDepl[0]) );
+				logf( (char*)"vDepl[1] " VEC3_PRINTFN(0), VEC3_AFF(vDepl[1]) );
 
-				logf( (char*)"state = 1" );
 
 				vec3 v = vDepl[1] - vDepl[0];
+				/*
 				logf( (char*)"  delta (%0.2f, %0.2f)", v.x, v.y );
 				
 				vTr = mChange * v;
@@ -4192,6 +4356,14 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 				char cmd[255];
 				sprintf( cmd, "a%dp;d%dp", ad, dc );
 				logf( (char*)"Envoi de la commande : \"%s\"",  cmd );
+				
+				v = vDepl[1] - vDepl[0];
+				*/
+				pCam->commande( v );
+				char cmd[255];
+				sprintf( cmd, "a%dp;d%dp", (int)v.x, (int)v.y );
+				logf( (char*)"Envoi de la commande : \"%s\"",  cmd );
+		        logf( (char*)"matrix = " MAT3_PRINTF , MAT3_AFF(pCam->get_matrix()) );
 
 				Serial::getInstance().write_string(cmd);
 			}
@@ -4200,12 +4372,12 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 			if ( bModeManuel && button == GLUT_LEFT_BUTTON && state == 0 )	{
 				getSuiviParameter();
 
-				mgr.onBottom();
+				cams.onBottom();
 				
 				int X = x;
 				int Y = y;
 				
-				mgr.screen2tex(X,Y);
+				cams.screen2tex(X,Y);
 				
 				xClick = X;
 				yClick = Y;
@@ -4227,7 +4399,7 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 				    logf( (char*)"initialise vOrigine(click) : (%d,%d)", x, y);
 				}
 
-				logf( (char*)"main::glutMouseFunc LeftClick (%d, %d)  vCamera (%dx%d)" , xClick, yClick, mgr.getRB()->w.load(), mgr.getRB()->h.load() );
+				logf( (char*)"main::glutMouseFunc LeftClick (%d, %d)  vCamera (%dx%d)" , xClick, yClick, cams.getRB()->w.load(), cams.getRB()->h.load() );
 				
 			} 
 			else
@@ -4236,9 +4408,11 @@ static void glutMouseFunc(int button, int state, int x, int y)	{
 				logf( (char*)"Suivi=(%0.2f,%0.2f)" , xSuivi, ySuivi );
 
 			} 
+
+			log_tab(false);
 		}//   if( !(iGlutModifier & GLUT_ACTIVE_CTRL ) )
 
-	}//     if ( mgr.getCurrent() != NULL  &&  mgr.getCurrent()->getPanelCamera() != NULL )
+	}//     if ( cams.getCurrent() != NULL  &&  cams.getCurrent()->getPanelCamera() != NULL )
 
 
     Camera_mgr::getInstance().onBottom();
@@ -4581,7 +4755,7 @@ static void CreateHelp()
 
     panelHelp->setSize(DX, DY);
 	panelScrHelp->setSize(DX, DY);
-    //panelHelp->loadSkin((char*)"fen-2");
+
     resizeHelp(width, height);
     panelHelp->setScissor( true );
     
@@ -5160,7 +5334,7 @@ void charge_var()
     LOAD_VARB( bPause, true )
     LOAD_VARB( bFull, true )
 
-    LOAD_VARB( bCorrection, true )
+    LOAD_VARB( bAsservissement, true )
     LOAD_VARB( bNuit, false )
 
     LOAD_VARB( bSimu, false );
@@ -5350,7 +5524,7 @@ int main(int argc, char **argv)
 	//
 	//----------------------------------------------------------------------
     Camera_mgr::getInstance().reOrder();
-    Connexion_mgr::getInstance().start();
+    Connexion_mgr::getInstance().startDEV();
     Connexion_mgr::getInstance().startZWO();
     PanelConsoleSerial::getInstance().setVisible( bPanelSerial );
     Serveur_mgr::getInstance().start_init();

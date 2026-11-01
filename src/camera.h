@@ -13,6 +13,7 @@
 #include "button_callback.h"
 #include "star_compare.h"
 #include "notification.h"
+#include "asserv.h"
 
 
 
@@ -21,8 +22,9 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Camera : public Device_cam, public ChangeValue, public NotificationFindStar 
+class Camera : public Device_cam, public ChangeValue, public NotificationFindStar, public Asservissement
 {
+//-----------------------------------------------------------------------------------------    
 protected:
     PanelWindow *               panelControl;
     PanelCamera *               panelCamera;
@@ -51,80 +53,72 @@ protected:
 	bool*						pCharging;
 
 	StarCompare					starCompare;
-    //Stars                       stars;
-    
-    
-    
-    
+//-----------------------------------------------------------------------------------------    
 public :
-virtual    ~Camera();
-    Camera();
-    Camera(int, int);
+virtual~Camera();
+		Camera();
+		Camera(int, int);
     
 virtual void 					changeValueDouble( double val, void *p );
-virtual void 					changeValueDoubleClick( double val, void *p );
+virtual	void 					changeValueDoubleClick( double val, void *p );
 
-    void                        init();
+		void					init();
     
-    int                         addControlName(const string&, int, int);
-    int                         addControl();
-    void                        createControlID(PanelSimple * p, int x, int y, char* str);
-    void                        createControlIDminmax(PanelSimple * p, int x, int y, char* str0 );
-    void                        CreateControl();
+	    int						addControlName(const string&, int, int);
+    	int						addControl();
+    	void					createControlID(PanelSimple * p, int x, int y, char* str);
+    	void					createControlIDminmax(PanelSimple * p, int x, int y, char* str0 );
+    	void					CreateControl();
 
-//    void                        update();
+virtual void    	            start_thread();
+inline	void	                stop_thread()						{ bExitThread = true; }
 
-    virtual void                start_thread();
-    		void                stop_thread()								{ bExitThread = true; }
-    virtual void                CreatePreview();
-    virtual void                iconSizePreview(int, int);
-    virtual void                fullSizePreview(int, int);
+virtual void    	            CreatePreview();
+virtual void    	            iconSizePreview(int, int);
+virtual void    	            fullSizePreview(int, int);
 
-    virtual void                resizeControl(int, int);
-    void                        resizeControlFirst(int, int, int, int);
+virtual void    	            resizeControl(int, int);
+	    void					resizeControlFirst(int, int, int, int);
 
-    void                        threadExtractImg();
+virtual void					enregistre_name();
+		void					threadExtractImg();
 virtual void					change_background();
 virtual bool					keyboard( char );
     
-    //std::thread                 memberThread();
+		void					setVisible(bool b);
+		void					setControlVisible(bool b);
+virtual void					togglePanel();
     
-    void                        setVisible(bool b);
-    void                        setControlVisible(bool b);
-	virtual void				togglePanel();
-    
-    
+virtual GLubyte*				getPtr();
+virtual bool					haveNewFrame();
+virtual void					haveUseFrame(bool);
 
-    virtual GLubyte*            getPtr();
-    virtual bool                haveNewFrame();
-    virtual void                haveUseFrame(bool);
+		int						get_xCam();
+		int						get_yCam();
+		int						get_dxCam();
+		int						get_dyCam();
+		ivec2					get_vCameraSize();
 
-    int                         get_xCam();
-    int                         get_yCam();
-    int                         get_dxCam();
-    int                         get_dyCam();
-    ivec2                       get_vCameraSize();
-
-    vec2*                       getSuivi();
-    void						recentreSuivi();
+	    void					recentreSuivi();
     
 virtual void                    setColor(long);
 virtual	void					chargeGaiaDR3()						{};
 virtual	void					eraseGaiaDR3()						{};
-	void						compareStar();
-	void						saveCompareStar();
-	
-inline bool                     getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }
-inline PanelCamera *            getPanelCamera()					{ return panelCamera; }
-inline PanelWindow *            getPanelControl()                   { return panelControl; }
-inline float                    getHertz()                          { return hz; }
-inline PanelText *              getPanelName()                      { return pPanelName; }
-inline PanelText *              getpCamFilename()                   { return pCamFilename; }
-inline PanelText *              getPanelNbStars()                   { return pNbStars; }
-inline int                      getNbStars()                        { return panelCamera->getNbStars(); }
 
-inline void                     add_catalogue(StarCatalog* p)       { panelCamera->add_catalogue(p); }
-inline void                     setRefCatalog(double _0, double _1) { panelCamera->setRefCatalog(_0, _1); }
+		void					compareStar();
+		void					saveCompareStar();
+		
+inline	bool					getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }
+inline	PanelCamera*			getPanelCamera()					{ return panelCamera; }
+inline	PanelWindow*			getPanelControl()                   { return panelControl; }
+inline	float					getHertz()                          { return hz; }
+inline	PanelText*				getPanelName()                      { return pPanelName; }
+inline	PanelText*              getpCamFilename()                   { return pCamFilename; }
+inline	PanelText*				getPanelNbStars()                   { return pNbStars; }
+inline	int						getNbStars()                        { return panelCamera->getNbStars(); }
+
+inline	void					add_catalogue(StarCatalog* p)       { panelCamera->add_catalogue(p); }
+inline	void					setRefCatalog(double _0, double _1) { panelCamera->setRefCatalog(_0, _1); }
 
 inline	bool					getOnScreen()						{ return bOnScreen;}
 inline	void					setOnScreen(bool b)					{ bOnScreen = b;}

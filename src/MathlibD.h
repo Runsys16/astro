@@ -81,6 +81,11 @@
 #define VEC4_PRINTF "(%0.4lf, %0.4lf, %0.4lf, %0.4lf)"
 #define VEC4_PRINTFN(__n__) "(%0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf)"
 
+#define MAT3_AFF(__m) __m.mat[0], __m.mat[1], __m.mat[2],  __m.mat[3], __m.mat[4], __m.mat[5],  __m.mat[6], __m.mat[7], __m.mat[8] 
+#define MAT3_PRINTF "(%0.4lf, %0.4lf, %0.4lf), (%0.4lf, %0.4lf, %0.4lf), (%0.4lf, %0.4lf, %0.4lf)"
+#define MAT3_PRINTFN(__n__) "(%0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf), (%0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf), (%0." #__n__ "lf, %0." #__n__ "lf, %0." #__n__ "lf) "
+
+
 const double INV_RAND_MAX = 1.0 / (RAND_MAX );
 inline double random(double max=1.0) { return max * rand() * INV_RAND_MAX; }
 inline double random(double min, double max) { return min + (max - min) * INV_RAND_MAX * rand(); }
@@ -1360,6 +1365,7 @@ public:
 	ivec2(long _a,long _b) : a(_a), b(_b) { }
 	ivec2(const long *iv) : a(iv[0]), b(iv[1]) { }
 	ivec2(const ivec2 &iv) : a(iv.a), b(iv.b) { }
+	ivec2(const vec2 &iv) : a((int)iv.x), b((int)iv.y) { }
 
 	int operator==(const ivec2 &iv) { return ((this->a == iv.a) && (this->b == iv.b)); }
 	int operator!=(const ivec2 &iv) { return !(*this == iv); }

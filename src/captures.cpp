@@ -373,6 +373,7 @@ void Captures::resize_all()
 void Captures::reshapeGL(int width, int height)
 {
     logf( (char*)"Captures::reshapeGL()" );
+    log_tab(true);
     float ratio = (float)width/(float)height;
 	
     height -= 20; // panel_status
@@ -381,7 +382,6 @@ void Captures::reshapeGL(int width, int height)
     
     
     logf( (char*)"dxIcon = %d dyIcon = %d", dxIcon, dyIcon );
-    log_tab(true);    
     resize_all();
     invalide_all();
     log_tab(false);    
@@ -840,7 +840,7 @@ int Captures::get_n_capture(Capture* p)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Captures::fullscreen()
+bool Captures::fullscreen()
 {
     bFullScreen = !bFullScreen;
     logf( (char*)"Captures::fullscreen  => %s", bFullScreen ? (char*)"true":(char*)"false" );
@@ -854,11 +854,13 @@ void Captures::fullscreen()
 	{
 		log( (char*)"[Warning] pas de fenetre actives" );
 		bFullScreen = false;
+		return false;
 	}
     
     if ( bFullScreen )					bShowIcones = false;
     else								bShowIcones = true;
 
+	return  true;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

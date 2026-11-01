@@ -10,7 +10,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 Stars::Stars()
 {
-    logf( (char*)"Constructeur Stars() ------------------" );
+    logf_thread( (char*)"Constructeur Stars() ------------------" );
     RB				= NULL;
     pView			= NULL;
     pConvert 		= NULL;
@@ -28,11 +28,11 @@ Stars::Stars()
 //--------------------------------------------------------------------------------------------------------------------
 Stars::~Stars()
 {
-    logf( (char*)"Destructeur Stars() ------------------" );
+    logf_thread( (char*)"Destructeur Stars() ------------------" );
     log_tab(true);
     deleteAllStars();
     log_tab(false);
-    logf( (char*)"Destructeur Stars() ------------------" );
+    logf_thread( (char*)"Destructeur Stars() ------------------" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -143,10 +143,29 @@ Star* Stars::addStar(int xm, int ym )
     pp->setXY( x_find, y_find );
     logf( (char*)"pos" VEC2_PRINTF "", VEC2_AFF(pp->getPos()) );
     pp->find();
+    x_find = pp->getPos().x;
+    y_find = pp->getPos().y;
+    logf( (char*)"pos" VEC2_PRINTF "", VEC2_AFF(pp->getPos()) );
+
+    if ( starExist( x_find, y_find ) )       { 
+        delete pp;
+        logf( (char*)"Etoile existe deja ..." );
+
+        log_tab(false);
+		log( (char*)"---" );
+        return NULL;
+    }
+	logf( (char*)"Etoile n'existe pas OK" );
+
+
+
 
     double r = 10.0;
     vec2 vOld = vec2(pp->getPos());
     int iteration = 0;
+
+
+
 
     while( r > 2.0 )
     {
@@ -226,10 +245,16 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
     float X = (float) ((float)xm - (float)dx_screen)/e; 
     float Y = (float) ((float)ym - (float)dy_screen)/e; 
     logf( (char*)"conversion souris (%d, %d) => (%0.4f, %0.4f)", xm, ym, X, Y);
+
+	vec2 vTex = vec2( xm, ym);
+	if ( pConvert )			pConvert->screen_2_tex(vTex);
+    logf( (char*)"Texture " VEC2_PRINTF, VEC2_AFF(vTex) );
+	
+
+    //Star * pp = new Star((int) X, (int) Y);
+    Star * pp = new Star((int) vTex.x, (int)vTex.y);
     
-
-
-    Star * pp = new Star((int) X, (int) Y);
+    
     pp->setModeMag( uModeMag );
     pp->setPtr( RB->ptr );
     pp->setWidth( RB->w );
@@ -263,7 +288,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
         logf( (char*)"Pas d'Etoile ..." );
 
         log_tab(false);
-		log( (char*)"---" );
+		log( (char*)"--- x_find = -1"  );
         return NULL;
     }
     
@@ -489,7 +514,7 @@ void Stars::findAllStars()
 //--------------------------------------------------------------------------------------------------------------------
 void Stars::deleteAllStars()
 {
-    logf( (char*)"Stars::deleteAllStars()" );
+    logf_thread( (char*)"Stars::deleteAllStars()" );
     log_tab(true);
     
     int nb = v_tStars.size();
@@ -510,7 +535,7 @@ void Stars::deleteAllStars()
     logf( (char*)"Delete  %d Star()", nb );
 
     log_tab(false);
-    logf( (char*)"Stars::deleteAllStars()" );
+    logf_thread( (char*)"Stars::deleteAllStars()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -739,8 +764,8 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
         logf( (char*)"     w=%d, h=%d", RB->w.load(), RB->h.load() );
     #endif
 
-    vector<int> t;
-    t.clear();
+    vector<int> sup;
+    sup.clear();
 
     for( int i=0; i<nb; i++ )
     {
@@ -788,7 +813,7 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
         }
     }
     //* 
-    nb = t.size();
+    nb = sup.size();
     int tot = v_tStars.size();    
     if ( pNbStars != NULL )
     {
@@ -805,7 +830,7 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
     {   
         for (int i=nb; i!=0; i-- )
         {
-            int j = t[i-1];
+            int j = sup[i-1];
             
             //logf( (char*)" Stars::update() erase no %d  (%d) ", j, tot );
             delete v_tStars[j];
@@ -813,7 +838,7 @@ void Stars::update_stars( int DX, int DY, PanelSimple* pview, rb_t* rb, float ec
 
             tot = v_tStars.size();
         
-                logf( (char*)" reste %d", tot );
+            logf( (char*)" reste %d", tot );
             #ifdef DEBUG_UPDATES  
             #endif
         }

@@ -22,7 +22,7 @@ class Camera_mgr;
 using namespace std;
 
 
-class PanelCamera : public PanelWindow, Convert, Notification
+class PanelCamera : public PanelWindow, public Convert, public Notification
 {
 	//-----------------------------------------------------------------
 	//-----------------------------------------------------------------
@@ -53,8 +53,7 @@ protected:
     double              fRefCatalogY;
     int                 fRefCatalogDecalX;
     int                 fRefCatalogDecalY;
-    ivec2				vDeplaceDepuis;
-    
+
     Camera*				pCamera;
     FindStar*			pFindStar;
     PanelDebug*			pMouseCoord;
@@ -128,7 +127,7 @@ virtual	void			displayGL();
 		void			addStar(int,int);
 
 		void			setRB(rb_t* p);
-		vec2*			getSuivi();
+		//vec2*			getSuivi();
 		void			add_catalogue(StarCatalog*);
 		void			setRefCatalog(double _0, double _1);
 		void			updateVizizePos();

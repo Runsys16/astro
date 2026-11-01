@@ -61,6 +61,26 @@ void Device_cam::setDevName( string s )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Device_cam::set_filtre_name( string& s )
+{
+    name = "";
+
+	for ( int i = 0; i<s.length(); i++ )
+	{
+		unsigned long l = (unsigned long)s[i];
+		if ( l > 127 )	{
+			logf_thread( (char*)"non ascii" );
+			continue;
+		}
+		if ( l < 32 )	break;
+		if ( l == 32 )		s[i] = '_';
+
+		name = name + s[i];
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 bool Device_cam::isDevice( int u )
 {
     char    dev_name[] = "/dev/video000";
@@ -99,13 +119,15 @@ bool Device_cam::getIOCapability()
         name = "";
 	    log_tab(false);
         return false;
-    } else {
-        //logf_thread("Name:\t\t '%s'", (char*)cap.card);
+    } 
+    else
+    {
         string s = (char*)cap.card;
         int n = s.find(':');
         if ( n>0 )      s[n] = 0;
-        //logf_thread("n = %d", n );
-        name = string(s);
+    
+        set_filtre_name( s );
+
         logf_thread( (char*)"Device Name: '%s'", name.c_str() );
         
         if ( cap.device_caps & V4L2_CAP_VIDEO_CAPTURE )	{
@@ -510,7 +532,11 @@ int Device_cam::read_frame(void)
         jpg_buffer = (unsigned char*)buffers[buf.index].start;
         jpg_size = buf.bytesused;
 
-        if( err=decompressJpeg() != (int)ERROR_DECODE_JPG_OK )	logf_thread( (char*)"[ ERREUR ] IO_METHOD_MMAP : %s", str_error_decode((ERROR_DECODE_JPG)err) );
+        if( err=decompressJpeg() != (int)ERROR_DECODE_JPG_OK )
+        {
+			logf_thread( (char*)"[ ERREUR ] IO_METHOD_MMAP : %s", str_error_decode((ERROR_DECODE_JPG)err) );
+			logf_thread( (char*)"[ ERREUR ] IO_METHOD_MMAP : %s", str_error_decode((ERROR_DECODE_JPG)err) );
+		}
 
         if ( bEnregistre ){
             logf_thread( (char*)"IO_METHOD_MMAP Enregistre l'image (jpg)" );

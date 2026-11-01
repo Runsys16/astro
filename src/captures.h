@@ -67,7 +67,7 @@ public:
     void                        position(double, double);
     void                        setCurrent(Capture*);
 	int							get_n_capture(Capture*);
-    void                        fullscreen();
+    bool                        fullscreen();
     void                        showIcones();
     void                        hideIcones();
     void                        switchAffIcones();

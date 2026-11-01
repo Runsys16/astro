@@ -262,7 +262,7 @@ void Serial::read_thread()
     
     bVersionArduino = false;
     
-    logf_thread( (char*)"START Serial::read_thread" );
+    logf_thread( (char*)"[ THREAD ]  Serial::read_thread() START" );
     VarManager& var= VarManager::getInstance();
     bConnect = false;
     
@@ -454,7 +454,7 @@ void Serial::read_thread()
 	changeRetourPos( false );
 	*/
 
-    logf_thread( (char*)"FIN   Serial::read_thread" );
+    logf_thread( (char*)"[ THREAD ]  Serial::read_thread() STOP" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

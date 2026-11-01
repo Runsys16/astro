@@ -64,9 +64,7 @@ protected:
     double              dx;
     double              dy;
 
-    //bool                bIcone;
     bool                bHaveMove;
-    //bool                bInfoSouris;
     bool				bAffCatalogPosition;
     
     int                 xm_old;
@@ -171,6 +169,7 @@ virtual void			releaseMiddle( int, int);
     void                setCentX(double f);
     void                setCentY(double f);
 
+// Fonction class converts
 virtual void			screen_2_tex( vec2& );
 virtual void			screen_2_panel( vec2& );
 virtual void			tex_2_screen( vec2& );

@@ -654,6 +654,7 @@ void LX200::traite_connexion_lx200()
 void LX200::thread_listen_lx200()
 {
     //logf_thread( (char*)"LX200::thread_listen_lx200()");
+    logf_thread( (char*)"[ THREAD ]  thread_listen_lx200 START" );
 
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
@@ -749,6 +750,7 @@ void LX200::thread_listen_lx200()
     logf_thread( (char*)"Fermeture de sock_listen_lx200 (%s:%u)", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_listen_lx200);
 	sock_listen_lx200 = -1;
+    logf_thread( (char*)"[ THREAD ]  thread_listen_lx200 STOP" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

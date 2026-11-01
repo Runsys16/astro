@@ -1,8 +1,15 @@
 #include "camera_zwo.h"
 #include "camera_mgr.h"
 #include "file_browser.h"
-
+#include "timer.h"
+//--------------------------------------------------------------------------------------------------------------------
 #include <png.h>
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+char sUnite_us[] = "us";
+char sUnite_ms[] = "ms";
+char sUnite_sc[] = "s";
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -10,18 +17,49 @@ CameraZWO::~CameraZWO()
 {
     logf_thread( (char*)"Destructeur ~CameraZWO() -----------" );
     log_tab(true);
-    bCharging = false;
-    
 
+    WindowsManager&	 vm = WindowsManager::getInstance();
+
+    iCharging			= -1;
+    bCharging			= false;
 
     logf_thread( (char*)"fermeture thread (lecture image) join()" );
     bExitThread = true;
-    while( bStartThread );
+    bStopThreadVideo = true;
+    while( bThreadCaptureImage );
+    while( bThreadCaptureVideo );
+
     logf_thread( (char*)"join() OK" );
 
     close_zwo();
     close_device();
+
+	if ( panelCamera != NULL )	{
+	    logf_thread( (char*)"fermeture panelCamera" );
+	    log_tab(true);
+		vm.sup( panelCamera );
+	    delete panelCamera;
+	    panelCamera = NULL;
+	    log_tab(false);
+    }
     
+	if ( panelControl != NULL )	{
+	    logf_thread( (char*)"fermeture panelControl" );
+	    log_tab(true);
+		vm.sup( panelControl );
+		delete panelControl;
+	    panelControl = NULL;
+	    log_tab(false);
+	}
+
+
+    
+    if ( pImgBuf0 )		free(pImgBuf0);
+    if ( pImgBuf1 )		free(pImgBuf1);
+    
+	pImgBuf0 = NULL;
+	pImgBuf1 = NULL;
+
     //panelCamera->deleteBackground();
     log_tab(false);
 }
@@ -36,32 +74,21 @@ CameraZWO::CameraZWO(int n)
 
     init();
     init_zwo( n  );
+    
     CreatePreview();
     CreateControl();
+    
     video();
-	//if ( bNuit ) 	setColor( VCF4_2_COLOR32(cRouge) );
+
     log_tab(false);
     //logf_thread((char*)"Constructeur Camera() ---- END ----" );
 }
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-CameraZWO::CameraZWO(int w, int h)
-{
-    logf_thread((char*)"Constructeur CameraZWO(%d, %d) -------------", w, h);
-    log_tab(true);
-    
-    init();
-
-    log_tab(false);
-    //logf_thread((char*)"Constructeur Camera(%d, %d) ---- END ----", w, h);
-}
-//---------------------------------------./m-----------------------------------------------------------------------------
+//---------------------------------------.----------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::init()
 {
-    //logf_thread((char*)"CameraZWO::init() -------------");
+    logf_thread((char*)"CameraZWO::init() -------------");
 
 	hz					= 0.0;
 
@@ -70,20 +97,30 @@ void CameraZWO::init()
     bCharging			= false;
     iCharging			= -1;
     bExitThread			= false;
+	bStopThreadVideo	= false;
+	bStopThreadImage	= false;
+    
     bEnregistre			= false;
     
-	bThreadCaptureImage		= false;
-    bThreadCaptureVideo		= false;
+	bThreadCaptureImage	= false;
+    bThreadCaptureVideo	= false;
 
     vCameraSize.x		= -1;
     vCameraSize.y		= -1;
+
     expo				= -1;
     gain				= -1;
     wb_r				= -1;
     wb_b				= -1;
     bin					= -1;
     flip				= -1;
-    
+    bright				= -1;
+
+	bExpo				= false;
+	bGain				= false;
+	bWB_R				= false;
+	bWB_B				= false;
+	bBandwith			= false;
     
     previousTime		= -1;
     bStartThread		= false;
@@ -98,105 +135,137 @@ void CameraZWO::init()
 	panelControl		= NULL;
 	pImgBuf0			= NULL;
 	pImgBuf1			= NULL;
+	
+	dCurrentTime		= Timer::getInstance().getCurrentTime();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void CameraZWO::changeValueDouble( double val, void *p )	{
+void CameraZWO::changeValueDouble( double val, void* p )	{
+	val = round(val);
+	//return;
 	//logf( (char*)"changeValueDouble %lf", val );
 	
-	PanelSpinEditText* pSet = (PanelSpinEditText*) p;
+	double t 			= (double)Timer::getInstance().getCurrentTime();
+	double elapsedTime 	= t - dCurrentTime;
+
+	// initialise les variables	
+	Control* 			pControl	= (Control*)p;
+	int 				type		= pControl->getExtraValue();
+	PanelSpinEditText* 	pSet		= (PanelSpinEditText*) pControl->getSpinEditText();
 	
-	string s = pSet->getExtraString();
-	//logf( (char*)"changeValueDouble %s", s.c_str() );
+	// Recupere la valeur
+	switch( type )
+	{
+	case ASI_EXPOSURE :		changeValueDoubleExpo( val, pSet );	break;
+	case ASI_GAIN:			gain = (long) val;					break;
+	case ASI_WB_R:			wb_r = (long) val;					break;
+	case ASI_WB_B:			wb_b = (long) val;					break;
+	case ASI_HARDWARE_BIN:	bin = (long) val;					break;
+	case ASI_FLIP:			flip = (long) val;					break;
+	case ASI_BRIGHTNESS:	bright = (long) val;				break;
+	}
 	
-	if ( s.find("Exposure") != string::npos )
-	{
-		expo = (long) val;
-		if ( expo <= 0 )	pSet->set_val( 999 );
-		if ( expo >= 1000 )	pSet->set_val( 1 );
-	}
-	else
-	if ( s.find("Gain") != string::npos )
-	{
-		gain = (long) val;
-	}
-	else
-	if ( s.find("WB_R") != string::npos )
-	{
-		wb_r = (long) val;
-	}
-	else
-	if ( s.find("WB_B") != string::npos )
-	{
-		wb_b = (long) val;
-	}
-	else
-	if ( s.find("HardwareBin") != string::npos )
-	{
-		bin = (long) val;
-	}
-	else
-	if ( s.find("Flip") != string::npos )
-	{
-		flip = (long) val;
+	// Temps mini 100ms
+	if (  elapsedTime > 0.1 )	{ 
+		dCurrentTime = t; 
+		changeValueDoubleClick( val, p ); 
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void CameraZWO::changeValueDoubleClick( double val, void *p )	{
-	logf( (char*)"changeValueDoubleClick %lf", val );
-	
-	PanelSpinEditText* pSet = (PanelSpinEditText*) p;
-	
-	string s = pSet->getExtraString();
-	logf( (char*)"  %s = %lf", s.c_str(), val );
-	
-	if ( s.find("Exposure") != string::npos )
+void CameraZWO::changeValueDoubleClick( double val, void* p )	{
+	val = round(val);
+//return;
+	if( p == &bExpo )
 	{
-		expo = (long) val;
-		ASISetControlValue(iCamID, ASI_EXPOSURE,  expo*1000, ASI_TRUE);
-		save_var_control( ASI_EXPOSURE, expo, false );
+		bExpo = (bool)val;
+		logf( (char*)"Click Expo %s", BOOL2STR((bool)val)  );
+		return;
 	}
-	else
-	if ( s.find("Gain") != string::npos )
+	else if( p == &bGain )
 	{
+		bGain = (bool)val;
+		logf( (char*)"Click Gain %s", BOOL2STR((bool)val)  );
+		return;
+	}
+	else if( p == &bWB_R )
+	{
+		bWB_R = (bool)val;
+		logf( (char*)"Click WB_R %s", BOOL2STR((bool)val)  );
+		return;
+	}
+	else if( p == &bWB_B )
+	{
+		bWB_B = (bool)val;
+		logf( (char*)"Click WB_B %s", BOOL2STR((bool)val)  );
+		return;
+	}
+	else if( p == &bBandwith )
+	{
+		bBandwith = (bool)val;
+		logf( (char*)"Click BandWidth %s", BOOL2STR((bool)val)  );
+		return;
+	}
+	/*
+	*/
+	//if ( typeid(*p) != typeid(
+	
+	Control* 			pControl	= (Control*)p;
+	int 				type		= pControl->getExtraValue();
+	PanelSpinEditText* 	pSet		= (PanelSpinEditText*) pControl->getSpinEditText();
+	
+	switch( type )
+	{
+	case ASI_EXPOSURE:
+		{
+		ASISetControlValue(iCamID, ASI_EXPOSURE,  expo, ASI_FALSE);
+		save_var_control( ASI_EXPOSURE, expo, false );
+		break;
+		}
+	case ASI_GAIN:
+		{
 		gain = (long) val;
 		ASISetControlValue(iCamID, ASI_GAIN, 			gain, ASI_FALSE);
 		save_var_control( ASI_GAIN, gain, false );
-	}
-	else
-	if ( s.find("WB_R") != string::npos )
-	{
+		break;
+		}
+	case ASI_WB_R:
+		{
 		wb_r = (long) val;
-		ASISetControlValue(iCamID, ASI_WB_B, 			wb_b, ASI_FALSE);
-		save_var_control( ASI_WB_B, wb_b, false );
-	}
-	else
-	if ( s.find("WB_B") != string::npos )
-	{
-		wb_b = (long) val;
 		ASISetControlValue(iCamID, ASI_WB_R, 			wb_r, ASI_FALSE);
 		save_var_control( ASI_WB_R, wb_r, false );
-	}
-	else
-	if ( s.find("HardwareBin") != string::npos )
-	{
+		break;
+		}
+	case ASI_WB_B:
+		{
+		wb_b = (long) val;
+		ASISetControlValue(iCamID, ASI_WB_B, 			wb_b, ASI_FALSE);
+		save_var_control( ASI_WB_B, wb_b, false );
+		break;
+		}
+	case ASI_HARDWARE_BIN:
+		{
 		bin = (long) val;
 		ASISetControlValue(iCamID, ASI_HARDWARE_BIN,  	 bin, ASI_FALSE);
 		save_var_control( ASI_HARDWARE_BIN, bin, false );
-	}
-	else
-	if ( s.find("Flip") != string::npos )
-	{
+		break;
+		}
+	case ASI_FLIP:
+		{
 		flip = (long) val;
 		ASISetControlValue(iCamID, ASI_FLIP, 			flip, ASI_FALSE);
 		save_var_control( ASI_FLIP, flip, false );
+		logf_thread( (char*)"Flip : %d - %s", (int)flip, str_flip( (ASI_FLIP_STATUS)flip ) );
+		}
+	case ASI_BRIGHTNESS:
+		{
+		bright = (long) val;
+		ASISetControlValue(iCamID, ASI_BRIGHTNESS, 			flip, ASI_FALSE);
+		save_var_control( ASI_BRIGHTNESS, bright, false );
+		}
 	}
-	
-	//Control* pControl = (Control*)p;
-	//pControl->setValue( (int)val );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -213,14 +282,38 @@ void CameraZWO::save_var_control( ASI_CONTROL_TYPE type, long lValue, bool bCrea
 		if ( !var.existe( s ) )
 		{
 			var.set( s, (int) lValue );
-			logf_thread( (char*)"Creation de la variable  : %s = %d", s.c_str(), (int)lValue );
+			//logf_thread( (char*)"Creation de la variable  : %s = %d", s.c_str(), (int)lValue );
 		}
 		return;
 	}
 	
-	logf_thread( (char*)"Ecriture  de la variable  : %s = %ld", s.c_str(), lValue );
  	var.set( s, (int) lValue );
 
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::compute_expo()
+{
+	if ( expo >= 1000000 )
+	{
+		expo_val = expo / 1000000;
+		expo_unite = SEC;
+	}
+	else if ( expo >= 1000 )
+	{
+		expo_val = expo / 1000;
+		expo_unite = MILI;
+	}
+	else
+	{
+		expo_val = expo;
+		expo_unite = MICRO;
+	}
+	expo_unites[MICRO]	= sUnite_us;
+	expo_unites[MILI]	= sUnite_ms;
+	expo_unites[SEC]	= sUnite_sc;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -247,11 +340,12 @@ void CameraZWO::load_var_control()
 			switch( i )
 			{
 			case ASI_GAIN:				{ gain = var.geti(s);  break; }
-			case ASI_EXPOSURE:			{ expo = var.geti(s);  break; }
+			case ASI_EXPOSURE:			{ expo = var.geti(s);  compute_expo(); break; }
 			case ASI_WB_R:				{ wb_r = var.geti(s);  break; }
 			case ASI_WB_B:				{ wb_b = var.geti(s);  break; }
 			case ASI_FLIP:				{ flip = var.geti(s);  break; }
 			case ASI_HARDWARE_BIN:		{ bin  = var.geti(s);  break; }
+			case ASI_BRIGHTNESS:		{ bright  = var.geti(s);  break; }
 			default: continue;
 			}
 			//logf_thread( (char*)"  %s", s.c_str() );
@@ -274,6 +368,7 @@ long CameraZWO::get_var_control(ASI_CONTROL_TYPE type)
 	case ASI_WB_B:				{ val = wb_b;  break; }
 	case ASI_FLIP:				{ val = flip;  break; }
 	case ASI_HARDWARE_BIN:		{ val = bin;   break; }
+	case ASI_BRIGHTNESS:		{ val = bright;   break; }
 	default: break;;
 	}
 	
@@ -319,11 +414,11 @@ int CameraZWO::addControl()	{
 		
 		#ifdef DEBUG_CONTROLS
 		logf_thread( (char*)"%02ld - CONTROL_TYPE :\t%s ", ControlCaps.ControlType, (char*)str_caps(ControlCaps.ControlType) );
-		logf_thread( (char*)"\t  name :\t%s ", 	(char*)ControlCaps.Name );
-		logf_thread( (char*)"\t descr :\t%s ",	(char*)ControlCaps.Description );
-		logf_thread( (char*)"\t   max :\t%ld ", 	ControlCaps.MaxValue );
-		logf_thread( (char*)"\t   min :\t%ld ", 	ControlCaps.MinValue );
-		logf_thread( (char*)"\tdefaut :\t%ld ", 	ControlCaps.DefaultValue );
+		logf_thread( (char*)"\t  name :\t%s ", 	(char*)  ControlCaps.Name );
+		logf_thread( (char*)"\t descr :\t%s ",	(char*)  ControlCaps.Description );
+		logf_thread( (char*)"\t   max :\t%ld ", 		 ControlCaps.MaxValue );
+		logf_thread( (char*)"\t   min :\t%ld ", 		 ControlCaps.MinValue );
+		logf_thread( (char*)"\tdefaut :\t%ld ", 		 ControlCaps.DefaultValue );
 		logf_thread( (char*)"\tisAuto :\t%s ", 	BOOL2STR(ControlCaps.IsAutoSupported) );
 		logf_thread( (char*)"\tisWrit :\t%s ", 	BOOL2STR(ControlCaps.IsWritable) );
 		#endif
@@ -366,60 +461,110 @@ int CameraZWO::addControl()	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+PanelCheckBox* CameraZWO::createCheckBox( int x, int y, ASI_CONTROL_CAPS* p, Control* pControl )	
+{
+    //logf_thread( (char*)"CameraZWO::createCheckBox()" );
+    PanelCheckBox* pCheck = new PanelCheckBox();
+    
+    pCheck->setPosAndSize( x+280, y, 14, 14);
+    pCheck->setTrue(  (char*) "images/coche1.tga" );
+    pCheck->setFalse( (char*) "images/coche0.tga" );
+    
+    bool*	pBool = NULL;
+    switch(p->ControlType)
+    {
+    case ASI_EXPOSURE:				pBool = &bExpo; break;
+    case ASI_GAIN:					pBool = &bGain; break;
+    case ASI_WB_B:					pBool = &bWB_B; break;
+    case ASI_WB_R:					pBool = &bWB_R; break;
+    case ASI_BANDWIDTHOVERLOAD:		pBool = &bBandwith; break;
+    }
+
+    pCheck->setListener( pBool );
+    pCheck->setChangeValue( this );
+    pCheck->setID( (void*)pBool );
+
+	panelControl->add( pCheck );
+ 	
+ 	return pCheck;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+PanelSpinEditText* CameraZWO::createSpinEdit( int x, int y, ASI_CONTROL_CAPS* p, Control* pControl )	
+{
+    PanelSpinEditText* pSET = new PanelSpinEditText();
+    
+    double		dmin = p->MinValue;
+    double		dmax = p->MaxValue;
+	double		delta_tour = dmax-dmin;
+    double		step =  1.0;
+    ASI_BOOL	bRet;
+    long		lValue = get_var_control( p->ControlType );
+
+    if ( p->ControlType == ASI_EXPOSURE )	{ dmin = 1.0; dmax = 1000.0; delta_tour = 300.0; }
+    if ( lValue == -1L )	ASIGetControlValue( iCamID, p->ControlType, &lValue,  &bRet );
+
+    
+    pSET->set( dmin, dmax, delta_tour, 1.0 );
+    pSET->set_ndecimal(0);
+    pSET->set_delta( 20, 8 );
+    pSET->setPosAndSize( x+150+150, y, 90, 14 );
+    pSET->setExtraString( p->Name );
+    pSET->setChangeValue( this );
+    pSET->setID( (void*)pControl );
+    pSET->set_val( (double)lValue );
+    
+    if ( p->ControlType == ASI_EXPOSURE )
+    {
+        pSET->set_unite( expo_unites[expo_unite] );
+        pSET->set_val( (double)expo_val );
+        pSET->set( 0.0, 1000.0, 300.0, 1.0 );
+    }
+    
+
+	pControl->getStep();
+	pControl->setExtraValue( p->ControlType);
+	pControl->setSpinEditText(pSET);
+
+	panelControl->add( pSET );    
+
+	return pSET;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::createControlID( int x, int y, ASI_CONTROL_CAPS* p )	
 {
     //logf_thread( (char*)"Ajout de '%s'", str );
 
 	panelControl->add( new PanelTextOmbre( (char*)p->Name,  	   PanelText::NORMAL_FONT, x, y ) );
 
-    //Control* pControl = getControl(str);
     Control* pControl = new Control(NULL);
     
     
     if (pControl)       {
+        PanelSpinEditText*	pSET	= createSpinEdit(x, y, p, pControl );
+        PanelCheckBox*		pCheck	= NULL;
 
-        PanelSpinEditText* pSET = new PanelSpinEditText();
-        
-        double		dmin = p->MinValue;
-        double		dmax = p->MaxValue;
-        double		step =  1.0;
-        ASI_BOOL	bRet;
-        long		lValue = get_var_control( p->ControlType );
-
-        if ( p->ControlType == ASI_EXPOSURE )	{ dmin = 1.0; dmax = 999.0; }
-        if ( lValue == -1L )	ASIGetControlValue( iCamID, p->ControlType, &lValue,  &bRet );
-
-        pControl->getStep();
-        pControl->setExtraValue( p->ControlType);
-        
-        pSET->set( dmin, dmax, dmax-dmin, 1.0 );
-        pSET->set_ndecimal(0);
-        pSET->set_delta( 20, 8 );
-        pSET->setPos( x+150+150, y );
-        pSET->setSize( 90, 14 );
-        pSET->setExtraString( p->Name );
-        pSET->setChangeValue( this );
-        pSET->setID( (void*)pSET );
-        pSET->set_val( (double)lValue );
-        //pSET->set_step( (double)1.0 );
-        panelControl->add(pSET);
-		// Plantage appel de dev aui n'existe pas
-        // pControl->setValue( (int)lValue );
+        if ( p->IsAutoSupported == ASI_TRUE )	pCheck = createCheckBox(x, y, p, pControl );
 
 	    logf_thread( (char*)"Ajout de '%s'  %.2f>%.2f %s  %.2f", 
-	    		p->Name, (float)dmin, (float)dmax, 
+	    		p->Name, (float)p->MinValue, (float)p->MaxValue, 
 	    		( p->IsWritable ? (char*)"R/W" : (char*)"R" ), 
 	    		(float)pControl->getValue() );
 
 		char str1[256];
-		snprintf( (char*)str1, sizeof(str1), "%.0ld~%.0ld \t%s", 
-		          (long)dmin, (long)dmax, ( p->IsAutoSupported ? (char*)"A/M" : (char*)"M" ) );
+		snprintf( (char*)str1, sizeof(str1), "%.0ld~%.0ld", 
+		          (long)p->MinValue, (long)p->MaxValue );
+
 		PanelText* pp = new PanelText( (char*)"  ", PanelText::NORMAL_FONT, x + 170, y );
 		pp->razTabSize();
 		pp->setTabSize(85);
 		pp->setColor(0x808080ff);
 		pp->changeText( (char*)str1 );
-		panelControl->add( pp );    }
+		panelControl->add( pp );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -436,8 +581,10 @@ void CameraZWO::CreateControl()	{
     panelControl = new PanelWindow();
     panelControl->setDisplayGL(displayGLnuit_cb);
     panelControl->setExtraString( getDevName() );
-    panelControl->loadSkinPath( "images/astro" );
-	panelControl->setBorderSize(8);
+    //panelControl->loadSkinPath( "images/astro" );
+	//panelControl->setBorderSize(8);
+    panelControl->loadSkin( PanelWindow::YELLOW );
+	panelControl->setBorderSize(9);
 
 	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
@@ -507,46 +654,6 @@ void CameraZWO::CreatePreview()	{
 
     log_tab(false);
     logf_thread((char*)"CameraZWO::CreatePreview ------------- %s", name.c_str() );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void CameraZWO::resizeControl(int width, int height)	{
-    logf_thread((char*) "CameraZWO::resizeControl(%d, %d) %s", width, height, getName().c_str() );
-    int dx = panelControl->getDX();
-    int dy = panelControl->getDY();
-    
-    //if ( dx==0)     return;
-    dx = 200+150;
-    dy = 192;
-    
-    //int x = width - dx - 20;
-    int x = 20;
-
-    int nb = Camera_mgr::getInstance().getNum(this);
-    int y = 10+nb * (20+dy);
-
-    logf((char*) "                          x=%d y=%d nb=%d", x, y, nb );
-    panelControl->setPos( x, y );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void CameraZWO::resizeControlFirst(int width, int height, int dx, int dy)	{
-    logf_thread((char*) "CameraZWO::resizeControlFirst(%d, %d, %d, %d) %s", width, height, dx, dy, getDevName() );
-    
-    //if ( dx==0)     return;
-
-    dx = 200+150;
-    dy = 192;
-
-    int x = width - dx - 20;
-
-    int nb = Camera_mgr::getInstance().getSize();
-    int y = 10+nb * (20+dy);
-
-    logf_thread((char*) "x=%d y=%d nb=%d %s", x, y, nb, getDevName() );
-    panelControl->setPos( x, y );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -698,6 +805,7 @@ void charge_camera()
 //--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::change_background(void)
 {
+	if ( iCharging == -1 )			return;
 
     //log((char*)"START CameraZWO::change_background()");
     if ( vCameraSize.x == -1 )
@@ -751,7 +859,7 @@ void CameraZWO::change_background(void)
         float t = Timer::getInstance().getCurrentTime();
         if ( previousTime != -1 )
         {
-            if ( nb_images++ >= 10 )
+            if ( ++nb_images >= 10 )
             {
                 hz = 10.0 / (t - previousTime);
                 previousTime = t;
@@ -779,43 +887,43 @@ bool CameraZWO::keyboard(char key)
 	Control* pControl;
 	
 	//if ( !panelControl->getVisible() )       return false;
-	
+
 	switch(key){ 
-	
-    case 'i':
-    	logf( (char*)"Touche 'i'" );
-    	break;
+
+	case 'i':
+		logf( (char*)"Touche 'i'" );
+		break;
 
 
-    case 'h':
-	    logf( (char*)"key = 'h'" );
-	    /*
-		//ASISetControlValue(iCamID, ASI_GAIN, 			100, ASI_FALSE);
-		//ASISetControlValue(iCamID, ASI_EXPOSURE,   250*1000, ASI_FALSE);
-		gain = 100;
-		expo = 300;
-		flip = 3;
-		*/
-	    enregistre();
-	    break;
+	case 'h':
+		logf( (char*)"key = 'h'" );
+		if ( iGlutModifier && GLUT_ACTIVE_SHIFT )
+		{
+			return false;
+		}
+		else
+		{
+			enregistre();
+		}
+		break;
 	    
     case 'H':
 	    logf( (char*)"key = 'H'" );
 	    video();
 	    break;
 	    
-    case 'w':
+    case 'j':
         logf( (char*)"File browser" );
-        FileBrowser::getInstance().setCallBack(this); 
-        FileBrowser::getInstance().setFiltre(".cam");
-        FileBrowser::getInstance().setFilename("");
-        FileBrowser::getInstance().setExtra(FB_CALLBACK_KEY_s);
-        FileBrowser::getInstance().setNewline(true);
-        FileBrowser::getInstance().change_dir(sSauveDir);
-        FileBrowser::getInstance().affiche();
+		    FileBrowser::getInstance().setCallBack(this); 
+		    FileBrowser::getInstance().setFiltre(".cam");
+		    FileBrowser::getInstance().setFilename("");
+		    FileBrowser::getInstance().setExtra(FB_CALLBACK_KEY_s);
+		    FileBrowser::getInstance().setNewline(true);
+		    FileBrowser::getInstance().change_dir(sSauveDir);
+		    FileBrowser::getInstance().affiche();
         break;
 
-    case 'W':  // '-'
+    case 'J':  // '-'
         logf( (char*)"File browser" );
         FileBrowser::getInstance().setCallBack(this); 
         FileBrowser::getInstance().setFiltre(".cam");
@@ -878,14 +986,6 @@ void CameraZWO::recentreSuivi()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-vec2* CameraZWO::getSuivi()
-{
-    if ( panelCamera!=NULL )           return panelCamera->getSuivi();
-    return NULL;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::setColor( long color )
 {
     if ( panelCamera )		panelCamera->setColor( color );
@@ -933,6 +1033,31 @@ void CameraZWO::saveCompareStar()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::print_roi_format()
+{
+	ASI_CAMERA_MODE mode;
+	int width, height, bin;
+	ASI_IMG_TYPE img;
+	
+	ASIGetROIFormat( iCamID, &width, &height, &bin, &img  );
+	
+	logf_thread( (char*) "   --------------------------------------------------" );
+	logf_thread( (char*) "   width = %d, height = %d, bin = %d, IMG_TYPE = %s", width, height, bin, str_image(img) );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::print_mode()
+{
+	ASI_CAMERA_MODE mode;
+	ASIGetCameraMode( iCamID, &mode  );
+	
+	logf_thread( (char*) "   --------------------------------------------------" );
+	logf_thread( (char*) "       mode :\t %d-%s", (int)mode, str_mode(mode)  );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::print_info( ASI_CAMERA_INFO* pASI_camera_info )
 {
 	logf_thread( (char*) "       Name :\t %s", 			pASI_camera_info->Name );
@@ -957,11 +1082,12 @@ void CameraZWO::print_info( ASI_CAMERA_INFO* pASI_camera_info )
 	*/
 
 	name = string( pASI_camera_info->Name );
-	name.replace( name.find(" "), 1, "_");
+	while( name.find(" ") != string::npos )			name.replace( name.find(" "), 1, "_");
 
 
 	setName( name );
 	setDevName( pASI_camera_info->Name );
+	
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1079,6 +1205,20 @@ char * CameraZWO::str_caps( ASI_CONTROL_TYPE type )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+char * CameraZWO::str_flip( ASI_FLIP_STATUS type )
+{
+	switch( (int)type )
+	{
+	case ASI_FLIP_NONE: 		return (char*)"ASI_FLIP_NONE";
+	case ASI_FLIP_HORIZ:	  	return (char*)"ASI_FLIP_HORIZ";//: horizontal flip
+	case ASI_FLIP_VERT: 		return (char*)"ASI_FLIP_VERT";// vertical flip
+	case ASI_FLIP_BOTH: 		return (char*)"ASI_FLIP_BOTH";//:both horizontal and vertical flip
+	}
+	return (char*)"ASI_FLIP_STATUS inconnu";
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::print_mode( ASI_SUPPORTED_MODE* p )
 {
 	logf_thread( (char*)"Mode(s) camera supporté" );
@@ -1116,6 +1256,7 @@ void CameraZWO::init_zwo( int n )
 		iCamID = n;
 		// GET CAMERA_INFO
 		ASIGetCameraProperty( &ASI_camera_info, iCamID );
+		iCamID = ASI_camera_info.CameraID;
 		print_info( &ASI_camera_info );
 		
 		// taille mas de la capture
@@ -1135,7 +1276,9 @@ void CameraZWO::init_zwo( int n )
 		// GET CAMERA_MODE
 		ASIGetCameraSupportMode( iCamID, &ASI_Supported_Mode );
 		print_mode( &ASI_Supported_Mode );
+		print_mode();
 		print_images_spported( ASI_camera_info.SupportedVideoFormat );
+		print_roi_format();
 
 		// Init camera
 		ASIInitCamera( iCamID );
@@ -1167,6 +1310,8 @@ void CameraZWO::close_zwo()
 //--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::coloriage( unsigned char* p )
 {
+	//return;
+	
 	if ( width == -1 || height == -1 )	return;
 	
 	long nb = iImgSize / 3;
@@ -1176,6 +1321,11 @@ void CameraZWO::coloriage( unsigned char* p )
 		R = p[i*3 + 0];
 		p[i*3 + 0] = p[i*3 + 2];
 		p[i*3 + 2] = R;
+		/*
+		p[i*3 + 0] = 0;  // rouge
+		p[i*3 + 1] = 0;  //vert
+		p[i*3 + 2] = 0;  // bleu2
+		*/
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1192,7 +1342,7 @@ void CameraZWO::thread_capture_image()
 	ASISetControlValue(iCamID, ASI_GAIN, 			gain, ASI_FALSE);
 	ASISetControlValue(iCamID, ASI_WB_R, 			wb_r, ASI_FALSE);
 	ASISetControlValue(iCamID, ASI_WB_B, 			wb_b, ASI_FALSE);
-	ASISetControlValue(iCamID, ASI_EXPOSURE,   expo*1000, ASI_FALSE);
+	ASISetControlValue(iCamID, ASI_EXPOSURE,   		expo, ASI_FALSE);
 	ASISetControlValue(iCamID, ASI_HARDWARE_BIN,  	 bin, ASI_FALSE);
 	ASISetControlValue(iCamID, ASI_FLIP, 			flip, ASI_FALSE);
 
@@ -1250,24 +1400,25 @@ void CameraZWO::thread_capture_video()
 	
 	while( !bStopThreadVideo )
 	{
-		while( bCharging );
+		if ( bPause )	{ usleep(250); continue; }
+		while( bCharging  );
+		
 		iCharging = (++iCharging) % 2;
 		
 		int i = iCharging;
-	    //logf_thread( (char*)"------- Buf %d ------------", i );
+		// ASICamera.h    line 657
+	    int iTimeOut = expo*2+500;
 
 		switch(i)	{
 		case 0 :	
 			{
-		    //logf_thread( (char*)"avant : %ld", (long)pImgBuf0 );
-			ASIGetVideoData(iCamID, pImgBuf0, iImgSize, 500 );
+			ASIGetVideoData(iCamID, pImgBuf0, iImgSize, iTimeOut );
 			coloriage(pImgBuf0);
-		    //logf_thread( (char*)"apres : %ld", (long)pImgBuf0 );
 			break;
 			}
 		case 1 :
 			{
-			ASIGetVideoData(iCamID, pImgBuf1, iImgSize, 500 );
+			ASIGetVideoData(iCamID, pImgBuf1, iImgSize, iTimeOut );
 			coloriage(pImgBuf1);
 			break;
 			}
@@ -1305,20 +1456,95 @@ void CameraZWO::thread_capture_video()
     logf_thread( (char*)"[ THREAD ] \"%s\" stop thread_capture_video ", name.c_str() );
 	bThreadCaptureVideo = false;
 }
+/*
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::enregistre_name()
+{
+	enregistre();
+}
+*/
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::changeValueDoubleExpo( double val, PanelSpinEditText *pSpin )
+{
+    //logf( (char*)"CameraZWO::changeValueDouble(%lf, %s)", val, pSpin->getExtraString().c_str() );
+
+	expo_val = val;
+	
+	if       ( expo_val < 1.0   && expo_unite != MICRO )		{ expo_val = 999.0; 	change_unite(false, pSpin); }
+	else if  ( expo_val > 999.0 && expo_unite != SEC )			{ expo_val = 1.0;		change_unite(true,  pSpin); }
+	
+	if ( expo_val < 1.0 )			expo_val = 1.0;
+	if ( expo_val > 999.0 )			expo_val = 999.0;
+	
+	pSpin->set_val( expo_val );
+	
+	expo = (long)expo_val;
+	switch( expo_unite )
+	{
+	case MICRO:		expo *= 1;				break;
+	case MILI:		expo *= 1000;			break;
+	case SEC:		expo *= 1000000;		break;
+	}
+	
+    //logf( (char*)"|  exposure = %ld", expo );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::changeValueDoubleClickExpo( double val, PanelSpinEditText *p )
+{
+	changeValueDoubleExpo(val, p);
+
+	expo = (long)expo_val;
+	switch( expo_unite )
+	{
+	case MICRO:		expo *= 1;				break;
+	case MILI:		expo *= 1000;			break;
+	case SEC:		expo *= 1000000;		break;
+	}
+    logf( (char*)"|  exposure = %ld", expo );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::change_unite( bool bPlus, PanelSpinEditText* pSpin )
+{
+    logf( (char*)"CameraZWO::change_unite(%s, %s)", BOOL2STR(bPlus), pSpin->getExtraString().c_str() );
+
+	int i = expo_unite;
+	if( bPlus )			i++;
+	else				i--;
+	
+	if (i<0)		i = 0;
+	if (i>2)		i = 2;
+	
+	expo_unite = (UNITE)i;
+	switch( expo_unite )
+	{
+	case MICRO:
+		pSpin->set_unite( sUnite_us );
+		break;
+	case MILI:
+		pSpin->set_unite( sUnite_ms );
+		break;
+	case SEC:
+		pSpin->set_unite( sUnite_sc );
+		break;
+	}
+}
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::enregistre()
 {
 	logf( (char*)"CameraZWO::enregistre()" );
+
 	// Si capture video => on stope la capture
 	if ( bThreadCaptureVideo )	{
-		/*
-		bStopThreadVideo = true;
-		
-		while( bThreadCaptureVideo );
-		usleep(1000);//1ms
-		*/
 		bEnregistre = true;
 		return;
 	}
@@ -1329,9 +1555,6 @@ void CameraZWO::enregistre()
 	{
 		logf( (char*)"[ WARNING ] Photo en cours de traitement ..." );
 
-		//if ( pImgBuf0 )	free( pImgBuf0 );
-		//pImgBuf0 = NULL;
-
 		return;
 	}
 
@@ -1340,6 +1563,7 @@ void CameraZWO::enregistre()
 	if ( pImgBuf0 == NULL )	pImgBuf0 =  (unsigned char*)malloc( iImgSize );
 	iCharging = 0;
 
+	bStopThreadImage = false;
 	bThreadCaptureImage = true;
     thread tCap = std::thread(&CameraZWO::thread_capture_image, this); 
     tCap.detach();
@@ -1367,8 +1591,8 @@ void CameraZWO::video()
 	iCharging = 0;
 
 	// ASI_FALSE ASI_TRUE
-	ASISetControlValue(iCamID, ASI_GAIN, 			gain, ASI_TRUE);
-	ASISetControlValue(iCamID, ASI_EXPOSURE,   expo*1000, ASI_TRUE);
+	ASISetControlValue(iCamID, ASI_GAIN, 			gain, ASI_FALSE);
+	ASISetControlValue(iCamID, ASI_EXPOSURE,   		expo, ASI_FALSE);
 	ASISetControlValue(iCamID, ASI_WB_R, 			wb_r, ASI_FALSE);
 	ASISetControlValue(iCamID, ASI_WB_B, 			wb_b, ASI_FALSE);
 	ASISetControlValue(iCamID, ASI_HARDWARE_BIN,  	 bin, ASI_FALSE);

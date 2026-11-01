@@ -15,7 +15,7 @@ double			Star::dCoefC =    1.46;
 //--------------------------------------------------------------------------------------------------------------------
 Star::~Star()
 {
-    //logf( (char*)"Destructeur Star()" );
+    //logf_thread( (char*)"Destructeur Star()" );
     if (panelZoom != NULL)
     {
         //pView->sup( panelZoom );
@@ -1011,11 +1011,13 @@ void Star::displayGL()
     }
     //
     // Carre de selection
+    /*
     else if ( bSelect )      
     {
         glColor4f( 1.0,  0.0,  0.0, 1.0 );
         glCarre( ech*(computeRayon()) );//+ 4 +10) );
     }
+    */
     //
     // Cercle de suivi
     if ( bSuivi )      

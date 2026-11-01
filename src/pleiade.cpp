@@ -21,7 +21,7 @@ Pleiade::Pleiade()
     ptr = NULL;
 
     //Camera();
-    setName( (char*) "Simulation pleiades" );
+    setName( (char*) "Simulation_pleiades" );
     setDevName( (char*) "Pleiades" );
     vCameraSize.x   = 1920;
     vCameraSize.y   = 1080;
@@ -156,7 +156,7 @@ void Pleiade::change_background(void)
         char num[55];
         
         sprintf( num, "%03d", count_png );
-        string titre = "Pleiages : suivi-20190103-" + string(num) + ".png";
+        string titre = "Pleiades : suivi-20190103-" + string(num) + ".png";
         panelCamera->setExtraString( string(titre) );
         
         pCamFilename->changeText( (char*)titre.c_str() );

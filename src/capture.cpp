@@ -1,3 +1,4 @@
+#include "police.h"
 #include "capture.h"
 #include "captures.h"
 #include "notification_capture.h"
@@ -577,7 +578,7 @@ void Capture::create_preview()	{
 
 	//loadSkinPath( "images/astro" );
     //loadSkin( PanelWindow::RED );
-    loadSkin( PanelWindow::BLACK );
+    loadSkin( PanelWindow::VERT );
 	setBorderSize(2);
 
 	//create_icones();
@@ -608,7 +609,7 @@ void Capture::create_preview()	{
 	{
 		//loadSkinPath( "images/astro" );
 		loadSkin( "rouge" );
-	    loadSkin( PanelWindow::BLACK );
+	    loadSkin( PanelWindow::VERT );
 		setBorderSize(4);
 
 		logf((char*)"Fichier fits %s", (char*)filename.c_str() );
@@ -664,7 +665,8 @@ void Capture::create_preview()	{
 	// nombre d'etoile (star)
 	// nombre d'etoile (vizier)
 	// Titre de la fenetre (nom de fichier)
-	pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
+	//pTitre = new PanelText( (char*)filenameShort,		PanelText::LARGE_FONT, 20, 10 );
+	pTitre = new PanelText( (char*)filenameShort,   (char*)_ARIAL_BLACK ,       20, 10,      12, 0xFFffFFff, true );
 	pTitre->setExtraString( "PanelText Titre" );
 
 	add( pTitre );

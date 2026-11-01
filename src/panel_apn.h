@@ -14,8 +14,10 @@
 
 using namespace std;
 
-class PanelApn : public PanelWindow
+class PanelApn : public PanelWindow, public ChangeValue
 {
+public:
+	enum UNITE { MICRO=0, MILI, SEC };
 
 protected:
     PanelSpinEditText*              pTime;
@@ -23,13 +25,16 @@ protected:
     PanelSpinEditText*              pFrames;
     PanelSpinEditText*              pTimeOut;
     PanelSpinEditText*              pNum;
+    //PanelText*						pUnite;
 
     string                          sTime;
-    float                           fTime;
+    double                          dTime;
+    long							exposure;
     int                             iIso;
     int                             iFrames;
     int                             iTimeOut;
     int                             iNum;
+    UNITE							iUnite;
 
 public:
     ~PanelApn();
@@ -42,7 +47,12 @@ public:
     void                            saveValues();
     void                            commande_photo();
     void                            photo();
+    void                            change_unite(bool, PanelSpinEditText*);
     
+virtual void						changeValueDouble( double val, void *p );
+virtual void						changeValueDoubleClick( double val, void *p );
+
+virtual void                        updatePos();
 virtual void                        displayGL();
 };
 

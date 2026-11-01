@@ -74,6 +74,8 @@ PanelCourbe::PanelCourbe()
     wm.add(this);
     
     setBackground((char*)"images/background.tga");
+    loadSkin( PanelWindow::BLUE );
+	setBorderSize(6);
 
     pXMax = new PanelText( (char*)"+err",		PanelText::NORMAL_FONT, 5, 50 );
     add( pXMax );
@@ -1127,6 +1129,7 @@ void PanelCourbe::updatePos()
         pCourbeX->changeText( s, true );
         //--------------------------------------------------------------    
         var.set( "bDisplayCourbeX", bDisplayCourbeX );
+	    bDisplayCourbeX_old = bDisplayCourbeX;
     }
 
     if (     bDisplayCourbeY_old != bDisplayCourbeY ) {
@@ -1135,6 +1138,7 @@ void PanelCourbe::updatePos()
         
         pCourbeY->changeText( s, true );
         var.set( "bDisplayCourbeY", bDisplayCourbeY );
+	    bDisplayCourbeY_old = bDisplayCourbeY;
     }
     //--------------------------------------------------------------    
     if ( bDisplayfftX != bDisplayfftX_old )  {
@@ -1144,6 +1148,7 @@ void PanelCourbe::updatePos()
         pAffFFTX->changeText( s, true );
         pCBAffFFTX->setVal( bDisplayfftX );
         var.set( "bDisplayfftX", bDisplayfftX );
+	    bDisplayfftX_old	= bDisplayfftX;
     }
     //--------------------------------------------------------------    
     if ( bDisplayfftY != bDisplayfftY_old )  {
@@ -1153,10 +1158,12 @@ void PanelCourbe::updatePos()
         pAffFFTY->changeText( s, true );
         pCBAffFFTY->setVal( bDisplayfftY );
         var.set( "bDisplayfftY", bDisplayfftY );
+	    bDisplayfftY_old	= bDisplayfftY;
     }
     //--------------------------------------------------------------    
     if ( bDisplayPt != bDisplayPt_old )  {
         var.set( "bDisplayPt", bDisplayPt );
+	    bDisplayPt_old		= bDisplayPt;
     }
     //--------------------------------------------------------------    
     
@@ -1166,7 +1173,8 @@ void PanelCourbe::updatePos()
         sprintf( s, (char*)"Filtre :" );
         pAffFiltre->changeText( s, true );
 
-        VarManager::getInstance().set( "filtre", filtre );
+        //var.set( "filtre", filtre );
+	    filtre_old			= filtre;
     }
     //--------------------------------------------------------------    
     err = dErr;
@@ -1176,12 +1184,6 @@ void PanelCourbe::updatePos()
 	    update_err();
     }
     //--------------------------------------------------------------    
-    bDisplayPt_old		= bDisplayPt;
-    bDisplayCourbeX_old = bDisplayCourbeX;
-    bDisplayCourbeY_old = bDisplayCourbeY;
-    bDisplayfftX_old	= bDisplayfftX;
-    bDisplayfftY_old	= bDisplayfftY;
-    filtre_old			= filtre;
     
 
     int l = pFilename->getTextLenght();

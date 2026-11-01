@@ -1,3 +1,4 @@
+#include "file_browser.h"
 #include "camera_mgr.h"
 #include "pleiade.h"
 #include "main.h"
@@ -8,11 +9,47 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+Camera_mgr* Camera_mgr::s_pInstance = NULL;
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 Camera_mgr::Camera_mgr()
 {
     logf_thread((char*)"Constructeur Camera_mgr() -------------" );
     pCurrent = NULL;
+    pAsserv = NULL;
     nActive = 0;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::idleGL( float fElapsedTime )
+{
+    if ( bAsservissement )
+    {
+		if ( pAsserv ) 
+		{
+			PanelCamera * panelCamera = pAsserv->getPanelCamera();
+			if ( panelCamera->getStars() )
+			{
+				vec2* pV = panelCamera->getStars()->getSuivi();
+				if ( pV )
+				{
+					vec2 v = vec2( *pV );
+				
+					pAsserv->idleGL( fElapsedTime, v );
+				}
+				else
+				{
+					logf( (char*)"[ ERROR ] Pas d'etoile selectionne sur la camera" );
+				}
+			}
+			else
+			{
+				logf( (char*)"[ ERROR ] Pas d'etoile sur la camera" );
+			}
+		}
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -79,6 +116,8 @@ void Camera_mgr::add( string sdev_name )
     
     pCamera->init_device();
     pCamera->capability_list();
+    pCamera->load_var( pCamera->getName() );
+
     pCamera->start_capturing();
 
 
@@ -119,6 +158,8 @@ void Camera_mgr::add( Camera* p )
         logf_thread( (char*)"Ce n'est pas une camera" );
     }
 
+    p->load_var( p->getName() );
+
     onBottom();
 	active( p );
     
@@ -138,6 +179,8 @@ void Camera_mgr::add_zwo( int n )
     log_tab(true);
     
 	CameraZWO* p = new CameraZWO( n );
+    p->load_var( p->getName() );
+
     pCameras.push_back( p );
     
     log_tab(false);
@@ -332,7 +375,8 @@ void Camera_mgr::glutSpecialFunc(int key, int x, int y)	{
 //--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::resize(int width, int height)
 {
-    logf_thread((char*)"Camera_mgr::resize(%d, %d) -------------", width, height);
+    logf((char*)"Camera_mgr::resize(%d, %d) -------------", width, height);
+    log_tab(true);
     for( int i=0; i<pCameras.size(); i++ )
     {
         pCameras[i]->resizeControl( width, height );
@@ -344,6 +388,7 @@ void Camera_mgr::resize(int width, int height)
     }
     
     reOrder();
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -395,22 +440,18 @@ void Camera_mgr::update()
 void Camera_mgr::active()
 {
 	// Si la camera est connecte au demarrage => Plantage
-    logf_thread((char*)"Camera_mgr::active() -------------" );
+    logf_thread((char*)"Camera_mgr::active() ------------- %d", __LINE__ );
+    if ( pCameras.size() == 0)			return;
 
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
 
     if ( pCurrent != NULL )         pCurrent->iconSizePreview( w, h );
 
-    nActive++;
-    int n = pCameras.size();
-    if ( n == 0 )    { pCurrent = NULL; nActive=-1; return; }
-
-    nActive = nActive % n;
+    nActive = ++nActive % pCameras.size();
     
     pCurrent = pCameras[nActive];
-    
-    if ( pCurrent )         pCurrent->fullSizePreview( w, h );
+    pCurrent->fullSizePreview( w, h );
     
     reOrder();
 }
@@ -420,28 +461,22 @@ void Camera_mgr::active()
 void Camera_mgr::active( Camera* pCamera)
 {
 	// Si la camera est connecte au demarrage => Plantage
-    //logf_thread((char*)"Camera_mgr::active() -------------" );
-    if ( pCamera == NULL )			return;
+    logf_thread((char*)"Camera_mgr::active() ------------- %d", __LINE__ );
+    if ( pCamera == NULL )				return;
+    if ( pCameras.size() == 0)			return;
 
     int w = WindowsManager::getInstance().getWidth();
     int h = WindowsManager::getInstance().getHeight();
 
-    if ( pCurrent != NULL )         pCurrent->iconSizePreview( w, h );
-
-    int n = pCameras.size();
-    nActive = -1;
-	for( int i=0; i<n; i++ )
+	for ( int i=0; i<pCameras.size(); i++ )
 	{
-		if ( pCameras[i] == pCamera )		nActive = i;
+		pCameras[i]->iconSizePreview( w, h );
 	}
-	if ( nActive == -1 )			logf_thread( (char*)"[Erreur] Camera_mgr::active(Camera*) nAtive = -1" );
 
     pCurrent = pCamera;
+    pCurrent->fullSizePreview( w, h );
     
     reOrder();
-
-
-    pCamera->fullSizePreview( w, h );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -449,7 +484,7 @@ void Camera_mgr::active( Camera* pCamera)
 void Camera_mgr::active( Camera* pCamera, bool bFull)
 {
 	// Si la camera est connecte au demarrage => Plantage
-    //logf_thread((char*)"Camera_mgr::active() -------------" );
+    logf_thread((char*)"Camera_mgr::active() ------------- %d", __LINE__ );
     if ( pCamera == NULL )			return;
 
     int w = WindowsManager::getInstance().getWidth();
@@ -471,7 +506,7 @@ void Camera_mgr::active( Camera* pCamera, bool bFull)
     pCurrent = pCamera;
 	//WindowsManager::getInstance().onBottom( pCurrent->getPanelCamera() );
     
-	reOrder();
+	//reOrder();
 
 
 	if ( bFull )	pCamera->fullSizePreview( w, h );
@@ -508,6 +543,15 @@ void  Camera_mgr::togglePanel()
 {
 	logf( (char*)"Camera_mgr::togglePanel()  %s", pCurrent==NULL ? (char*)"NULL" : pCurrent->getPanelName()->getText().c_str()  );
     if ( pCurrent )         pCurrent->togglePanel();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::fullscreen()
+{
+	if ( pCurrent == NULL )				return;
+	
+	active( pCurrent );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -558,13 +602,26 @@ int Camera_mgr::get_dyCam()
 //--------------------------------------------------------------------------------------------------------------------
 vec2* Camera_mgr::getSuivi()
 {
-    if ( pCurrent!=NULL )       return pCurrent->getSuivi();
-    return NULL;
+	if ( pCurrent == NULL )		return NULL;
+	
+    //return &(pCurrent->getSuivi());
+    return pCurrent->getPanelCamera()->getStars()->getSuivi();
+    //if ( pCurrent!=NULL )       return pCurrent->getSuivi();
+    //return NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Camera_mgr::getSize()
+void Camera_mgr::setRefSuivi(vec2& v)
+{
+	if ( pCurrent == NULL )	    return;
+	
+	pCurrent->setRefSuivi( v );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+int Camera_mgr::getCount()
 {
     return pCameras.size();
 }
@@ -604,6 +661,15 @@ Camera* Camera_mgr::getCamera( string name )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+Camera* Camera_mgr::getCamera( int n )
+{
+    int nb = pCameras.size();
+    if ( 0 <= n && n < nb )	    return pCameras[n];
+    return NULL;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Camera_mgr::print_list()
 {
     logf( (char*)"---- Cameras -----------" );
@@ -613,6 +679,11 @@ void Camera_mgr::print_list()
     {
         logf( (char*)"  Camera : %s", pCameras[i]->getName().c_str() );
     }
+    logf( (char*)"" );
+    if ( pCurrent )
+    {
+	    logf( (char*)"Actif : %s", pCurrent->getName().c_str() );
+	}
 
 	if ( nb0 == 0 )				logf( (char*)"  Aucune camera de connectée" );
 }    
@@ -810,6 +881,87 @@ void  Camera_mgr::compareStar()
     if (pCurrent == NULL)                   { logf_thread((char*)"pCurrent NULL"); return; }
     
     pCurrent->compareStar();    
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::callback( bool b, int n, char* s )
+{
+	FileBrowser& fb = FileBrowser::getInstance();
+
+	logf((char*)"callback %s %d %s", BOOL2STR(b), n, s );
+	logf((char*)"  %s", fb.getFilename().c_str()  );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::enregistre_name()
+{   
+   	logf((char*)"Camera_mgr::enregistre_name()");
+   	log_tab(true);
+
+    if (pCurrent == NULL)
+    {
+    	logf((char*)"[ WARNING ] pCurrent NULL");
+	   	log_tab(false);
+    	return;
+    }
+    if ( pCurrent->getPanelCamera()->getExtraString().find("Pleiades") !=  string::npos )
+    {
+    	logf((char*)"[ WARNING ] Camera 'Simulation Pleiade'");
+   		log_tab(false);
+    	return;
+    }
+
+   	logf((char*)"pCurrent = '%s'", pCurrent->getPanelCamera()->getExtraString().c_str() );
+
+	VarManager& var = VarManager::getInstance();
+    FileBrowser& fb = FileBrowser::getInstance();
+    fb.getVisible();
+    fb.setFiltre( "" );
+    
+    string workDirFileBrowser;
+
+    if ( var.existe("DirFileBrowser") )
+    {
+        workDirFileBrowser = *var.gets( "DirFileBrowser" );
+    }
+
+    fb.change_dir( workDirFileBrowser );
+    fb.setFilename( "" );
+    bool bFileBrowser = true;
+    fb.setCallBackOK( this );
+    fb.setTitle( "ENREGISTRE" );
+	fb.loadSkin( PanelWindow::YELLOW );
+    string s = "Choisissez un nom de fichier pour la camera : " + pCurrent->getName();
+    fb.setSTitle( s.c_str() );
+    
+    if ( bFileBrowser )         fb.affiche();
+    else                        fb.cache();
+
+   	log_tab(false);
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::setAsserv( Camera* p )
+{   
+   	logf((char*)"Camera_mgr::setAsserv()");
+   	log_tab(true);
+
+   	if ( p != NULL )
+   	{	
+		p->getPanelCamera()->loadSkin( PanelWindow::RED );
+		p->getPanelCamera()->setBorderSize(6);
+   	}
+   	else
+   	{
+		if ( pAsserv != NULL ) 		pAsserv->getPanelCamera()->loadSkin( PanelWindow::YELLOW );
+   	}
+   	
+	pAsserv = p;
+
+   	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -1,4 +1,5 @@
 #include "file_browser.h"
+#include "police.h"
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -145,6 +146,11 @@ FileBrowser::FileBrowser()
     panelQuit       = new ButtonQUIT(this);
     panelFilename   = new PanelEditText();
 	panelDirName    = new PanelEditText();
+	int	size = DY-2;	
+	panelTitle = new PanelText( 	(char*)"FILE BROWSER.", (char*)_ARIAL_BLACK ,        0, y, size, 0xFFffFFff, true );
+	panelSTitle		= new PanelText( (char*)"FILE BROWSER",		PanelText::NORMAL_FONT, 5, 0 );
+	//panelSTitle		= new PanelText( (char*)"FILE BROWSER",		PanelText::NORMAL_FONT, 5, 0 );
+
 	panelDirName->changeText( (char*)workingDir.c_str() );//		PanelText::NORMAL_FONT, 20, 10 );
     
     panelFilename->changeText( "" );
@@ -154,8 +160,9 @@ FileBrowser::FileBrowser()
     x = (getScreenDX()-dx)/2;
     y = (getScreenDY()-dy)/2;
     
-    pW->loadSkinPath( "images/astro" );
-	pW->setBorderSize(8);
+    //int dyDirFile = dy - 5*DY - 3*DY;
+    int dyDirFile = dy - 10*DY;
+    
     pW->setPosAndSize(x, y, dx, dy);
     pW->setDisplayGL(displayGLnuit_cb);
     pW->setExtraString( "panelWindowsFileBrowser" );
@@ -169,20 +176,32 @@ FileBrowser::FileBrowser()
 	pW->add(panelOK);
 	pW->add(panelQuit);
 	pW->add(panelFilename);
+	pW->add(panelTitle);
+	pW->add(panelSTitle);
 
-	pW->add( new PanelText( (char*)"Filename : ",		PanelText::NORMAL_FONT, 5, 0 ) );
-	pW->add( new PanelText( (char*)"Directory : ",		PanelText::NORMAL_FONT, 5, 15 ) );
+	pW->add( new PanelText( (char*)"Filename : ",		PanelText::NORMAL_FONT, 5, 4*DY ) );
+	pW->add( new PanelText( (char*)"Directory : ",		PanelText::NORMAL_FONT, 5, 5*DY ) );
 
+	panelFilename->setBackgroundInverse( (char*)"images/blanc.png" );
+	panelDirName->setBackgroundInverse( (char*)"images/blanc.png" );
+    
 
     
-    panelDirName->setPosAndSize( 80, 15, dx, DY);
-    panelDir->setPosAndSize( 0, 20+30, 150, dy-25-50-30);
-    panelFile->setPosAndSize( 150, 20+30, dx-150, dy-25-20-30);
+    panelTitle->setPosAndSize( 0, 0*DY + DY/2, dx, DY);
+    panelTitle->setAlign(PanelText::CENTER); 
+
+    panelSTitle->setPosAndSize( 0, 2*DY, dx, DY);
+    panelSTitle->setAlign(PanelText::CENTER); 
     
-    panelOK->setPosAndSize( (dx)/3-54/2, dy-20, 54, 20);
-    panelQuit->setPosAndSize( 2*(dx)/3-54/2, dy-20, 54, 20);
+    panelFilename->setPosAndSize( 80, 4*DY,   dx, DY);
+    panelDirName->setPosAndSize(  80, 5*DY,   dx, DY);
+
+    panelDir->setPosAndSize(    0, 7*DY,    150, dyDirFile );
+    panelFile->setPosAndSize( 150+10, 7*DY, dx-150-10, dyDirFile);
+
+    panelOK->setPosAndSize(     (dx)/3-54/2, dy-2*DY, 54, 20);
+    panelQuit->setPosAndSize( 2*(dx)/3-54/2, dy-2*DY, 54, 20);
     
-    panelFilename->setPosAndSize( 80, 0, 400, 20);
 
     panelDir->setScissor(true);
     panelFile->setScissor(true);
@@ -213,8 +232,40 @@ FileBrowser::FileBrowser()
     pOldFile = NULL;
 
     panelFilename->setExtraString( "panelFilename" );
-    panelDir->setExtraString( "panelDir" );
+    panelDirName->setExtraString( "panelDir" );
 
+    /*
+    pW->loadSkinPath( "images/astro" );
+    pW->loadSkin( PanelWindow::RED );
+    pW->loadSkin( PanelWindow::STD );
+    */
+    pW->loadSkin( PanelWindow::BLUE );
+	pW->setBorderSize(8);
+	pW->setBorderSize(6);
+
+	int iBorder   = pW->getBorderSize();
+	int iBorderDY = iBorder;
+	int iBorderY  = (DY-pW->getBorderSize()) / 2;
+
+	pH0 = new PanelSimple();
+	pH0->setBackground( pW->getTextureTop() );
+	pH0->setPosAndSize( 0, 3*DY+iBorderY, dx, iBorderDY );
+	pW->add( pH0 );
+
+	pH1 = new PanelSimple();
+	pH1->setBackground( pW->getTextureTop() );
+	pH1->setPosAndSize( 0, 6*DY+iBorderY, dx, iBorderDY );
+	pW->add( pH1 );
+
+	pH2 = new PanelSimple();
+	pH2->setBackground( pW->getTextureBottom() );
+	pH2->setPosAndSize( 0, 7*DY + dyDirFile, dx, iBorderDY );
+	pW->add( pH2 );
+
+	pV0 = new PanelSimple();
+	pV0->setBackground( pW->getTextureLeft() );
+	pV0->setPosAndSize( panelFile->getPosX()-iBorder, panelFile->getPosY() - pW->getBorderSize(), iBorder , panelFile->getPosDY() + iBorder  );
+	pW->add( pV0 );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -260,6 +311,8 @@ bool FileBrowser::existe_remonte_dir()
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::explore_dir()
 {
+#ifdef DEBUG_LIST
+#endif
 	logf( (char*)"FileBrowser::explore_dir()" );
 	log_tab(true);
 
@@ -324,7 +377,9 @@ void FileBrowser::explore_dir()
      
     for( int i=0; i<tFileNames.size(); i++ )
     {
-        logf( (char*)"%s", (char*)tFileNames[i].c_str() );
+		#ifdef DEBUG_LIST
+		    logf( (char*)"%s", (char*)tFileNames[i].c_str() );
+		#endif
         pT = new PanelText( (char*)tFileNames[i].c_str(),		PanelText::NORMAL_FONT, xf, yf );
         pT->setMaxSize(DXFile-25);
         pT->buildString();
@@ -351,8 +406,11 @@ void FileBrowser::explore_dir()
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::change_dir( int n )
 {
+	#ifdef DEBUG
+	#endif
+	logf( (char*)"FileBrowser::change_dir( %d )  '%s'", n, (char*)tDirNames[n].c_str() );
+	log_tab(true);
     
-    //logf( (char*)" Numero %d -> '%s'", n, (char*)tDirNames[n].c_str() );
     string dirname = tDirNames[n];
     
     if ( tDirNames[n].size() ==2 && tDirNames[n][0] == '.' && tDirNames[n][1] == '.' )
@@ -383,9 +441,10 @@ void FileBrowser::change_dir( int n )
     
     dirScroll = fileScroll = 0;
         
-    logf( (char*)" Explore %s", (char*)dirname.c_str() );
+    logf( (char*)"Explore %s", (char*)dirname.c_str() );
     workingDir = dirname;
     explore_dir(  );
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -544,7 +603,7 @@ void FileBrowser::supCallBacks()
 //--------------------------------------------------------------------------------------------------------------------
 bool FileBrowser::keyboard(char key, int x, int y)
 {
-	logf( (char*)"Traitement FileBrowser::keyboard()" );
+	logf( (char*)"FileBrowser::keyboard( %d-%c, %d, %d)", (int)key, key, x, y );
 	log_tab( true );
   /*
     WindowsManager& wm = WindowsManager::getInstance();
@@ -578,7 +637,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
     Panel* p = wm.getFocus();
     
     
-    if ( p != NULL )        logf( (char*)"Focus : %d", p->getID() );
+    if ( p != NULL )        logf( (char*)"Focus : %d - %s", p->getID(), p->getExtraString().c_str() );
     /*
     if      ( p == this )            logf( (char*)"PanelApn::keyboard() focus panel console" );
     else if ( p == NULL )            logf( (char*)"PanelApn::keyboard() focus NULL" );
@@ -587,7 +646,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
     
     if ( p == panelFilename   )
     {
-	    logf( (char*)"Focus : panelFileName %s", p->getExtraString().c_str() );
+	    logf( (char*)"supCallBacks %s", p->getExtraString().c_str() );
         supCallBacks();
         wm.call_back_keyboard( p );
     }
@@ -602,8 +661,6 @@ bool FileBrowser::keyboard(char key, int x, int y)
         
 
     wm.startKeyboard();
-
-    logf( (char*)"FileBrowser::keyboard(%d) %c", key, key );
 
     if (   0 <= key &&  key <  'z' )                wm.keyboardFunc( key, x, y);
     
@@ -946,17 +1003,21 @@ void FileBrowser::setExtra( int ii)
 void FileBrowser::setColor( unsigned long c)
 {
     logf( (char*)"FileBrowser::setColor(%08X), c " );
+    
     color = c;
     pW->setColor( color );
     panelDir->setColor( color );
     panelFile->setColor( color );
     panelDirName->setColor(color);
+    panelFilename->setColor(color);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 void FileBrowser::setFocus()
 {
+    logf( (char*)"FileBrowser::setFocus()" );
+    
     WindowsManager& wm = WindowsManager::getInstance();
     wm.changeFocus( panelFilename );
 }
@@ -966,6 +1027,32 @@ void FileBrowser::setFocus()
 void FileBrowser::setFilename( string s )
 {
     panelFilename->changeText( s );
+	panelFilename->resetCursor();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::setTitle( const string& s )
+{
+	panelTitle->changeText( s );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::setSTitle( const string& s )
+{
+	panelSTitle->changeText( s );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void FileBrowser::loadSkin( PanelWindow::SKIN s )
+{
+	pW->loadSkin( s ); 
+	pH0->setBackground( pW->getTextureTop() );
+	pH1->setBackground( pW->getTextureTop() );
+	pH2->setBackground( pW->getTextureBottom() );
+	pV0->setBackground( pW->getTextureLeft() );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------
@@ -996,32 +1083,6 @@ void ButtonOK::releaseLeft( int xm, int ym )
 
     
     logf( (char*)"  Extra %d", getExtra() );
-    /*
-    switch(getExtra())
-    {
-    case 0:
-    {
-        if ( pCallBack == NULL )                setCurrentDirectory( s );
-        else                                    pCallBack->callback( true, 1, (char*)s.c_str() );
-    }
-    break;
-    case 10:
-    {
-        pCallBack->callback( true, 10, (char*)s.c_str() );
-    }    
-    break;
-    case 11:
-    {
-        pCallBack->callback( true, 11, (char*)s.c_str() );
-    }    
-    break;
-    case 12:
-    {
-        pCallBack->callback( true, 12, (char*)s.c_str() );
-    }    
-    break;
-    }
-    */
 
     if ( pCallBack == NULL )                setCurrentDirectory( s );
     else {

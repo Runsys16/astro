@@ -18,11 +18,32 @@
 //--------------------------------------------------------------------------------------------------------------------
 #include "Singleton.h"
 
-SINGLETON_BEGIN( Camera_mgr )
+class Camera_mgr : public ButtonCallBack
+{
+public :
+	inline static Camera_mgr& getInstance() {
+		if (!s_pInstance)
+			s_pInstance = new Camera_mgr();
+
+		return *s_pInstance;
+	}
+
+	inline static void DestroyInstance() {
+		if(s_pInstance) delete s_pInstance;
+		s_pInstance = 0;
+	}
+
+
+private :
+	static Camera_mgr* s_pInstance;	// Instance de la classe
+
+	//void operator =(Singleton&);
+
 	
 private:
     vector<Camera*>             pCameras;
     Camera*                     pCurrent;
+    Camera*                     pAsserv;
     
     int                         nActive;
     vec2                        vSuivi;
@@ -30,6 +51,7 @@ private:
 
 public:
     Camera_mgr();
+    void						idleGL( float fElapsedTIme );
     bool                        camera_exist( string dev_name );
     void                        add( string dev_name );
     void                        add( Camera* );
@@ -52,6 +74,7 @@ public:
     void                        active( Camera*, bool);
     void                        reOrder();
     void                        togglePanel();
+    void						fullscreen();
 
     GLubyte*                    getPtr();
 
@@ -61,10 +84,12 @@ public:
     int                         get_dyCam();
     ivec2                       get_vCameraSize();
     vec2*                       getSuivi();
+    void						setRefSuivi(vec2&);
     
-    int                         getSize();
+    int                         getCount();
     int                         getNum(Camera *);
     Camera*                     getCamera(string dev);
+    Camera*                     getCamera(int n);
     
     void                        print_list();
  
@@ -78,7 +103,6 @@ public:
 
     rb_t *                      getRB();
 
-    inline Camera*              getCurrent()                                { return pCurrent; }   
    
     void                        update();   
     void                        position(double, double);
@@ -99,9 +123,18 @@ public:
 	void						cam_full_screen();
 	
 	void						compareStar();
+	void						callback( bool, int, char* );
+	void						enregistre_name();
 	
+	void		              	setAsserv(Camera* p);
+	
+inline Camera*              	getCurrent()						{ return pCurrent; }   
+inline bool 					is_current( Camera * p )			{ return (pCurrent == p); }
+inline Camera*              	getAsserv()							{ return pAsserv; }   
     
-SINGLETON_END()
+};
+
+
 
 #endif
 

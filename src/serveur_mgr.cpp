@@ -135,6 +135,7 @@ void Serveur_mgr::traite_connexion_init()
 void Serveur_mgr::thread_listen_init()
 {
     //logf_thread( (char*)"Serveur_mgr::thread_listen_init()");
+    logf_thread( (char*)"[ THREAD ]  Serveur_mgr::thread_listen_init() START" );
 
 	struct sockaddr_in adresse;
 	socklen_t          longueur;
@@ -226,6 +227,7 @@ void Serveur_mgr::thread_listen_init()
     logf_thread( (char*)"Fermeture de sock_listen_init (%s:%u) Init ", inet_ntoa(adresse.sin_addr), ntohs(adresse.sin_port) );
 	close(sock_listen_init);
 	sock_listen_init = -1;
+    logf_thread( (char*)"[ THREAD ]  Serveur_mgr::thread_listen_init() STOP" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

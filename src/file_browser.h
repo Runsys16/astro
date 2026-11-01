@@ -36,10 +36,16 @@ protected:
     PanelFile*                  panelFile;
     PanelSimple*                panelInverseDir;
     PanelSimple*                panelInverseFile;
+    PanelSimple*				pH0;
+    PanelSimple*				pH1;
+    PanelSimple*				pH2;
+    PanelSimple*				pV0;
     
     ButtonOK*                   panelOK;
     ButtonQUIT*                 panelQuit;
 
+    PanelText*                  panelTitle;
+    PanelText*                  panelSTitle;
     PanelEditText*              panelFilename;
     PanelEditText*              panelDirName;
     PanelText*                  panelDbug;
@@ -121,14 +127,17 @@ public :
     void                        setColor( unsigned long );
     void                        setFocus();
     void                        setFilename( string );
-    
-inline bool                     getVisible()                        { return pW->getVisible(); }
+    void                        setTitle( const string& );
+    void                        setSTitle( const string& );
+	void						loadSkin( PanelWindow::SKIN s );
 
+inline bool                     getVisible()                        { return pW->getVisible(); }
 inline string                   getFilename()                       { return panelFilename->getText(); }
 inline string                   getCurrentDir()                     { return currentDir; }
 inline string                   getWorkingDir()                     { return workingDir; }
 inline void                     setCurrentDir(string s)             { currentDir = string(s); }
 inline void                     setFiltre(string s)                 { filtre = string(s); }
+inline void                     setBorderSize(int n)                { pW->setBorderSize(n); }
 
 inline void                     setNewline(bool b)                  { bNewline = b; }
 

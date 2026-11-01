@@ -6,8 +6,8 @@
 //--------------------------------------------------------------------------------------------------------------------
 Connexion_mgr::Connexion_mgr()
 {
-    bStart = false;
-    bExitThread = false;
+    bStartDEV = false;
+    bExitThreadDEV = false;
     bStartZWO = false;
     bExitThreadZWO = false;
     
@@ -16,14 +16,14 @@ Connexion_mgr::Connexion_mgr()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Connexion_mgr::start()
+void Connexion_mgr::startDEV()
 {
-    if ( !bStart )
+    if ( !bStartDEV )
     {
-        th_poll_connexion = std::thread(&Connexion_mgr::threadPooling, this); 
-        th_poll_connexion.detach();
-        log_thread( (char*)"[thread] Connexion_mgr::start() !! " );
-        bStart = true;
+        th_poll_connexionDEV = std::thread(&Connexion_mgr::threadPoolingDEV, this); 
+        th_poll_connexionDEV.detach();
+        log_thread( (char*)"[ THREAD ] Connexion_mgr::start() !! " );
+        bStartDEV = true;
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -31,12 +31,13 @@ void Connexion_mgr::start()
 //--------------------------------------------------------------------------------------------------------------------
 void Connexion_mgr::startZWO()
 {
+	//return;
     if ( !bStartZWO )
     {
-        th_poll_connexion = std::thread(&Connexion_mgr::threadPoolingZWO, this); 
-        th_poll_connexion.detach();
-        log_thread( (char*)"[thread] Connexion_mgr::start() !! " );
-        bStart = true;
+        th_poll_connexionZWO = std::thread(&Connexion_mgr::threadPoolingZWO, this); 
+        th_poll_connexionZWO.detach();
+        log_thread( (char*)"[ THREAD ] Connexion_mgr::startZWO() !! " );
+        bStartZWO = true;
     }
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -191,75 +192,68 @@ void Connexion_mgr::sup_port(string)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Connexion_mgr::pooling()
+void Connexion_mgr::threadPoolingDEV()
 {
+    logf_thread( (char*)"[ THREAD ] Connexion_mgr::threadPoolingDEV() START" );
     sleep(1);
     //logf( (char*)"Connexion_mgr::pooling()" );
     
     struct dirent *lecture;
     DIR *rep;
-    rep = opendir("/dev/" );
-    t_port_polling.clear();
     
-    while ((lecture = readdir(rep))) {
+    while ( 1 )
+    {
+		rep = opendir("/dev/" );
+	    t_port_polling.clear();
+	    
+    	while( lecture = readdir(rep) )
+    	{
 
-        string s;
-        int found;
-        s = lecture->d_name;
-        
-        // Recherche CAMERA
-        found = s.find( "video" );
-        if ( found!=std::string::npos )
-        {
-            char dev[255];
-            sprintf( dev, "/dev/%s", s.c_str() );
-            //logf( (char*)"  Found device VIDEO   '%s'", dev );
+		    string s;
+		    int found;
+		    s = lecture->d_name;
 
-            t_port_polling.push_back( string((char*)dev));
-        }
+			//logf_thread( (char*)"[ THREAD ] Connexion_mgr::threadPoolingDEV() lecture %s ", s.c_str() );
+		    
+		    // Recherche CAMERA
+		    found = s.find( "video" );
+		    if ( found!=std::string::npos )
+		    {
+		        char dev[255];
+		        sprintf( dev, "/dev/%s", s.c_str() );
+		        //logf( (char*)"  Found device VIDEO   '%s'", dev );
 
-        // Recherche ARDUINO
-        found = s.find( "ttyACM" );
-        if ( found!=std::string::npos )
-        {
-            char dev[255];
-            sprintf( dev, "/dev/%s", s.c_str() );
-            //logf( (char*)"  Found device ARDUINO '%s'", dev );
-            t_port_polling.push_back( string((char*)dev));
-            
+		        t_port_polling.push_back( string((char*)dev));
+		    }
 
-        }
-        if ( bExitThread.load() )		break;
+		    // Recherche ARDUINO
+		    found = s.find( "ttyACM" );
+		    if ( found!=std::string::npos )
+		    {
+		        char dev[255];
+		        sprintf( dev, "/dev/%s", s.c_str() );
+		        //logf( (char*)"  Found device ARDUINO '%s'", dev );
+		        t_port_polling.push_back( string((char*)dev));
+		        
+
+		    }
+		    if ( bExitThreadDEV.load() )		break;
+
+		}
+		        
+	    closedir(rep);    
+	
+		add_port();
+		sup_port();
+
+
+	    if ( bExitThreadDEV.load() )		break;
+        sleep(1);
+	    if ( bExitThreadDEV.load() )		break;
     }
 
-    closedir(rep);    
-
-    //logf( (char*)"  add_port" );
-
-    add_port();
-    sup_port();
-    
-    /*
-    Serveur_mgr& serv = Serveur_mgr::getInstance();
-    if ( !serv.is_running_1() )             serv.start_1();
-    if ( !serv.is_running_2() )             serv.start_2();
-    */
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Connexion_mgr::threadPooling()
-{
-    logf_thread( (char*)"Demarrage du thread Connexion_mgr::threadPooling()" );
-    bExitThread = false;
-
-    while( 1 )
-    {   
-        pooling();
-        if ( bExitThread.load() )		break;
-    }
-    bStart = false;
-    logf_thread( (char*)"[WARNING] Fin du thread Connexion_mgr::threadPooling()" );
+    logf_thread( (char*)"[ THREAD ] Connexion_mgr::threadPoolingDEV() END" );
+	bStartDEV = false;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -298,46 +292,36 @@ void Connexion_mgr::print_list()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Connexion_mgr::poolingZWO()
+void Connexion_mgr::threadPoolingZWO()
 {
+	logf_thread( (char*)"[ THREAD ] Connexion_mgr::threadPoolingZWO() START" );
     sleep(1);
     //logf( (char*)"Connexion_mgr::pooling()" );
     while (1) {
     
 		int n = ASIGetNumOfConnectedCameras();
+		//n = nCamZWO;
 		
 		if( n != nCamZWO )	{
-			logf( (char*)"%d camera(s) ZWO connected", n);
+			logf_thread( (char*)"Connexion_mgr::poolingZWO %d camera(s) ZWO connected", n);
+			log_tab(true);
 			if ( n > nCamZWO )	{
 				Camera_mgr::getInstance().add_zwo( n-1 );
 			}
 			else {
-				logf( (char*)"suppression ZWO no %d", n);
+				//logf_thread( (char*)"suppression ZWO no %d", n);
 				Camera_mgr::getInstance().sup_zwo( n );
 			}
 			nCamZWO = n;
+			log_tab(false);
 		}
     
         if ( bExitThreadZWO.load() )		break;
 	
 	    sleep(1);
     }
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Connexion_mgr::threadPoolingZWO()
-{
-    logf_thread( (char*)"[ THREAD ] start Connexion_mgr::threadPoolingZWO()" );
-    bExitThreadZWO = false;
-
-    while( 1 )
-    {   
-        poolingZWO();
-        if ( bExitThreadZWO.load() )		break;
-    }
+	logf_thread( (char*)"[ THREAD ] Connexion_mgr::threadPoolingZWO() FIN" );
     bStartZWO = false;
-    logf_thread( (char*)"[ THREAD ] stop Connexion_mgr::threadPoolingZWO()" );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

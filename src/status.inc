@@ -67,13 +67,13 @@ void set_asservissement(void)
 	unsigned long 		color_light, color;
 	logf( (char*)"status::set_asservissement()" );
 	
-    var.set("bCorrection", bCorrection);
+    var.set("bAsservissement", bAsservissement);
     fTimeCpt = 0.0; 
 
     var.set("vOrigine.x", panelCourbe->get_vOrigine().x);
     var.set("vOrigine.y", panelCourbe->get_vOrigine().y);
 
-    pButtonAsserv->setVal(bCorrection);
+    pButtonAsserv->setVal(bAsservissement);
     
 	if ( bNuit )
 	{
@@ -86,10 +86,10 @@ void set_asservissement(void)
 		color		= VCF4_2_COLOR32(cJaune);
 	}
 
-    if (bCorrection)                				pAsservi->setColor(color);
+    if (bAsservissement)                				pAsservi->setColor(color);
     else                            				pAsservi->setColor(color_light);
 
-    logf( (char*)"status::set_asservissement() bCorrection = %s", BOOL2STR(bCorrection) );
+    logf( (char*)"status::set_asservissement() bAsservissement = %s", BOOL2STR(bAsservissement) );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -354,8 +354,8 @@ void cb_rotationCheck(PanelCheckBox* p)	{
 	else
 	if ( p == pButtonAsserv )
 	{
-        bCorrection = p->getVal(); 
-        logf( (char*)"Appui sur cadena !! %s %s", BOOL2STR(bCorrection), BOOL2STR(pButtonAsserv->getVal())  );
+        bAsservissement = p->getVal(); 
+        logf( (char*)"Appui sur cadena !! %s %s", BOOL2STR(bAsservissement), BOOL2STR(pButtonAsserv->getVal())  );
         set_asservissement();
     }
 	else
@@ -838,7 +838,7 @@ void idleStatus()
 		if ( !bNuit )		status_nuit( COLOR_WHITE );
 		else				status_nuit( COLOR32(255, 0, 0, 255) );
 		
-		if ( bCorrection != pButtonAsserv->getVal() )   set_asservissement();
+		if ( bAsservissement != pButtonAsserv->getVal() )   set_asservissement();
 		
 		old_bNuit = bNuit;
 	}
@@ -856,6 +856,8 @@ void idleStatus()
     if ( bModeManuel != pButtonMode->getVal() )     set_mode(bModeManuel);
     
 
+    
+
 	if ( panelCourbe!= NULL && pCercleErr->get_pVal()==NULL )
 	{
 		double* pErr = panelCourbe->get_perr();
@@ -870,6 +872,9 @@ void idleStatus()
 		color		= COLOR32(255, 0, 0, 255);
 	}
 	
+  	if (bMouseDeplace)              				pDeplacement->setColor(color);
+    else                            				pDeplacement->setColor(color_light);
+
 	
     if ( Serveur_mgr::getInstance().isConnect() )	pStellarium->setColor(color);
     else                            				pStellarium->setColor(color_light);
@@ -927,7 +932,7 @@ void status_nuit(unsigned long color )
 	if (bMouseDeplace)              				pDeplacement->setColor(color);
     else                            				pDeplacement->setColor(color_light);
 
-    if (bCorrection)                				pAsservi->setColor(color);
+    if (bAsservissement)                				pAsservi->setColor(color);
     else                            				pAsservi->setColor(color_light);
 
     if ( bSuivi )                   				pSuivi->setColor(color);

@@ -1,3 +1,4 @@
+#include "police.h"
 #include "panel_camera.h"
 #include "camera_mgr.h"
 //--------------------------------------------------------------------------------------------------------------------
@@ -22,6 +23,8 @@ vcf4                colorTraces[] =
 //--------------------------------------------------------------------------------------------------------------------
 PanelCamera::~PanelCamera()
 {
+    logf_thread( (char*)"~PanelCamera()  destructeur" );
+
 	if ( pMouseCoord )		delete pMouseCoord;
 	pMouseCoord = NULL;
 
@@ -71,23 +74,12 @@ PanelCamera::PanelCamera(Camera* p)
         ZrefY = 1018.0;
         Wref = 5.50;
     }
+
+    loadSkin( PanelWindow::YELLOW );
+	setBorderSize(6);
+//#define TRUE_TYPE_TEST
 #ifdef TRUE_TYPE_TEST
-	#define POLICE0 "fonts/almosnow.ttf"
-	#define POLICE1 "fonts/baileysc.ttf"
-	#define POLICE2 "fonts/biometri.ttf"
-	#define POLICE3 "fonts/boron2.ttf"
-	#define POLICE4 "fonts/grec.ttf"
-	#define POLICE5 "fonts/burnstow.ttf"
-	#define POLICE6 "fonts/ghostmea.ttf"
-	#define POLICE7 "fonts/riotact.ttf"
-	#define POLICE8 "fonts/rsfs10.ttf"
-	#define POLICE9 "fonts/Oh_Beloved.ttf"
-	#define POLICE10 "fonts/Magiera-Script.ttf"
-	#define POLICE11 "fonts/GFSSolomos.otf"   			// 360 glyphe voir alpha ...
-	#define POLICE12 "fonts/greek-wsi-regular.ttf"   	// 218 glyphe voir alpha ...
-	#define POLICE13 "/usr/share/fonts/truetype/larabie/betsy.ttf"
-	#define POLICE14 "fonts/Sandrina-Calligraphy.ttf"
-	//add(new PanelText( 	(char*)"abcdefghijklmnopqrstuvwxyz", (char*)POLICE7 , 100, y, 150, 0xFF0095FA )  );
+	//add(new PanelText( 	(char*)"abcdefghijklmnopqrstuvwxyz", (char*)RIOTACT , 100, y, 150, 0xFF0095FA )  );
 
 
 	#define TEXT00 "abcdefghijklmnopqrstuvwxyz"
@@ -95,75 +87,75 @@ PanelCamera::PanelCamera(Camera* p)
 	#define TEXT02 "a c e g i k m o q s u w"
 	#define TEXT03 "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUBWXYZ"
 	#define TEXT04 "Runsys16 "
-	#define TEXT05 "Essai"
+	#define TEXT05 "Essai de police"
 	int size, i;
 	
 	size = 100; y = 0;
-	PanelText* t = new PanelText( 	(char*)TEXT05, (char*)POLICE1 , 0, y, size, 0x40FF00FF, true );
+	PanelText* t = new PanelText( 	(char*)TEXT05, (char*)BAILEYS_CAR , 0, y, size, 0x40FF00FF, true );
 	add( t );
 	t->setAlign( PanelText::CENTER );
 	logf( (char*)"Size : %d", t->getPosDX() );
 	y += size + 10;
 
 	size = 100;	
-	t = new PanelText( 	(char*)TEXT01, (char*)POLICE2 , 100, y, size, 0x40906043, true );
+	t = new PanelText( 	(char*)TEXT01, (char*)BIOMETRIC_JOE , 100, y, size, 0x40906043, true );
 	add( t );
 	y += size + 10;
 
-	t = new PanelText( 	(char*)TEXT02, (char*)POLICE3 , 0, y, size, 0xC040FC83, true );
+	t = new PanelText( 	(char*)TEXT02, (char*)BORON2 , 0, y, size, 0xC040FC83, true );
 	add( t );
 	t->setAlign( PanelText::RIGHT );
 	y += size + 10;
 
 	size = 60;	
-	t = new PanelText( 	(char*)TEXT03, (char*)POLICE12, 0, y,  size, 0xFF00FFFF, true );
+	t = new PanelText( 	(char*)TEXT03, (char*)GREEK, 0, y,  size, 0xFF00FFFF, true );
 	add( t );
 	t->setAlign( PanelText::CENTER );
 	logf( (char*)"Size : %d", t->getPosDX() );
 	y += size + 10;
 
 	size = 50;	
-	add(new PanelText( 	(char*)TEXT00, (char*)POLICE4 , 100, y, size, 0x40FF0010, true )  );
+	add(new PanelText( 	(char*)TEXT00, (char*)GREC , 100, y, size, 0x40FF0010, true )  );
 	y += size + 10;
 
 	size = 50;	
-	t = new PanelText( 	(char*)TEXT01, (char*)POLICE5 , 100, y, size, 0xFFFFFC89, true );
+	t = new PanelText( 	(char*)TEXT01, (char*)BURNSTOW , 100, y, size, 0xFFFFFC89, true );
 	add( t );
 	t->setAlign( PanelText::CENTER );
 	y += size + 10;
 
 	size = 30;	
-	add(new PanelText( 	(char*)TEXT02, (char*)POLICE13 , 100, y, size, 0xA030F100, true )  );
+	add(new PanelText( 	(char*)TEXT02, (char*)BETSY , 100, y, size, 0xA030F100, true )  );
 	y += size + 10;
 
 	size = 80;	
-	t = new PanelText( 	(char*)"Degouline", (char*)POLICE7 , 0, y, size, 0xFF0095FA, true );
+	t = new PanelText( 	(char*)"Degouline", (char*)RIOTACT , 0, y, size, 0xFF0095FA, true );
 	add( t );
 	t->setAlign( PanelText::RIGHT );
 	y += size + 10;
 
 	size = 20;	
-	add(new PanelText( 	(char*)"R.N.", (char*)POLICE8 ,        100, y, size, 0xFF0095FA, true )  );
+	add(new PanelText( 	(char*)"R.N.", (char*)RSFS10 ,        100, y, size, 0xFF0095FA, true )  );
 	y += size + 10;
 
 	size = 40;	
-	add(new PanelText( 	(char*)"abcdefghijklmnopqrstuvwxyz", (char*)POLICE9 , 0, y, size, 0xFF0095FA, true )  );
+	add(new PanelText( 	(char*)"abcdefghijklmnopqrstuvwxyz", (char*)BELOVED , 0, y, size, 0xFF0095FA, true )  );
 	y += size + 10;
 
 	size = 40;	
-	t = new PanelText( 	(char*)"Nouvelle police.", (char*)POLICE10 ,        0, y, size, 0x8FFA00F6, true );
+	t = new PanelText( 	(char*)"Nouvelle police.", (char*)MAGIERA ,        0, y, size, 0x8FFA00F6, true );
 	add( t );
 	t->setAlign( PanelText::CENTER );
 	y += size + 10;
 
 	size = 60;	
-	t = new PanelText( 	(char*)"Rene Negre", (char*)POLICE10 ,        0, y, size, 0xFFFFFFFF, true ) ;
+	t = new PanelText( 	(char*)"Rene Negre", (char*)MAGIERA ,        0, y, size, 0xFFFFFFFF, true ) ;
 	add( t );
 	t->setAlign( PanelText::RIGHT );
 	y += size + 10;
 
 	size = 100;	
-	t = new PanelText( 	(char*)"Runsys16", (char*)POLICE14 ,        0, y, size, 0xFFFFFFFF, true ) ;
+	t = new PanelText( 	(char*)"Runsys16", (char*)SANDRINA ,        0, y, size, 0xFFFFFFFF, true ) ;
 	add( t );
 	t->setAlign( PanelText::LEFT );
 	y += size + 10;
@@ -233,6 +225,22 @@ void PanelCamera::idle(float f)
 		stars.setVisible(false);
 	}    
    
+   
+	if ( pMouseCoord!=NULL )
+	{
+		if ( Camera_mgr::getInstance().is_current(pCamera) )		pMouseCoord->setVisible(true);
+		else														pMouseCoord->setVisible(false);
+	}
+	
+	if ( pCamera != NULL )
+	{
+		if ( pCamera->getpCamFilename() != NULL )
+		{
+			bool b = pCamera->getIconized();
+			pCamera->getpCamFilename()->setVisible( !b );
+		}
+	}
+	
     PanelWindow::idle(f);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -280,7 +288,7 @@ void PanelCamera::passiveMotionFunc(int xm, int ym)
 void PanelCamera::clickLeft(int xm, int ym)
 {
     Camera_mgr& cam_mgr = Camera_mgr::getInstance();
-    //cam_mgr.active(pCamera, true);
+    cam_mgr.active(pCamera, false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -357,6 +365,11 @@ void PanelCamera::releaseLeft(int xm, int ym)
     {
 		double xx = xm, yy = ym;
 		
+				
+		vec2& vRefSuivi = pCamera->getSuivi();
+		vRefSuivi = vec2( xm, ym );
+		screen_2_tex( vRefSuivi );
+		
 		screen2tex(xx, yy);
 		
 		xSuivi = (double)xx;
@@ -367,7 +380,17 @@ void PanelCamera::releaseLeft(int xm, int ym)
 		
 		change_joy( xSuivi, ySuivi );
 
-    	logf( (char*)"Touche control" );
+    	logf( (char*)"Touche CTRL    suivi  : " VEC2_PRINTFN(0), VEC2_AFF( vec2(xSuivi, ySuivi) ) );
+    	logf( (char*)"Touche CTRL vRefSuivi : " VEC2_PRINTFN(0), VEC2_AFF( vRefSuivi ) );
+    	
+    	logf( (char*)" Sauvegarde %s_RefSuivi.xy " VEC2_PRINTFN(0), pCamera->getName().c_str(), VEC2_AFF( vRefSuivi ) );
+
+    	string s;
+    	
+    	s = pCamera->getName() + "_RefSuivi.x";
+    	var.set( s, vRefSuivi.x );
+    	s = pCamera->getName() + "_RefSuivi.y";
+    	var.set( s, vRefSuivi.y );
     }
 	else
 	{
@@ -385,7 +408,7 @@ void PanelCamera::releaseLeft(int xm, int ym)
 void PanelCamera::clickMiddle(int xm, int ym)
 {
     Camera_mgr& cam_mgr = Camera_mgr::getInstance();
-    cam_mgr.active(pCamera, false);
+    //cam_mgr.active(pCamera, false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -399,7 +422,7 @@ void PanelCamera::releaseMiddle(int xm, int ym)
     }
 
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
-    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur NULL" ); return; }
+    if ( pReadBgr == NULL )     { logf( (char*)"Pointeur pReadBgr = NULL" ); return; }
     log_tab(true);
         
     logf( (char*)"panelCamera->getDX()=%d pReadBgr->w=%0.2f", getDX(), pReadBgr->w.load() );
@@ -410,16 +433,36 @@ void PanelCamera::releaseMiddle(int xm, int ym)
     int xx = ((double)xm-(double)getX()) / e;
     int yy = ((double)ym-(double)getY()) / e;
     
+    vec2 vText = vec2( xm, ym );
+    screen_2_tex( vText );
+    
     stars.setView( this );
     stars.setConvert( this );
     stars.setRB( pReadBgr );
+    
     if ( stars.addStar( xm, ym, getX(), getY(), e ) == NULL )
     {
-        stars.selectMiddle(xx, yy);
-        logf( (char*)"releaseMiddle(%d,%d) selects star...", xm, ym );
+        logf( (char*)"releaseMiddle(%d,%d) selects star == NULL", xm, ym );
+        //stars.selectMiddle(xx, yy);
+        stars.selectMiddle( vText.x, vText.y);
     }
     else
-        stars.selectMiddle(xx, yy);
+    {
+        logf( (char*)"releaseMiddle(%d,%d) selects star != NULL", xm, ym );
+        stars.selectMiddle( vText.x, vText.y);
+        //stars.selectMiddle(xx, yy);
+    }
+
+	if ( stars.getSuivi() != NULL )
+	{
+		log( (char*)"Etoile selectionnee OK" );
+		//Camera_mgr::getInstance().setAsserv( pCamera );
+	}
+	else
+	{
+		//Camera_mgr::getInstance().setAsserv( NULL );
+		log( (char*)"Aucune etoile de selectionnee" );
+	}
     
     log_tab(false);
     logf( (char*)"PanelCamera::releaseMiddle(%d,%d) ...", xm, ym );
@@ -430,7 +473,7 @@ void PanelCamera::releaseMiddle(int xm, int ym)
 void PanelCamera::clickRight(int xm, int ym)
 {
     Camera_mgr& cam_mgr = Camera_mgr::getInstance();
-    cam_mgr.active(pCamera, false);
+    //cam_mgr.active(pCamera, false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -896,6 +939,8 @@ void PanelCamera::displayVecAD()
     else                            glColor4f( 1.0, gris, gris, 1.0 );
     
     glBegin(GL_LINES);
+
+		/*
         int x = vecAD[0].x;
         int y = vecAD[0].y;
         tex2screen(x, y);
@@ -905,8 +950,19 @@ void PanelCamera::displayVecAD()
         y = vecAD[1].y;
         tex2screen(x, y);
         glVertex2i( x, y );
+        */
+        int x = pCamera->get_ptAD0().x;
+        int y = pCamera->get_ptAD0().y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
 
-        glVertex2i( vecAD[1].x, vecAD[1].y );
+        x = pCamera->get_ptAD1().x;
+        y = pCamera->get_ptAD1().y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+ 
+
+        //glVertex2i( vecAD[1].x, vecAD[1].y );
     glEnd();        
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -921,6 +977,7 @@ void PanelCamera::displayVecDC()
     else                            glColor4f( gris, 1.0, gris, 1.0 );
     
     glBegin(GL_LINES);
+    /*
         int x = vecDC[0].x;
         int y = vecDC[0].y;
         tex2screen(x, y);
@@ -930,8 +987,17 @@ void PanelCamera::displayVecDC()
         y = vecDC[1].y;
         tex2screen(x, y);
         glVertex2i( x, y );
+	*/
+        int x = pCamera->get_ptDC0().x;
+        int y = pCamera->get_ptDC0().y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
 
-        glVertex2i( vecDC[1].x, vecDC[1].y );
+        x = pCamera->get_ptDC1().x;
+        y = pCamera->get_ptDC1().y;
+        tex2screen(x, y);
+        glVertex2i( x, y );
+        //glVertex2i( vecDC[1].x, vecDC[1].y );
 
     glEnd();        
 }
@@ -940,42 +1006,29 @@ void PanelCamera::displayVecDC()
 //--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::displayLigneSuivi()
 {
-	//*
-    vec2* pvStar = getSuivi();
+	//if ( stars.getSuivi() == NULL )	logf( (char*)"Suivi NULL" );
+	if ( stars.getSuivi() == NULL ) return;
 
-    if ( pvStar!=NULL  )
-    {
-		vec2 vStarTex = vec2(pvStar->x, pvStar->y);
-		vec2 vSuiviTex = vec2(xSuivi, ySuivi);
+	//----- Droite de correction --------------------------------------------------
+	vec2 vStarScr = vec2( *stars.getSuivi() );
+	tex_2_screen(vStarScr);
 
-		//----- Droite de correction --------------------------------------------------
-		if ( vStarTex!=vec2(0.0,0.0) && vSuiviTex!=vec2(0.0,0.0)  )
-		{
+	vec2 vSuiviScr = vec2( pCamera->getSuivi() );
+	tex_2_screen(vSuiviScr);
 
+	if ( bNuit )				glColor4f( 1.0,   0.0,  0.0, 1.0 );
+	else						glColor4f( 0.2, 0.2, 1.0, 1.0);
 
-			vec2 vStarScr = vec2(pvStar->x, pvStar->y);
-			tex_2_screen(vStarScr);
+	glLineStipple(2, 0xFF00);
+	glEnable(GL_LINE_STIPPLE);    
 
+	glBegin(GL_LINES);
+        glVertex2i( (int)vStarScr.x,  (int)vStarScr.y);                  
+        glVertex2i((int)vSuiviScr.x, (int)vSuiviScr.y );
+    glEnd();
 
-			vec2 vSuiviScr = vec2(xSuivi, ySuivi);
-			tex_2_screen(vSuiviScr);
+    glDisable(GL_LINE_STIPPLE);    
 
-			if ( bNuit )				glColor4f( 1.0,   0.0,  0.0, 1.0 );
-			else						glColor4f( 0.2, 0.2, 1.0, 1.0);
-
-			
-
-			glLineStipple(2, 0xFF00);
-			glEnable(GL_LINE_STIPPLE);    
-
-			glBegin(GL_LINES);
-		        glVertex2i( (int)vStarScr.x,  (int)vStarScr.y);                  
-		        glVertex2i((int)vSuiviScr.x, (int)vSuiviScr.y );
-		    glEnd();
-
-		    glDisable(GL_LINE_STIPPLE);    
-		}
-    }
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -987,8 +1040,10 @@ void PanelCamera::displaySuivi()
 
 	WindowsManager& wm = WindowsManager::getInstance();
 
-    vec2 vSuiviTex = vec2(xSuivi, ySuivi);
-    vec2 vSuiviScr = vec2(xSuivi, ySuivi);
+    //vec2 vSuiviTex = vec2(xSuivi, ySuivi);
+    //vec2 vSuiviScr = vec2(xSuivi, ySuivi);
+    vec2 vSuiviTex = vec2( pCamera->getSuivi() );;
+    vec2 vSuiviScr = vec2( pCamera->getSuivi() );;
     tex_2_screen(vSuiviScr);
     
     //      Convertion des coordonnées
@@ -1017,7 +1072,8 @@ void PanelCamera::displaySuivi()
     //----- Cercle de correction --------------------------------------------------
     vec2 vStarTex, vStarScr, vDiffText;
     
-    vec2* pvStar = getSuivi();
+	vec2 VV = vec2( pCamera->getSuivi() );
+    vec2* pvStar = &VV;
     
     if ( pvStar != NULL )
     {
@@ -1065,7 +1121,7 @@ void PanelCamera::displaySuivi()
 	    glCercle( vSuiviScr, echelle*(fLimitCorrection1) );
 	}
 
-    if ( !bCorrection )			glEnable(GL_LINE_STIPPLE);    
+    if ( !bAsservissement )			glEnable(GL_LINE_STIPPLE);    
     else						glDisable(GL_LINE_STIPPLE);    
 
     glColor4fv( color );
@@ -1085,7 +1141,7 @@ void PanelCamera::displaySuivi()
 
     }
 
-    if ( !bCorrection )				glDisable(GL_LINE_STIPPLE);    
+    if ( !bAsservissement )				glDisable(GL_LINE_STIPPLE);    
 
     if ( bNuit )					glColor4f( 1.0,   0.0,  0.0, gris/2.0 );
     else							glColor4f( 1.0,   1.0,  0.0, f );
@@ -1163,7 +1219,8 @@ void PanelCamera::displayGL()
 {
 
     double gris = 0.3;
-    VarManager& var = VarManager::getInstance();
+    VarManager& var  = VarManager::getInstance();
+    Camera_mgr& cams = Camera_mgr::getInstance();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -1177,10 +1234,7 @@ void PanelCamera::displayGL()
     else                glColor4f( 0.0,   1.0,  0.0, 0.4 );    
 
     
-	Camera* pCurrentCamera = Camera_mgr::getInstance().getCurrent();
-	bool bIsCurrentCamera  = (pCamera == pCurrentCamera);
-
-    if ( bIsCurrentCamera )
+    if ( cams.is_current(pCamera) )
     {
 		
 		stars.displayGL();
@@ -1200,12 +1254,13 @@ void PanelCamera::displayGL()
 			int x = xClick;
 			int y = yClick;
 
-			tex2screen(x,y);
+			vec2 v = vec2(x, y);
+			screen_2_tex( v );
+			pCamera->setDepuis( v );
 
-			vDeplaceDepuis.x = x;
-			vDeplaceDepuis.y = y;
-			
-			//glColor4f( 0.0, 1.0, 0.0, 1.0 );
+			//tex2screen(x,y);
+			//pCamera->setDepuis( ivec2(x, y) );
+
 			glCroix(x, y, 50, 50);
 		    glCercle(x, y, 25);
 		}
@@ -1218,6 +1273,8 @@ void PanelCamera::displayGL()
 			int x = vMouse.x;
 			int y = vMouse.y;
 
+			ivec2& vDeplaceDepuis = pCamera->getDepuis();
+
 			glBegin(GL_LINES);
 				glVertex2i(x,y);                glVertex2i(vDeplaceDepuis.x, vDeplaceDepuis.y);
 			glEnd();        
@@ -1226,10 +1283,21 @@ void PanelCamera::displayGL()
 		}
 		
     }
-    //else
-    //	log( (char*)"Pleiade ss not current" );
+
+	/*
+	Camera* p = cams.getCurrent();
+	if ( p)	
+	{
+		logf( (char*)"%s", p->getName().c_str() );
+	}
+	*/
     
-    if ( pFindStar != NULL )		{  pFindStar->on_top(pCamera->getIconized()); pFindStar->displayGL(); }
+    if ( pFindStar != NULL  )		
+    {
+    	pFindStar->on_top(pCamera->getIconized()); 
+    	
+    	if (cams.is_current(pCamera))				pFindStar->displayGL(); 
+    }
     
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -1280,13 +1348,15 @@ void PanelCamera::setRB(rb_t* p)
 
     //logf((char*)"PanelCamera::setRB() w=%d", pReadBgr->w);
 }
+/*
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-vec2* PanelCamera::getSuivi()
+vec2& PanelCamera::getSuivi()
 {
     return stars.getSuivi();
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------

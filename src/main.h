@@ -195,7 +195,7 @@ typedef struct readBackground       rb_t;
     extern bool                     bAfficheVec;
     extern bool                     bPanelStdOut;
     extern bool                     bSound;
-    extern bool                     bCorrection;
+    extern bool                     bAsservissement;
     extern bool                     bCentrageSuivi;
     extern bool                     bPanelResultat;
     extern bool                     bDesactiveLog;
@@ -231,6 +231,8 @@ typedef struct readBackground       rb_t;
     extern bool                     bInverseCouleur;
     extern double					fLimitCorrection0;
     extern double					fLimitCorrection1;
+    extern double					fTimeCorrection;
+
     extern double					fTimeMili;
     
     #ifndef PANELCOURBE_CPP
@@ -239,8 +241,11 @@ typedef struct readBackground       rb_t;
     #endif
     
     #ifndef PANEL_STDOUT_CPP
-	extern PanelStdOut *	       panelStdOut;
+	extern PanelStdOut*				panelStdOut;
 	#endif
+	
+	extern PanelText*				pCoordSuivi;
+
 
     
     extern ivec2					vMouse;
@@ -327,6 +332,7 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void				arret_urgence();
 void				test_creer_dir( char* );
 
 void                vizier_load_stars( string, double, double );
@@ -367,10 +373,10 @@ int                 getWidth();
 int                 getHeight();
 
 vector<string>&     getExclude();
-double               hms2rad( struct hms& );
-char*				 deg2str_hms(double, char*, int);
-double               dms2rad( struct dms& );
-char*				 deg2str_dms(double, char*, int);
+double				hms2rad( struct hms& );
+char*				deg2str_hms(double, char*, int);
+double				dms2rad( struct dms& );
+char*				deg2str_dms(double, char*, int);
 
 void                rad2hms( struct hms&, double );
 void                rad2dms( struct dms&, double );
@@ -393,18 +399,18 @@ int                 getOffset( int x, int y, int width );
 void                screen2tex( int& x, int& y );
 void                tex2screen( int& x, int& y);
 
-double               getSkyPoint_colorR(int offset);
-double               getSkyPoint_colorG(int offset);
-double               getSkyPoint_colorB(int offset);
-double               getSkyPoint_colorL(int offset);
+double				getSkyPoint_colorR(int offset);
+double				getSkyPoint_colorG(int offset);
+double				getSkyPoint_colorB(int offset);
+double				getSkyPoint_colorL(int offset);
 void                updatePanelResultat(double x, double y, double mag);
-void                getSkyPointLine(struct sky_point* point, int x, int y, int size);
-double               getLumMax(int offset, double max );
-double               getLum(int offset );
-void                findSkyPoint(struct sky_point* point, int X, int Y, int size);
-void                rechercheSkyPoint( int x, int y);
+void				getSkyPointLine(struct sky_point* point, int x, int y, int size);
+double				getLumMax(int offset, double max );
+double				getLum(int offset );
+void				findSkyPoint(struct sky_point* point, int X, int Y, int size);
+void				rechercheSkyPoint( int x, int y);
 
-void                getSkyPoint(struct sky_point*, int, int, int);
+void				getSkyPoint(struct sky_point*, int, int, int);
 
 
 
@@ -436,6 +442,7 @@ void                charge_fits(string);
 void                getSuiviParameter();
 
 static void         idleGL(void);
+static void			print_all_panels(void);
 static void         quit(void);
 static void         initGL(int argc, char **argv);
 static void         rotateVisible();
