@@ -25,7 +25,7 @@
 #include "captures.h"
 #include "bluetooth.h"
 #include "panel_courbe.h"
-#include "panel_apn.h"
+#include "panel_enregistre.h"
 #include "panel_stdout.h"
 #include "star_catalogue.h"
 #include "catalog.h"
@@ -218,7 +218,7 @@ PanelScrollY *      panelScrHelp	= NULL;
 PanelWindow *       panelResultat	= NULL;
 PanelCourbe *       panelCourbe		= NULL;
 PanelStdOut *       panelStdOut		= NULL;
-PanelApn*           panelApn		= NULL;
+PanelEnregistre*    panelEnregistre	= NULL;
 PanelSimple *       panelStatus		= NULL;
 
 
@@ -236,6 +236,7 @@ PanelText*          pRacket;
 PanelText*          pAD;
 PanelText*          pDC;
 PanelText*          pAsservi;
+PanelText*          pFramesCapture;
 
 PanelText*          pHertz;
 PanelText*          pFPS;
@@ -2450,7 +2451,7 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
             logf( (char*)"Key (ctrl+TAB) : Change de camera" );
             log_tab(true);
 			Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
-			cam_mgr.active();
+			cam_mgr.active_next();
             log_tab(false);
         }
         break;
@@ -2512,6 +2513,16 @@ static void glutKeyboardFuncCtrl(unsigned char key, int x, int y)
 	    {
 	    logf( (char*)"Key (ctrl+W) : Suppression de l'image courante !!" );
 	    Captures::getInstance().supprime();
+	    }
+        break;
+
+	case 0xB2:
+	    {
+	    logf( (char*)"Key (ctrl+²) : Changement de camera !!" );
+            log_tab(true);
+			Camera_mgr&  cam_mgr = Camera_mgr::getInstance();
+			cam_mgr.active_prev();
+            log_tab(false);
 	    }
         break;
 
@@ -3006,6 +3017,10 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         {
             if (key == 27 )     { 
                 arret_urgence();
+                if ( panelEnregistre != NULL && panelEnregistre->getShooting() )
+                {
+                	panelEnregistre->stop();
+                }
             }
         }
         bArretUrgence = false;
@@ -3027,6 +3042,9 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
     }
     //------------------------------------------------------------------------
     else
+    if ( panelEnregistre && panelEnregistre->getVisible() && panelEnregistre->keyboard(key, x, y) )      return;
+    //------------------------------------------------------------------------
+    else
     if (        cam_mgr.getCurrent() != NULL
 //            &&  cam_mgr.getCurrent()->getControlVisible()       )
             &&  cam_mgr.getCurrent()->getPanelCamera() == wm.getCapture()       )
@@ -3035,12 +3053,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
         	return;
         }
     }
-    //------------------------------------------------------------------------
-    else
-    if ( panelApn && panelApn->keyboard(key, x, y) )      return;
-    //------------------------------------------------------------------------
+
 
     //------------------------------------------------------------------------
+    //------------------------------------------------------------------------
+
+
 	if ( (iGlutModifier & GLUT_ACTIVE_CTRL_ALT) == GLUT_ACTIVE_CTRL_ALT )
 	{
    	    glutKeyboardFuncCtrlAlt(key,  x,  y);
@@ -4183,10 +4201,15 @@ static void glutSpecialFunc(int key, int x, int y)	{
         break;
     case GLUT_KEY_F8:
         {
-        if ( panelApn == NULL )         panelApn = new PanelApn();
-		logf( (char*)"Key F8: Toggle panelAPN", BOOL2STR(!panelApn->getVisible()) );
+        if ( panelEnregistre == NULL )
+        {
+        	panelEnregistre = new PanelEnregistre();
+        	panelEnregistre->setVisible(false);
+        }
+		logf( (char*)"Key F8: Toggle panelAPN", BOOL2STR(!panelEnregistre->getVisible()) );
     	log_tab( true );
-		panelApn->setVisible( !panelApn->getVisible() );
+
+		panelEnregistre->setVisible( !panelEnregistre->getVisible() );
 
 	    log_tab( false );
 
@@ -4235,7 +4258,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
         
     default:	
 	    {
-        logf( (char*)"glutSpecialFunc default (%d) \'%c\'", (int)key, key );
+        logf( (char*)"main::glutSpecialFunc default (0x%X) \'%c\'", (int)key, key );
 
 		}
 		break;
@@ -4256,7 +4279,6 @@ static void glutSpecialUpFunc(int key, int x, int y)	{
     logf( (char*)"    %02d\t%.8f glutSpecialUpFunc", ++appelIdle, -timerAppelIdle +Timer::getInstance().getGlutTime() );
 #endif
 	WindowsManager::getInstance().keyboardSpecialUpFunc( key, x, y);
-    //WindowsManager::getInstance().onBottom(panelPreView);
     onTop();
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -4748,10 +4770,10 @@ static void CreateHelp()
     INIT_VARI( PanelHelp_DX, 1400);
     INIT_VARI( PanelHelp_DY, 600);
 
-    X  = var.geti( "PanelHelp_X");
-    Y  = var.geti( "PanelHelp_Y");
-    DX = var.geti("PanelHelp_DX");
-    DY = var.geti("PanelHelp_DY");
+    X  = var.geti( "PanelHelp_X" );
+    Y  = var.geti( "PanelHelp_Y" );
+    DX = var.geti( "PanelHelp_DX" );
+    DY = var.geti( "PanelHelp_DY" );
 
     panelHelp->setSize(DX, DY);
 	panelScrHelp->setSize(DX, DY);
@@ -4850,6 +4872,10 @@ static void CreateStatus()	{
     pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, _x, 2 );
 	panelStatus->add( pCoordSuivi );
 
+	_x += 140;
+    pFramesCapture = new PanelText( (char*)"--/--",   PanelText::NORMAL_FONT, _x, 2 );
+	panelStatus->add( pFramesCapture );
+
  	
  	create_windows_button();
  	set_asservissement();
@@ -4896,7 +4922,7 @@ static void CreateAllWindows()	{
     CreateCourbe();
     CreateStatus();
     CreatePleiades();
-    panelApn = NULL;
+    panelEnregistre = NULL;
 
 	// Initialise certaine variables    
     panelCourbe->get_vOrigine().x = xSuivi;

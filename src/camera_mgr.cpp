@@ -182,6 +182,9 @@ void Camera_mgr::add_zwo( int n )
     p->load_var( p->getName() );
 
     pCameras.push_back( p );
+
+    onBottom();
+    active( p );
     
     log_tab(false);
     logf_thread((char*)"Camera_mgr::add_zwo(Camera*) END" );
@@ -236,7 +239,7 @@ void Camera_mgr::addImages( Camera* p )
         logf_thread( (char*)"Ce n'est pas une camera" );
     }
 
-    active();
+    active_next();
     onBottom();
     
 }
@@ -437,10 +440,10 @@ void Camera_mgr::update()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Camera_mgr::active()
+void Camera_mgr::active_next()
 {
 	// Si la camera est connecte au demarrage => Plantage
-    logf_thread((char*)"Camera_mgr::active() ------------- %d", __LINE__ );
+    logf_thread((char*)"Camera_mgr::active_next::active() ------------- %d", __LINE__ );
     if ( pCameras.size() == 0)			return;
 
     int w = WindowsManager::getInstance().getWidth();
@@ -449,6 +452,31 @@ void Camera_mgr::active()
     if ( pCurrent != NULL )         pCurrent->iconSizePreview( w, h );
 
     nActive = ++nActive % pCameras.size();
+    logf_thread((char*)"|  camera[%d]", nActive );
+    
+    pCurrent = pCameras[nActive];
+    pCurrent->fullSizePreview( w, h );
+    
+    reOrder();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera_mgr::active_prev()
+{
+	// Si la camera est connecte au demarrage => Plantage
+    logf_thread((char*)"Camera_mgr::active_prev() ------------- %d", __LINE__ );
+    if ( pCameras.size() == 0)			return;
+
+    int w = WindowsManager::getInstance().getWidth();
+    int h = WindowsManager::getInstance().getHeight();
+
+    if ( pCurrent != NULL )         pCurrent->iconSizePreview( w, h );
+
+    --nActive;
+    if (nActive<0)	nActive = pCameras.size()-1;
+    
+    logf_thread((char*)"|  camera[%d]", nActive );
     
     pCurrent = pCameras[nActive];
     pCurrent->fullSizePreview( w, h );

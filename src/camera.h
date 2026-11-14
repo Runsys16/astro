@@ -52,6 +52,8 @@ protected:
     bool						bIconized;
 	bool*						pCharging;
 
+	double						dCurrentTime;
+	
 	StarCompare					starCompare;
 //-----------------------------------------------------------------------------------------    
 public :

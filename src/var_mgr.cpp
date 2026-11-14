@@ -4,6 +4,7 @@
 //#define DEBUG_SAUVE
 //--------------------------------------------------------------------------------------------------------------------
 #define TYPE2STR(t)			(t=='f'?"FLOAT":t=='i'?"INTEGER":t=='b'?"BOOL":"UNKNOW")
+string string_null = "";
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -85,19 +86,33 @@ void VarManager::set(const std::string& name, const std::string& val)
 	printf( (char*)"String '%s'", (char*)name.c_str() );
 	#endif
 
+	/*
     string* p = new string(val);
     m_VarDB[name].type = 's';
+
+    if ( !existe(name) || val.compare(*m_VarDB[name].sval) != 0 )
+    {
+		m_VarDB[name].sval = p;
+		sauve();
+	}
+
+
 	m_VarDB[name].sval = p;
 	//sauve();
 	return;
-	/*
+    */
     string* p = new string(val);
     if ( m_VarDB.find(name) == m_VarDB.end() )
     {
-	    printf( (char*)"String inconnue '%s'", (char*)name.c_str() );
+	    //logf( (char*)"String inconnue '%s'", (char*)name.c_str() );
+	    m_VarDB[name].type = 's';
+	    m_VarDB[name].sval = &string_null;
     }
     else
-	    printf( (char*)"String connue '%s'", (char*)name.c_str() );
+    {
+	    //logf( (char*)"String connue '%s'", (char*)name.c_str() );
+	}
+
     m_VarDB[name].type = 's';
     
     string s = *(m_VarDB[name].sval);
@@ -107,7 +122,6 @@ void VarManager::set(const std::string& name, const std::string& val)
 		m_VarDB[name].sval = p;
 		sauve();
     }
-    */
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -272,6 +286,9 @@ void VarManager::charge()
 bool VarManager::existe(const std::string& name)
 {
 	//printf( (char*)"Test existe var : %s\n", name.c_str() );
+    if ( m_VarDB.find(name) == m_VarDB.end() )		return false;
+    
+    return true;
 	
     dbMap& db = getDB();
 	if ( db.size() == 0 )

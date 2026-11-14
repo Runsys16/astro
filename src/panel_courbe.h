@@ -109,10 +109,8 @@ private:
 
     bool                bPanelCourbe;
 
-    //vector<vec2>        t_vResultat;
     vector<data>        t_vSauve;
     vector<data>        t_vCourbe;
-    //vector<vec2>        courbeY;
     
     vec3                vOrigine;
     float*              pIn;
@@ -132,19 +130,15 @@ private:
 
     PanelText*          pAffFFTX;
     PanelCheckBox*      pCBAffFFTX;
-    //bool                bCBAffFFTX;
 
     PanelText*          pAffFFTY;
     PanelCheckBox*      pCBAffFFTY;
-    //bool                bCBAffFFTY;
 
     PanelText*          pCourbeX;
     PanelCheckBox*      pCBCourbeX;
-    //bool                bCBCourbeX;
 
     PanelText*          pCourbeY;
     PanelCheckBox*      pCBCourbeY;
-    //bool                bCBCourbeY;
 
     PanelText*          pFilename;
     
@@ -198,6 +192,7 @@ static bool             bDebug;
     int                 sc2winX(int);
     int                 sc2winY(int);
     
+virtual void			displayBackground();
 virtual void            displayGL( void );
 virtual void            updatePos( void );
 
@@ -216,37 +211,35 @@ virtual void            releaseMiddle( int, int);
     void         		setColor(long );
 
     
-inline     float        get_offset_x()              { return offset_x; }   
-inline     float        get_offset_y()              { return offset_y; }   
-inline     float        get_courbe1()               { return courbe1; }   
-inline     float        get_courbe2()               { return courbe2; }   
-//inline     int          get_decal_resultat()        { return decal_x; }   
-inline     float        get_delta_courbe1()         { return delta_courbe1; }   
-inline     float        get_delta_courbe2()         { return delta_courbe2; }   
-inline     int          get_xCam()                  { return xCam; }   
-inline     int          get_yCam()                  { return yCam; }   
-inline     int          get_dxCam()                 { return dxCam; }   
-inline     int          get_dyCam()                 { return dyCam; }   
-inline     float        get_err()                   { return err; }   
-inline     double*      get_perr()                  { return &err; }   
-inline     PanelText*   get_pXMax()                 { return pXMax; }
-inline     PanelText*   get_pXMin()                 { return pXMin; }
-inline     PanelText*   get_pYMax()                 { return pYMax; }
-inline     PanelText*   get_pYMin()                 { return pYMin; }
-inline     vec3&        get_vOrigine()              { return vOrigine; }
+inline	float			get_offset_x()              	{ return offset_x; }   
+inline	float			get_offset_y()              	{ return offset_y; }   
+inline	float			get_courbe1()               	{ return courbe1; }   
+inline	float			get_courbe2()               	{ return courbe2; }   
+inline	float			get_delta_courbe1()         	{ return delta_courbe1; }   
+inline	float			get_delta_courbe2()         	{ return delta_courbe2; }   
+inline	int				get_xCam()                  	{ return xCam; }   
+inline	int				get_yCam()                  	{ return yCam; }   
+inline	int				get_dxCam()                 	{ return dxCam; }   
+inline	int				get_dyCam()                 	{ return dyCam; }   
+inline	float			get_err()                   	{ return err; }   
+inline	double*			get_perr()                  	{ return &err; }   
+inline	PanelText*		get_pXMax()                 	{ return pXMax; }
+inline	PanelText*		get_pXMin()                 	{ return pXMin; }
+inline	PanelText*		get_pYMax()                 	{ return pYMax; }
+inline	PanelText*		get_pYMin()                 	{ return pYMin; }
+inline	vec3&			get_vOrigine()              	{ return vOrigine; }
 
-inline     void         set_offset_x(float f)           { offset_x = f; }   
-inline     void         set_offset_y(float f)           { offset_y = f; }   
-inline     void         set_courbe1(float f)            { courbe1 = f; }   
-inline     void         set_courbe2(float f)            { courbe2 = f; }   
-//inline     void         set_decal_resultat(int n)       { decal_resultat = n; }   
-inline     void         set_delta_courbe1(float f)      { delta_courbe1 = f; }   
-inline     void         set_delta_courbe2(float f)      { delta_courbe2 = f; }   
-inline     void         set_xCam(int n)                 { xCam = n; }   
-inline     void         set_yCam(int n)                 { yCam = n; }   
-inline     void         set_dxCam(int n)                { dxCam = n; }   
-inline     void         set_dyCam(int n)                { dyCam = n; }   
-inline     void         set_err(double f)               { err = f; }   
+inline	void			set_offset_x(float f)           { offset_x = f; }   
+inline	void			set_offset_y(float f)           { offset_y = f; }   
+inline	void			set_courbe1(float f)            { courbe1 = f; }   
+inline	void			set_courbe2(float f)            { courbe2 = f; }   
+inline	void			set_delta_courbe1(float f)      { delta_courbe1 = f; }   
+inline	void			set_delta_courbe2(float f)      { delta_courbe2 = f; }   
+inline	void			set_xCam(int n)                 { xCam = n; }   
+inline	void			set_yCam(int n)                 { yCam = n; }   
+inline	void			set_dxCam(int n)                { dxCam = n; }   
+inline	void			set_dyCam(int n)                { dyCam = n; }   
+inline	void			set_err(double f)               { err = f; }   
 
 };
 //--------------------------------------------------------------------------------------------------------------------

@@ -99,6 +99,8 @@ void Camera::init()
 	pPanelName			= NULL;
     pCamFilename		= NULL;
     pNbStars			= NULL;
+    
+    dCurrentTime		= 0.0;
 	
 	
 }
@@ -158,8 +160,16 @@ int Camera::addControl()	{
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::changeValueDouble( double val, void *p )	{
 	//logf( (char*)"changeValueDouble %lf", val );
-	Control* pControl = (Control*)p;
-	//pControl->setValue( (int)val );
+	double t 			= (double)Timer::getInstance().getCurrentTime();
+	double elapsedTime 	= t - dCurrentTime;
+
+	// Temps mini 100ms
+	if (  elapsedTime > 0.1 )	{ 
+		Control* pControl = (Control*)p;
+		dCurrentTime = t; 
+		//changeValueDoubleClick( val, p ); 
+		pControl->setValue( (int)val );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -192,7 +202,7 @@ void Camera::createControlID(PanelSimple * p, int x, int y, char* str)	{
         pSET->set_delta( 20, 8 );
         pSET->setPos( x+150, y );
         pSET->setSize( 90, 14 );
-        pSET->setExtraString( "Control" );
+        pSET->setExtraString( "Control" + string(str) );
         pSET->setChangeValue( (ChangeValue*)this );
         pSET->setID( (void*)pControl );
         pSET->set_val( pControl->getValue() );
@@ -224,7 +234,7 @@ void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{
         pSET->set_delta( 20, 8 );
         pSET->setPos( x+150+150, y );
         pSET->setSize( 90, 14 );
-        pSET->setExtraString( "Control" );
+        pSET->setExtraString( "Control" + string(str0) );
         pSET->setChangeValue( (ChangeValue*)this );
         pSET->setID( (void*)pControl );
         pSET->set_val( pControl->getValue() );
@@ -250,21 +260,21 @@ void Camera::createControlIDminmax(PanelSimple * p, int x, int y, char* str0)	{
 void Camera::CreateControl()	{
     logf_thread((char*)"Camera::CreateControl() --------------- %s", getDevName() );
     log_tab(true);
+	WindowsManager& wm = WindowsManager::getInstance();
     
     if ( getFd() == -1 )
     {
         logf_thread((char*)"Le materiel n'est pas encore ouvert");
     }
-
     panelControl = new PanelWindow();
     panelControl->setDisplayGL(displayGLnuit_cb);
-    panelControl->setExtraString( getDevName() );
-    //panelControl->loadSkinPath( "images/astro" );
-	//panelControl->setBorderSize(8);
+    panelControl->setExtraString( "Control::" + string(getDevName()) );
     panelControl->loadSkin( PanelWindow::YELLOW );
 	panelControl->setBorderSize(6);
+	panelControl->setResizable(false);
+    panelControl->setVisible(false);
+    panelControl->setBackground((char*)"images/background.tga");
 
-	WindowsManager& wm = WindowsManager::getInstance();
 	int wsc = wm.getWidth();
 	int hsc = wm.getHeight();
     
@@ -276,17 +286,13 @@ void Camera::CreateControl()	{
 
     panelControl->setPosAndSize( x, y, dx, dy);
     
-    ///home/rene/programmes/opengl/video/essai
-    wm.add(panelControl);
-    panelControl->setBackground((char*)"images/background.tga");
-    
     dy = addControl();
     resizeControlFirst(wsc, hsc, dx, dy);
 
+    wm.add(panelControl);
+
     log_tab(false);
     logf_thread((char*)"Camera::CreateControl() --------------- %s", getDevName() );
-    panelControl->setVisible(false);
-    //logf((char*)"panelControl  %d,%d %dx%d\n", x, y, dx, dy);   
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -427,7 +433,7 @@ void Camera::fullSizePreview(int width, int height)	{
     {
         vCameraSize.x = getWidth();
         vCameraSize.y = getHeight();
-        logf((char*)" vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
+        logf((char*)"|  vCameraSize.x=%d vCameraSize.y=%d", vCameraSize.x, vCameraSize.y);
     }
 
 
@@ -461,8 +467,8 @@ void Camera::fullSizePreview(int width, int height)	{
 	int bx, by;
 	bx = by = panelCamera->getBorderSize();
 
-    logf((char*) "   Screen  : %dx%d", wsc, hsc);
-    logf((char*) "   Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
+    logf((char*) "|  Screen  : %dx%d", wsc, hsc);
+    logf((char*) "|  Preview : %d,%d %dx%d", xCam, yCam, dxCam, dyCam);
 
 	panelCamera->setPosAndSize( xCam+bx, yCam+by, dxCam, dyCam);
 	panelCamera->raz_ech_usr();

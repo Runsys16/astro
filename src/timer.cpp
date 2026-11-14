@@ -12,11 +12,9 @@
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+/*
 float gettime(void)
 {
-	struct timeval tv;
-	struct tm *tm;
-
 
 	
 	gettimeofday( &tv, NULL );
@@ -25,17 +23,20 @@ float gettime(void)
 	ret += tv.tv_usec/1000000.0f;
 	return ret;
 }
+*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Timer::Timer() {
 	fTimeCompress = 1.0f;
 	Start();
+	uMicro = 0;
 
 	struct timeval tv;
 	struct tm *tm;
 
 	gettimeofday( &tv, NULL );
+	uMicro = tv.tv_usec / 1000;
 	tm=localtime(&tv.tv_sec);
 	fHourTime = tm->tm_hour + ( (float)(tm->tm_min) / 60.0 );
 	
@@ -81,6 +82,9 @@ void Timer::Idle() {
 	fCurrentTime = fNewCurrentTime;	// On sauvegarde le temps actuel
 	fElapsedTime = fReelElapsedTime * fTimeCompress;
 	fHourTime += fReelElapsedTime/3600.0;
+	
+	uMicro += (fElapsedTime * 1000.0);
+	uMicro %= 1000;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

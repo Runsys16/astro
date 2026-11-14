@@ -69,7 +69,8 @@ public:
     //void                        idleGL();
     void                        onBottom();
     void                        resize( int, int );
-    void                        active();
+    void                        active_next();
+    void                        active_prev();
     void                        active( Camera*);
     void                        active( Camera*, bool);
     void                        reOrder();

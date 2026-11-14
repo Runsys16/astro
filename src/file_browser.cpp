@@ -165,7 +165,7 @@ FileBrowser::FileBrowser()
     
     pW->setPosAndSize(x, y, dx, dy);
     pW->setDisplayGL(displayGLnuit_cb);
-    pW->setExtraString( "panelWindowsFileBrowser" );
+    pW->setExtraString( "FileBrowser" );
 
     pW->setBackground( (char*)"images/background.tga" );
     cache();
@@ -206,12 +206,15 @@ FileBrowser::FileBrowser()
     panelDir->setScissor(true);
     panelFile->setScissor(true);
     
+    panelFilename->setExtraString( "FB::Filename" );
+    panelDirName->setExtraString( "FB::Dirname" );
+    
     panelOK->setUp(   (char*)"images/ok_over.tga" );
-    panelOK->setDown( (char*)"images/ok_over.tga" );
+    panelOK->setDown( (char*)"images/ok_down.tga" );
     panelOK->setOver( (char*)"images/ok_down.tga" );
 
     panelQuit->setUp(   (char*)"images/quit_over.tga" );
-    panelQuit->setDown( (char*)"images/quit_over.tga" );
+    panelQuit->setDown( (char*)"images/quit_down.tga" );
     panelQuit->setOver( (char*)"images/quit_down.tga" );
 
 
@@ -231,8 +234,6 @@ FileBrowser::FileBrowser()
     pOldDir = NULL;
     pOldFile = NULL;
 
-    panelFilename->setExtraString( "panelFilename" );
-    panelDirName->setExtraString( "panelDir" );
 
     /*
     pW->loadSkinPath( "images/astro" );
@@ -266,6 +267,7 @@ FileBrowser::FileBrowser()
 	pV0->setBackground( pW->getTextureLeft() );
 	pV0->setPosAndSize( panelFile->getPosX()-iBorder, panelFile->getPosY() - pW->getBorderSize(), iBorder , panelFile->getPosDY() + iBorder  );
 	pW->add( pV0 );
+	pW->setResizable(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -605,32 +607,6 @@ bool FileBrowser::keyboard(char key, int x, int y)
 {
 	logf( (char*)"FileBrowser::keyboard( %d-%c, %d, %d)", (int)key, key, x, y );
 	log_tab( true );
-  /*
-    WindowsManager& wm = WindowsManager::getInstance();
-    Panel* p = wm.getCapture();
-    
-    if ( p != panelFilename )
-    {
-        //wm.stopKeyboard();
-        while ( wm.is_call_back_keyboard(panelFilename) )
-        {
-            wm.sup_call_back_keyboard( panelFilename );
-            logf( (char*)"FileBrowser::keyboard() Suppression callback keyboard" );
-        }
-        return false;
-    }
-    
-    if ( !wm.is_call_back_keyboard( panelFilename ) )
-    {
-        logf( (char*)"FileBrowser::keyboard() Ajout callback keyboard" );
-        wm.call_back_keyboard( panelFilename );
-        wm.startKeyboard();
-    }
-
-    wm.startKeyboard();
-    WindowsManager::getInstance().keyboardFunc( key, x, y);
-    //logf( (char*)"Traitement PanelConsoleSerial::keyboard()" );
-*/
    
     WindowsManager& wm = WindowsManager::getInstance();
     //wm.changeFocus( panelFilename );
@@ -638,11 +614,7 @@ bool FileBrowser::keyboard(char key, int x, int y)
     
     
     if ( p != NULL )        logf( (char*)"Focus : %d - %s", p->getID(), p->getExtraString().c_str() );
-    /*
-    if      ( p == this )            logf( (char*)"PanelApn::keyboard() focus panel console" );
-    else if ( p == NULL )            logf( (char*)"PanelApn::keyboard() focus NULL" );
-    else                             logf( (char*)"PanelApn::keyboard() focus autre chose ID=%d", p->getID() );
-    */
+
     
     if ( p == panelFilename   )
     {
@@ -650,14 +622,6 @@ bool FileBrowser::keyboard(char key, int x, int y)
         supCallBacks();
         wm.call_back_keyboard( p );
     }
-    /*
-    else
-    {
-        //wm.stopKeyboard();
-        wm.call_back_keyboard( p );
-        return false;
-    }
-    */
         
 
     wm.startKeyboard();

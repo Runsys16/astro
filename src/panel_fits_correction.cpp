@@ -53,7 +53,7 @@ PanelCorrectionFits::PanelCorrectionFits()
     pCDELT1plus->set_delta( 20, 8 );
     pCDELT1plus->setPos( x+dx, p*dy );
     pCDELT1plus->setSize( 230-dx, dy );
-    pCDELT1plus->setExtraString( "pCDELT1plus" );
+    pCDELT1plus->setExtraString( "FITS::pCDELT1plus" );
     p++;
 
 	pCDELT2plus = new PanelSpinEditText();
@@ -64,7 +64,7 @@ PanelCorrectionFits::PanelCorrectionFits()
     pCDELT2plus->set_delta( 20, 8 );
     pCDELT2plus->setPos( x+dx, p*dy );
     pCDELT2plus->setSize( 230-dx, dy );
-    pCDELT2plus->setExtraString( "pCDELT2plus" );
+    pCDELT2plus->setExtraString( "FITS::pCDELT2plus" );
     p++;
 
 }

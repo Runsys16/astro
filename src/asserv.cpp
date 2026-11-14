@@ -180,6 +180,8 @@ void Asservissement::idleGL( float fElapsedTime, vec2& vSuivi )
             v = w - vec3( vRefSuivi.x, vRefSuivi.y, 0.0);
             dEcart = l = v.length();
 			print_ecart();
+			
+			//logf( (char*)"Suivi" VEC2_PRINTFN(2) " RefSuivi" VEC2_PRINTFN(2), VEC2_AFF(vSuivi), VEC2_AFF(vRefSuivi)  ); 
 
            if ( l > fLimitCorrection0 ) {
                 logf( (char*)"[WARNING] Suivi l=%0.2f/%0.2f", l, fLimitCorrection0 ); 

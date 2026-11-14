@@ -43,7 +43,10 @@
 #define INIT_VARF( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (float)__val__ );
 #define INIT_VARI( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (int)__val__ );
 #define INIT_VARB( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (bool)__val__ ); 
-#define INIT_VARS( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, __val__ ); 
+//------------------------------------------------------------
+// attention pour une string val ne peut etre qu'une variable
+//------------------------------------------------------------
+#define INIT_VARS( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (string&)__val__ ); 
 
 #define CHRG_VARF( __var )				__var =	var.getf( #__var );
 #define CHRG_VARI( __var )				__var =	var.geti( #__var );
@@ -245,6 +248,7 @@ typedef struct readBackground       rb_t;
 	#endif
 	
 	extern PanelText*				pCoordSuivi;
+	extern PanelText*				pFramesCapture;
 
 
     

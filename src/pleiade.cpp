@@ -31,7 +31,8 @@ Pleiade::Pleiade()
     bCharging       = false;
     count_png       = 64;
     plus            = 1;
-    bNewBackground  = false; 
+    bNewBackground  = false;
+    bCamera			= false;
 
     setDevName( (char*)"/dev/pleiades" );
     

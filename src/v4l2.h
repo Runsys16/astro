@@ -132,10 +132,12 @@ protected:
 	int                     row_stride, wBmp, hBmp, pixel_size;
 
     bool                    bEnregistre;
+    bool                    bCamera;
     bool                    bCapture;
     bool                    bHaveNew;
     string                  filename;
 	string					dirname;
+	bool					bSaving;
 
 protected:
     rb_t                    readBgr;
@@ -183,39 +185,48 @@ public :
 
 
 	bool					is_file_exist(const std::string& );
-    void					new_filename(string);
+    void					replace_name(string&);
+    void					replace_time(string&);
+    void					replace_date(string&);
+    void					new_filename(string&);
+    void					new_filename_png();
+    void					new_filename_png(string&);
     
     char*					str_error_decode( ERROR_DECODE_JPG );
 
 virtual    void				enregistre(); //            { bEnregistre = true; }
+virtual    bool				isCamera()					{ return bCamera; }
 
-    
-    inline  char*           getErr()                { return strErr; }
-    inline  bool            isErr()                 { return fd == -1; }
-    
-    void                    setDevName(string);
-    inline  void            setDevName(char* s)     { dev_name = s; }
-    inline  char*           getDevName()            { return (char*)dev_name.c_str(); }
 
-    inline  int             getFd()                 { return fd; }
+inline  char*   	        getErr()                { return strErr; }
+inline  bool    	        isErr()                 { return fd == -1; }
 
-    inline  unsigned char*  getBuffer()             { return bmp_buffer; }
-    inline  bool            getHaveNew()            { return bHaveNew; }
-    inline  void            setHaveNew(bool b)      { bHaveNew = b; }
+void            	        setDevName(string);
+inline  void    	        setDevName(char* s)     { dev_name = s; }
+inline  char*   	        getDevName()            { return (char*)dev_name.c_str(); }
+	
+inline  int     	        getFd()                 { return fd; }
 
-    inline  void            setName( char * s)      { name = string(s); }
-    inline  void            setName( string& s)		{ name = string(s); }
-    inline  string&         getName()               { return name; }
+inline  unsigned char*		getBuffer()             { return bmp_buffer; }
+inline  bool    	        getHaveNew()            { return bHaveNew; }
+inline  void    	        setHaveNew(bool b)      { bHaveNew = b; }
 
-    inline int              getWidth()              { return width; }
-    inline void             setWidth(int n)         { width = n; }
-    inline int              getHeight()             { return height; }
-    inline void             setHeight(int n)        { height = n; }
+inline  void    	        setName( char * s)      { name = string(s); }
+inline  void    	        setName( string& s)		{ name = string(s); }
+inline  string&				getName()               { return name; }
 
-    inline void             setSizeChoix()          {  sizeChoix = ++sizeChoix % nSize; }
-    inline int              getSizeChoix()          {  return sizeChoix; }
+inline	int					getWidth()              { return width; }
+inline	void				setWidth(int n)         { width = n; }
+inline	int					getHeight()				{ return height; }
+inline	void				setHeight(int n)		{ height = n; }
 
-    inline void             setFilename(string s)	{ filename = s; }
+inline	void				setSizeChoix()          {  sizeChoix = ++sizeChoix % nSize; }
+inline	int					getSizeChoix()          {  return sizeChoix; }
+
+inline	void				setFilename(string s)	{ filename = s; }
+inline	void				setDirname(string s)	{ dirname = s; }
+
+inline	bool				getSaving()							{ return bSaving;}
 
 virtual void                callback(bool, int, char*);
 virtual struct readBackground*      getRB()     {return &readBgr;}

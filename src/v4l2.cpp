@@ -43,6 +43,7 @@ Device_cam::Device_cam()
     sizeChoix       = 0;
 
     bEnregistre     = false;
+    bCamera			= true;
     bCapture        = false;
     bmp_buffer      = NULL;
     
@@ -451,12 +452,15 @@ void Device_cam::process_image(const void *p, int size)
 {
     if (fd == -1)       return;
 
-    new_filename(".jpg");
-    string sFile = dirname + filename;
+	string sFile = string(filename) + ".jpg";
+    new_filename( sFile );
+    
+    sFile = dirname + sFile;
     
 	
     
     logf_thread( (char*)"Enregistre : %s", sFile.c_str());
+    
     
     FILE *fp=fopen(sFile.c_str(),"wb");
     
@@ -465,6 +469,7 @@ void Device_cam::process_image(const void *p, int size)
 
     fflush(fp);
     fclose(fp);
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -592,6 +597,7 @@ int Device_cam::read_frame(void)
             logf_thread( (char*)"IO_METHOD_USERPTR Enregistre l'image (jpg)" );
             process_image((void *)buf.m.userptr, buf.bytesused);
             bEnregistre = false;
+            bSaving = true;
         }
 
         //logf_thread( (char*)"lit image" );
@@ -1446,6 +1452,7 @@ int Device_cam::decompressJpeg() {
 void Device_cam::enregistre()
 {
     bEnregistre = true;
+    bSaving = false;
     
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -1496,33 +1503,193 @@ bool Device_cam::is_file_exist(const std::string& file) {
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+// Remplade le joker %n  = nom de la camera
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::replace_name(string& sFilenamePng)
+{
+	int n = sFilenamePng.find("%n");
+	
+	string deb = sFilenamePng.substr( 0, n );
+	string fin = sFilenamePng.substr( n+2 );
+	sFilenamePng = deb + name + fin;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Remplade le joker %t = l'heure
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::replace_time(string& sFilenamePng)
+{
+	char 			sTime[30];
+	struct timeval	tv;
+	struct tm*		tm;
+
+	gettimeofday( &tv, NULL );
+	tm=localtime(&tv.tv_sec);
+	
+	
+	long uCentieme = (long)tv.tv_usec;
+	uCentieme /= 10000;
+	snprintf( (char*)sTime, sizeof(sTime),"%02d:%02d:%02d.%02ld", tm->tm_hour, tm->tm_min, tm->tm_sec, uCentieme );
+	
+	int n = sFilenamePng.find("%t");
+	
+	string deb = sFilenamePng.substr( 0, n );
+	string fin = sFilenamePng.substr( n+2 );
+	sFilenamePng = deb + string(sTime) + fin;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Remplade le joker %d  = date
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::replace_date(string& sFilenamePng)
+{
+	char 			sTime[30];
+	struct timeval	tv;
+	struct tm*		tm;
+
+	gettimeofday( &tv, NULL );
+	tm=localtime(&tv.tv_sec);
+	
+	snprintf( (char*)sTime, sizeof(sTime),"20%02d-%02d-%02d", tm->tm_year-100, tm->tm_mon+1, tm->tm_mday );
+	
+	int n = sFilenamePng.find("%d");
+	
+	string deb = sFilenamePng.substr( 0, n );
+	string fin = sFilenamePng.substr( n+2 );
+	sFilenamePng = deb + string(sTime) + fin;
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//
+// Genere un nouveau nom de fichier pour la sauvegarde image
+//---------------------------------------------------------------
+// joker autorisé :
+//   %d  : date
+//   %t  : fime
+//   %n  : nom de la camera
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::new_filename_png(string& sFilenamePng)
+{
+   	logf_thread( (char*)"Camera::new_filename_png( %s )", sFilenamePng.c_str() );
+   	
+   	
+	if ( sFilenamePng.find("%d") != string::npos )			replace_date( sFilenamePng );
+	if ( sFilenamePng.find("%t") != string::npos )			replace_time( sFilenamePng );
+	if ( sFilenamePng.find("%n") != string::npos )			replace_name( sFilenamePng );
+   	
+	if ( sFilenamePng.find(".png") == string::npos )		sFilenamePng = sFilenamePng + ".png";
+
+   	if ( !is_file_exist(dirname+sFilenamePng) )
+   	{
+	    logf_thread( (char*)"|  Nouveau nom : %s", sFilenamePng.c_str() );
+   		return;
+   	}
+	
+	logf_thread( (char*)"|  Le fichier existe : '%s'", sFilenamePng.c_str() );
+   	
+	int n=(int)sFilenamePng.find(".png");
+	sFilenamePng = sFilenamePng.substr(0, n);
+   	logf_thread( (char*)"|  Suppression de l'extension : '%s'", sFilenamePng.c_str() );
+
+    int no;
+   	char tmp[128];
+    for( no=0; no<10000; no++ )
+    {
+        snprintf(tmp, sizeof(tmp), "%s-%04d.png", (char*)sFilenamePng.c_str(), no );
+
+        if ( !is_file_exist(dirname+string(tmp)) )        break;
+    }    
+    if (no>=10000)
+    {
+        logf_thread( (char*)"|  [ WARNING ] indice 10000 atteind " );
+    }
+    sFilenamePng = string(tmp);
+    
+    logf_thread( (char*)"|  Nouveau nom : %s", sFilenamePng.c_str() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
 // Genere un nouveau nom de fichier pour la sauvegarde image
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::new_filename( string ext )
+void Device_cam::new_filename_png()
 {
-   	logf_thread( (char*)"Camera::new_filename( %s )", ext.c_str() );
+   	logf_thread( (char*)"Camera::new_filename_png( %s )", filename.c_str() );
    	
     int no;
-    string sName = string( name );
+    string sName = string( filename );
     
-    while ( name.find(" ") != string::npos )
-    	name.replace( name.find(" "), 1, "_");
+    while ( filename.find(" ") != string::npos )
+    	filename.replace( filename.find(" "), 1, "_");
 
-    
+    string s;
     for( no=0; no<100000; no++ )
     {
     	char tmp[128];
-        snprintf(tmp, sizeof(tmp), "%s-%06d%s", (char*)name.c_str(), no, ext.c_str() );
-    	filename = string(tmp);
+        snprintf(tmp, sizeof(tmp), "%s-%06d.png", (char*)filename.c_str(), no );
+    	s = string(tmp);
 
-        if ( !is_file_exist(dirname+filename) )        break;
+        if ( !is_file_exist(dirname+s) )        break;
+    }    
+	filename = s;
+    if (no>=100000)
+    {
+        logf_thread( (char*)"[ WARNING ] indice 100000 atteind " );
+    }
+    
+    logf_thread( (char*)"Nouveau nom : %s", filename.c_str() );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Genere un nouveau nom de fichier pour la sauvegarde image
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Device_cam::new_filename( string&  sFilename )
+{
+   	logf_thread( (char*)"Camera::new_filename( %s )", sFilename.c_str() );
+   	
+	if ( sFilename.find("%d") != string::npos )			replace_date( sFilename );
+	if ( sFilename.find("%t") != string::npos )			replace_time( sFilename );
+	if ( sFilename.find("%n") != string::npos )			replace_name( sFilename );
+   	
+    int no, n;
+    string sExt = "";
+    string sBasename = "";
+    n=sFilename.find(".") ;
+    
+    if ( n != string::npos )
+    {
+    	sExt = sFilename.substr( n );
+    	sBasename = sFilename.substr( 0, n );
+    }
+
+    logf_thread( (char*)"|  Nouveau nom : '%s'   '%s'", sBasename.c_str(), sExt.c_str() );
+
+   	if ( !is_file_exist(dirname+sBasename+sExt) )
+   	{
+	   	sBasename += sExt;
+   		return;
+   	}
+	
+    string nBasename;
+    for( no=0; no<100000; no++ )
+    {
+    	char tmp[128];
+        snprintf(tmp, sizeof(tmp), "%s-%06d", (char*)sBasename.c_str(), no );
+    	nBasename = string(tmp);
+
+        if ( !is_file_exist(dirname+nBasename+sExt) )        break;
     }    
 
     if (no>=100000)
     {
         logf_thread( (char*)"[ WARNING ] indice 100000 atteind " );
     }
+    sFilename = nBasename + sExt;
     
     logf_thread( (char*)"Nouveau nom : %s", filename.c_str() );
 }

@@ -688,7 +688,7 @@ void create_windows_button()
     pCercleErr->setMotion( (motion_cb_t) cb_motion );			// callback sur deplacement de la souris
 
     panelStatus->add( pCercleErr );
-    pCercleErr->setExtraString( string("SpinEdit Err") );
+    pCercleErr->setExtraString( string("STATUS::Err") );
 	//--------------------------------------------------------
 	//     pCercleAsserv
 	//--------------------------------------------------------
@@ -712,7 +712,7 @@ void create_windows_button()
     pCercleAsserv->set_pVal( &fLimitCorrection0 );
 
     panelStatus->add( pCercleAsserv );
-    pCercleAsserv->setExtraString( string("SpinEdit Asservi") );
+    pCercleAsserv->setExtraString( string("STATUS::Asservi") );
 	//--------------------------------------------------------
 	//		pCercleSuivi1
 	//--------------------------------------------------------
@@ -733,7 +733,7 @@ void create_windows_button()
     pCercleSuivi1->set_pVal( &fLimitCorrection1 );
 
     panelStatus->add( pCercleSuivi1 );
-    pCercleSuivi1->setExtraString( string("SpinEdit fLimitCorrection1") );
+    pCercleSuivi1->setExtraString( string("STATUS::fLimitCorrection1") );
 	//--------------------------------------------------------
 	//		pCercleTemps
 	//--------------------------------------------------------
@@ -754,7 +754,7 @@ void create_windows_button()
     pCercleTemps->set_pVal( &fTimeCorrection );
 
     panelStatus->add( pCercleTemps );
-    pCercleTemps->setExtraString( string("SpinEdit fTimeCorrection") );
+    pCercleTemps->setExtraString( string("STATUS::fTimeCorrection") );
 	//--------------------------------------------------------
     posStatusX = X+35;
 	//--------------------------------------------------------
@@ -927,12 +927,14 @@ void status_nuit(unsigned long color )
 	pUrgentUp->setColor( color );
 	pUrgentDown->setColor( color );
 
+	pFramesCapture->setColor( color );
+
 	if ( !bNuit )		color = VCF4_2_COLOR32( cJaune );
 
 	if (bMouseDeplace)              				pDeplacement->setColor(color);
     else                            				pDeplacement->setColor(color_light);
 
-    if (bAsservissement)                				pAsservi->setColor(color);
+    if (bAsservissement)               				pAsservi->setColor(color);
     else                            				pAsservi->setColor(color_light);
 
     if ( bSuivi )                   				pSuivi->setColor(color);

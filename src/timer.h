@@ -15,6 +15,7 @@ public:
 	
 	inline float		getCurrentTime()		const	{return fCurrentTime;}	// Temps courant
 	inline float		getElapsedTime()		const	{return (fElapsedTime);}	// Temps entre 2 frames
+	inline long			getMicro()						{return uMicro;}
 	//inline float getElapsedTime()		const {return (fElapsedTime);}	// Temps entre 2 frames
 	inline float		getReelElapsedTime()	const	{return (fReelElapsedTime);}	// Temps entre 2 frames
 	inline int			getFPSCounter()			const	{return nFPS;}			// FPS
@@ -37,6 +38,12 @@ private:
 	int					nFPS;
 	float				fHourTime;
 	long				frameCount;
+	
+	long				uMicro;
+
+	struct timeval		tv;
+	struct tm *			tm;
+
 
 SINGLETON_END()
 

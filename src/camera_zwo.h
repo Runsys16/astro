@@ -43,6 +43,7 @@ protected:
 	long						expo;
 	double						expo_val;
 	UNITE						expo_unite;
+	long						expo_coef;
 	char*						expo_unites[3];
 	long						wb_r;
 	long						wb_b;
@@ -56,8 +57,6 @@ protected:
 	bool						bWB_B;
 	bool						bBandwith;
 
-	double						dCurrentTime;
-	
 	//string						sName;
 	unsigned char* 				pImgBuf0;
 	unsigned char* 				pImgBuf1;
@@ -138,6 +137,7 @@ virtual	void					eraseGaiaDR3()						{};
 		void 					changeValueDoubleExpo( double, PanelSpinEditText* );
 		void	 				changeValueDoubleClickExpo( double, PanelSpinEditText* );
 		void					change_unite( bool, PanelSpinEditText* );
+		void					init_unite( long );
 	
 virtual	void					enregistre();
 		void					video();

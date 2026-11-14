@@ -68,8 +68,6 @@ PanelCourbe::PanelCourbe()
 
     init_dir();
     init_var();
-    //setDisplayGL(displayGLnuit_cb);
-    //resizeCourbe( width, height );
 
     wm.add(this);
     
@@ -243,6 +241,7 @@ void PanelCourbe::init_panel()
     
     pFiltreVal = new PanelSpinEditText();
     pFiltreVal->setPosAndSize( x -120, 0, 80, 20 );
+    pFiltreVal->setExtraString( "FFT::Filttre" );
 
     sprintf( s,"%0.0f", 256.0/filtre );
     pFiltreVal->changeText( s );
@@ -936,7 +935,7 @@ void PanelCourbe::glCourbes()
                     courbe1*ech_w, delta_courbe1*ech_h, false );
     }
 
-    glLineWidth(1.0);
+    glLineWidth(2.0);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1040,6 +1039,13 @@ int PanelCourbe::sc2winY( int n )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCourbe::displayBackground(void)
+{
+	glEchelle();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCourbe::displayGL(void)
 {
 	if ( !visible )			return;
@@ -1056,10 +1062,9 @@ void PanelCourbe::displayGL(void)
     
     pFiltreVal->setColor( color );
     
+	//------------------------------------------------------
     PanelWindow::displayGL();
-
-    pFiltreVal->setColor( color );
-    glEchelle();
+	//------------------------------------------------------
 
     int DY = getY();
     
