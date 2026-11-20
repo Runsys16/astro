@@ -25,6 +25,8 @@ Camera_mgr::Camera_mgr()
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::idleGL( float fElapsedTime )
 {
+
+
     if ( bAsservissement )
     {
 		if ( pAsserv ) 
@@ -37,7 +39,7 @@ void  Camera_mgr::idleGL( float fElapsedTime )
 				{
 					vec2 v = vec2( *pV );
 				
-					pAsserv->idleGL( fElapsedTime, v );
+					pAsserv->idle_asservissement( fElapsedTime, v );
 				}
 				else
 				{
@@ -47,6 +49,23 @@ void  Camera_mgr::idleGL( float fElapsedTime )
 			else
 			{
 				logf( (char*)"[ ERROR ] Pas d'etoile sur la camera" );
+			}
+		}
+	}
+	else if ( pCurrent ) 
+	{
+		PanelCamera * panelCamera = pCurrent->getPanelCamera();
+		vec2 v = vec2( pCurrent->getRefSuivi() );
+		change_joy( v.x, v.y );
+		
+		if ( panelCamera->getStars() )
+		{
+			vec2* pV = panelCamera->getStars()->getSuivi();
+			if ( pV )
+			{
+				vec2 v = vec2( *pV );
+			
+				pCurrent->idle_asservissement( fElapsedTime, v );
 			}
 		}
 	}
@@ -584,6 +603,18 @@ void  Camera_mgr::fullscreen()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void  Camera_mgr::testMove()
+{
+    int nb = pCameras.size();
+
+    for( int i=0; i<nb; i++ )
+    {
+        pCameras[i]->testMove();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 GLubyte* Camera_mgr::getPtr()
 {
     if ( pCurrent )             return pCurrent->getPtr();
@@ -645,6 +676,7 @@ void Camera_mgr::setRefSuivi(vec2& v)
 	if ( pCurrent == NULL )	    return;
 	
 	pCurrent->setRefSuivi( v );
+	pCurrent->saveRefSuivi( v );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

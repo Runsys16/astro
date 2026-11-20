@@ -486,6 +486,7 @@ void PanelCapture::updatePos()
     }
 	
 	updateEchelleGeo();
+	stars.setConvert( this );
 
     double fDX = (double)pReadBgr->w;// * ech_geo;
     double fDY = (double)pReadBgr->h;// * ech_geo;

@@ -87,7 +87,12 @@ void set_asservissement(void)
 	}
 
     if (bAsservissement)                				pAsservi->setColor(color);
-    else                            				pAsservi->setColor(color_light);
+    else                            					pAsservi->setColor(color_light);
+    
+	Camera_mgr& cams = Camera_mgr::getInstance();
+	if ( bAsservissement )		cams.setAsserv( cams.getCurrent() );
+	else						cams.setAsserv( NULL );
+    
 
     logf( (char*)"status::set_asservissement() bAsservissement = %s", BOOL2STR(bAsservissement) );
 }
@@ -392,16 +397,13 @@ void cb_rotationCheck(PanelCheckBox* p)	{
 	else
 	if ( p == pButtonControl )
 	{
-        log( (char*)"status::cb_rotationCheck() Toggle panelCamera !!!" );
-        /*
-        log_tab( true );
-        Camera_mgr::getInstance().togglePanel();
-        log_tab( false );
-        */
+        log( (char*)"status::cb_rotationCheck() Enregistre un image !!!" );
 
         Camera * p = Camera_mgr::getInstance().getCurrent();
         if ( p )
         {
+			p->setDirname(  panelEnregistre->getDirname()  );
+			p->setFilename( panelEnregistre->getFilename() );
 			p->enregistre();
         }
 	}
@@ -642,7 +644,7 @@ void create_windows_button()
 	int pos = 0;
 	
     pButtonHelp     = create_window_check_box( pos++, "help" );		pButtonHelp->setExtraString( string("Button Help") );
-    pButtonControl  = create_window_check_box( pos++, "camera" );	pButtonControl->setExtraString( string("Button Control") );
+    pButtonControl  = create_window_check_box( pos++, "camera" );	pButtonControl->setExtraString( string("Button Camera") );
     pButtonResultat = create_window_check_box( pos++, "cible" );	pButtonResultat->setExtraString( string("Button Resultat") );
     pButtonCourbe   = create_window_check_box( pos++, "courbe" );	pButtonCourbe->setExtraString( string("Button Courbe") );
     pButtonStdOut   = create_window_check_box( pos++, "console" );	pButtonStdOut->setExtraString( string("Button StdOut") );
@@ -766,25 +768,10 @@ void create_windows_button()
 	pAlpha = new PanelText( 	(char*)"a", (char*)POLICE , 50, 0, 14, 0xFFFFFFFF );
 	pDelta = new PanelText( 	(char*)"d", (char*)POLICE , 200, 0, 14, 0xFFFFFFFF );
 	
-	/*
-    //pAD = new PanelText( (char*)"=\ --h --\' --\"",		            PanelText::NORMAL_FONT, 60+10, 2 );
-    //char strAD[] = "= --h --\' --\"";
-    //char strDC[] = "= --  --\' --\"";
-    char strAD[] = "=";
-    char strDC[] = "=";
-    //strDC[4] = 176;		// caractere degre °
-    
-    pAD = new PanelText( (char*)strAD,		PanelText::NORMAL_FONT, 60+10, 2 );
-    pDC = new PanelText( (char*)strDC,		PanelText::NORMAL_FONT, 200+10, 2 );
-	
-	panelStatus->add( pAD );
-	panelStatus->add( pDC );
-	*/
 	
     pAlpha->setPos( 60-2,  2);
     pDelta->setPos( 200-2, 1);
-    /*
-    */
+
     
 	panelStatus->add( pAlpha );
 	panelStatus->add( pDelta );

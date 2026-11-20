@@ -141,19 +141,7 @@ void Asservissement::print_ecart()
 {
     static char sJoyXY[255];
     
-
-
-
-	Camera_mgr& cams = Camera_mgr::getInstance();
-	Camera* p = cams.getAsserv();
-	
-	if ( p != NULL )
-	{
-		snprintf( sJoyXY, sizeof(sJoyXY), "" VEC2_PRINTFN(0) " - %0.2lf", VEC2_AFF(vRefSuivi), dEcart );
-		
-	}
-	else
-		snprintf( sJoyXY, sizeof(sJoyXY), "" VEC2_PRINTFN(0) , VEC2_AFF(vRefSuivi) );
+	snprintf( sJoyXY, sizeof(sJoyXY), "" VEC2_PRINTFN(0) " - %0.2lf", VEC2_AFF(vRefSuivi), dEcart );
 
     pCoordSuivi->changeText((char*)sJoyXY );
 
@@ -161,8 +149,9 @@ void Asservissement::print_ecart()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Asservissement::idleGL( float fElapsedTime, vec2& vSuivi )
+void Asservissement::idle_asservissement( float fElapsedTime, vec2& vSuivi )
 {
+	//logf( (char*)"Suivi" VEC2_PRINTFN(2) " RefSuivi" VEC2_PRINTFN(2), VEC2_AFF(vSuivi), VEC2_AFF(vRefSuivi)  ); 
     //------------------------------------------------------
     //------------------------------------------------------
 	// CALCUL DE L' ASSERVISSEMENT
@@ -172,13 +161,19 @@ void Asservissement::idleGL( float fElapsedTime, vec2& vSuivi )
 	{
 	    fTimeCpt += fElapsedTime;
         
+		vec3 res, v, w;  double l;
+        w = vec3( vSuivi.x, vSuivi.y, 0.0);
+        v = w - vec3( vRefSuivi.x, vRefSuivi.y, 0.0);
+        dEcart = l = v.length();
+
+
         if ( bAsservissement )
         {
-            vec3 res, v, w;  double l;
-
+        	/*
             w = vec3( vSuivi.x, vSuivi.y, 0.0);
             v = w - vec3( vRefSuivi.x, vRefSuivi.y, 0.0);
             dEcart = l = v.length();
+            */
 			print_ecart();
 			
 			//logf( (char*)"Suivi" VEC2_PRINTFN(2) " RefSuivi" VEC2_PRINTFN(2), VEC2_AFF(vSuivi), VEC2_AFF(vRefSuivi)  ); 
@@ -218,6 +213,13 @@ void Asservissement::idleGL( float fElapsedTime, vec2& vSuivi )
 	            }
             }
 	    }
+	    else
+	    {
+			print_ecart();
+			
+			//logf( (char*)"Suivi" VEC2_PRINTFN(2) " RefSuivi" VEC2_PRINTFN(2), VEC2_AFF(vSuivi), VEC2_AFF(vRefSuivi)  ); 
+	    }
+		//print_ecart();
 	}
 
 }

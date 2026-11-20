@@ -15,6 +15,8 @@ Stars::Stars()
     pView			= NULL;
     pConvert 		= NULL;
     pNbStars		= NULL;
+    pSelect			= NULL;
+    
 	bAffPosition	= false;
 
     dCoefA			= 2196.00;
@@ -114,6 +116,8 @@ Star* Stars::addStar(int xm, int ym )
 
     //Star * pp = new Star((int) xm, (int)ym);
     Star * pp = new Star((int) vTex.x, (int)vTex.y);
+    pp->setConvert( pConvert );
+    
     pp->setModeMag( uModeMag );
     pp->setPtr( RB->ptr );
     pp->setWidth( RB->w );
@@ -253,6 +257,7 @@ Star* Stars::addStar(int xm, int ym, int dx_screen, int dy_screen, float e )
 
     //Star * pp = new Star((int) X, (int) Y);
     Star * pp = new Star((int) vTex.x, (int)vTex.y);
+    pp->setConvert( pConvert );
     
     
     pp->setModeMag( uModeMag );
@@ -423,6 +428,8 @@ void Stars::findAllStars()
     logf( (char*)"Find all star(%d,%d)", width, height );
 
     Star *      p = new Star();
+    p->setConvert( pConvert );
+    
     
     p->setModeMag( uModeMag );
     p->setPtr( RB->ptr );
@@ -444,6 +451,7 @@ void Stars::findAllStars()
                 int x_find = p->getPos().x;
                 int y_find = p->getPos().y;
                 p->computeMag();
+				p->setConvert( pConvert );
                 
                 if ( p->getMagnitude() < 20.0 )     
                 {
@@ -667,6 +675,7 @@ void Stars::selectLeft( int xp, int yp)
 void Stars::selectMiddle( int xp, int yp)
 {
     int nb = v_tStars.size();
+    pSelect = NULL;
     for( int n=0; n<nb; n++ )
     {
         int x_star = v_tStars[n]->getX();
@@ -679,11 +688,13 @@ void Stars::selectMiddle( int xp, int yp)
         {
 			v_tStars[n]->toggleSuivi();
         	logf( (char*)"Stars::selectMiddle Etoile[%d] toggle suivi ", n );
+			if ( v_tStars[n]->getSuivi() )			pSelect = v_tStars[n];
 		}
 		else
 		{
 			v_tStars[n]->setSuivi(false);
 		}
+		
     }
 }
 //--------------------------------------------------------------------------------------------------------------------

@@ -27,6 +27,8 @@ protected:
     PanelEditText*					pDirname;
     PanelEditText*					pFilename;
     PanelCheckBox*					pCheckSuivi;
+    PanelTextOmbre*					pCameraName;
+    PanelTextOmbre*					pSuiviName;
 
 	string							sDirname;
 	string							sFilename;
@@ -40,6 +42,9 @@ protected:
     bool							bShooting;
     bool							bExitShooting;
     bool							bCheckSuivi;
+    
+    Camera*							pCamera;
+    Camera*							pCameraSuivi;
 
 public:
     ~PanelEnregistre();
@@ -54,18 +59,22 @@ public:
     void                            saveValues();
 
 	Camera*							find_camera();
+	Camera*							find_camera_suivi();
 volatile bool						check_suivi();
 	void							shooting();
     void                            commande_photo();
 
 inline	void						stop()				{ bExitShooting = true; }
 inline	bool						getShooting()		{ return bShooting; }
+inline	string&						getFilename()		{ return sFilename; }
+inline	string&						getDirname()		{ return sDirname; }
     
 virtual void						changeValueDouble( double val, void *p );
 virtual void						changeValueDoubleClick( double val, void *p );
 
 virtual void                        updatePos();
 virtual void                        displayGL();
+virtual void                        idle(float);
 
 virtual void						releaseLeftCB( int, int, void*);
 		void						start_filebrowser();

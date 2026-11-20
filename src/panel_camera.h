@@ -84,6 +84,7 @@ virtual void			updatePos();
 
 		void			clip(int&, int&);
 		void			compute_centre();
+		void			compute_ech_usr();
 		void			compute_echelle();
 		void			computeColor();
 	//-----------------------------------------------------------------
@@ -100,7 +101,7 @@ virtual	void			tex_2_screen( vec2& );
 virtual	void			tex_2_panel( vec2& );
 virtual	void			panel_2_tex( vec2& );
 virtual	void			panel_2_screen( vec2& );
-virtual	double			get_echelle()                                    { return echelle; }
+virtual	double			get_echelle()									{ return echelle; }
 	//-----------------------------------------------------------------
     	void			glCercle(int x, int y, int rayon);
 inline	void			glCercle(vec2 v, int r)							{ glCercle( (int)v.x, (int)v.y, r ); }

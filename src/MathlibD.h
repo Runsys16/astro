@@ -52,11 +52,14 @@
 
 #define DegToRad(a)	(a)*=M_PIDIV180
 #define RadToDeg(a)	(a)*=M_180DIVPI
+#define degToRad(a)	(a)*=M_PIDIV180
+#define radToDeg(a)	(a)*=M_180DIVPI
 #define DEG2RAD(a)	((a)*M_PIDIV180)
 #define RAD2DEG(a)	((a)*M_180DIVPI)
 #define RADIANS(a)	((a)*M_PIDIV180)
 #define DEGRES(a)	((a)*M_180DIVPI)
 #define MAS2DEG(a)	((a)/(3600000.0))
+
 
 #define LUM(__r, __g, __b) (0.3333 * (double)__r + 0.5 * (double)__g  + 0.1667 * (double)__b)
 

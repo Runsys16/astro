@@ -76,6 +76,7 @@ public:
     void                        reOrder();
     void                        togglePanel();
     void						fullscreen();
+    void						testMove();
 
     GLubyte*                    getPtr();
 
@@ -132,6 +133,7 @@ public:
 inline Camera*              	getCurrent()						{ return pCurrent; }   
 inline bool 					is_current( Camera * p )			{ return (pCurrent == p); }
 inline Camera*              	getAsserv()							{ return pAsserv; }   
+//inline void						setAsserv(Camera*p)					{ pAsserv = p; }   
     
 };
 

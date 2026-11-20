@@ -362,6 +362,26 @@ void CameraZWO::load_var_control()
 			//logf_thread( (char*)"  %s", s.c_str() );
 		}
 	}
+
+	//string
+	bPanelControl = false;
+	
+	s = name + string("_bControl");
+	logf_thread( (char*)"Variable  %s", s.c_str() );
+	
+    if ( var.existe(s) 	)			bPanelControl = var.getb(s);
+    else							var.set(s, bPanelControl);
+
+	bool b = var.getSauve();
+	var.setSauve(true);
+	var.sauve();
+	var.setSauve(b);
+
+
+    if ( var.existe(s) 	)
+		logf_thread( (char*)"Variable  %s  existe", s.c_str() );
+	else
+		logf_thread( (char*)"Variable  %s  n'existe pas", s.c_str() );
 	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -462,7 +482,9 @@ int CameraZWO::addControl()	{
 
 	// Change la taille de la fenetre controle 
 	int dy = ++n*dyt;
-	panelControl->setSize( 200+170, dy);
+	panelControl->setSize( 380, dy);
+
+	panelControl->setVisible( bPanelControl );
 
 	// sorite
     logf_thread( (char*)"dy=%d", dy);
@@ -603,7 +625,7 @@ void CameraZWO::CreateControl()	{
 	int hsc = wm.getHeight();
     
     
-    int dx = 200 + 150;
+    int dx = 360;
     int dy = 150;
     int x = 20;
     int y = 20;
@@ -616,6 +638,21 @@ void CameraZWO::CreateControl()	{
     dy = addControl();
     resizeControlFirst(wsc, hsc, dx, dy);
 
+	VarManager& var = VarManager::getInstance();
+	string s;
+	s = name + string("_Control_X");
+    if ( var.existe(s) 	)			vPosCtrl.x = var.geti(s);
+    else							var.set( s, panelControl->getPosX() );
+    x = var.geti(s);
+    
+	s = name + string("_Control_Y");
+    if ( var.existe(s) 	)			vPosCtrl.y = var.geti(s);
+    else							var.set( s, panelControl->getPosY() );
+    y = var.geti(s);
+
+    panelControl->setPos( x, y );
+    
+	
     log_tab(false);
     logf_thread((char*)"CameraZWO::CreateControl() --------------- %s", name.c_str() );
     panelControl->setVisible(false);
@@ -803,6 +840,31 @@ void CameraZWO::fullSizePreview(int width, int height)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::testMove()	{
+    //logf((char*) "CameraZWO::testMove() %s", (char*)getName().c_str() );
+    //logf((char*) "CameraZWO::testMove()" );
+    
+    if ( panelControl )
+    {
+    	if ( panelControl->getHaveMove() )
+    	{
+    		logf((char*) "|   %s have move", (char*)getName().c_str() );
+    		
+			VarManager& var = VarManager::getInstance();
+			string s;
+			s = name + string("_Control_X");
+			var.set( s, panelControl->getPosX() );
+			
+			s = name + string("_Control_Y");
+			var.set( s, panelControl->getPosY() );
+    	}
+    	
+    	panelControl->resetHaveMove();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 //bool*     pCharging;
 //
 void charge_camera()
@@ -975,8 +1037,17 @@ void CameraZWO::setControlVisible(bool b)
 void CameraZWO::togglePanel()
 {
 	log((char*)"CameraZWO::togglePanel()");
-	bPanelControl = ! bPanelControl;
-	if (panelControl )		panelControl->setVisible( bPanelControl );
+	if (panelControl )		
+	{
+		bPanelControl = ! bPanelControl;
+		panelControl->setVisible( bPanelControl );
+
+
+		VarManager& var = VarManager::getInstance();
+		string		s	= name + string("_bControl");
+		
+		var.set(s, bPanelControl);
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -1441,7 +1512,6 @@ void CameraZWO::thread_capture_video()
 		if ( bEnregistre )
 		{
 			string s = filename;
-			// rajoute un indice si necessaire ex: essai.png => essai-0025.png
 			new_filename_png(s);
 			//logf_thread( (char*)s.c_str() );
 			s = dirname + s;

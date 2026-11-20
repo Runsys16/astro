@@ -265,6 +265,7 @@ void Camera::CreateControl()	{
     if ( getFd() == -1 )
     {
         logf_thread((char*)"Le materiel n'est pas encore ouvert");
+        return;
     }
     panelControl = new PanelWindow();
     panelControl->setDisplayGL(displayGLnuit_cb);
@@ -279,7 +280,7 @@ void Camera::CreateControl()	{
 	int hsc = wm.getHeight();
     
     
-    int dx = 200 +150;
+    int dx = 380;
     int dy = 150;
     int x = 20;
     int y = 20;
@@ -289,7 +290,35 @@ void Camera::CreateControl()	{
     dy = addControl();
     resizeControlFirst(wsc, hsc, dx, dy);
 
+	VarManager& var = VarManager::getInstance();
+	string s;
+	s = name + string("_Control_X");
+    if ( var.existe(s) 	)			vPosCtrl.x = var.geti(s);
+    else							var.set( s, panelControl->getPosX() );
+    x = var.geti(s);
+    
+	s = name + string("_Control_Y");
+    if ( var.existe(s) 	)			vPosCtrl.y = var.geti(s);
+    else							var.set( s, panelControl->getPosY() );
+    y = var.geti(s);
+
+    panelControl->setPos( x, y );
+    
+
     wm.add(panelControl);
+    
+	s = name + "_bControl";
+	if ( var.existe(s) )		bPanelControl = var.getb(s);
+	else
+	{
+		var.set( s, false );
+		bool b = var.getSauve();
+		var.setSauve(true);
+		var.sauve();
+		var.setSauve(b);
+	}
+
+	panelControl->setVisible( bPanelControl );
 
     log_tab(false);
     logf_thread((char*)"Camera::CreateControl() --------------- %s", getDevName() );
@@ -472,6 +501,7 @@ void Camera::fullSizePreview(int width, int height)	{
 
 	panelCamera->setPosAndSize( xCam+bx, yCam+by, dxCam, dyCam);
 	panelCamera->raz_ech_usr();
+	panelCamera->compute_ech_usr();
 	panelCamera->compute_echelle();
 	
 	if ( bPanelControl )		panelControl->setVisible( true );
@@ -480,7 +510,34 @@ void Camera::fullSizePreview(int width, int height)	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Camera::testMove()	{
+    //logf((char*) "CameraZWO::testMove() %s", (char*)getName().c_str() );
+    //logf((char*) "CameraZWO::testMove()" );
+    
+    if ( panelControl )
+    {
+    	if ( panelControl->getHaveMove() )
+    	{
+    		logf((char*) "|   %s have move", (char*)getName().c_str() );
+    		
+			VarManager& var = VarManager::getInstance();
+			string s;
+			s = name + string("_Control_X");
+			var.set( s, panelControl->getPosX() );
+			
+			s = name + string("_Control_Y");
+			var.set( s, panelControl->getPosY() );
+    	}
+    	
+    	panelControl->resetHaveMove();
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Camera::resizeControl(int width, int height)	{
+	if ( panelControl == NULL )			return;
+
     logf((char*) "Camera::resizeControl(%d, %d) %s", width, height, getName().c_str() );
 
     int DX = panelControl->getDX();
@@ -503,6 +560,8 @@ void Camera::resizeControl(int width, int height)	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::resizeControlFirst(int width, int height, int dx, int dy)	{
+	if ( panelControl == NULL )			return;
+
 #define COIN_HD  20
     logf((char*) "Camera::resizeControlFirst(%d, %d, %d, %d) %s", width, height, dx, dy, getDevName() );
     
@@ -741,7 +800,7 @@ void Camera::setVisible(bool b)
 {
     //log((char*)"Camera::setVisible()");
     panelCamera->setVisible( b );
-    if ( bPanelControl )	panelControl->setVisible( b );
+    if ( panelControl && bPanelControl )	panelControl->setVisible( b );
     //log((char*)"Camera::setVisible()");
     //panelControl->setVisible( b );
 }
@@ -750,7 +809,7 @@ void Camera::setVisible(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::setControlVisible(bool b)
 {
-    panelControl->setVisible( b );
+    if ( panelControl )			panelControl->setVisible( b );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -759,7 +818,13 @@ void Camera::togglePanel()
 {
 	log((char*)"Camera::togglePanel()");
 	bPanelControl = ! bPanelControl;
-	if (panelControl )		panelControl->setVisible( bPanelControl );
+	if (panelControl )
+	{
+		panelControl->setVisible( bPanelControl );
+		VarManager& var = VarManager::getInstance();
+		string 	s = name + "_bControl";
+		var.set( s, bPanelControl );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -884,6 +949,27 @@ void Camera::saveCompareStar()
 	starCompare.setVizier( &vizier);
 
 	starCompare.saveCompareStar();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Sauvegarde de la variable dans var.ini
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Camera::saveRefSuivi( vec2& v )
+{
+   	logf( (char*)"Camera::saveRefSuivi( " VEC2_PRINTFN(0) " )", VEC2_AFF(v) );
+	
+	string		s;
+	VarManager& var = VarManager::getInstance();
+	
+	s = name + "_RefSuivi.x";
+	var.set( s, v.x );
+
+	s = name + "_RefSuivi.y";
+	var.set( s, v.y );
+	
+	change_joy( v.x, v.y );
+
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

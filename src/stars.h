@@ -82,9 +82,11 @@ inline double				getB()						{ return dCoefB; }
 //inline double				getC()						{ printf("%lf\n",dCoefC); return dCoefC; }
 inline double				getC()						{ return dCoefC; }
 inline void					setConvert(Convert* p)		{ pConvert = p; }
+inline Star*				getSelect()					{ return pSelect; }
 
 private:
     vector<Star*>           v_tStars;
+    Star*					pSelect;
     rb_t*                   RB;
     PanelSimple*            pView;
     Convert*				pConvert;

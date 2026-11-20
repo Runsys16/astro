@@ -98,6 +98,7 @@ void Star::init(int xx, int yy)
     panelZoom   = NULL;
     RB          = NULL;
     pView       = NULL;
+    pConvert	= NULL;
     
     ad			= 9999.0;			// Important pour la fonction haveCoord()
     de			= 9999.0;
@@ -703,31 +704,29 @@ void Star::getFWHM( int xx, int yy, int size)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::glCercle(int rayon)
 {
-    int delta_x = 0;
-    int delta_y = 0;
-    
-    if (pView!=NULL) {
-        delta_x = -pView->getPosX();
-        delta_y = -pView->getPosY();
-        //logf( (char*)"Star::glCercle() : delta(%d, %d)", delta_x, delta_y );
-    }
-    else
-    {
-        //logf( (char*)"Star::glCercle() : pView NULL" );
-    }
+    int xx;
+    int yy;
 
-    //logf( (char*)"Star::glCercle() : screen(%d, %d)", x_screen, y_screen );
+	if ( pConvert )
+	{
+		vec2 v = vec2(pos);
+		pConvert->tex_2_screen(v);
+		xx = v.x;
+		yy = v.y;
+	}
+	else
+	{
+	    logf( (char*)"x_screen" );
+		xx = x_screen;
+		yy = y_screen;
+	}    
+	/*
+	xx = x_screen;
+	yy = y_screen;
+	*/
 
-    delta_x = 0;
-    delta_y = 0;
-
-    int xx = x_screen - delta_x;// + dx_screen;
-    int yy = y_screen - delta_y;// + dy_screen;
-    //int xx = pos.x - delta_x;// + dx_screen;
-    //int yy = pos.y - delta_y;// + dy_screen;
-    
-    xSuivi = pos.x;
-    ySuivi = pos.y;
+    //xSuivi = pos.x;
+    //ySuivi = pos.y;
     
     //logf( (char*)"Star::glCercle() : (%d, %d)  (%d, %d) pos(%0.2f,%0.2f)", xx, yy, x, y, pos.x, pos.y );
 
@@ -842,50 +841,61 @@ void Star::set_delta(float xx, float yy)
 //--------------------------------------------------------------------------------------------------------------------
 void Star::updatePos(int X, int Y, float ew, float eh)
 {
-    //logf( (char*)"Star::updatePos(%d, %d, %0.2f)", X, Y, ew, eh);
-    float xx, yy;
+	//logf( (char*)"Star::updatePos(%d, %d, %0.2f)", X, Y, ew, eh);
+	float xx, yy;
 
-    ech_x = ew;
-    ech_y = eh;
-    //-------------------------------------
-    // pos deja decale de 0.5 (getFWHM())
-    //-------------------------------------
-    //x_screen = ech_x*(pos.x+0.5) + (float)X;
-    //y_screen = ech_y*(pos.y+0.5) + (float)Y;
-    x_screen = ech_x*(pos.x) + (float)X;
-    y_screen = ech_y*(pos.y) + (float)Y;
+	ech_x = ew;
+	ech_y = eh;
+	//--------------------------------------------
+	// pos deja decale de 0.5 (getFWHM())
+	//--------------------------------------------
+	//x_screen = ech_x*(pos.x+0.5) + (float)X;
+	//y_screen = ech_y*(pos.y+0.5) + (float)Y;
+	x_screen = ech_x*(pos.x) + (float)X;
+	y_screen = ech_y*(pos.y) + (float)Y;
 
-    float r = computeRayon();
-    xx = x + 0.707 * r;
-    yy = y + 0.707 * r;
-    
-    xx *= ech_x;
-    yy *= ech_y;
-    
-    pInfo->setPos( xx, yy );
-    pInfo->updatePos();
+	vec2 v = vec2( pos );
+	if( pConvert )
+	{
+		pConvert->tex_2_screen( v );
+		x_screen = v.x;
+		y_screen = v.y;
+	}
+	//--------------------------------------------
+	// pInfo 45° plus bas
+	float r = computeRayon();
+	xx = x + 0.707 * r;
+	yy = y + 0.707 * r;
 
-    if (panelZoom!=NULL)
-    {
-	    panelZoom->setTextureSize( RB->w, RB->h );
+	xx *= ech_x;
+	yy *= ech_y;
 
-	    //logf( (char*)"Star::updatePos bSuivi : %s bSelect : %s", BOOL2STR(bSuivi), BOOL2STR(bSelect) );
-    	//if ( bPanelResultat && panelResultat->getVisible() )
-    	if ( bPanelResultat && bSuivi )
-    	{
-    		xx = panelResultat->getPosX();
-    		yy = panelResultat->getPosY() + 20;
-    	}
-    	else
-    	{
-    		//logf( (char*)"panelResultat False" );
-    		xx = pInfo->getX();
-    		yy = pInfo->getY() + 20;
+	pInfo->setPos( xx, yy );
+	pInfo->updatePos();
+	//--------------------------------------------
+	if (panelZoom!=NULL)
+	{
+		panelZoom->setTextureSize( RB->w, RB->h );
+
+		//--------------------------------------------
+		// deplace pInfo
+		//--------------------------------------------
+		if ( bPanelResultat && bSuivi )
+		{
+			xx = panelResultat->getPosX();
+			yy = panelResultat->getPosY() + 20;
+		}
+		else
+		{
+			
+			//logf( (char*)"panelResultat False" );
+			xx = pInfo->getX();
+			yy = pInfo->getY() + 20;
 			yy += 20.0;
 		}
-	    panelZoom->setPosAndSize( xx, yy, 200, 200 );
-	    panelZoom->updatePos();
-    }
+		panelZoom->setPosAndSize( xx, yy, 200, 200 );
+		panelZoom->updatePos();
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

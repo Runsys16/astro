@@ -375,6 +375,7 @@ void PanelCamera::releaseLeft(int xm, int ym)
 		xSuivi = (double)xx;
 		ySuivi = (double)yy;
 
+		/*
 		var.set( "xSuivi", xSuivi );		
 		var.set( "ySuivi", ySuivi );		
 		
@@ -384,13 +385,17 @@ void PanelCamera::releaseLeft(int xm, int ym)
     	logf( (char*)"Touche CTRL vRefSuivi : " VEC2_PRINTFN(0), VEC2_AFF( vRefSuivi ) );
     	
     	logf( (char*)" Sauvegarde %s_RefSuivi.xy " VEC2_PRINTFN(0), pCamera->getName().c_str(), VEC2_AFF( vRefSuivi ) );
+		*/
 
     	string s;
     	
+    	pCamera->saveRefSuivi( vRefSuivi );
+    	/*
     	s = pCamera->getName() + "_RefSuivi.x";
     	var.set( s, vRefSuivi.x );
     	s = pCamera->getName() + "_RefSuivi.y";
     	var.set( s, vRefSuivi.y );
+    	*/
     }
 	else
 	{
@@ -524,6 +529,9 @@ void PanelCamera::wheelUp(int xm, int ym)
     
     double k = 1.1;
     ech_user *= k;
+
+    //compute_echelle();
+    
     echelle = ech_user * ech_geo;
     setSize( _dx*echelle, _dy*echelle );
     
@@ -653,6 +661,42 @@ void PanelCamera::compute_centre()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void PanelCamera::compute_ech_usr()
+{
+    //if  ( panelCourbe==NULL )   return;
+    if  ( pReadBgr==NULL )      return;
+
+	WindowsManager& wm = WindowsManager::getInstance();
+    
+    //      Dimension ecran
+    double wSc = (double)getPosDX();
+    double hSc = (double)getPosDY();
+
+    //      Dimension texture
+    double wTex = (double)pReadBgr->w;
+    double hTex = (double)pReadBgr->h;
+
+    //      Facteur d'echelle
+    double ew = wSc / wTex;
+    double eh = hSc / hTex;
+    ech_user = ew<eh ? ew : eh;
+
+	/*
+    //      Facteur d'echelle
+    ew = wTex / (double)getDX();
+    eh = hTex / (double)getDY();
+    ech_user = ew<eh ? ew : eh;
+    */
+
+	// Echelle totale
+    echelle = ech_user * ech_geo;
+
+    logf( (char*)"PanelCamera::compute_echelle %.2f  use_geo(%.2fx,%.2f) ...", (float)echelle, (float)ech_user, (float)ech_geo );
+    logf( (char*)"ew, eh (%.2lfx,%.2lf) ... wSc %0.2lf, hSc %0.2lf ... wtex %0.2lf, hTex %0.2lf" , ew, eh, wSc, hSc, wTex, hTex );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void PanelCamera::compute_echelle()
 {
     //if  ( panelCourbe==NULL )   return;
@@ -671,14 +715,20 @@ void PanelCamera::compute_echelle()
     //      Facteur d'echelle
     double ew = wSc / wTex;
     double eh = hSc / hTex;
-    //ew = 1600.0/1920.0;
-    //eh = 900.0/1080.0;
     ech_geo = ew<eh ? ew : eh;
+
+	/*
+    //      Facteur d'echelle
+    ew = wTex / (double)getDX();
+    eh = hTex / (double)getDY();
+    ech_user = ew<eh ? ew : eh;
+    */
 
 	// Echelle totale
     echelle = ech_user * ech_geo;
 
-    logf( (char*)"PanelCamera::compute_echelle %.2f  (%.2fx,%.2f) ...", (float)echelle, (float)ech_user, (float)ech_geo );
+    logf( (char*)"PanelCamera::compute_echelle %.2f  use_geo(%.2fx,%.2f) ...", (float)echelle, (float)ech_user, (float)ech_geo );
+    logf( (char*)" (%.2fx,%.2f) ...", (float)ew, (float)eh );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -736,6 +786,7 @@ void PanelCamera::tex_2_screen(vec2& v)
 
 	vec2 delta = vec2(getX(), getY());
 	v = (v * echelle) + delta;
+	//logf( (char*)"Echelle %0.4f", (float)echelle );
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

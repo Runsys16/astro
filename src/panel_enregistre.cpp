@@ -55,6 +55,7 @@ void PanelEnregistre::init()
 	pTempo			= NULL;
 	pOK				= NULL;
 	pQUIT			= NULL;
+	pCamera			= NULL;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -71,7 +72,7 @@ void PanelEnregistre::init_panel()
     int x   =  5;
     int y   =   0;
     int dx  =  90;
-    int DX	= 360;
+    int DX	= 380;
     float gris = 0.7;
     vcf4 c  = vcf4(gris, gris, gris, 1.0);
 
@@ -176,6 +177,24 @@ void PanelEnregistre::init_panel()
 
 	add( pCheckSuivi );
     y += dy;
+    //-----------------------------------------------------
+    //                       Camera NAME
+    //-----------------------------------------------------
+	add(       new PanelTextOmbre( (char*)"Camera\t:",			PanelText::NORMAL_FONT, x, y, get_color(c) ) );
+    pCameraName = new PanelTextOmbre( (char*)"---",			PanelText::NORMAL_FONT, 0, 0 );
+    pCameraName->setPosAndSize( x+92, y, 14, 14);
+
+	add( pCameraName );
+    y += dy;
+    //-----------------------------------------------------
+    //                       Camera Suvi NAME
+    //-----------------------------------------------------
+	add(       new PanelTextOmbre( (char*)"Cam Suivi\t:",			PanelText::NORMAL_FONT, x, y, get_color(c) ) );
+    pSuiviName = new PanelTextOmbre( (char*)"---",			PanelText::NORMAL_FONT, 0, 0 );
+    pSuiviName->setPosAndSize( x+92, y, 14, 14);
+
+	add( pSuiviName );
+    y += dy;
     y += 5;
 
     //-----------------------------------------------------
@@ -228,6 +247,27 @@ void PanelEnregistre::init_panel()
     wm.onTop(this);
     wm.changeCapture(this);
     wm.changeFocus(pFrames);
+
+	/*
+	x	= getPosX();
+	y	= getPosY();
+	dx	= getPosDX();
+	dy	= getPosDY();
+	*/
+
+	INIT_VARI( PanelEnregistre_X,   getPosX() );
+	INIT_VARI( PanelEnregistre_Y,   getPosY() );
+	//INIT_VARI( PanelEnregistre_DX,  getPosDX() );
+	//INIT_VARI( PanelEnregistre_DY,  getPosDY() );
+	//INIT_VARI( PanelEnregistre_DY,  getPosDY() );
+
+	x	= var.geti( "PanelEnregistre_X" );
+	y	= var.geti( "PanelEnregistre_Y" );
+	//dx	= var.geti( "PanelEnregistre_DX" );
+	//dy	= var.geti( "PanelEnregistre_DY" );
+
+	setPos( x, y );
+	setVisible( var.getb( "bPanelEnregistre" ) );
 
 }
 //--------------------------------------------------------------------------------------------------------------------
@@ -362,18 +402,14 @@ Camera* PanelEnregistre::find_camera()
 {
 	//logf_thread( (char*)"PanelEnregistre::find_camera()" );
 
-	Camera_mgr& cams = Camera_mgr::getInstance();
-	Camera*		pCam = cams.getAsserv();
-	
-	if ( pCam == NULL )
-	{
-		pCam = cams.getCurrent();
-		if ( pCam == NULL )
-		{
-		    logf_thread( (char*)"[ WARNING ] Aucune camera de trouvee" );
-		}
-	}
-	return pCam;
+	return Camera_mgr::getInstance().getCurrent();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+Camera* PanelEnregistre::find_camera_suivi()
+{
+	return Camera_mgr::getInstance().getAsserv();
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -439,12 +475,13 @@ void PanelEnregistre::shooting()
 		    logf_thread( (char*)"Image OK" );
 			n++;
 			
-			if ( n >= iFrames )	break;
 
 			// tempo de iTempo ms
 			usleep( iTempo * 1000 );
 			
 		    log_tab(false);
+
+			if ( n >= iFrames )	break;
 		}
 	}    
 	
@@ -476,12 +513,6 @@ void PanelEnregistre::commande_photo()
 		return;
 	}
 	
-	
-	
-    bShooting = false;
-
-    VarManager&         var = VarManager::getInstance();
-
 	bExitShooting = false;
     th_shooting = thread( &PanelEnregistre::shooting, this );
     bShooting = true;
@@ -604,6 +635,32 @@ void PanelEnregistre::displayGL()
     if (pTempo)		pTempo->setColor( color );
     
     PanelWindow::displayGL();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void PanelEnregistre::idle( float fElapsedtime )
+{
+	//logf( (char*)"PanelEnregistre::idle( %0.2f )", fElapsedtime );
+	Camera*	p = find_camera();
+	if ( p != pCamera )
+	{
+		pCamera = p;
+		
+		if ( p )			pCameraName->changeText( pCamera->getName() );
+		else				pCameraName->changeText( (char*)"---" );
+	}
+
+
+
+	p = find_camera_suivi();
+	if ( p != pCameraSuivi )
+	{
+		pCameraSuivi = p;
+		
+		if ( p )			pSuiviName->changeText( pCamera->getName() );
+		else				pSuiviName->changeText( (char*)"---" );
+	}
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

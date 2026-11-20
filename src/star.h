@@ -8,6 +8,7 @@
 #include <thread>
 
 #include "panel_zoom.h"
+#include "convert.h"
 
 
 using namespace std;
@@ -75,56 +76,60 @@ public:
     
     void				affiche_position(bool);
     
-    inline vec2&        getPos()										{ return pos; }
-    inline void         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
-    inline void         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
-    inline void         getSuivi(vec2& v)                               { v.x=xSuivi; v.y=ySuivi; }
-    inline float        getSuiviX()                                     { return xSuivi; }
-    inline float        getSuiviY()                                     { return ySuivi; }
+inline vec2&        getPos()										{ return pos; }
+inline void         getPos(vec2* v)                                 { v->x=pos.x; v->y=pos.y; }
+inline void         getPos(vec2& v)                                 { v.x=pos.x; v.y=pos.y; }
+inline void         getSuivi(vec2& v)                               { v.x=xSuivi; v.y=ySuivi; }
+inline float        getSuiviX()                                     { return xSuivi; }
+inline float        getSuiviY()                                     { return ySuivi; }
 
-    inline bool         getSuivi()                                      { return bSuivi; }
-    inline void         toggleSuivi()                                   { bSuivi = !bSuivi; }
-    inline void         setSuivi(bool b)                                { bSuivi = b; }
+inline bool         getSuivi()                                      { return bSuivi; }
+inline void         toggleSuivi()                                   { bSuivi = !bSuivi; }
+inline void         setSuivi(bool b)                                { bSuivi = b; }
 
-    inline bool         getSelect()                                     { return bSelect; }
-    inline void         toggleSelect()                                  { bSelect = !bSelect; }
-    inline void         setSelect(bool b)                               { bSelect = b; }
+inline bool         getSelect()                                     { return bSelect; }
+inline void         toggleSelect()                                  { bSelect = !bSelect; }
+inline void         setSelect(bool b)                               { bSelect = b; }
 
-    inline bool         getZoom()                                       { return bZoom; }
-    inline void         toggleZoom()                                    { bZoom = !bZoom; }
+inline bool         getZoom()                                       { return bZoom; }
+inline void         toggleZoom()                                    { bZoom = !bZoom; }
 
-    inline int          getX()                                          { return x; }
-    inline int          getY()                                          { return y; }
-    inline int          getXScreen()                                    { return x_screen; }
-    inline int          getYScreen()                                    { return y_screen; }
-    inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
-    inline double		getMagnitude()                                  { return magnitude; }
-    inline double		getPonderation()								{ return ponderation; }
-    inline PanelText*   getInfo()                                       { return pInfo; }
-    inline void         select()                                        { bSelect = !bSelect; }
-    
-    inline bool         haveCoord()                                     { return ad != 9999.0; }
-    inline double       getAD()                                         { return ad; }
-    inline double       getDE()                                         { return de; }
+inline int          getX()                                          { return x; }
+inline int          getY()                                          { return y; }
+inline int          getXScreen()                                    { return x_screen; }
+inline int          getYScreen()                                    { return y_screen; }
+inline void         setXY( int xx, int yy)                          { x = xx; y = yy; pInfo->setPos(xx,yy); }
+inline double		getMagnitude()                                  { return magnitude; }
+inline double		getPonderation()								{ return ponderation; }
+inline PanelText*   getInfo()                                       { return pInfo; }
+inline void         select()                                        { bSelect = !bSelect; }
 
-    inline void         setAD(double d)                                 { ad = d; }
-    inline void         setDE(double d)                                 { de = d; }
+inline bool         haveCoord()                                     { return ad != 9999.0; }
+inline double       getAD()                                         { return ad; }
+inline double       getDE()                                         { return de; }
 
-    inline int          getNotFound()                                   { return nbNotFound; }
-    inline void         resetNotFound()                                 { nbNotFound = 0; }
-	inline void			setModeMag(int n)								{ modeMag = n; }
+inline void         setAD(double d)                                 { ad = d; }
+inline void         setDE(double d)                                 { de = d; }
 
-	inline void			setA(double d)									{ dCoefA = d; }
-	inline void			setB(double d)									{ dCoefB = d; }
-	inline void			setC(double d)									{ dCoefC = d; }
-	inline double*		getvA()											{ return &dCoefA; }
-	inline double*		getvB()											{ return &dCoefB; }
-	inline double*		getvC()											{ return &dCoefC; }
+inline int          getNotFound()                                   { return nbNotFound; }
+inline void         resetNotFound()                                 { nbNotFound = 0; }
+inline void			setModeMag(int n)								{ modeMag = n; }
 
-	inline bool			getGraph()										{ return bGraph; }
-	inline void			setGraph(bool b)								{ bGraph = b; }
-    
-    inline void         setIdx(int i)									{ idx = i; }
+inline void			setA(double d)									{ dCoefA = d; }
+inline void			setB(double d)									{ dCoefB = d; }
+inline void			setC(double d)									{ dCoefC = d; }
+inline double*		getvA()											{ return &dCoefA; }
+inline double*		getvB()											{ return &dCoefB; }
+inline double*		getvC()											{ return &dCoefC; }
+
+inline bool			getGraph()										{ return bGraph; }
+inline void			setGraph(bool b)								{ bGraph = b; }
+
+inline void         setIdx(int i)									{ idx = i; }
+inline void			setConvert( Convert* p )						{ pConvert = p; }
+
+
+
 private:
     vec2                pos;
     
@@ -180,6 +185,7 @@ private:
     
     PanelZoom*          panelZoom;
     PanelSimple*        pView;
+    Convert*			pConvert;
 };
 
 

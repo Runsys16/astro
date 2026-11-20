@@ -31,6 +31,7 @@
 #include "catalog.h"
 #include <GL/freeglut_ext.h>
 #include <mutex>
+#include "MathAstro.h"
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 #define SIZEPT  20
@@ -243,6 +244,9 @@ PanelText*          pFPS;
 
 Pleiade*            pPleiade = NULL;
 
+double				dLatloc		= 0.0;
+double				dLonloc		= 0.0;
+
 double              ac;
 double              dc;
 int					appelIdle = 0;
@@ -275,12 +279,13 @@ bool                bArretUrgence;
 bool                bAffIconeCapture = true;;
 
 
-bool                bPanelControl  		= false;
+//bool                bPanelControl  		= false;
 bool                bPanelHelp     		= false;
 bool                bPanelResultat 		= false;
 bool                bPanelCourbe   		= false;
 bool                bPanelStdOut   		= false;
 bool                bPanelSerial		= false;
+bool                bPanelEnregistre	= false;
 bool                bAfficheVec			= false;
 bool                bMouseDeplace		= false;
 bool                bMouseDeplaceVers	= false;
@@ -1627,11 +1632,11 @@ void arduino_online(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 void change_joy(int x, int y)
 {
-    logf( (char*)"main::change_joy(%d,%d)", x, y );
+    //logf( (char*)"main::change_joy(%d,%d)", x, y );
     static char sJoyXY[255];
     
     vec2 v = vec2( x, y );
-	snprintf( sJoyXY, sizeof(sJoyXY), "" VEC2_PRINTFN(0) , VEC2_AFF(v) );
+	snprintf( sJoyXY, sizeof(sJoyXY), "" VEC2_PRINTFN(0) " - ...", VEC2_AFF(v) );
 
     pCoordSuivi->changeText((char*)sJoyXY );
 
@@ -1660,7 +1665,7 @@ void change_joy(double x, double y)
 //--------------------------------------------------------------------------------------------------------------------
 void change_ad_status(double ad)
 {
-    if ( d_deg_ad == ad)			return;
+    if ( d_deg_ad == ad )			return;
 
 	Captures::getInstance().change_ad( ad );
     VarManager& var = VarManager::getInstance();
@@ -1945,7 +1950,9 @@ static void idleGL(void)
 	setColor();
 	log_thread_aff();
     
-	Timer&          timer = Timer::getInstance();
+	Timer&          timer	= Timer::getInstance();
+    Camera_mgr&		cams	= Camera_mgr::getInstance();
+
 
     if ( bFirstStart && bPause )
     {
@@ -2006,6 +2013,17 @@ static void idleGL(void)
     // Gestion de la sauvegarde des coordonnees
     // ecran des differentes fenetres
     //-----------------------------------------------------------------------
+    if ( panelEnregistre && panelEnregistre->getHaveMove() )
+    {
+        panelEnregistre->resetHaveMove();
+
+        var.set("PanelEnregistre_X",  panelEnregistre->getX() );
+        var.set("PanelEnregistre_Y",  panelEnregistre->getY() );
+        var.set("PanelEnregistre_DX", panelEnregistre->getDX() );
+        var.set("PanelEnregistre_DY", panelEnregistre->getDY() );
+        
+    }
+
     if ( panelStdOut && panelStdOut->getHaveMove() )
     {
         panelStdOut->resetHaveMove();
@@ -2040,6 +2058,9 @@ static void idleGL(void)
         var.set("PanelCourbe_DY", panelCourbe->getDY() );
         
     }
+    
+   	cams.testMove();
+
 #ifdef DEBUG_CALLBACK_OPENGL
     logf( (char*)"    %02d\t%.8f Camera_mgr, Captures", ++appelIdle, +Timer::getInstance().getGlutTime() -timerAppelIdle  );
 #endif
@@ -2047,7 +2068,6 @@ static void idleGL(void)
     // Mise a jour des buffers de la camera
     // et des pointeurs vers la texture background
     //-----------------------------------------------------------------------
-    Camera_mgr& cams = Camera_mgr::getInstance();
     
     cams.update();
 #ifdef DEBUG_CALLBACK_OPENGL
@@ -3445,7 +3465,12 @@ static void glutKeyboardFunc(unsigned char key, int x, int y) {
 
     case 'f':  // '-'
         {
-        	logf( (char*)"WindowsManage NbTextures %d", wm.getNbTextures() );
+
+			Serveur_mgr& serv = Serveur_mgr::getInstance();
+			serv.affiche_azim( {d_deg_ad, d_deg_dc} );
+			
+
+        	logf( (char*)"WindowsManager NbTextures %d", wm.getNbTextures() );
         }
         break;
 
@@ -4210,6 +4235,7 @@ static void glutSpecialFunc(int key, int x, int y)	{
     	log_tab( true );
 
 		panelEnregistre->setVisible( !panelEnregistre->getVisible() );
+		var.set( "bPanelEnregistre", panelEnregistre->getVisible()  );
 
 	    log_tab( false );
 
@@ -4869,7 +4895,7 @@ static void CreateStatus()	{
 	panelStatus->add( pSuivi );
 
 	_x += 40;
-    pCoordSuivi = new PanelText( (char*)"(---, ---)",   PanelText::NORMAL_FONT, _x, 2 );
+    pCoordSuivi = new PanelText( (char*)"(---, ---) - ...",   PanelText::NORMAL_FONT, _x, 2 );
 	panelStatus->add( pCoordSuivi );
 
 	_x += 140;
@@ -4911,10 +4937,19 @@ static void CreateStdOut()	{
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+static void CreateEnregistre()	{
+    if ( panelEnregistre != NULL )		return;
+    
+   	panelEnregistre = new PanelEnregistre();
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 static void CreateAllWindows()	{
     bool Old = bDesactiveLog;
     
     bDesactiveLog = false;
+    panelEnregistre = NULL;
     
 	CreateStdOut();
     CreateHelp();
@@ -4922,7 +4957,7 @@ static void CreateAllWindows()	{
     CreateCourbe();
     CreateStatus();
     CreatePleiades();
-    panelEnregistre = NULL;
+	CreateEnregistre();
 
 	// Initialise certaine variables    
     panelCourbe->get_vOrigine().x = xSuivi;
@@ -5349,11 +5384,12 @@ void charge_var()
     LOAD_VARB( bModeManuel, false );
     LOAD_VARB( bMouseDeplace, false );
     LOAD_VARB( bSuivi, false );
-    LOAD_VARB( bPanelControl, false );
+    //LOAD_VARB( bPanelControl, false );
     LOAD_VARB( bPanelCourbe, false );
     LOAD_VARB( bPanelHelp, true );
     LOAD_VARB( bPanelResultat, false );
     LOAD_VARB( bPanelStdOut, false );
+    LOAD_VARB( bPanelEnregistre, false );
     LOAD_VARB( bPanelSerial, false );
 
     LOAD_VARB( bAfficheVec, true )
@@ -5439,6 +5475,9 @@ void charge_var()
 	INIT_VARI( PanelStdOut_Y, 180 );
 	INIT_VARI( PanelStdOut_DX, 867 );
 	INIT_VARI( PanelStdOut_DY, 569 );
+	
+	INIT_VARF( dLatloc, 0 );
+	INIT_VARF( dLonloc, 0 );
 
 	//------------------------------------------------------------------------------------
 

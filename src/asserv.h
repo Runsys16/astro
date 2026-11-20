@@ -37,7 +37,7 @@ public:
 
 	void							compute_matrix();
 	void							print_ecart();
-	void							idleGL(float, vec2&);
+	void							idle_asservissement(float, vec2&);
 
 inline mat3&						get_matrix()				{ return mTexture2pap; }
 inline vec3&						get_vAD()					{ return vAD; }

@@ -23,6 +23,7 @@
 #include <sys/socket.h>
 
 
+#include "MathAstro.h"
 #include "MathlibD.h"
 #include <WindowsManager.h>
 #include <thread>
@@ -92,6 +93,8 @@ public:
     void                        write_stellarium( int, char* s, int, bool );
     void                        write_stellarium( double, double );
 
+	void						compute_azim( st_az&, st_eq );
+	void						affiche_azim( st_eq );
     void                        _goto( double, double );
     void                        _sync( double, double );
     void                        _goto_rad( double, double );

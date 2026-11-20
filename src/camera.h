@@ -51,6 +51,8 @@ protected:
     bool						bFullScreen;
     bool						bIconized;
 	bool*						pCharging;
+	
+	ivec2						vPosCtrl;
 
 	double						dCurrentTime;
 	
@@ -78,6 +80,7 @@ inline	void	                stop_thread()						{ bExitThread = true; }
 virtual void    	            CreatePreview();
 virtual void    	            iconSizePreview(int, int);
 virtual void    	            fullSizePreview(int, int);
+virtual void					testMove();
 
 virtual void    	            resizeControl(int, int);
 	    void					resizeControlFirst(int, int, int, int);
@@ -109,6 +112,7 @@ virtual	void					eraseGaiaDR3()						{};
 
 		void					compareStar();
 		void					saveCompareStar();
+		void					saveRefSuivi(vec2&);
 		
 inline	bool					getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }
 inline	PanelCamera*			getPanelCamera()					{ return panelCamera; }

@@ -94,6 +94,7 @@ virtual void 					changeValueDoubleClick( double val, void *p );
 virtual void					CreatePreview();
 virtual void					iconSizePreview(int, int);
 virtual void					fullSizePreview(int, int);
+virtual void					testMove();
 
 virtual void					change_background();
     

@@ -542,17 +542,109 @@ void Serveur_mgr::write_stellarium(double ad, double dc)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::compute_azim( st_az& azim, st_eq j2000 )
+{
+    //logf_thread( (char*)"Serveur_mgr::compute_azim(( %lf, %lf )", ra, dc );
+
+	VarManager& 	var = VarManager::getInstance();
+	st_obs			obs;
+	double			jd;
+	
+	//-------------------------------------------------
+	obs.temp_c = 10.0;
+	obs.pressure_hpa = 1013.0;
+	obs.lat_deg = (double)var.getf( "dLatloc" );
+	obs.lon_deg = (double)var.getf( "dLonloc" );
+	
+    jd = julian_now();
+											
+	azim = equatorial_to_horizontal( j2000, obs, jd, true  );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void Serveur_mgr::affiche_azim( st_eq j2000 )
+{
+    logf_thread( (char*)"Serveur_mgr::affiche_azim(( %lf, %lf )", j2000.ad, j2000.dc );
+
+	VarManager& 	var = VarManager::getInstance();
+	struct timeval	tv;
+	struct tm*		tm;
+	char			dms_azi[80];
+	char			dms_hau[80];
+	char			hms_alpha[80];
+	char			dms_delta[80];
+	st_az			azim;
+	double			cSec;
+	//-------------------------------------------------
+	compute_azim( azim, j2000 );
+	
+	gettimeofday( &tv, NULL );
+	cSec = (double)tv.tv_usec / 10000.0;
+
+	tm = gmtime(&tv.tv_sec);
+	logf_thread( (char*)"UTC time \t: %02d/%02d/%04d %02dh%02dm%02d.%0.2ds",
+							tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year,
+							tm->tm_hour, tm->tm_min, tm->tm_sec,
+							(int)round(cSec)  );
+
+	tm = localtime(&tv.tv_sec);
+	logf_thread( (char*)"Local time \t: %02d/%02d/%04d %02dh%02dm%02d.%0.2ds     - %02ldh TimeZone",
+							tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year,
+							tm->tm_hour, tm->tm_min, tm->tm_sec,
+							(int)round(cSec), tm->tm_gmtoff/3600 );
+
+
+	deg2str_dms( azim.azi,  dms_azi, sizeof(dms_azi) );
+	deg2str_dms( azim.hau, dms_hau, sizeof(dms_hau) );
+
+	logf_thread( (char*)"Azimut\t\t: %s\t(%0.8lf)", dms_azi, azim.azi );
+	logf_thread( (char*)"Hauteur\t\t: %s\t(%0.8lf)", dms_hau, azim.hau  );	
+
+	//-------------------------------------------------
+	deg2str_hms( j2000.ad, hms_alpha, sizeof(hms_alpha) );
+	deg2str_dms( j2000.dc, dms_delta, sizeof(dms_delta) );
+
+	logf_thread( (char*)"AD J2000\t: %s\t(%0.8lf)", hms_alpha, j2000.ad );
+	logf_thread( (char*)"DC J2000\t: %s\t(%0.8lf)", dms_delta, j2000.dc );
+
+	// ----------------------------------------
+	st_eq reel = versCoordonneesApparentes( j2000, julian_now() );
+	
+	deg2str_hms( reel.ad, hms_alpha, sizeof(hms_alpha) );
+	deg2str_dms( reel.dc, dms_delta, sizeof(dms_delta) );
+
+	logf_thread( (char*)"AD reel\t\t: %s\t(%0.8lf)", hms_alpha, reel.ad );
+	logf_thread( (char*)"DC reel\t\t: %s\t(%0.8lf)", dms_delta, reel.dc );
+	/*	
+	// ----------------------------------------
+
+    st_eq mean_jnow = precess_coordinates( j2000, julian_now(), true);
+    st_eq app_jnow  = apply_nutation( mean_jnow, julian_now(), true);
+
+	// ----------------------------------------
+	deg2str_hms( app_jnow.ad, hms_alpha, sizeof(hms_alpha) );
+	deg2str_dms( app_jnow.dc, dms_delta, sizeof(dms_delta) );
+
+	logf_thread( (char*)"AD reelv1\t: %s\t(%0.8lf)", hms_alpha, app_jnow.ad );
+	logf_thread( (char*)"DC reelv1\t: %s\t(%0.8lf)", dms_delta, app_jnow.dc );
+
+	// ----------------------------------------
+	deg2str_hms( app_jnow.ad, hms_alpha, sizeof(hms_alpha) );
+	deg2str_dms( app_jnow.dc, dms_delta, sizeof(dms_delta) );
+
+	logf_thread( (char*)"AD v2:\t%s\t(%0.8lf)", hms_alpha, app_jnow.ad );
+	logf_thread( (char*)"DC v2:\t%s\t(%0.8lf)", dms_delta, app_jnow.dc );
+	*/	
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void Serveur_mgr::_goto( double ra, double dc )
 {
 	Serial& serial = Serial::getInstance();
 
-    struct hms HMS;
-    rad2hms( ra, HMS );
-    logf_thread( (char*)"AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, ra );
-    
-    struct dms DMS;
-    rad2dms( dc, DMS );
-    logf_thread( (char*)"DC : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, dc );
+	affiche_azim( {ra, dc} );
     
 	//-------------------------------------------------
     if ( serial.isConnect() )
@@ -576,6 +668,7 @@ void Serveur_mgr::_goto( double ra, double dc )
 void Serveur_mgr::_sync( double ra, double dc )
 {
     logf_thread( (char*)"Serveur_mgr::_sync(( %lf, %lf )", ra, dc );
+    log_tab(true);
 
 	Serial& serial = Serial::getInstance();
 
@@ -585,13 +678,8 @@ void Serveur_mgr::_sync( double ra, double dc )
 		change_ad_status( ra );
 		change_dc_status( dc );
     }
-	//return;
-    struct hms HMS;			deg2hms( ra, HMS );
-	struct dms DMS;			deg2dms( dc, DMS );
-	
-    logf_thread( (char*)"  AD : %02dh%02dm%0.2lfs (%0.8lf)", (int)HMS.h, (int)HMS.m, HMS.s, ra );
-    logf_thread( (char*)"  DC : %02dd%02d\'%0.2lf\" (%0.8lf)", (int)DMS.d, (int)DMS.m, DMS.s, dc );
-    
+
+	affiche_azim( {ra, dc} );
 	//-------------------------------------------------
     if ( serial.isConnect() )
     {
@@ -612,6 +700,7 @@ void Serveur_mgr::_sync( double ra, double dc )
 	//Camera_mgr::getInstance().position(ra, dc);
 	// Captures::getInstance().position(ra, dc);
 	//-------------------------------------------------
+    log_tab(false);
 
 }
 //--------------------------------------------------------------------------------------------------------------------
