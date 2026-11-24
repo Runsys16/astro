@@ -1,10 +1,10 @@
 #ifndef SERVEUR_MGR_H
 #define SERVEUR_MGR_H  1
 
-
-//#include "camera.h"
+#ifndef TARGET_ARM
 #include <GL/glew.h>
 #include <GL/glut.h>
+#endif
 
 #include <unistd.h>
 #include <stdio.h>
@@ -25,7 +25,9 @@
 
 #include "MathAstro.h"
 #include "MathlibD.h"
+#ifndef TARGET_ARM
 #include <WindowsManager.h>
+#endif
 #include <thread>
 
 #include "main.h"

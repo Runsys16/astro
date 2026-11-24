@@ -13,7 +13,7 @@
 //--------------------------------------------------------------------------------------------------------------------
 double normalize_deg(double angle)
 {
-    angle = std::fmod(angle, 360.0);
+    angle = fmod(angle, 360.0);
 
     return (angle < 0.0) ? angle + 360.0 : angle;
 }
@@ -34,7 +34,7 @@ double to_julian_date(int year, int month, int day, int hour, int minute, double
     int B				= 2 - A + (A / 4);
     double day_fraction = (hour + (minute + second / 60.0) / 60.0) / 24.0;
     
-    return std::floor(365.25 * (year + 4716)) + std::floor(30.6001 * (month + 1)) + day + day_fraction + B - 1524.5;
+    return floor(365.25 * (year + 4716)) + floor(30.6001 * (month + 1)) + day + day_fraction + B - 1524.5;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -70,10 +70,10 @@ st_nutation compute_nutation(double jd)
     double L			= DEG2RAD( normalize_deg(280.4665 + 36000.7698 * T) );
     double Lp			= DEG2RAD( normalize_deg(218.3165 + 481267.8813 * T) );
 
-    double d_psi_arcsec	= -17.20 * std::sin(omega) - 1.32 * std::sin(2 * L)
-                          - 0.23 * std::sin(2 * Lp) + 0.21 * std::sin(2 * omega);
-    double d_eps_arcsec	=  9.20 * std::cos(omega) + 0.57 * std::cos(2 * L)
-                          + 0.10 * std::cos(2 * Lp) - 0.09 * std::cos(2 * omega);
+    double d_psi_arcsec	= -17.20 * sin(omega) - 1.32 * sin(2 * L)
+                          - 0.23 * sin(2 * Lp) + 0.21 * sin(2 * omega);
+    double d_eps_arcsec	=  9.20 * cos(omega) + 0.57 * cos(2 * L)
+                          + 0.10 * cos(2 * Lp) - 0.09 * cos(2 * omega);
 
     double eps0_arcsec	= 84381.448 - 46.8150 * T - 0.00059 * T * T + 0.001813 * T * T * T;
 
@@ -94,7 +94,7 @@ double greenwich_apparent_sidereal_time_deg(double jd)
     double gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0)
                   + 0.000387933 * T * T - (T * T * T) / 38710000.0;
     st_nutation nut = compute_nutation(jd);
-    double eq_equinoxes = DEG2RAD( nut.d_psi_deg * std::cos(nut.eps_deg ));
+    double eq_equinoxes = DEG2RAD( nut.d_psi_deg * cos(nut.eps_deg ));
   
     return normalize_deg(gmst + eq_equinoxes);
 }
@@ -115,7 +115,7 @@ st_eq precess_coordinates(st_eq coord, double jd, bool to_jnow = true)
 
     if (!to_jnow) {
         // Inversion des paramètres de précession
-        std::swap(zeta, z);
+        swap(zeta, z);
         zeta = -zeta;
         z = -z;
         theta = -theta;
@@ -124,12 +124,12 @@ st_eq precess_coordinates(st_eq coord, double jd, bool to_jnow = true)
     double ra0		= DEG2RAD(  (coord.ad * HEU2DEB) );
     double dec0		= DEG2RAD( coord.dc );
 
-    double A		= std::cos(dec0) * std::sin(ra0 + zeta);
-    double B		= std::cos(theta) * std::cos(dec0) * std::cos(ra0 + zeta) - std::sin(theta) * std::sin(dec0);
-    double C		= std::sin(theta) * std::cos(dec0) * std::cos(ra0 + zeta) + std::cos(theta) * std::sin(dec0);
+    double A		= cos(dec0) * sin(ra0 + zeta);
+    double B		= cos(theta) * cos(dec0) * cos(ra0 + zeta) - sin(theta) * sin(dec0);
+    double C		= sin(theta) * cos(dec0) * cos(ra0 + zeta) + cos(theta) * sin(dec0);
 
-    double ra_out  = std::atan2(A, B) + z;
-    double dec_out = std::asin(clamp(C, -1.0, 1.0));
+    double ra_out  = atan2(A, B) + z;
+    double dec_out = asin(clamp(C, -1.0, 1.0));
 
     return { normalize_deg(RAD2DEG( ra_out )) / HEU2DEB, RAD2DEG( dec_out ) };
 }
@@ -145,10 +145,10 @@ st_eq apply_nutation(st_eq mean_jnow, double jd, bool forward = true)
     double dec_rad		= DEG2RAD( mean_jnow.dc );
     double eps_rad		= DEG2RAD( nut.eps_deg );
 
-    double d_ra_deg		= (std::cos(eps_rad) + std::sin(eps_rad) * std::sin(ra_rad) * std::tan(dec_rad)) * nut.d_psi_deg
-                       - (std::cos(ra_rad) * std::tan(dec_rad)) * nut.d_eps_deg;
-    double d_dec_deg	= (std::sin(eps_rad) * std::cos(ra_rad)) * nut.d_psi_deg
-                       + std::sin(ra_rad) * nut.d_eps_deg;
+    double d_ra_deg		= (cos(eps_rad) + sin(eps_rad) * sin(ra_rad) * tan(dec_rad)) * nut.d_psi_deg
+                       - (cos(ra_rad) * tan(dec_rad)) * nut.d_eps_deg;
+    double d_dec_deg	= (sin(eps_rad) * cos(ra_rad)) * nut.d_psi_deg
+                       + sin(ra_rad) * nut.d_eps_deg;
 
     double sign = forward ? 1.0 : -1.0;
     
@@ -166,7 +166,7 @@ double apply_refraction(double true_alt_deg, double temp_c, double pressure_hpa)
 {
     if (true_alt_deg < -1.0)		return true_alt_deg;
     
-    double	R_arcmin = DEG2RAD( 1.02 / std::tan((true_alt_deg + 10.3 / (true_alt_deg + 5.11)) ));
+    double	R_arcmin = DEG2RAD( 1.02 / tan((true_alt_deg + 10.3 / (true_alt_deg + 5.11)) ));
     		R_arcmin *= (pressure_hpa / 1010.0) * (283.0 / (273.0 + temp_c));
 
     return true_alt_deg + (R_arcmin / 60.0);
@@ -179,7 +179,7 @@ double remove_refraction(double app_alt_deg, double temp_c, double pressure_hpa)
     if (app_alt_deg < -1.0) return app_alt_deg;
 
     // Formule de Bennett pour passer de la hauteur apparente à la hauteur vraie
-    double 	R_arcmin = DEG2RAD( 1.0 / std::tan((app_alt_deg + 7.31 / (app_alt_deg + 4.4)) ));
+    double 	R_arcmin = DEG2RAD( 1.0 / tan((app_alt_deg + 7.31 / (app_alt_deg + 4.4)) ));
     		R_arcmin *= (pressure_hpa / 1010.0) * (283.0 / (273.0 + temp_c));
     		
     return app_alt_deg - (R_arcmin / 60.0);
@@ -203,12 +203,12 @@ st_az equatorial_to_horizontal(st_eq j2000, st_obs obs, double jd, bool with_ref
     double dec      = DEG2RAD( app_jnow.dc );
     double lat      = DEG2RAD( obs.lat_deg );
 
-    double sin_alt	= std::sin(lat) * std::sin(dec) + std::cos(lat) * std::cos(dec) * std::cos(H);
-    double alt_deg	= RAD2DEG( std::asin(clamp(sin_alt, -1.0, 1.0)) );
+    double sin_alt	= sin(lat) * sin(dec) + cos(lat) * cos(dec) * cos(H);
+    double alt_deg	= RAD2DEG( asin(clamp(sin_alt, -1.0, 1.0)) );
 
-    double y		= std::sin(H);
-    double x		= std::cos(H) * std::sin(lat) - std::tan(dec) * std::cos(lat);
-    double az_deg	= normalize_deg(RAD2DEG( std::atan2(y, x) ) + 180.0);
+    double y		= sin(H);
+    double x		= cos(H) * sin(lat) - tan(dec) * cos(lat);
+    double az_deg	= normalize_deg(RAD2DEG( atan2(y, x) ) + 180.0);
 
     if (with_refraction) {
         alt_deg = apply_refraction(alt_deg, obs.temp_c, obs.pressure_hpa);
@@ -230,12 +230,12 @@ st_eq horizontal_to_equatorial(st_az hor, st_obs obs, double jd, bool has_refrac
     double A			= DEG2RAD( normalize_deg(hor.azi - 180.0) );
     double lat			= DEG2RAD( obs.lat_deg );
 
-    double sin_dec		= std::sin(lat) * std::sin(alt) - std::cos(lat) * std::cos(alt) * std::cos(A);
-    double dec_deg		= RAD2DEG( std::asin(clamp(sin_dec, -1.0, 1.0)) );
+    double sin_dec		= sin(lat) * sin(alt) - cos(lat) * cos(alt) * cos(A);
+    double dec_deg		= RAD2DEG( asin(clamp(sin_dec, -1.0, 1.0)) );
 
-    double y			= std::sin(A);
-    double x			= std::cos(A) * std::sin(lat) + std::tan(alt) * std::cos(lat);
-    double ha_deg 		= RAD2DEG( normalize_deg(std::atan2(y, x) ));
+    double y			= sin(A);
+    double x			= cos(A) * sin(lat) + tan(alt) * cos(lat);
+    double ha_deg 		= RAD2DEG( normalize_deg(atan2(y, x) ));
 
     double last_deg		= normalize_deg(greenwich_apparent_sidereal_time_deg(jd) + obs.lon_deg);
     double ra_app_hours	= normalize_deg(last_deg - ha_deg) / HEU2DEB;
@@ -255,7 +255,7 @@ st_eq horizontal_to_equatorial(st_az hor, st_obs obs, double jd, bool has_refrac
 
 constexpr double ARCSEC2RAD = (M_PI / 180.0 ) / 3600.0;
 
-using Matrice3_3 = std::array<std::array<double, 3>, 3>;
+using Matrice3_3 = array<array<double, 3>, 3>;
 
 
 
@@ -281,13 +281,13 @@ Matrice3_3 multiplierMatrices(const Matrice3_3& A, const Matrice3_3& B)
 Matrice3_3 matricePrecessionIAU2006(double T)
 {
     // Angles en secondes d'arc (incluant le décalage de repère GCRS -> J2000)
-    double zeta = (2.650545 + T * (2306.083227 + T * (0.2988499 + T * (0.01801828 + T * (-0.000005971 - 0.0000003173 * T))))) * ARCSEC2RAD;
-    double z    = (-2.650545 + T * (2306.077181 + T * (1.0927348 + T * (0.01826837 + T * (-0.000028596 + 0.0000002904 * T))))) * ARCSEC2RAD;
-    double theta = (T * (2004.191903 + T * (-0.4294934 + T * (-0.04182264 + T * (-0.000007089 - 0.0000001274 * T))))) * ARCSEC2RAD;
+    double zeta		= (2.650545 + T * (2306.083227 + T * (0.2988499 + T * (0.01801828 + T * (-0.000005971 - 0.0000003173 * T))))) * ARCSEC2RAD;
+    double z		= (-2.650545 + T * (2306.077181 + T * (1.0927348 + T * (0.01826837 + T * (-0.000028596 + 0.0000002904 * T))))) * ARCSEC2RAD;
+    double theta	= (T * (2004.191903 + T * (-0.4294934 + T * (-0.04182264 + T * (-0.000007089 - 0.0000001274 * T))))) * ARCSEC2RAD;
 
-    double cz = std::cos(zeta), sz = std::sin(zeta);
-    double cZ = std::cos(z),    sZ = std::sin(z);
-    double ct = std::cos(theta), st = std::sin(theta);
+    double cz 		= cos(zeta), sz = sin(zeta);
+    double cZ		= cos(z),    sZ = sin(z);
+    double ct		= cos(theta), st = sin(theta);
 
     // P = Rz(-z) * Ry(theta) * Rz(-zeta)
     return {{
@@ -307,11 +307,11 @@ Matrice3_3 matriceNutation(double T)
     double epsA = (84381.406 - 46.836769 * T - 0.0001831 * T * T + 0.00200340 * T * T * T) * ARCSEC2RAD;
 
     // Arguments fondamentaux de Delaunay (en radians)
-    double l  = DEG2RAD( std::fmod(134.96340251 + (1717915923.2178 * T + 31.8792 * T * T) / 3600.0, 360.0) ); // Anomalie moyenne Lune
-    double lp = DEG2RAD( std::fmod(357.52910918 + (129596581.0481 * T - 0.5532 * T * T) / 3600.0, 360.0) );  // Anomalie moyenne Soleil
-    double F  = DEG2RAD( std::fmod(93.27209062  + (1739527262.8478 * T - 12.7512 * T * T) / 3600.0, 360.0) ); // Argument de latitude Lune
-    double D  = DEG2RAD( std::fmod(297.85019547 + (1602961601.2090 * T - 6.3706 * T * T) / 3600.0, 360.0) );  // Élongation moyenne Lune
-    double Om = DEG2RAD( std::fmod(125.04455501 + (-6962890.5431 * T + 7.4722 * T * T) / 3600.0, 360.0) );    // Longitude nœud ascendant Lune
+    double l  = DEG2RAD( fmod(134.96340251 + (1717915923.2178 * T + 31.8792 * T * T) / 3600.0, 360.0) ); // Anomalie moyenne Lune
+    double lp = DEG2RAD( fmod(357.52910918 + (129596581.0481 * T - 0.5532 * T * T) / 3600.0, 360.0) );  // Anomalie moyenne Soleil
+    double F  = DEG2RAD( fmod(93.27209062  + (1739527262.8478 * T - 12.7512 * T * T) / 3600.0, 360.0) ); // Argument de latitude Lune
+    double D  = DEG2RAD( fmod(297.85019547 + (1602961601.2090 * T - 6.3706 * T * T) / 3600.0, 360.0) );  // Élongation moyenne Lune
+    double Om = DEG2RAD( fmod(125.04455501 + (-6962890.5431 * T + 7.4722 * T * T) / 3600.0, 360.0) );    // Longitude nœud ascendant Lune
 
     // Table des 15 termes dominants de nutation (couvre > 99,8 % de l'amplitude totale)
     // Format : {l, l', F, D, Om, dPsi_sin (0.1 mas), dPsi_t, dEps_cos (0.1 mas), dEps_t}
@@ -339,8 +339,8 @@ Matrice3_3 matriceNutation(double T)
 
     for (const auto& t : table) {
         double arg = t.l * l + t.lp * lp + t.F * F + t.D * D + t.Om * Om;
-        dPsi += (t.psi + t.psiT * T) * std::sin(arg);
-        dEps += (t.eps + t.epsT * T) * std::cos(arg);
+        dPsi += (t.psi + t.psiT * T) * sin(arg);
+        dEps += (t.eps + t.epsT * T) * cos(arg);
     }
 
     // Conversion des dixièmes de milliseconde d'arc (0.1 mas) en radians
@@ -348,9 +348,9 @@ Matrice3_3 matriceNutation(double T)
     dEps *= 0.0001 * ARCSEC2RAD;
 
     double eps = epsA + dEps; // Obliquité vraie de la date
-    double ceA = std::cos(epsA), seA = std::sin(epsA);
-    double ce  = std::cos(eps),  se  = std::sin(eps);
-    double cp  = std::cos(dPsi), sp  = std::sin(dPsi);
+    double ceA = cos(epsA), seA = sin(epsA);
+    double ce  = cos(eps),  se  = sin(eps);
+    double cp  = cos(dPsi), sp  = sin(dPsi);
 
     // N = Rx(-eps) * Rz(-dPsi) * Rx(epsA)
     return {{
@@ -375,18 +375,18 @@ st_eq versCoordonneesApparentes(st_eq posJ2000, double jdCible)
     double ra0		= DEG2RAD( posJ2000.ad );
     double dec0		= DEG2RAD( posJ2000.dc );
 
-    double x0		= std::cos(dec0) * std::cos(ra0);
-    double y0		= std::cos(dec0) * std::sin(ra0);
-    double z0		= std::sin(dec0);
+    double x0		= cos(dec0) * cos(ra0);
+    double y0		= cos(dec0) * sin(ra0);
+    double z0		= sin(dec0);
 
     double x		= NP[0][0] * x0 + NP[0][1] * y0 + NP[0][2] * z0;
     double y		= NP[1][0] * x0 + NP[1][1] * y0 + NP[1][2] * z0;
     double z		= NP[2][0] * x0 + NP[2][1] * y0 + NP[2][2] * z0;
 
-    double ra = RAD2DEG( std::atan2(y, x) );
+    double ra = RAD2DEG( atan2(y, x) );
     if (ra < 0.0) ra += 360.0;
 
-    double dec = RAD2DEG( std::asin( clamp(z, -1.0, 1.0) ) );
+    double dec = RAD2DEG( asin( clamp(z, -1.0, 1.0) ) );
 
     return {ra, dec};
 }

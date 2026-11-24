@@ -27,7 +27,6 @@ void PanelEnregistre::init()
 
     INIT_VARI( RECORD_Frames, 1 )
     INIT_VARI( RECORD_Tempo, 1 )
-    INIT_VARI( RECORD_Num, 1 )
     INIT_VARB( RECORD_Suivi, true )
     
     sDirname	= "/home/rene/.astropilot/capture";

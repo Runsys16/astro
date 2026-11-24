@@ -127,8 +127,8 @@ void SYNSCAN::decode_precise(char *s, int len)
 //--------------------------------------------------------------------------------------------------------------------
 void SYNSCAN::encode_precise(char *s, int len)
 {
-	double ad = d_deg_ad;
-	double dc = d_deg_dc;
+	double ad = pos_telescope.ad;
+	double dc = pos_telescope.dc;
 	
 #ifdef DEBUG
 	logf_thread( (char*)" %lf, %lf", ad, dc );

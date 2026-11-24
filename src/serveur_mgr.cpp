@@ -1,9 +1,13 @@
-#include "serveur_mgr.h"
-#include "camera_mgr.h"
-#include "captures.h"
-#include "var_mgr.h"
 #include <sys/time.h>
 #include <time.h>
+
+#include "serveur_mgr.h"
+#include "var_mgr.h"
+
+#ifndef TARGET_ARM
+#include "captures.h"
+#include "camera_mgr.h"
+#endif
 //#include "MathlibD.h"
 //--------------------------------------------------------------------------------------------------------------------
 #define VAR_GLOBAL
@@ -605,8 +609,8 @@ void Serveur_mgr::affiche_azim( st_eq j2000 )
 	deg2str_hms( j2000.ad, hms_alpha, sizeof(hms_alpha) );
 	deg2str_dms( j2000.dc, dms_delta, sizeof(dms_delta) );
 
-	logf_thread( (char*)"AD J2000\t: %s\t(%0.8lf)", hms_alpha, j2000.ad );
-	logf_thread( (char*)"DC J2000\t: %s\t(%0.8lf)", dms_delta, j2000.dc );
+	logf_thread( (char*)"AD J2000   \t: %s\t(%0.8lf)", hms_alpha, j2000.ad );
+	logf_thread( (char*)"DC J2000   \t: %s\t(%0.8lf)", dms_delta, j2000.dc );
 
 	// ----------------------------------------
 	st_eq reel = versCoordonneesApparentes( j2000, julian_now() );
@@ -675,7 +679,11 @@ void Serveur_mgr::_sync( double ra, double dc )
     if ( !serial.isConnect() )
     {
     	write_stellarium( ra, dc );
+    	pos_telescope.ad = -1;
+    	pos_telescope.dc = dc;
 		change_ad_status( ra );
+    	pos_telescope.ad = ra;
+    	pos_telescope.dc = -1;
 		change_dc_status( dc );
     }
 

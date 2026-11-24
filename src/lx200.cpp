@@ -1,11 +1,13 @@
-#include "lx200.h"
-#include "camera_mgr.h"
-#include "captures.h"
-#include "var_mgr.h"
-#include "serveur_mgr.h"
 #include <sys/time.h>
 #include <time.h>
-//#include "MathlibD.h"
+#include "lx200.h"
+#include "var_mgr.h"
+#include "serveur_mgr.h"
+
+#ifndef TARGET_ARM
+#include "camera_mgr.h"
+#include "captures.h"
+#endif
 //--------------------------------------------------------------------------------------------------------------------
 #define VAR_GLOBAL
 //#define LOCALHOST
@@ -146,9 +148,9 @@ void LX200::traite_command_G( char* buffer, int n)
 		struct dms	DMS;
 		char		s[80];
 		char		sign[2];
-		double  	d = d_deg_dc;
+		double  	d = pos_telescope.dc;
 		
-		deg2dms( d_deg_dc, DMS );
+		deg2dms( pos_telescope.dc, DMS );
 		if ( DMS.d >= 0 )		sign[0] = '+';
 		else					sign[0] = '-';
 		sign[1] = 0;
@@ -174,7 +176,7 @@ void LX200::traite_command_G( char* buffer, int n)
 		struct hms	HMS;
 		char		s[80];
 		
-		deg2hms( d_deg_ad, HMS );
+		deg2hms( pos_telescope.ad, HMS );
 		snprintf( s, sizeof(s), "%02d:%02d:%02d#", (int)HMS.h, (int)HMS.m, (int)HMS.s );
 
 		#ifdef PANEL_LX200_DEBUG

@@ -35,6 +35,7 @@ using namespace std;
 //#include "file_browser.h"
 #include "control.h"
 #include "main.h"
+#include "exif_jpg.h"
 #include "button_callback.h"
 
 
@@ -96,7 +97,7 @@ class Control;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Device_cam : public ButtonCallBack
+class CameraV4L : public ButtonCallBack
 {
 protected:
     string                  dev_name;
@@ -146,23 +147,27 @@ protected:
 
 public :
 
-    Device_cam();
+    CameraV4L();
     
     void					set_filtre_name( string &);
     bool                    isDevice(int);
+    
     bool                    getIOCapability();
     void                    enumerate_menu(__u32 id);
     void                    capability_list( void );
+    
     void                    capability_save( void );
     void                    capability_save( string s );
     void                    capability_load( string s );
-    void                    def_crop(int, int);
-    void                    enum_format_size(int pixel_format);
     void                    enum_format();
+    void                    enum_format_size(int pixel_format);
     
+    void                    def_crop(int, int);
     void                    errno_exit(const char *s);
     int                     xioctl(int fh, int request, void *arg);
-    void                    process_image(const void *p, int size);
+    
+	void					write_exif( ExifJpgBuilder& );
+    void                    save_image( void *p, int size);
     int                     read_frame(void);
 
     void                    mainloop(void);    
@@ -201,7 +206,7 @@ virtual    bool				isCamera()					{ return bCamera; }
 inline  char*   	        getErr()                { return strErr; }
 inline  bool    	        isErr()                 { return fd == -1; }
 
-void            	        setDevName(string);
+inline	void				setDevName(string& s)	{ dev_name = string(s); }
 inline  void    	        setDevName(char* s)     { dev_name = s; }
 inline  char*   	        getDevName()            { return (char*)dev_name.c_str(); }
 	

@@ -105,6 +105,7 @@ SINGLETON_BEGIN( Serial )
 	    //void			testVersionArduino();
 	    
 	    void			print_list();
+	    void			write_stellarium( char* );
 
 inline  bool            isCorrectVersion()                      { return bVersionArduino; }
 inline  bool            isConnect()                             { return bConnect; }

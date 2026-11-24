@@ -1,7 +1,7 @@
 #ifndef CAMERA_ZWO_H
 #define CAMERA_ZWO_H  1
 
-#include "v4l2.h"
+#include "camera_v4l2.h"
 #include "stars.h"
 #include "timer.h"
 #include "panel_camera.h"
@@ -12,6 +12,7 @@
 #include <thread>
 #include <atomic>
 #include <ASICamera2.h>
+#include <png.h>
 #include "button_callback.h"
 #include "star_compare.h"
 #include "notification.h"
@@ -139,11 +140,18 @@ virtual	void					eraseGaiaDR3()						{};
 		void	 				changeValueDoubleClickExpo( double, PanelSpinEditText* );
 		void					change_unite( bool, PanelSpinEditText* );
 		void					init_unite( long );
+		void					expo2str( string & );
+		void					gain2str( string & );
+		void					wb_r2str( string & );
+		void					wb_b2str( string & );
+		void					bin2str( string & );
+		void					flip2str( string & );
 	
 virtual	void					enregistre();
 		void					video();
 
 virtual void					callback(bool, int, char*);
+		void 					writeExifToPng( png_structp, png_infop );
 		int						writeImage(char*, int, int, unsigned char*, char* );
 	
 inline	bool					getControlVisible()                 { return panelControl!= NULL  ? panelControl->getVisible() : false; }

@@ -17,15 +17,16 @@
 #include <time.h>
 #include <atomic>
 
-#include "MathlibD.h"
+#include "MathAstro.h"
 #include <WindowsManager.h>
 #include "button_callback.h"
 
 #include "surveillance.h"
 #include "panel_courbe.h"
-//#include "panel_courbe.h"
-//#include "catalog.h"
+#include "alert_box.h"
 
+class PanelEnregistre;
+class AlertBox;
 
 #define BOOL2STR(b) b?(char*)"true":(char*)"false"
 
@@ -44,7 +45,8 @@
 #define INIT_VARI( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (int)__val__ );
 #define INIT_VARB( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (bool)__val__ ); 
 //------------------------------------------------------------
-// attention pour une string val ne peut etre qu'une variable
+//  !!!!!   ATTENTION   !!!!!!!!!!
+// Pour une string val ne peut etre qu'une variable
 //------------------------------------------------------------
 #define INIT_VARS( __var__, __val__ )		if ( !var.existe(#__var__) )		var.set( #__var__, (string&)__val__ ); 
 
@@ -133,6 +135,7 @@
 class Catalog;
 class PanelCapture;
 class PanelStdOut;
+class Pleiade;
 
 
 using namespace std;
@@ -178,6 +181,51 @@ struct readBackground
 typedef struct readBackground       rb_t;
 
 #ifndef MAIN_CPP
+
+	extern int						widthScreen;
+	extern int						heightScreen;
+
+	extern bool						bPng;
+	extern bool						bFull;
+	extern bool						bSuivi;
+	extern bool						bModeManuel;
+	extern bool						bNuit;
+	extern bool						bDebug;
+	extern bool						bArretUrgence;
+
+
+
+	extern bool						bPanelHelp;
+	extern bool						bPanelResultat;
+	extern bool						bPanelCourbe;
+	extern bool						bPanelStdOut;
+	extern bool						bPanelSerial;
+	extern bool						bPanelEnregistre;
+	extern bool						bAfficheVec;
+	extern bool						bMouseDeplace;
+	extern bool						bMouseDeplaceVers;
+	extern bool						bFileBrowser;
+    extern bool						bStellarium;
+    extern bool						bArduino;
+    extern bool						bPleiade;
+    extern bool						bSauve;
+    extern atomic<bool>             bOneFrame;
+    extern atomic<bool>             bPause;
+    extern bool                     bSimu;
+    extern bool                     bAffCentre;
+    extern bool                     bAffSuivi;
+    extern bool                     bSound;
+    extern bool                     bAsservissement;
+    extern bool                     bCentrageSuivi;
+    extern bool                     bDesactiveLog;
+	extern bool						bAffColimation;
+	extern bool						bAffFindStar;
+	extern bool						bGmagChange;
+	extern bool						bAffIconeCapture;
+	extern bool						bPleiadeVizier;
+	extern bool						bCoordHoriz;
+	extern bool						bAffFitsCorrection;
+	
 	extern vcf4						cBleu;
 	extern vcf4						cRouge;
 	extern vcf4						cVert;
@@ -185,43 +233,18 @@ typedef struct readBackground       rb_t;
 	extern vcf4						cGris;
 	extern vcf4						cRougeC;
 
-    extern bool                     bNuit;
-    extern bool                     bFindStar;
-    extern atomic<bool>             bOneFrame;
-    extern atomic<bool>             bPause;
-    extern bool                     bPanelCourbe;
-    extern bool                     bSimu;
-    extern bool                     bMouseDeplace;
-    extern bool                     bMouseDeplaceVers;
-    extern bool                     bAffCentre;
-    extern bool                     bAffSuivi;
-    extern bool                     bAfficheVec;
-    extern bool                     bPanelStdOut;
-    extern bool                     bSound;
-    extern bool                     bAsservissement;
-    extern bool                     bCentrageSuivi;
-    extern bool                     bPanelResultat;
-    extern bool                     bDesactiveLog;
-	extern bool						bAffColimation;
-	extern bool						bAffFindStar;
-	extern bool						bGmagChange;
-	extern bool						bAffIconeCapture;
-	extern bool						bPleiadeVizier;
 	
     extern int                      width;
     extern int                      height;
-    //extern vector<vec2>             t_vResultat;
-    //extern vector<vec2>             t_vSauve;
-    extern bool                     bModeManuel;
 
-    extern double                    xSuivi;
-    extern double                    ySuivi;
-    extern double                    xSuivi0;
-    extern double                    ySuivi0;
-    extern double                    xSuivi1;
-    extern double                    ySuivi1;
-    extern double                    xSuiviSvg;
-    extern double                    ySuiviSvg;
+    extern double					xSuivi;
+    extern double					ySuivi;
+    extern double					xSuivi0;
+    extern double					ySuivi0;
+    extern double					xSuivi1;
+    extern double					ySuivi1;
+    extern double					xSuiviSvg;
+    extern double					ySuiviSvg;
         
     extern int                      xClick;
     extern int                      yClick;
@@ -238,6 +261,11 @@ typedef struct readBackground       rb_t;
 
     extern double					fTimeMili;
     
+	extern Pleiade*					pPleiade;
+	extern PanelWindow *			panelHelp;
+	
+	
+	extern PanelEnregistre*			panelEnregistre;
     #ifndef PANELCOURBE_CPP
     extern PanelCourbe*             panelCourbe;
     extern PanelWindow*             panelResultat;
@@ -281,20 +309,22 @@ typedef struct readBackground       rb_t;
     extern bool                     bAffStar;
     extern Catalog                  vizier;
     
-	extern double					hms2rad( struct hms& );
-	extern double					dms2rad( struct dms& );
-
-	extern void                		rad2hms( double, struct hms& );
-	extern void                		rad2dms( double, struct dms& );
-	extern void                		deg2hms( double, struct hms& );
-	extern void                		deg2dms( double, struct dms& );
-
 	extern bool						bArduino;
 	extern int						iGlutModifier;
 	
-	extern double					d_deg_ad;
-	extern double					d_deg_dc;
+	extern st_eq					pos_telescope;
+	extern	double					fTimer10s;
+
+	extern mat3						mChange;
+
+	extern vector<AlertBox*>		tAlert;
+
 	
+	extern string					workDirCaptures;
+	extern string					workDirSauveCourbe;
+	extern string					workDirFileBrowser;
+	extern string					filenameSauve;
+	extern string					workDirFits;
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -336,7 +366,18 @@ public :
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
+extern CallbackSauveGuidage    cb_sguidage;
+extern CallbackChargeGuidage   cb_cguidage;
+extern CallbackFileBrowser     cb_file_browser;
+extern CallbackFits            cb_fits;
+//--------------------------------------------------------------------------------------------------------
 void				arret_urgence();
+void				sound_alert();
+void				commande_polaris();
+void				commande_stellarium();
+void				commande_asi_studio();
+void				commande_magnitude( string );
 void				test_creer_dir( char* );
 
 void                vizier_load_stars( string, double, double );
@@ -382,8 +423,10 @@ char*				deg2str_hms(double, char*, int);
 double				dms2rad( struct dms& );
 char*				deg2str_dms(double, char*, int);
 
-void                rad2hms( struct hms&, double );
-void                rad2dms( struct dms&, double );
+void				rad2hms( double, struct hms& );
+void				rad2dms( double, struct dms& );
+void				deg2hms( double, struct hms& );
+void				deg2dms( double, struct dms& );
 
 void                glVecAD();
 void                glVecDC();
@@ -421,8 +464,8 @@ void				getSkyPoint(struct sky_point*, int, int, int);
 void				status_nuit(unsigned long color );
 
 void                change_fov( void );
-static void         displayGL(void);
-static void         reshapeGL(int newWidth, int newHeight);
+void				displayGL(void);
+void				reshapeGL(int newWidth, int newHeight);
 
 void                reset_camera(void);
 void                write_image(void);
@@ -445,22 +488,15 @@ void                charge_fits(string);
 
 void                getSuiviParameter();
 
-static void         idleGL(void);
-static void			print_all_panels(void);
-static void         quit(void);
-static void         initGL(int argc, char **argv);
-static void         rotateVisible();
+void				idleGL(void);
+void				print_all_panels(void);
+void				quit(void);
+void				initGL(int argc, char **argv);
+void				rotateVisible();
 
-static void         glutKeyboardFunc(unsigned char key, int x, int y);
-static void         glutKeyboardFuncCtrlAlt(unsigned char key, int x, int y);
-static void         glutKeyboardFuncCtrl(unsigned char key, int x, int y);
-static void         glutKeyboardFuncAlt(unsigned char key, int x, int y);
-static void         glutKeyboardUpFunc(unsigned char key, int x, int y);
-static void         glutSpecialFunc(int key, int x, int y);
-static void         glutSpecialUpFunc(int key, int x, int y);
-static void         glutMouseFunc(int button, int state, int x, int y);
-static void         glutMotionFunc(int x, int y);
-static void         glutPassiveMotionFunc(int x, int y);
+void				glutMouseFunc(int button, int state, int x, int y);
+void				glutMotionFunc(int x, int y);
+void				glutPassiveMotionFunc(int x, int y);
 
 void                onTop();
 void                resizeHelp  (int width, int height);
@@ -468,15 +504,15 @@ void                resizeControl(int width, int height);
 void                resizeCourbe(int width, int height);
 void                setColor();
 
-static void         CreateResultat();
-static void         createControlID(PanelSimple * p, int x, int y, char* str);
-static void         createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
-static void         CreateHelp();
-static void         CreateStatus();
-static void         CreateStdOut();
-static void         CreateAllWindows();
+void				CreateResultat();
+void				createControlID(PanelSimple * p, int x, int y, char* str);
+void				createControlIDbyID(PanelSimple * p, int x, int y, char* str, int id);
+void				CreateHelp();
+void				CreateStatus();
+void				CreateStdOut();
+void				CreateAllWindows();
 
-static void         usage(FILE *fp, int argc, char **argv);
+void				usage(FILE *fp, int argc, char **argv);
 
 void                displayGL(void);
 

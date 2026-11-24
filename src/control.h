@@ -18,10 +18,10 @@
 #include "MathlibD.h"
 #include <WindowsManager.h>
 
-#include "v4l2.h"
+#include "camera_v4l2.h"
 
 
-class Device_cam;
+class CameraV4L;
 
 class Control
 {
@@ -36,11 +36,11 @@ private:
     void*			pSpinEditText = NULL;
     string          name;
     
-    Device_cam*     dev;
+    CameraV4L*		dev;
     PanelText*      pt;    
     
 public:
-    Control(Device_cam * p);
+    Control(CameraV4L * p);
     void            init( struct v4l2_queryctrl* queryctrl);
     bool            find(string);
     void            plus();

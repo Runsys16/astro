@@ -1,10 +1,10 @@
 #ifndef LX200_MGR_H
 #define LX200_MGR_H  1
 
-
-//#include "camera.h"
+#ifndef TARGET_ARM
 #include <GL/glew.h>
 #include <GL/glut.h>
+#endif
 
 #include <unistd.h>
 #include <stdio.h>
@@ -24,12 +24,15 @@
 
 
 #include "MathlibD.h"
+#ifndef TARGET_ARM
 #include <WindowsManager.h>
+#include "panel_debug.h"
+#endif
+
 #include <thread>
 
 #include "main.h"
 #include "serial.h"
-#include "panel_debug.h"
 
 using namespace std;
 
@@ -62,10 +65,11 @@ protected:
     string						IP_LX200;
     string						sIP_lx200;
     
+#ifndef TARGET_ARM
 #ifdef PANEL_LX200_DEBUG
     PanelDebug					panel_debug;
 #endif
-
+#endif
 public:
 							    LX200();
     
@@ -88,11 +92,12 @@ public:
 
 inline bool                     is_connect()						{ return sock_lx200 != -1; }
 
+#ifndef TARGET_ARM
 #ifdef PANEL_LX200_DEBUG
 inline PanelDebug*				getPanel()							{ return &panel_debug; }
 	void						setColor( uint32_t );
 #endif
-    
+#endif    
     
     
 SINGLETON_END()

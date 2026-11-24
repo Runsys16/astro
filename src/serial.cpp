@@ -1,9 +1,10 @@
+#include <unistd.h>
+#ifndef TARGET_ARM
+#include "panel_console_serial.h"    
+#endif
 #include "serial.h"    /* Standard input/output definitions */
 #include "serveur_mgr.h"    /* Standard input/output definitions */
-#include "panel_console_serial.h"    
 #include "var_mgr.h"
-#include <unistd.h>
-
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -17,6 +18,7 @@ Serial::Serial()
     idx = 0;
     nbZero = 0;
     
+	fTimer10s = 0.0;
     bFree = true;
     bConnect = false;
     bOldJoy = false;// getJoy();
@@ -82,7 +84,7 @@ int Serial::write_string( const char* str, bool bAff)
 	
     if ( (fTimeMili - fTimeOut) < 0.2 )     
     {
-    	log_thread( (char*)"[Error] Serial::write_string() TimeOut" );
+    	logf_thread( (char*)"[Error] Serial::write_string( ) TimeOut   %lf", fTimeMili  );
     	return -1;
     }
     
@@ -110,9 +112,11 @@ int Serial::write_string( const char* str, bool bAff)
     if ( bAff )
     {
         logf_thread( (char*)"Arduino : %s", str );
-        //PanelConsoleSerial::getInstance().writeln( (char*)"console" );
-        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
-        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
+
+		#ifndef TARGET_ARM
+		    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
+		    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
+        #endif
     }
         
     fTimeOut = fTimeMili;
@@ -210,9 +214,10 @@ void Serial::emet_commande()
         int len = strlen(str);
         int n = write(fd, str, len);
 
-        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
-        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
-
+		#ifndef TARGET_ARM
+		    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)"" );
+		    PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
+		#endif
         if( n!=len ){
             logf_thread((char*)"[Error] Il manque des caracteres !!" );
             //log_tab(false);
@@ -298,11 +303,13 @@ void Serial::read_thread()
                 buffer[idx++] = 0;
                 string test = buffer;
                 
-            	if ( buffer[0] != 'W' && var.getb("bVerboseArduino") )
-            	{
-		            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
-		        }
-                
+				#ifndef TARGET_ARM
+		        	if ( buffer[0] != 'W' && var.getb("bVerboseArduino") )
+		        	{
+				        PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+				    }
+				#endif
+				                
 				//-------------------------------------------------------------------
 				//
                 if ( test.find("= START") != string::npos )
@@ -323,7 +330,7 @@ void Serial::read_thread()
 					
 					// Initialise les coordonnées
 					if ( bPremiereConnexion )
-						Serveur_mgr::getInstance()._sync( d_deg_ad, d_deg_dc );
+						Serveur_mgr::getInstance()._sync( pos_telescope.ad, pos_telescope.dc );
 					bPremiereConnexion = false;
                 }
                 else
@@ -355,7 +362,6 @@ void Serial::read_thread()
                     son( "/home/rene/.astropilot/sounds/login.wav" );
                     bFree = true;
                     emet_commande();
-                    //PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
                 }
                 else
 				//-------------------------------------------------------------------
@@ -393,7 +399,9 @@ void Serial::read_thread()
 					snprintf( str, sizeof(str), (char*)"W %s - %02X",  buf_bool, B.u );
 					
 	 	            if ( var.getb("bVerboseArduino") )	{
-			            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
+	 	            	#ifndef TARGET_ARM
+				            PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)str );
+			            #endif
 						logf_thread( (char*)str );
 					}
 
@@ -420,12 +428,15 @@ void Serial::read_thread()
 				//
                 if ( buffer[0] != '-'  )
                 {
-                    if (bPrintInfo) PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+					#ifndef TARGET_ARM
+                    if (bPrintInfo) 
+                     PanelConsoleSerial::getInstance().getConsole()->affiche( (char*)buffer );
+                    #endif
                 }
 				//-------------------------------------------------------------------
 				//
                 else
-                    PanelConsoleSerial::getInstance().writeln( (char*)buffer );
+                    write_stellarium( (char*)buffer );
             }
 
 
@@ -469,6 +480,7 @@ void Serial::start_thread()
         nbConnect = 0;
 		
 		
+		fTimer10s = 0.0;
 		sleep(1);
         logf_thread( (char*)"Envoi de la commande g" );
 	   	write_g();
@@ -598,7 +610,103 @@ void Serial::print_list()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void Serial::write_stellarium( char* str )
+{
+	static double	ad_change;
+	static double	dc_change;
 
+    if ( str[0] == 0 || str[1] == 0)
+    {
+        logf( (char*)"[WARNING] Serial::write_stellarium chaine trop petite" );
+        return;
+    }
+    
+    if ( str[0] == '-' )
+    {
+        if ( str[1] == 'a' )
+        {
+            ad_change = strtod(&str[2],NULL);
+            //logf( (char*)"AD" );
+        }
+        else if ( str[1] == 'd' )
+        {
+            dc_change = strtod(&str[2],NULL);
+
+            change_ad_status( ad_change );
+            change_dc_status( dc_change );
+            //logf( (char*)"DEC" );
+        }
+
+        time_t t = time(0);
+        //cout << t << endl;
+        //long long tl = (unsigned long long)t * 1000000LL;
+        long long tl = (unsigned long long)t;
+        
+        unsigned char buff[24];
+        memset( buff, 0, 24);
+        buff[0] = 24;
+        
+        unsigned char *          conv = (unsigned char*)&tl;
+        
+        
+        buff[4] = conv[0];
+        buff[5] = conv[1];
+        buff[6] = conv[2];
+        buff[7] = conv[3];
+        buff[8] = conv[4];
+        buff[9] = conv[5];
+        buff[10] = conv[6];
+        buff[11] = conv[7];
+        
+        
+        float fa, fd;
+        
+        fa = ad_change;// / M_PI * 2147483648;
+        fd = dc_change;//) / M_PI * 2147483648;
+
+        if ( fa <0.0 )
+        {      
+            fa = 180.0 + fa;
+            fd = 180.0 - fd;
+        }
+        
+        if ( fd >180.0)
+        {      
+            fd = -fd + 180.0;
+            if ( fa < 180.0 )       fa = -180.0 + fa;
+        }
+        
+        fa = DEG2RAD(fa) / M_PI * 2147483648;
+        fd = DEG2RAD(fd) / M_PI * 2147483648;   // 32eb   2147483648 dec = 0x80000000 hex
+
+        int a, d;
+        
+        a = fa;
+        d = fd;
+        
+        conv = (unsigned char*)&a;
+        buff[12] = conv[0];
+        buff[13] = conv[1];
+        buff[14] = conv[2];
+        buff[15] = conv[3];
+
+        conv = (unsigned char*)&d;
+        buff[16] = conv[0];
+        buff[17] = conv[1];
+        buff[18] = conv[2];
+        buff[19] = conv[3];
+
+        if ( ad_change!=0.0 && dc_change!=0.0 )
+        {
+            Serveur_mgr::getInstance().write_stellarium( (char*)buff );
+            //logf( (char*)"Em Stellarium Ad=%0.8f Dc=%0.8f", ad_change, dc_change );
+        }
+        return;
+    }
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 
 
 

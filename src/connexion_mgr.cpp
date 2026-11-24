@@ -12,6 +12,15 @@ Connexion_mgr::Connexion_mgr()
     bExitThreadZWO = false;
     
     nCamZWO  = 0;
+
+	#ifdef TARGET_ARM
+    for( int i=10; i<=31; i++ )
+    {
+    	char sDev[20];
+    	snprintf( sDev, sizeof(sDev), "/dev/video%2d", i );
+    	exclude.push_back( string(sDev) );
+    }
+	#endif
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -45,7 +54,6 @@ void Connexion_mgr::startZWO()
 //--------------------------------------------------------------------------------------------------------------------
 bool Connexion_mgr::isExclude(string st)
 {
-    vector<string>& exclude = getExclude();
     int nb = exclude.size();
     for( int i=0; i<nb; i++ )
     {
@@ -89,7 +97,10 @@ void Connexion_mgr::add_port()
             {
                 //if ( !isExclude(t_port_polling[i])  )
                 log_tab(true);
-                Camera_mgr::getInstance().add( t_port_polling[i] );
+				#ifndef TARGET_ARM
+	                Camera_mgr::getInstance().add( t_port_polling[i] );
+	            #endif
+
                 t_port_current.push_back(  t_port_polling[i] );
                 log_tab(false);
                 logf_thread( (char*)"Connexion_mgr::add_port()  %s  END", t_port_polling[i].c_str() );
@@ -134,7 +145,9 @@ void Connexion_mgr::sup_port()
         
             if ( t_port_current[i].find("video") != string::npos )
             {
+            	#ifndef TARGET_ARM
                 Camera_mgr::getInstance().sup( t_port_current[i] );
+                #endif
                 t_port_current.erase(  t_port_current.begin() + i );
             }
             else if ( t_port_current[i].find("ttyACM") != string::npos )
@@ -268,7 +281,7 @@ void Connexion_mgr::print_list()
     bool bFound = false;
 
     logf( (char*)"  exclude : " );
-    vector<string>& exclude = getExclude();
+
     int nb = exclude.size();
     for( int i=0; i<nb; i++ )
     {
@@ -305,6 +318,7 @@ void Connexion_mgr::threadPoolingZWO()
 		if( n != nCamZWO )	{
 			logf_thread( (char*)"Connexion_mgr::poolingZWO %d camera(s) ZWO connected", n);
 			log_tab(true);
+		#ifndef TARGET_ARM
 			if ( n > nCamZWO )	{
 				Camera_mgr::getInstance().add_zwo( n-1 );
 			}
@@ -312,6 +326,7 @@ void Connexion_mgr::threadPoolingZWO()
 				//logf_thread( (char*)"suppression ZWO no %d", n);
 				Camera_mgr::getInstance().sup_zwo( n );
 			}
+		#endif
 			nCamZWO = n;
 			log_tab(false);
 		}

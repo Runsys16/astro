@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H  1
 
-#include "v4l2.h"
+#include "camera_v4l2.h"
 #include "stars.h"
 #include "timer.h"
 #include "panel_camera.h"
@@ -22,7 +22,8 @@ using namespace std;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-class Camera : public Device_cam, public ChangeValue, public NotificationFindStar, public Asservissement
+class Camera : public CameraV4L, public ChangeValue, public NotificationFindStar, public Asservissement
+//class Camera : public ChangeValue, public NotificationFindStar, public Asservissement
 {
 //-----------------------------------------------------------------------------------------    
 protected:

@@ -37,10 +37,6 @@ PanelButtonAsservissement *       pUrgentDown;
 
 PanelCheckBox *     pButtonAsserv;
 
-PanelText *			pAlpha;
-PanelText *			pDelta;
-
-
 //--------------------------------------------------------------------------------------------------------------------
 double  oldPas = -1.0;
 double  old;
@@ -763,18 +759,6 @@ void create_windows_button()
 	//#define POLICE "usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf",
 	//#define POLICE "usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf",
 	//#define POLICE "fonts/IFAOGrecBold.ttf" ,
-	#define POLICE "fonts/greek-wsi-regular.ttf"   	// 360 glyphe voir alpha ...
-
-	pAlpha = new PanelText( 	(char*)"a", (char*)POLICE , 50, 0, 14, 0xFFFFFFFF );
-	pDelta = new PanelText( 	(char*)"d", (char*)POLICE , 200, 0, 14, 0xFFFFFFFF );
-	
-	
-    pAlpha->setPos( 60-2,  2);
-    pDelta->setPos( 200-2, 1);
-
-    
-	panelStatus->add( pAlpha );
-	panelStatus->add( pDelta );
 	//WindowsManager::getInstance().add( pAlpha );
 	//WindowsManager::getInstance().add( pDelta );
 	if ( bNuit )		status_nuit( VCF4_2_COLOR32(cRouge) );

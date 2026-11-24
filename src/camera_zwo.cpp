@@ -1,7 +1,9 @@
+#include <libexif/exif-data.h>
 #include "camera_zwo.h"
 #include "camera_mgr.h"
 #include "file_browser.h"
 #include "timer.h"
+#include "exif_png.h"
 //--------------------------------------------------------------------------------------------------------------------
 #include <png.h>
 //--------------------------------------------------------------------------------------------------------------------
@@ -1655,6 +1657,101 @@ void CameraZWO::init_unite( long val )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::expo2str( string & res )
+{
+    logf_thread( (char*)"CameraZWO::expo2str()" );
+
+	char* pUnite;    
+   	//expo_unite = (UNITE)i;
+	switch( expo_unite )
+	{
+	case MICRO:
+		expo_coef = 1;
+		pUnite = sUnite_us;
+		break;
+	case MILI:
+		expo_coef = 1000;
+		pUnite = sUnite_ms;
+		break;
+	case SEC:
+		expo_coef = 1000000;
+		pUnite = sUnite_sc;
+		break;
+	}
+
+
+	char val[20];
+	snprintf( val, sizeof(val), "%ld %s", expo/expo_coef, pUnite );
+	
+	res = val;
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::gain2str( string & res )
+{
+    logf_thread( (char*)"CameraZWO::gain2str()" );
+
+	char val[20];
+	snprintf( val, sizeof(val), "%ld", gain );
+	
+	res = val;
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::wb_r2str( string & res )
+{
+    logf_thread( (char*)"CameraZWO::wb_r2str()" );
+
+	char val[20];
+	snprintf( val, sizeof(val), "%ld", wb_r );
+	
+	res = val;
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::wb_b2str( string & res )
+{
+    logf_thread( (char*)"CameraZWO::wb_b2str()" );
+
+	char val[20];
+	snprintf( val, sizeof(val), "%ld", wb_b );
+	
+	res = val;
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::bin2str( string & res )
+{
+    logf_thread( (char*)"CameraZWO::bin2str()" );
+
+	char val[20];
+	snprintf( val, sizeof(val), "%ld", bin );
+	
+	res = val;
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::flip2str( string & res )
+{
+    logf_thread( (char*)"CameraZWO::flip2str()" );
+
+	
+	res = string( str_flip( (ASI_FLIP_STATUS)flip ) );
+
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 void CameraZWO::enregistre()
 {
 	logf_thread( (char*)"CameraZWO::enregistre()" );
@@ -1722,10 +1819,11 @@ void CameraZWO::video()
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
+//    fonction callback de FILEBROWSER
+//------------------------------------------------
 //
 // void CameraZWO::callback(bool b, int n, char* pStr )
 //------------------------------------------------
-//    fonction callback de filebrowser
 //
 //------------------------
 // 
@@ -1756,15 +1854,83 @@ void CameraZWO::callback(bool b, int n, char* pStr )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
+void CameraZWO::writeExifToPng( png_structp png_ptr, png_infop info_ptr )
+{
+	ExifPngBuilder exif;
+	string	sDate = "%d";
+	string	sTime = "%t";
+	string	s, e;
+	char	tmp[100];
+	char	s0[50];
+
+	// BUILD DATE
+	replace_time( sTime );
+	replace_date( sDate );
+
+	for ( int i=0; i<sDate.size(); i++ )
+		if ( sDate[i] == '-' )		sDate[i] = ':';
+
+	string sDateTime = sDate + " " + sTime;
+
+	// BUILD 	INFO ASTRO dans UserComment
+	s = "\n-------------------------------------------";
+	expo2str( e );
+	s += "\nexpo \t: " + e;
+	gain2str( e );
+	s += "\ngain \t: " + e;
+	wb_r2str( e );
+	s += "\nWB_R \t: " + e;
+	wb_b2str( e );
+	s += "\nWB_B \t: " + e;
+	bin2str( e );
+	s += "\nbin \t: " + e;
+	flip2str( e );
+	s += "\nflip \t: " + e;
+	deg2str_hms( pos_telescope.ad, s0, sizeof(s0) );
+	snprintf( tmp, sizeof(tmp), "\nAlpha \t: %s", s0 );
+	s += tmp;
+	deg2str_dms( pos_telescope.dc, s0, sizeof(s0) );
+	snprintf( tmp, sizeof(tmp), "\nDelta \t: %s", s0 );
+	s += tmp;
+	s += "\n-------------------------------------------";
+
+	// BUILD OTHER EXIF
+	exif.addAscii(		EXIF_TAG_IMAGE_DESCRIPTION, "Bellatrix 200/1000");				// ImageDescription
+	exif.addAscii(		EXIF_TAG_MAKE,				"ZWO");								// Make
+	exif.addAscii(		EXIF_TAG_MODEL,				name);								// Model
+	exif.addShort(		EXIF_TAG_ORIENTATION,		flip+5);							// Orientation (1 = Normal)
+	exif.addShort(		EXIF_TAG_RESOLUTION_UNIT,	2);									// ResolutionUnit (2 = Pouces)
+	exif.addAscii(		EXIF_TAG_SOFTWARE,			"AstroPilot 1.0.0");				// Software
+	exif.addAscii(		EXIF_TAG_DATE_TIME,			sDateTime );						// Date Time
+	exif.addAscii(		EXIF_TAG_ARTIST,			"Runsys");							// Artist
+	exif.addRational(	EXIF_TAG_EXPOSURE_TIME,		1, 1000000 / (unsigned int)expo );	// temps ouverture
+	exif.addRational(	EXIF_TAG_FOCAL_LENGTH,		1000, 1 );							// Focal lens
+	exif.addAscii(		EXIF_TAG_USER_COMMENT,		s);		               			 	// UserCOmment
+	exif.addRational(	EXIF_TAG_GAIN_CONTROL,		(unsigned int)gain, 1 );			// gain control
+
+	std::vector<uint8_t> exifBlob = exif.build();
+
+	// Injection dans le chunk PNG "eXIf" (requiert libpng >= 1.6.32)
+	#ifdef PNG_eXIf_SUPPORTED
+		png_set_eXIf_1(
+						png_ptr,
+						info_ptr,
+						static_cast<png_uint_32>( exifBlob.size() ),
+						exifBlob.data()			);
+	#endif
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 int CameraZWO::writeImage(char* filename, int width, int height, unsigned char *buffer, char* title)
 {
- 	logf_thread( (char*)"CameraZWO::writeImage( %s )", filename );
+	logf_thread( (char*)"CameraZWO::writeImage( %s )", filename );
 
-	int code = 0;
-   FILE *fp = NULL;
-   png_structp png_ptr = NULL;
-   png_infop info_ptr = NULL;
-   png_bytep row = NULL;
+	int			code		= 0;
+	FILE *		fp			= NULL;
+	png_structp	png_ptr		= NULL;
+	png_infop	info_ptr	= NULL;
+	png_bytep	row			= NULL;
    
       // Open file for writing (binary mode)
    fp = fopen(filename, "wb");
@@ -1805,6 +1971,10 @@ int CameraZWO::writeImage(char* filename, int width, int height, unsigned char *
          8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
          PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
+
+	// Donnée EXIF
+	writeExifToPng( png_ptr, info_ptr );
+
    // Set title
    if (title != NULL) {
       png_text title_text;
@@ -1831,13 +2001,14 @@ int CameraZWO::writeImage(char* filename, int width, int height, unsigned char *
 
 
    finalise:
-   if (fp != NULL) fclose(fp);
-   if (info_ptr != NULL) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
-   if (png_ptr != NULL) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+   if (fp != NULL) 			fclose(fp);
+   if (info_ptr != NULL)	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+   if (png_ptr != NULL)		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
    //if (row != NULL) free(row);
 
    return code;
 }
-
-
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
 

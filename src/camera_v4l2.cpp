@@ -8,7 +8,8 @@
  */
 
 
-#include "v4l2.h"
+#include "camera_v4l2.h"
+#include "exif_jpg.h"
 
 
 long memory = 0;
@@ -22,9 +23,9 @@ struct v4l2_querymenu querymenu;
 //						Constructeurs ....
 //
 //--------------------------------------------------------------------------------------------------------------------
-Device_cam::Device_cam()
+CameraV4L::CameraV4L()
 {
-    logf_thread( (char*)"Constructeur Device_cam() -------------" );
+    logf_thread( (char*)"Constructeur CameraV4L() -------------" );
     dev_name        = "";
     io              = IO_METHOD_USERPTR;
     fd              = -1;
@@ -55,14 +56,7 @@ Device_cam::Device_cam()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::setDevName( string s )
-{
-    dev_name = s;
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Device_cam::set_filtre_name( string& s )
+void CameraV4L::set_filtre_name( string& s )
 {
     name = "";
 
@@ -82,7 +76,7 @@ void Device_cam::set_filtre_name( string& s )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool Device_cam::isDevice( int u )
+bool CameraV4L::isDevice( int u )
 {
     char    dev_name[] = "/dev/video000";
     while( u>99)    u -= 100;
@@ -100,9 +94,9 @@ bool Device_cam::isDevice( int u )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool Device_cam::getIOCapability()
+bool CameraV4L::getIOCapability()
 {
-    logf_thread( (char*)"Device_cam::getIOCapability()" );
+    logf_thread( (char*)"CameraV4L::getIOCapability()" );
     log_tab(true);
     if (fd == -1)
     {
@@ -146,7 +140,7 @@ bool Device_cam::getIOCapability()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::enumerate_menu(__u32 id)
+void CameraV4L::enumerate_menu(__u32 id)
 {
     if (fd == -1)       return;
     //printf("  Menu items:\n");
@@ -166,10 +160,10 @@ void Device_cam::enumerate_menu(__u32 id)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::capability_list( void )    {
+void CameraV4L::capability_list( void )    {
     if (fd == -1)       return;
     
-    logf_thread((char*)"Device_cam::capability_list()");
+    logf_thread((char*)"CameraV4L::capability_list()");
     log_tab(true);
 
     memset(&queryctrl, 0, sizeof(queryctrl));
@@ -200,7 +194,16 @@ void Device_cam::capability_list( void )    {
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::capability_save( string filename )    {
+void CameraV4L::capability_save( void )    {
+    if (fd == -1)       return;
+
+    string filename = "/home/rene/.astropilot/"+ name +".cam";
+    capability_save( filename );
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraV4L::capability_save( string filename )    {
     if (fd == -1)       return;
 
     logf_thread( (char*)"Sauvegarde des parametres de la camera dans '%s'", (char*)filename.c_str() );
@@ -231,7 +234,7 @@ void Device_cam::capability_save( string filename )    {
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::capability_load( string filename )    {
+void CameraV4L::capability_load( string filename )    {
     if (fd == -1)       return;
 
     logf_thread( (char*)"Lecture des parametres de la camera dans '%s'", (char*)filename.c_str() );
@@ -281,19 +284,10 @@ void Device_cam::capability_load( string filename )    {
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::capability_save( void )    {
-    if (fd == -1)       return;
-
-    string filename = "/home/rene/.astropilot/"+ name +".cam";
-    capability_save( filename );
-}
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-void Device_cam::enum_format()
+void CameraV4L::enum_format()
 {
     //-------------------------------------------        
-    logf_thread((char*)"Device_cam::enum_format()");
+    logf_thread((char*)"CameraV4L::enum_format()");
     log_tab(true);
 
     logf_thread( (char*)"ioctl =  VIDIOC_ENUM_FMT");
@@ -318,15 +312,15 @@ void Device_cam::enum_format()
         fmtdesc.index++;
     }
     log_tab(false);
-    logf_thread((char*)"Device_cam::enum_format() ** END **");
+    logf_thread((char*)"CameraV4L::enum_format() ** END **");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::enum_format_size(int pf)
+void CameraV4L::enum_format_size(int pf)
 {
     //-------------------------------------------        
-    logf_thread((char*)"Device_cam::enum_format_size(%d)", pf);
+    logf_thread((char*)"CameraV4L::enum_format_size(%d)", pf);
     log_tab(true);
 
     logf_thread( (char*)"ioctl = VIDIOC_ENUM_FRAMESIZES");
@@ -382,12 +376,12 @@ void Device_cam::enum_format_size(int pf)
     logf_thread( (char*)"Resolution courante %dx%d",  width, height );
 
     log_tab(false);
-    logf_thread((char*)"Device_cam::enum_format_size() ** END **");
+    logf_thread((char*)"CameraV4L::enum_format_size() ** END **");
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::def_crop( int w, int h )
+void CameraV4L::def_crop( int w, int h )
 {
     struct v4l2_crop crop;
     struct v4l2_crop cropcap;
@@ -410,7 +404,7 @@ void Device_cam::def_crop( int w, int h )
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::errno_exit(const char *s)
+void CameraV4L::errno_exit(const char *s)
 {
     sprintf(strErr, "%s error %d, %s", s, errno, strerror(errno));
     fprintf(stderr, "%s\n", strErr);
@@ -422,7 +416,7 @@ void Device_cam::errno_exit(const char *s)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Device_cam::xioctl(int fh, int request, void *arg)
+int CameraV4L::xioctl(int fh, int request, void *arg)
 {
     if (fd == -1)       return -1;
 
@@ -448,24 +442,99 @@ bool fileExists(const std::string& file) {
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::process_image(const void *p, int size)
+void CameraV4L::write_exif( ExifJpgBuilder& exif_jpg )
+{
+	string	sDate = "%d";
+	string	sTime = "%t";
+	string	s, e;
+	char	tmp[100];
+	char	s0[50];
+	
+	// BUILD DATE
+	replace_time( sTime );
+	replace_date( sDate );
+
+	for ( int i=0; i<sDate.size(); i++ )
+		if ( sDate[i] == '-' )		sDate[i] = ':';
+
+	string sDateTime = sDate + " " + sTime;
+
+	// BUILD 	INFO ASTRO dans UserComment
+	s = "\n-------------------------------------------";
+	for ( int i=0; i<pControl.size(); i++ )
+	{
+		char tmp[128];
+		snprintf( tmp, sizeof(tmp), "%s : %d", pControl[i]->getName().c_str(), pControl[i]->getValue() );
+		s += "\n" + string(tmp);
+	}
+
+	deg2str_hms( pos_telescope.ad, s0, sizeof(s0) );
+	snprintf( tmp, sizeof(tmp), "\nAlpha \t: %s", s0 );
+	s += tmp;
+	deg2str_dms( pos_telescope.dc, s0, sizeof(s0) );
+	snprintf( tmp, sizeof(tmp), "\nDelta \t: %s", s0 );
+	s += tmp;
+	s += "\n-------------------------------------------";
+
+	// BUILD OTHER EXIF
+	exif_jpg.set_ascii_tag(		EXIF_IFD_0, EXIF_TAG_IMAGE_DESCRIPTION,		"Bellatrix 200/1000" );
+	exif_jpg.set_ascii_tag(		EXIF_IFD_0, EXIF_TAG_MAKE,					"v4l" );
+	exif_jpg.set_ascii_tag(		EXIF_IFD_0, EXIF_TAG_MODEL, 				name.c_str() );
+	exif_jpg.set_short_tag(		EXIF_IFD_0, EXIF_TAG_ORIENTATION,			1 );
+	exif_jpg.set_short_tag(		EXIF_IFD_0, EXIF_TAG_RESOLUTION_UNIT,		2 );
+	exif_jpg.set_ascii_tag(		EXIF_IFD_0, EXIF_TAG_SOFTWARE,				"AstroPilot 1.0.0");
+	exif_jpg.set_ascii_tag(		EXIF_IFD_0, EXIF_TAG_DATE_TIME,				sDateTime.c_str() );
+	exif_jpg.set_ascii_tag( 	EXIF_IFD_0, EXIF_TAG_ARTIST,				"Runsys");
+	exif_jpg.set_rational_tag(	EXIF_IFD_0, EXIF_TAG_EXPOSURE_TIME,			1, 1000000 / (unsigned int)25000);
+	exif_jpg.set_rational_tag(	EXIF_IFD_0, EXIF_TAG_FOCAL_LENGTH, 			1000, 1 );
+	exif_jpg.set_ascii_tag(		EXIF_IFD_0, EXIF_TAG_USER_COMMENT, 			s.c_str() );
+	exif_jpg.set_rational_tag(	EXIF_IFD_0, EXIF_TAG_GAIN_CONTROL, 			(unsigned int)20, 1);
+
+	/*	
+	exif.addAscii(		EXIF_TAG_IMAGE_DESCRIPTION, "Bellatrix 200/1000");				// ImageDescription
+	exif.addAscii(		EXIF_TAG_MAKE,				"ZWO");								// Make
+	exif.addAscii(		EXIF_TAG_MODEL,				name);								// Model
+	exif.addShort(		EXIF_TAG_ORIENTATION,		flip+5);							// Orientation (1 = Normal)
+	exif.addShort(		EXIF_TAG_RESOLUTION_UNIT,	2);									// ResolutionUnit (2 = Pouces)
+	exif.addAscii(		EXIF_TAG_SOFTWARE,			"AstroPilot 1.0.0");				// Software
+	exif.addAscii(		EXIF_TAG_DATE_TIME,			sDateTime );						// Date Time
+	exif.addAscii(		EXIF_TAG_ARTIST,			"Runsys");							// Artist
+	exif.addRational(	EXIF_TAG_EXPOSURE_TIME,		1, 1000000 / (unsigned int)expo );	// temps ouverture
+	exif.addRational(	EXIF_TAG_FOCAL_LENGTH,		1000, 1 );							// Focal lens
+	exif.addAscii(		EXIF_TAG_USER_COMMENT,		s);		               			 	// UserCOmment
+	exif.addRational(	EXIF_TAG_GAIN_CONTROL,		(unsigned int)gain, 1 );			// gain control
+	*/
+}
+//--------------------------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------------------------
+void CameraV4L::save_image( void *p, int size)
 {
     if (fd == -1)       return;
 
+    ExifJpgBuilder exif_jpg;
+    vector<unsigned char> p_jpg;
+
+    p_jpg.assign( (char*)p, (char*)p+size );
+
+    exif_jpg.start( p_jpg );
+    write_exif( exif_jpg );
+    exif_jpg.stop();
+
+    vector<unsigned char>& new_jpg = exif_jpg.get_out_buff();
+    unsigned char* buff = &new_jpg[0];
+
+
+	//------------------------------------------------------
 	string sFile = string(filename) + ".jpg";
     new_filename( sFile );
-    
     sFile = dirname + sFile;
-    
-	
-    
     logf_thread( (char*)"Enregistre : %s", sFile.c_str());
-    
     
     FILE *fp=fopen(sFile.c_str(),"wb");
     
     if (out_buf)
-            fwrite(p, size, 1, fp);
+            fwrite( &new_jpg[0], new_jpg.size(), 1, fp );
 
     fflush(fp);
     fclose(fp);
@@ -474,7 +543,7 @@ void Device_cam::process_image(const void *p, int size)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Device_cam::read_frame(void)
+int CameraV4L::read_frame(void)
 {
     if (fd == -1)       return -1;
 	
@@ -505,7 +574,7 @@ int Device_cam::read_frame(void)
 
         if ( bEnregistre ){
             logf_thread( (char*)"IO_METHOD_READ Enregistre l'image (jpg)" );
-            process_image(buffers[0].start, buffers[0].length);
+            save_image(buffers[0].start, buffers[0].length);
 	        bEnregistre = false;
 	    }
         break;
@@ -545,7 +614,7 @@ int Device_cam::read_frame(void)
 
         if ( bEnregistre ){
             logf_thread( (char*)"IO_METHOD_MMAP Enregistre l'image (jpg)" );
-            process_image(buffers[buf.index].start, buf.bytesused);
+            save_image(buffers[buf.index].start, buf.bytesused);
 	        bEnregistre = false;
 	    }
 
@@ -565,7 +634,7 @@ int Device_cam::read_frame(void)
         if (-1 == xioctl(fd, VIDIOC_DQBUF, &buf)) {
             switch (errno) {
             case EAGAIN:
-                log_thread((char*)"Erreur Device_cam::read_frame() EAGAIN");
+                log_thread((char*)"Erreur CameraV4L::read_frame() EAGAIN");
                 return 0;
 
             case EIO:
@@ -574,7 +643,7 @@ int Device_cam::read_frame(void)
                 /* fall through */
 
             default:
-                log_thread((char*)"Erreur Device_cam::read_frame()  default");
+                log_thread((char*)"Erreur CameraV4L::read_frame()  default");
                 errno_exit("VIDIOC_DQBUF");
                 return -1;
             }
@@ -590,12 +659,12 @@ int Device_cam::read_frame(void)
         jpg_buffer = (unsigned char*)buf.m.userptr;
         jpg_size = buf.bytesused;
 
-        //log_thread((char*)"Device_cam::read_frame() decompresse");
+        //log_thread((char*)"CameraV4L::read_frame() decompresse");
 
         if ( bEnregistre )      
         {
             logf_thread( (char*)"IO_METHOD_USERPTR Enregistre l'image (jpg)" );
-            process_image((void *)buf.m.userptr, buf.bytesused);
+            save_image((void *)buf.m.userptr, buf.bytesused);
             bEnregistre = false;
             bSaving = true;
         }
@@ -617,7 +686,7 @@ int Device_cam::read_frame(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::mainloop(void)
+void CameraV4L::mainloop(void)
 {
     if (fd == -1)       return;
 
@@ -662,14 +731,14 @@ void Device_cam::mainloop(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::stop_capturing(void)
+void CameraV4L::stop_capturing(void)
 {
     if (fd == -1)       return;
     if ( !bCapture )            return;
 
     bCapture = false;
 
-    logf_thread( (char*)"-------------- Device_cam::stop_capturing %s------------------", dev_name.c_str() );
+    logf_thread( (char*)"-------------- CameraV4L::stop_capturing %s------------------", dev_name.c_str() );
 
     enum v4l2_buf_type type;
 
@@ -689,13 +758,13 @@ void Device_cam::stop_capturing(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::start_capturing(void)
+void CameraV4L::start_capturing(void)
 {
     if (fd == -1)       return;
 
     if ( bCapture ) return;
     
-    logf_thread( (char*)"-------------- Device_cam::start_capturing %s------------------", dev_name.c_str() );
+    logf_thread( (char*)"-------------- CameraV4L::start_capturing %s------------------", dev_name.c_str() );
     
     unsigned int i;
     enum v4l2_buf_type type;
@@ -746,7 +815,7 @@ void Device_cam::start_capturing(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::uninit_device(void)
+void CameraV4L::uninit_device(void)
 {
     if (fd == -1)       return;
 
@@ -775,7 +844,7 @@ void Device_cam::uninit_device(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::init_read(unsigned int buffer_size)
+void CameraV4L::init_read(unsigned int buffer_size)
 {
     if (fd == -1)       return;
 
@@ -804,7 +873,7 @@ void Device_cam::init_read(unsigned int buffer_size)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::init_mmap(void)
+void CameraV4L::init_mmap(void)
 {
     if (fd == -1)       return;
 
@@ -872,7 +941,7 @@ void Device_cam::init_mmap(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::init_userp(unsigned int buffer_size)
+void CameraV4L::init_userp(unsigned int buffer_size)
 {
     if (fd == -1)       return;
         struct v4l2_requestbuffers req;
@@ -921,11 +990,11 @@ void Device_cam::init_userp(unsigned int buffer_size)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::init_device(void)
+void CameraV4L::init_device(void)
 {
     if (fd == -1)       return;
 
-    logf_thread( (char*)"Device_cam::init_device()" );
+    logf_thread( (char*)"CameraV4L::init_device()" );
     log_tab(true);
 
 
@@ -1098,13 +1167,13 @@ void Device_cam::init_device(void)
 
 end:
     log_tab(false);
-    logf_thread( (char*)"Device_cam::init_device" );
+    logf_thread( (char*)"CameraV4L::init_device" );
         
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::close_device(void)
+void CameraV4L::close_device(void)
 {
     if (fd==-1)     return;
     
@@ -1115,10 +1184,10 @@ void Device_cam::close_device(void)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Device_cam::open_device(char * name)
+int CameraV4L::open_device(char * name)
 {
     if ( name == NULL )       { fd = -1; return(EXIT_FAILURE); }
-    logf_thread((char*)"Device_cam::open_device(%s)", name );
+    logf_thread((char*)"CameraV4L::open_device(%s)", name );
 
     dev_name = name;
     return open_device();
@@ -1126,10 +1195,10 @@ int Device_cam::open_device(char * name)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Device_cam::open_device()
+int CameraV4L::open_device()
 {
     struct stat st;
-    logf_thread( (char*)"Device_cam::open_device() ... '%s'", dev_name.c_str());
+    logf_thread( (char*)"CameraV4L::open_device() ... '%s'", dev_name.c_str());
 
     /*
     if ( dev_name.find("/dev/video1")!=string::npos )
@@ -1170,73 +1239,10 @@ int Device_cam::open_device()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-/*
-void Device_cam::change_value_abs(int V4L2_CID, int v)
-{
-    if (fd == -1)       return;
-
-    #define CONTROL V4L2_CID_EXPOSURE_ABSOLUTE
-
-    struct v4l2_queryctrl   queryctrl;
-    struct v4l2_control     control;
-
-    memset(&queryctrl, 0, sizeof(queryctrl));
-    queryctrl.id = CONTROL;
-
-    if (-1 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
-        if (errno != EINVAL) {
-            perror("VIDIOC_QUERYCTRL");
-            exit(EXIT_FAILURE);
-        } else {
-            printf("V4L2_CID_BRIGHTNESS is not supported\n");
-        }
-    } else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
-        printf("V4L2_CID_BRIGHTNESS is not supported\n");
-    } else {
-        memset(&control, 0, sizeof (control));
-        control.id = CONTROL;
-        control.value = queryctrl.default_value;
-
-        if (-1 == ioctl(fd, VIDIOC_S_CTRL, &control)) {
-            perror("VIDIOC_S_CTRL");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    
-
-    memset(&control, 0, sizeof(control));
-    control.id = V4L2_CID;
-
-    if (0 == ioctl(fd, VIDIOC_G_CTRL, &control)) {
-        control.value = v;
-        printf( "value=%d\n", control.value );
-        // The driver may clamp the value or return ERANGE, ignored here 
-
-        if (-1 == ioctl(fd, VIDIOC_S_CTRL, &control) && errno != ERANGE) {
-            perror("VIDIOC_S_CTRL");
-            sprintf( strErr, "change_value_abs() VIDIOC_S_CTRL" );
-            close_device();
-            return;
-        }
-    // Ignore if V4L2_CID_CONTRAST is unsupported 
-    } else if (errno != EINVAL) {
-        perror("VIDIOC_G_CTRL");
-        sprintf( strErr, "change_value_abs() VIDIOC_G_CTRL" );
-        close_device();
-        return;
-    }
-
-
-}
-*/
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-int Device_cam::change_value(int id, int value)
+int CameraV4L::change_value(int id, int value)
 {
     if (fd == -1)       return -1;
-	//logf_thread( (char*)"Device_cam::change_value(%d, %d)", id, value );
+	//logf_thread( (char*)"CameraV4L::change_value(%d, %d)", id, value );
 
     //struct v4l2_queryctrl   queryctrl;
     struct v4l2_control     control;
@@ -1259,7 +1265,7 @@ int Device_cam::change_value(int id, int value)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-Control*  Device_cam::getControl(string s)
+Control*  CameraV4L::getControl(string s)
 {
     int si;
     si = pControl.size();    
@@ -1272,7 +1278,7 @@ Control*  Device_cam::getControl(string s)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-Control*  Device_cam::getControl(int id)
+Control*  CameraV4L::getControl(int id)
 {
     int si;
     si = pControl.size();    
@@ -1285,7 +1291,7 @@ Control*  Device_cam::getControl(int id)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-bool  Device_cam::isControl(string s)
+bool  CameraV4L::isControl(string s)
 {
     int si;
     si = pControl.size();    
@@ -1295,21 +1301,6 @@ bool  Device_cam::isControl(string s)
     }
     return false;
 }
-/*
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-bool  Device_cam::isControl(string s)
-{
-    int si;
-    si = pControl.size();    
-    
-    for(int i=0; i<si; i++ ) {
-        if ( pControl[i]->getName().find(s) != string::npos )          return true;
-    }
-    return NULL;
-}
-*/
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -1339,7 +1330,7 @@ struct jpeg_error_mgr * my_jpeg_std_error(struct jpeg_error_mgr * jerr)
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-int Device_cam::decompressJpeg() {
+int CameraV4L::decompressJpeg() {
 	//printf("Proc: %d--------------------------------------\n", nbJPG++);
 
 	wBmp = -1;
@@ -1449,7 +1440,7 @@ int Device_cam::decompressJpeg() {
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::enregistre()
+void CameraV4L::enregistre()
 {
     bEnregistre = true;
     bSaving = false;
@@ -1458,9 +1449,9 @@ void Device_cam::enregistre()
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::callback(bool b, int ii, char* str)
+void CameraV4L::callback(bool b, int ii, char* str)
 {
-    logf_thread( (char*)"Device_cam::callback( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
+    logf_thread( (char*)"CameraV4L::callback( %s, %d, \"%s\" )", BOOL2STR(b), ii, (char*)str );
     
     //if ( b && ii == 1 )         bEnregistre = true;
 
@@ -1497,7 +1488,7 @@ void Device_cam::callback(bool b, int ii, char* str)
  * Check if a file exists
  * @return true if and only if the file exists, false else
  */
-bool Device_cam::is_file_exist(const std::string& file) {
+bool CameraV4L::is_file_exist(const std::string& file) {
     struct stat buf;
     return (stat(file.c_str(), &buf) == 0);
 }
@@ -1506,7 +1497,7 @@ bool Device_cam::is_file_exist(const std::string& file) {
 // Remplade le joker %n  = nom de la camera
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::replace_name(string& sFilenamePng)
+void CameraV4L::replace_name(string& sFilenamePng)
 {
 	int n = sFilenamePng.find("%n");
 	
@@ -1519,7 +1510,7 @@ void Device_cam::replace_name(string& sFilenamePng)
 // Remplade le joker %t = l'heure
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::replace_time(string& sFilenamePng)
+void CameraV4L::replace_time(string& sFilenamePng)
 {
 	char 			sTime[30];
 	struct timeval	tv;
@@ -1544,7 +1535,7 @@ void Device_cam::replace_time(string& sFilenamePng)
 // Remplade le joker %d  = date
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::replace_date(string& sFilenamePng)
+void CameraV4L::replace_date(string& sFilenamePng)
 {
 	char 			sTime[30];
 	struct timeval	tv;
@@ -1572,7 +1563,7 @@ void Device_cam::replace_date(string& sFilenamePng)
 //   %n  : nom de la camera
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::new_filename_png(string& sFilenamePng)
+void CameraV4L::new_filename_png(string& sFilenamePng)
 {
    	logf_thread( (char*)"Camera::new_filename_png( %s )", sFilenamePng.c_str() );
    	
@@ -1616,7 +1607,7 @@ void Device_cam::new_filename_png(string& sFilenamePng)
 // Genere un nouveau nom de fichier pour la sauvegarde image
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::new_filename_png()
+void CameraV4L::new_filename_png()
 {
    	logf_thread( (char*)"Camera::new_filename_png( %s )", filename.c_str() );
    	
@@ -1648,7 +1639,7 @@ void Device_cam::new_filename_png()
 // Genere un nouveau nom de fichier pour la sauvegarde image
 //
 //--------------------------------------------------------------------------------------------------------------------
-void Device_cam::new_filename( string&  sFilename )
+void CameraV4L::new_filename( string&  sFilename )
 {
    	logf_thread( (char*)"Camera::new_filename( %s )", sFilename.c_str() );
    	
@@ -1698,7 +1689,7 @@ void Device_cam::new_filename( string&  sFilename )
 // Genere un nouveau nom de fichier pour la sauvegarde image
 //
 //--------------------------------------------------------------------------------------------------------------------
-char * Device_cam::str_error_decode( ERROR_DECODE_JPG error )
+char * CameraV4L::str_error_decode( ERROR_DECODE_JPG error )
 {
 	switch( (int)error )
 	{

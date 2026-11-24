@@ -2,9 +2,11 @@
 #define CONNEXION_MGR_H  1
 
 
-//#include "camera.h"
+#ifndef TARGET_ARM
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include "camera_mgr.h"
+#endif
 
 #include <unistd.h>
 #include <stdio.h>
@@ -12,12 +14,11 @@
 #include <dirent.h>
 #include <string>
 
-#include "MathlibD.h"
-#include <WindowsManager.h>
+//#include "MathlibD.h"
+//#include <WindowsManager.h>
 #include <thread>
 
 #include "main.h"
-#include "camera_mgr.h"
 #include "serial.h"
 #include "serveur_mgr.h"
 
@@ -36,6 +37,7 @@ private:
     std::thread                 th_poll_connexionZWO;
     vector<string>              t_port_polling;
     vector<string>              t_port_current;
+    vector<string>              exclude;
     
     bool                        bStartDEV;
     bool                        bStartZWO;
@@ -61,7 +63,8 @@ public:
     void                        print_list();
     void						stopThreadDEV()					{ bExitThreadDEV = true; }
     void						stopThreadZWO()					{ bExitThreadZWO = true; }
-    
+
+inline vector<string>&			get_exclude()					{ return exclude; }
 SINGLETON_END()
 
 #endif
