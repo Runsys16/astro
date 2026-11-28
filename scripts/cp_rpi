@@ -1,0 +1,33 @@
+#!/bin/bash
+#------------------------------------------
+
+REPSRC="/home/rene/programmes/opengl/video/astropilot/src/"
+REPDST="./programmes/astropilot/src/"
+INFO="--info=NONE"
+
+echo "------"${REPSRC}/'lx200.*'
+rsync -e ssh -avz  ${REPSRC}/lx200.*				${INFO}	cpi:${REPDST}
+
+echo "------"${REPSRC}/'serial.*'
+rsync -e ssh -avz  ${REPSRC}/serial.*				${INFO}	cpi:${REPDST}
+
+echo "------"${REPSRC}/'connexion_mgr.*'
+rsync -e ssh -avz  ${REPSRC}/connexion_mgr.*		${INFO}	cpi:${REPDST}
+
+echo "------"${REPSRC}/'serveur_mgr.*'
+rsync -e ssh -avz  ${REPSRC}/serveur_mgr.*			${INFO}	cpi:${REPDST}
+
+echo "------"${REPSRC}/'var_mgr.*'
+rsync -e ssh -avz  ${REPSRC}/var_mgr.*				${INFO}	cpi:${REPDST}
+
+echo "------"${REPSRC}/'Singleton.*'
+rsync -e ssh -avz  ${REPSRC}/Singleton.*			${INFO}	cpi:${REPDST}
+
+echo "------"${REPSRC}/'ctools.*'
+rsync -e ssh -avz  ${REPSRC}/ctools.*				${INFO}	cpi:${REPDST}
+
+echo "------"${REPSRC}/'Math.*'
+rsync -e ssh -avz  ${REPSRC}/Math*.*				${INFO}	cpi:${REPDST}
+
+
+

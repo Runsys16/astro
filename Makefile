@@ -17,7 +17,7 @@ PATHLIBS = -L"/usr/local/lib" -L"/usr/lib"
 LIBS	 =  $(PATHLIBS) $(CLIBS_PYTHON) -lbluetooth -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW
 LIBS	 +=  -lIL -lwmcgl -rdynamic -ljpeg -lexif -lpng -lASICamera2
 
-BIN_NAME = astro
+BIN_NAME = "astropilot"
 
 
 
@@ -123,13 +123,22 @@ $(BIN_NAME): $(OBJ)
 #00#	return (include in includes)
 #00##-----------------------------------------------------------------------------
 #00##
+#00##-----------------------------------------------------------------------------
+#00#def not_exist( filename ):
+#00#	return (not os.path.exists(filename))
+#00##-----------------------------------------------------------------------------
+#00##
 #00## Recursif
 #00##
 #00##-----------------------------------------------------------------------------
 #00#def find_header( filename, dirname="./", includes = [], ext_dirname = "" ):
+#00#	pathname = dirname+ext_dirname+filename
 #00#	log( '-------------------------------' )
-#00#	log( 'find header "%s"' % (dirname+ext_dirname+filename) )
+#00#	log( 'find header "%s"' % (pathname) )
 #00#	f = ""
+#00#	if not_exist(pathname):
+#00#		return includes
+#00#	
 #00#	try:
 #00#		f = open( dirname+ext_dirname+filename )
 #00#	except OSError:
@@ -161,6 +170,9 @@ $(BIN_NAME): $(OBJ)
 #00#			if ( ext_dirname != "" ):
 #00#				include_name = include_name.split(ext_dirname)[-1]
 #00#			
+#00#			if not_exist(include_name):
+#00#				continue
+#00#			
 #00#			make_name = ext_dirname + include_name.split(dirname)[-1]
 #00#			log( "MAKENAME : %s" % (make_name) )
 #00#			log( "Recursif dir  : %s" % dirname )
@@ -189,7 +201,7 @@ $(BIN_NAME): $(OBJ)
 #00#log ( "#-------------------------------------------------------" )	
 #00#log
 #00#source="./"
-#00#source="/home/rene/programmes/opengl/video/astro/src/"
+#00#source="/home/rene/programmes/opengl/video/astropilot/src/"
 #00#for filename in sorted(list_dir(source)):
 #00#
 #00#	#log( "MAIN : parours : %s" % filename )
@@ -218,7 +230,8 @@ $(BIN_NAME): $(OBJ)
 #00#
 #00#	print
 #00#	print( "\t@echo ---------   compilation de $@" )
-#00#	print( "\t$(GPP) -c $< -o $@  $(CFLAGS)" )
+#00#	#print( "\t$(GPP) -c $< -o $@  $(CFLAGS)" )
+#00#	print( "\t@$(CXX) $(CXXFLAGS) -c $< -o $@" )
 #00#	print( "" )
 #00#	
 #00#sys.exit(0)
@@ -276,236 +289,236 @@ $(BIN_NAME): $(OBJ)
 #--- Fabrication de MathAstro.o -----------------------------------------
 $(OBJDIR)MathAstro.o :   $(SRCDIR)MathAstro.cpp $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de alert_box.o -----------------------------------------
 $(OBJDIR)alert_box.o :   $(SRCDIR)alert_box.cpp $(SRCDIR)alert_box.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de asserv.o -----------------------------------------
 $(OBJDIR)asserv.o :   $(SRCDIR)asserv.cpp $(SRCDIR)asserv.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)camera_zwo.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de bluetooth.o -----------------------------------------
 $(OBJDIR)bluetooth.o :   $(SRCDIR)bluetooth.cpp $(SRCDIR)bluetooth.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de camera.o -----------------------------------------
 $(OBJDIR)camera.o :   $(SRCDIR)camera.cpp $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera_zwo.h $(SRCDIR)file_browser.h $(SRCDIR)panel_dir.h $(SRCDIR)panel_file.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de camera_mgr.o -----------------------------------------
 $(OBJDIR)camera_mgr.o :   $(SRCDIR)camera_mgr.cpp $(SRCDIR)file_browser.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)panel_dir.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)panel_file.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera_zwo.h $(SRCDIR)pleiade.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de camera_v4l2.o -----------------------------------------
 $(OBJDIR)camera_v4l2.o :   $(SRCDIR)camera_v4l2.cpp $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de camera_zwo.o -----------------------------------------
 $(OBJDIR)camera_zwo.o :   $(SRCDIR)camera_zwo.cpp $(SRCDIR)camera_zwo.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)camera.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_mgr.h $(SRCDIR)file_browser.h $(SRCDIR)panel_dir.h $(SRCDIR)panel_file.h $(SRCDIR)exif_png.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de capture.o -----------------------------------------
 $(OBJDIR)capture.o :   $(SRCDIR)capture.cpp $(SRCDIR)police.h $(SRCDIR)capture.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)panel_capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h $(SRCDIR)captures.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de captures.o -----------------------------------------
 $(OBJDIR)captures.o :   $(SRCDIR)captures.cpp $(SRCDIR)captures.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)capture.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)panel_capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de catalog.o -----------------------------------------
 $(OBJDIR)catalog.o :   $(SRCDIR)catalog.cpp $(SRCDIR)catalog.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)star_catalogue.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_zwo.h $(SRCDIR)panel_stdout.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de connexion_mgr.o -----------------------------------------
 $(OBJDIR)connexion_mgr.o :   $(SRCDIR)connexion_mgr.cpp $(SRCDIR)connexion_mgr.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_zwo.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de console.o -----------------------------------------
 $(OBJDIR)console.o :   $(SRCDIR)console.cpp $(SRCDIR)console.h $(SRCDIR)MathlibD.h $(SRCDIR)panel_console_serial.h $(SRCDIR)Singleton.h $(SRCDIR)serial.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)panel_courbe.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)serveur_mgr.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de control.o -----------------------------------------
 $(OBJDIR)control.o :   $(SRCDIR)control.cpp $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)camera_v4l2.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de ctools.o -----------------------------------------
 $(OBJDIR)ctools.o :   $(SRCDIR)ctools.cpp $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)connexion_mgr.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_zwo.h $(SRCDIR)lx200.h $(SRCDIR)synscan.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de exif_jpg.o -----------------------------------------
 $(OBJDIR)exif_jpg.o :   $(SRCDIR)exif_jpg.cpp $(SRCDIR)exif_jpg.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de exif_png.o -----------------------------------------
 $(OBJDIR)exif_png.o :   $(SRCDIR)exif_png.cpp $(SRCDIR)exif_png.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de file_browser.o -----------------------------------------
 $(OBJDIR)file_browser.o :   $(SRCDIR)file_browser.cpp $(SRCDIR)file_browser.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)panel_dir.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)panel_file.h $(SRCDIR)police.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de find_star.o -----------------------------------------
 $(OBJDIR)find_star.o :   $(SRCDIR)find_star.cpp $(SRCDIR)find_star.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)convert.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de fits.o -----------------------------------------
 $(OBJDIR)fits.o :   $(SRCDIR)fits.cpp $(SRCDIR)fits.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_capture.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)panel_fits_correction.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de keyboard.o -----------------------------------------
 $(OBJDIR)keyboard.o :   $(SRCDIR)keyboard.cpp $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera_zwo.h $(SRCDIR)connexion_mgr.h $(SRCDIR)pleiade.h $(SRCDIR)lx200.h $(SRCDIR)synscan.h $(SRCDIR)capture.h $(SRCDIR)panel_capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h $(SRCDIR)file_browser.h $(SRCDIR)panel_dir.h $(SRCDIR)panel_file.h $(SRCDIR)captures.h $(SRCDIR)bluetooth.h $(SRCDIR)panel_enregistre.h $(SRCDIR)panel_stdout.h $(SRCDIR)keyboard.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de lx200.o -----------------------------------------
 $(OBJDIR)lx200.o :   $(SRCDIR)lx200.cpp $(SRCDIR)lx200.h $(SRCDIR)MathlibD.h $(SRCDIR)panel_debug.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_zwo.h $(SRCDIR)captures.h $(SRCDIR)capture.h $(SRCDIR)panel_capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de main.o -----------------------------------------
 $(OBJDIR)main.o :   $(SRCDIR)main.cpp $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)camera.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera_zwo.h $(SRCDIR)connexion_mgr.h $(SRCDIR)pleiade.h $(SRCDIR)lx200.h $(SRCDIR)synscan.h $(SRCDIR)capture.h $(SRCDIR)panel_capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h $(SRCDIR)file_browser.h $(SRCDIR)panel_dir.h $(SRCDIR)panel_file.h $(SRCDIR)captures.h $(SRCDIR)bluetooth.h $(SRCDIR)panel_enregistre.h $(SRCDIR)panel_stdout.h $(SRCDIR)keyboard.h $(SRCDIR)ctools.h $(SRCDIR)status.inc
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_camera.o -----------------------------------------
 $(OBJDIR)panel_camera.o :   $(SRCDIR)panel_camera.cpp $(SRCDIR)police.h $(SRCDIR)panel_camera.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_zwo.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_capture.o -----------------------------------------
 $(OBJDIR)panel_capture.o :   $(SRCDIR)panel_capture.cpp $(SRCDIR)panel_capture.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)panel_stdout.h $(SRCDIR)captures.h $(SRCDIR)capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_console_serial.o -----------------------------------------
 $(OBJDIR)panel_console_serial.o :   $(SRCDIR)panel_console_serial.cpp $(SRCDIR)panel_console_serial.h $(SRCDIR)MathlibD.h $(SRCDIR)Singleton.h $(SRCDIR)serial.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)serveur_mgr.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_courbe.o -----------------------------------------
 $(OBJDIR)panel_courbe.o :   $(SRCDIR)panel_courbe.cpp $(SRCDIR)panel_courbe.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)alert_box.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_debug.o -----------------------------------------
 $(OBJDIR)panel_debug.o :   $(SRCDIR)panel_debug.cpp $(SRCDIR)panel_debug.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_dir.o -----------------------------------------
 $(OBJDIR)panel_dir.o :   $(SRCDIR)panel_dir.cpp $(SRCDIR)panel_dir.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)file_browser.h $(SRCDIR)panel_file.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_enregistre.o -----------------------------------------
 $(OBJDIR)panel_enregistre.o :   $(SRCDIR)panel_enregistre.cpp $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_zwo.h $(SRCDIR)panel_enregistre.h $(SRCDIR)file_browser.h $(SRCDIR)panel_dir.h $(SRCDIR)panel_file.h $(SRCDIR)police.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_file.o -----------------------------------------
 $(OBJDIR)panel_file.o :   $(SRCDIR)panel_file.cpp $(SRCDIR)panel_file.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)file_browser.h $(SRCDIR)panel_dir.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_fits.o -----------------------------------------
 $(OBJDIR)panel_fits.o :   $(SRCDIR)panel_fits.cpp $(SRCDIR)panel_fits.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_fits_correction.o -----------------------------------------
 $(OBJDIR)panel_fits_correction.o :   $(SRCDIR)panel_fits_correction.cpp $(SRCDIR)panel_fits_correction.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_graph.o -----------------------------------------
 $(OBJDIR)panel_graph.o :   $(SRCDIR)panel_graph.cpp $(SRCDIR)panel_graph.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)notification.h $(SRCDIR)notification_capture.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_stdout.o -----------------------------------------
 $(OBJDIR)panel_stdout.o :   $(SRCDIR)panel_stdout.cpp $(SRCDIR)panel_stdout.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de panel_zoom.o -----------------------------------------
 $(OBJDIR)panel_zoom.o :   $(SRCDIR)panel_zoom.cpp $(SRCDIR)panel_zoom.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de pleiade.o -----------------------------------------
 $(OBJDIR)pleiade.o :   $(SRCDIR)pleiade.cpp $(SRCDIR)pleiade.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de serial.o -----------------------------------------
 $(OBJDIR)serial.o :   $(SRCDIR)serial.cpp $(SRCDIR)panel_console_serial.h $(SRCDIR)MathlibD.h $(SRCDIR)Singleton.h $(SRCDIR)serial.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)serveur_mgr.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de serveur_mgr.o -----------------------------------------
 $(OBJDIR)serveur_mgr.o :   $(SRCDIR)serveur_mgr.cpp $(SRCDIR)serveur_mgr.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)captures.h $(SRCDIR)capture.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)panel_capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera_zwo.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de star.o -----------------------------------------
 $(OBJDIR)star.o :   $(SRCDIR)star.cpp $(SRCDIR)stars.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de star_catalogue.o -----------------------------------------
 $(OBJDIR)star_catalogue.o :   $(SRCDIR)star_catalogue.cpp $(SRCDIR)star_catalogue.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de star_compare.o -----------------------------------------
 $(OBJDIR)star_compare.o :   $(SRCDIR)star_compare.cpp $(SRCDIR)star_compare.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)star_catalogue.h $(SRCDIR)catalog.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de stars.o -----------------------------------------
 $(OBJDIR)stars.o :   $(SRCDIR)stars.cpp $(SRCDIR)stars.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)panel_debug.h $(SRCDIR)notification_capture.h $(SRCDIR)panel_stdout.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de surveillance.o -----------------------------------------
 $(OBJDIR)surveillance.o :   $(SRCDIR)surveillance.cpp $(SRCDIR)surveillance.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)Singleton.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)var_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de synscan.o -----------------------------------------
 $(OBJDIR)synscan.o :   $(SRCDIR)synscan.cpp $(SRCDIR)synscan.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h $(SRCDIR)panel_debug.h $(SRCDIR)camera_mgr.h $(SRCDIR)camera.h $(SRCDIR)camera_v4l2.h $(SRCDIR)control.h $(SRCDIR)exif_jpg.h $(SRCDIR)stars.h $(SRCDIR)star.h $(SRCDIR)panel_zoom.h $(SRCDIR)convert.h $(SRCDIR)panel_camera.h $(SRCDIR)catalog.h $(SRCDIR)star_catalogue.h $(SRCDIR)find_star.h $(SRCDIR)panel_graph.h $(SRCDIR)notification.h $(SRCDIR)notification_capture.h $(SRCDIR)star_compare.h $(SRCDIR)asserv.h $(SRCDIR)camera_zwo.h $(SRCDIR)captures.h $(SRCDIR)capture.h $(SRCDIR)panel_capture.h $(SRCDIR)fits.h $(SRCDIR)panel_fits.h $(SRCDIR)panel_fits_correction.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de timer.o -----------------------------------------
 $(OBJDIR)timer.o :   $(SRCDIR)timer.cpp $(SRCDIR)timer.h $(SRCDIR)Singleton.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #--- Fabrication de var_mgr.o -----------------------------------------
-$(OBJDIR)var_mgr.o :   $(SRCDIR)var_mgr.cpp $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)MathlibD.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
+$(OBJDIR)var_mgr.o :   $(SRCDIR)var_mgr.cpp $(SRCDIR)var_mgr.h $(SRCDIR)Singleton.h $(SRCDIR)main.h $(SRCDIR)MathAstro.h $(SRCDIR)MathlibD.h $(SRCDIR)button_callback.h $(SRCDIR)surveillance.h $(SRCDIR)panel_courbe.h $(SRCDIR)console.h $(SRCDIR)panel_console_serial.h $(SRCDIR)serial.h $(SRCDIR)serveur_mgr.h $(SRCDIR)timer.h $(SRCDIR)alert_box.h
 	@echo ---------   compilation de $@
-	$(GPP) -c $< -o $@  $(CFLAGS)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # OK

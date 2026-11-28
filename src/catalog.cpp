@@ -8,20 +8,25 @@
 //--------------------------------------------------------------------------------------------------------------------
 Catalog::Catalog()
 {
+    logf( (char*)"Catalog::Catalog() contructeur %d", __LINE__ );
+    log_tab(true);
+
     sFilename = "/home/rene/.astropilot/vizier/vizier.cat";
     bVizCam = true;
 
     sName = "";
     charge();
     bSauve = true;
-    //Camera_mgr::getInstance().setRefCatalog( 56.0, 24.0 );
-    //logf( (char*)"Ajout de la reference %0.2f", 6 );
+
+    log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
 Catalog::Catalog(bool b)
 {
+    logf( (char*)"Catalog::Catalog() contructeur %d", __LINE__ );
+
     sFilename = "/home/rene/.astropilot/vizier/vizier.cat";
     bVizCam = true;
     sName = "";
@@ -32,6 +37,8 @@ Catalog::Catalog(bool b)
 //--------------------------------------------------------------------------------------------------------------------
 Catalog::Catalog(string f)
 {
+    logf( (char*)"Catalog::Catalog() contructeur %d", __LINE__ );
+
     Catalog();
     sFilename = f;
     bVizCam = false;
@@ -41,6 +48,7 @@ Catalog::Catalog(string f)
 //--------------------------------------------------------------------------------------------------------------------
 Catalog::Catalog(string f, string n)
 {
+    logf( (char*)"Catalog::Catalog() contructeur %d", __LINE__ );
     Catalog();
     sFilename = f;
     sName = n;
@@ -240,7 +248,9 @@ bool Catalog::charge()
 
         if ( name.find("65221487868870784") == 0 )
         {   
+        	log_tab(true);
             Camera_mgr::getInstance().setRefCatalog( fRA, fDE );
+        	log_tab(false);
             logf( (char*)"Ajout de la reference %0.2f",fMag );
         }
         else

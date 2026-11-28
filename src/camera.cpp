@@ -175,9 +175,11 @@ void Camera::changeValueDouble( double val, void *p )	{
 //
 //--------------------------------------------------------------------------------------------------------------------
 void Camera::changeValueDoubleClick( double val, void *p )	{
-	//logf( (char*)"changeValueDouble %lf", val );
+	logf( (char*)"changeValueDoubleClick %lf", val );
+	log_tab(true);
 	Control* pControl = (Control*)p;
 	pControl->setValue( (int)val );
+	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

@@ -909,8 +909,18 @@ void  Camera_mgr::add_catalogue(StarCatalog* p)
 //--------------------------------------------------------------------------------------------------------------------
 void  Camera_mgr::setRefCatalog(double _0, double _1)
 {   
-    if (pCurrent == NULL)                   { logf_thread((char*)"pCurrent NULL"); return; }
+   	logf((char*)"Camera_mgr::setRefCatalog( %lf, %lf)", _0, _1 );
+   	log_tab(true);
+   	
+    if (pCurrent == NULL)
+    {
+    	logf_thread((char*)"pCurrent NULL"); 
+	   	log_tab(false);
+    	return;
+    }
     pCurrent->setRefCatalog(_0, _1);
+
+   	log_tab(false);
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

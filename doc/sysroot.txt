@@ -1,0 +1,117 @@
+Pour configurer un poste Ubuntu pour la compilation croisée (C/C++) vers un Raspberry Pi, vous devez installer 
+la chaîne de compilation ARM adaptée à l'architecture de votre Raspberry Pi 
+et synchroniser ses bibliothèques système (sysroot).
+
+1. Installer le compilateur croisé sur Ubuntu
+
+	Ouvrez le terminal sur votre poste Ubuntu et installez les outils de base ainsi que le compilateur 
+	correspondant à votre système Raspberry Pi OS :
+
+	• Pour Raspberry Pi OS 64 bits (Pi 3, 4, 5, Zero 2 W — recommandé) 
+	:bash
+		sudo apt update
+		sudo apt install build-essential cmake gdb-multiarch gcc-aarch64-linux-gnu g++-aarch64-linux-gnu rsync
+	Utilisez le code avec précaution.
+
+
+	:bash
+		sudo apt update
+		sudo apt install build-essential cmake gdb-multiarch gcc-aarch64-linux-gnu g++-aarch64-linux-gnu rsync
+		sudo apt install symlinks
+	Utilisez le code avec précaution.
+
+	• Pour Raspberry Pi OS 32 bits (anciens modèles ou OS 32-bit) 
+	:bash
+		sudo apt update
+		sudo apt install build-essential cmake gdb-multiarch gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf rsync
+	Utilisez le code avec précaution.
+
+2. Créer et synchroniser le Sysroot
+
+	Si votre programme utilise des bibliothèques externes (OpenCV, Qt, GPIO, etc.), le compilateur 
+	a besoin d'une copie des en-têtes et bibliothèques installés sur votre Raspberry Pi.
+	1. Sur le Raspberry Pi, installez les paquets de développement nécessaires 
+		(ex. sudo apt install libgpiod-dev) et activez le serveur SSH (sudo raspi-config > Interface Options > SSH).
+	2. Sur Ubuntu, créez un dossier local et copiez les dossiers système du Pi via rsync 
+		(remplacez pi et 192.168.1.X par votre utilisateur et l'IP du Raspberry Pi) 
+		:bash
+
+			mkdir -p ~/rpi-sysroot/usr ~/rpi-sysroot/lib
+			rsync -avz --rsync-path="sudo rsync" --delete pi@192.168.1.X:/lib ~/rpi-sysroot/
+			rsync -avz --rsync-path="sudo rsync" --delete pi@192.168.1.X:/usr/include ~/rpi-sysroot/usr/
+			rsync -avz --rsync-path="sudo rsync" --delete pi@192.168.1.X:/usr/lib ~/rpi-sysroot/usr/
+		Utilisez le code avec précaution.
+
+
+
+	3. Corriger les liens symboliques absolus dans le sysroot (sinon l'éditeur de liens pointera
+	 vers les fichiers x86 de votre PC) 
+	 :bash
+		sudo apt install symlinks
+		symlinks -rc ~/rpi-sysroot
+	Utilisez le code avec précaution.
+
+3. Configurer le fichier Toolchain pour CMake
+
+	Créez un fichier toolchain-rpi.cmake à la racine de votre projet pour indiquer à CMake d'utiliser 
+	le compilateur ARM et votre sysroot (exemple pour une cible 64 bits) 
+	:cmake
+		set(CMAKE_SYSTEM_NAME Linux)
+		set(CMAKE_SYSTEM_PROCESSOR aarch64)
+
+		set(CMAKE_SYSROOT $ENV{HOME}/rpi-sysroot)
+		set(CMAKE_C_COMPILER /usr/bin/aarch64-linux-gnu-gcc)
+		set(CMAKE_CXX_COMPILER /usr/bin/aarch64-linux-gnu-g++)
+
+		set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+		set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+		set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+		set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+	Utilisez le code avec précaution.
+
+
+3-bis. Créer le fichier toolchain-rpi64.cmake
+
+	Placez ce fichier à la racine de votre projet C/C++ :
+	cmake
+		set(CMAKE_SYSTEM_NAME Linux)
+		set(CMAKE_SYSTEM_PROCESSOR aarch64)
+
+		set(CMAKE_SYSROOT $ENV{HOME}/rpi-sysroot)
+		set(CMAKE_C_COMPILER /usr/bin/aarch64-linux-gnu-gcc)
+		set(CMAKE_CXX_COMPILER /usr/bin/aarch64-linux-gnu-g++)
+
+		set(CMAKE_FIND_ROOT_PATH $ENV{HOME}/rpi-sysroot)
+		set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+		set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+		set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+		set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+	Utilisez le code avec précaution.
+
+
+4. Compiler et déployer
+
+	1. Compilez depuis votre dossier de projet sur Ubuntu 
+	:bash
+		cmake -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-rpi.cmake
+		cmake --build build -j$(nproc)
+	Utilisez le code avec précaution.
+	:bash
+		cmake -B build-rpi -DCMAKE_TOOLCHAIN_FILE=toolchain-rpi64.cmake
+		cmake --build build-rpi -j$(nproc)
+	Utilisez le code avec précaution.	
+
+	2. Transférez l'exécutable sur le Raspberry Pi et testez-le 
+	:bash
+		scp build/mon_programme pi@192.168.1.X:~/
+		ssh pi@192.168.1.X "./mon_programme"
+	Utilisez le code avec précaution.
+		
+		Pour adapter cette configuration à votre environnement, précisez-moi :
+		• Le modèle de Raspberry Pi et l'architecture de l'OS (32 ou 64 bits)
+		• Le langage ou framework ciblé (C/C++, Rust, Qt, noyau Linux, Docker)
+		Je pourrai vous fournir le fichier de configuration exact ou les commandes spécifiques.
+
+##############################################################################################################""
+
+

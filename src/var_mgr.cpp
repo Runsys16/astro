@@ -1,3 +1,5 @@
+#include <unistd.h>
+#include <pwd.h>
 #include "var_mgr.h"
 //--------------------------------------------------------------------------------------------------------------------
 //#define DEBUG
@@ -12,6 +14,20 @@ VarManager::VarManager()
 {
 	logf( (char*)"Constructeur : VarManager::VarManager()" );
     bSauve = false;
+    
+    if ( sHome == "" )
+    {
+		struct passwd *pw = getpwuid(getuid());
+		if (pw && pw->pw_dir) 
+		{
+			sHome = string( pw->pw_dir );
+			logf( (char*)"|  home (user) : '%s", sHome.c_str() );
+		}
+    }
+    
+    sFileVar = sHome + "/.astropilot/var.ini";
+    logf( (char*)"|  Fichier des variables : %s", sFileVar.c_str() );
+    
 }
 //--------------------------------------------------------------------------------------------------------------------
 //
@@ -131,16 +147,16 @@ void VarManager::sauve()
 	//#define AFF_SAUVE
     if (!bSauve)        return;
 
-    string filename = "/home/rene/.astropilot/var.ini";
+    
 	#ifdef DEBUG_SAUVE
-    logf( (char*)"Sauvegarde des variables dans '%s'", (char*)filename.c_str() );
+    logf( (char*)"Sauvegarde des variables dans '%s'", (char*)sFileVar.c_str() );
 	#endif
 	    
     std::ofstream fichier;
-    fichier.open(filename);
+    fichier.open( sFileVar );
     if ( !fichier ) 
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)sFileVar.c_str() );
     }
 
     dbMap& db = getDB();
@@ -213,15 +229,14 @@ void VarManager::charge()
     bSauve = false;
     
     
-    string filename = "/home/rene/.astropilot/var.ini";
-    logf( (char*)"Lecture des variables de '%s'", (char*)filename.c_str() );
+    logf( (char*)"Lecture des variables de '%s'", (char*)sFileVar.c_str() );
     
     std::ifstream fichier;
-    fichier.open(filename);
+    fichier.open( sFileVar );
     
     if ( !fichier ) 
     {
-        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)filename.c_str() );
+        logf( (char*)"[ERROR]impossble d'ouvrir : '%s'", (char*)sFileVar.c_str() );
         return;
     }
     

@@ -3,6 +3,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
+#include <unistd.h>
+#include <pwd.h>
 
 //#include "Python.h"
 
@@ -205,10 +207,6 @@ vector<string> t_sHelp4 =
 	"",
 	"Ctrl+q\t: --- SORTIE DU LOGICIEL ---",
 };
-//--------------------------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------------------------
-VarManager& var = VarManager::getInstance();
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -420,20 +418,20 @@ double				ZrefX = -1.0;
 double				ZrefY = -1.0;
 double				Wref  = -1.0;
 //--------------------------------------------------------------------------------------------------------------------
-bool				bAffCatalog	= true;
-bool				bAffStar		= true;
-Catalog				vizier = Catalog();
+bool				bAffCatalog			= true;
+bool				bAffStar			= true;
 int					nbVizier;
 
 int					iGlutModifier = 0;
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
-string				workDirCaptures = 		"/home/rene/Documents/astronomie/logiciel/script/images/";
-string				workDirSauveCourbe =	"/home/rene/.astropilot/suivi/";
-string				workDirFileBrowser =	"/home/rene/Documents/astronomie/logiciel/script/images/";
-string				filenameSauve =			"/home/rene/.astropilot/sauvegarde.txt";
-string				workDirFits =			"/home/rene/Documents/astronomie/fits/";
+string				sHome				= "";
+string				workDirCaptures		= "/Documents/astronomie/logiciel/script/images/";
+string				workDirSauveCourbe	= "/.astropilot/suivi/";
+string				workDirFileBrowser	= "/Documents/astronomie/logiciel/script/images/";
+string				filenameSauve		= "/.astropilot/sauvegarde.txt";
+string				workDirFits			= "/Documents/astronomie/fits/";
 //--------------------------------------------------------------------------------------------------------------------
 CallbackSauveGuidage    cb_sguidage;
 CallbackChargeGuidage   cb_cguidage;
@@ -489,6 +487,14 @@ void usage(FILE *fp, int argc, char **argv)
                  "",
                  argv[0] );
 }
+//--------------------------------------------------------------------------------------------------------------------
+//
+// Appel des constructeurs
+//
+//--------------------------------------------------------------------------------------------------------------------
+VarManager& var			= VarManager::getInstance();
+Catalog		vizier		= Catalog();
+
 //--------------------------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------------------------
@@ -3581,9 +3587,16 @@ void charge_var()
    	
    	bCoordHoriz_old = bCoordHoriz;
 
-
     change_ad_status( pos_telescope.ad );
     change_dc_status( pos_telescope.dc );
+    
+    //---------------------------------------------
+    //   sHome mise a jour ddans var_mgr.cpp
+	workDirCaptures		= sHome + workDirCaptures;
+	workDirSauveCourbe	= sHome + workDirSauveCourbe;
+	workDirFileBrowser	= sHome + workDirFileBrowser;
+	filenameSauve		= sHome + filenameSauve;
+	workDirFits			= sHome + workDirFits;
 }
 //--------------------------------------------------------------------------------------------------------------------
 //

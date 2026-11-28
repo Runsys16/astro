@@ -37,7 +37,7 @@ void Control::init( struct v4l2_queryctrl* queryctrl)
     if (0 == ioctl(dev->getFd(), VIDIOC_G_CTRL, &control)) {
         value = control.value;
         //printf( "%08X %s  %d   (%d<%d)\n", id, name, value, min, max );
-        logf_thread( (char*)"Control::Init   %s %08X\t%d\t(%d<%d)", name.c_str(), id, value, min, max );
+        logf_thread( (char*)"Control::Init   \t0x%08x\t%d\t(%d<%d) \t%s", id, value, min, max, name.c_str() );
     }
     //}    
 }
@@ -79,11 +79,13 @@ void Control::setValue(int v)
     //logf( (char*)"Control::setValue(%d)  %s", v, name.c_str() );
     if ( v >= min && v <= max)
     {
-        //logf( (char*)"Control::setValue(%d)  OK", v );
+        logf( (char*)"Control::setValue(%d)  OK : %s", v, name.c_str() );
         value = v;
+        log_tab(true);
         int r = dev->change_value(id, v);
         if ( r<0 )      logf( (char*)"[ ERREUR ] change_value : %d   id=%d v=%d", r, id, v );
         printValue();
+        log_tab(false);
     }
     else
     {

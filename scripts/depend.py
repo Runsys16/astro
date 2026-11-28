@@ -67,13 +67,22 @@ def have_file( includes, include ):
 	return (include in includes)
 #-----------------------------------------------------------------------------
 #
+#-----------------------------------------------------------------------------
+def not_exist( filename ):
+	return (not os.path.exists(filename))
+#-----------------------------------------------------------------------------
+#
 # Recursif
 #
 #-----------------------------------------------------------------------------
 def find_header( filename, dirname="./", includes = [], ext_dirname = "" ):
+	pathname = dirname+ext_dirname+filename
 	log( '-------------------------------' )
-	log( 'find header "%s"' % (dirname+ext_dirname+filename) )
+	log( 'find header "%s"' % (pathname) )
 	f = ""
+	if not_exist(pathname):
+		return includes
+	
 	try:
 		f = open( dirname+ext_dirname+filename )
 	except OSError:
@@ -105,6 +114,9 @@ def find_header( filename, dirname="./", includes = [], ext_dirname = "" ):
 			if ( ext_dirname != "" ):
 				include_name = include_name.split(ext_dirname)[-1]
 			
+			if not_exist(include_name):
+				continue
+			
 			make_name = ext_dirname + include_name.split(dirname)[-1]
 			log( "MAKENAME : %s" % (make_name) )
 			log( "Recursif dir  : %s" % dirname )
@@ -133,7 +145,7 @@ log ( "#              project" )
 log ( "#-------------------------------------------------------" )	
 log
 source="./"
-source="/home/rene/programmes/opengl/video/astro/src/"
+source="/home/rene/programmes/opengl/video/astropilot/src/"
 for filename in sorted(list_dir(source)):
 
 	#log( "MAIN : parours : %s" % filename )
@@ -162,7 +174,8 @@ for filename in sorted(list_dir(source)):
 
 	print
 	print( "\t@echo ---------   compilation de $@" )
-	print( "\t$(GPP) -c $< -o $@  $(CFLAGS)" )
+	#print( "\t$(GPP) -c $< -o $@  $(CFLAGS)" )
+	print( "\t@$(CXX) $(CXXFLAGS) -c $< -o $@" )
 	print( "" )
 	
 sys.exit(0)

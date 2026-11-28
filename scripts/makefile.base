@@ -17,7 +17,7 @@ PATHLIBS = -L"/usr/local/lib" -L"/usr/lib"
 LIBS	 =  $(PATHLIBS) $(CLIBS_PYTHON) -lbluetooth -lX11 -lXrandr -lpthread -lGL -lglut -lGLU -lGLEW
 LIBS	 +=  -lIL -lwmcgl -rdynamic -ljpeg -lexif -lpng -lASICamera2
 
-BIN_NAME = astro
+BIN_NAME = "astropilot"
 
 
 

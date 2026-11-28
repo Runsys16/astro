@@ -304,7 +304,11 @@ void CameraV4L::enum_format()
         logf_thread( (char*)"type = %08X   " , fmtdesc.type );
         logf_thread( (char*)"pixelformat = %08X   " , fmtdesc.pixelformat );
         
-        if ( fmtdesc.pixelformat == 0x47504A4D )       pixelformat = fmtdesc.pixelformat;
+        if ( fmtdesc.pixelformat == 0x47504A4D )       
+        {
+        	pixelformat = fmtdesc.pixelformat;
+	        logf_thread( (char*)"Forcage format"	 );
+        }
         
         enum_format_size( fmtdesc.pixelformat );
 
@@ -351,6 +355,7 @@ void CameraV4L::enum_format_size(int pf)
 
             if ( pf == 0x47504A4D )   
             {
+		        logf_thread( (char*)"Forcage Size"	 );
                 sizeChoix = 1;//tSize.size();
             }
             tSize.push_back(s);
@@ -368,9 +373,11 @@ void CameraV4L::enum_format_size(int pf)
     }
     //--------------------------------------------------------------
     // on choisi le format le plus grand
+    /*
     for( int i=0; i<nSize; i++ )  {
         if ( tSize[i].width == max )			sizeChoix = i;
     }
+    */
 
 
     logf_thread( (char*)"Resolution courante %dx%d",  width, height );
@@ -1242,7 +1249,7 @@ int CameraV4L::open_device()
 int CameraV4L::change_value(int id, int value)
 {
     if (fd == -1)       return -1;
-	//logf_thread( (char*)"CameraV4L::change_value(%d, %d)", id, value );
+	logf( (char*)"CameraV4L::change_value(0x%08x, %d)", id, value );
 
     //struct v4l2_queryctrl   queryctrl;
     struct v4l2_control     control;

@@ -1,16 +1,10 @@
 #ifndef VARMANAGER_H
 #define VARMANAGER_H 1
 
-#include "Singleton.h"
-#include <iostream>
-#include <fstream>
-#include <map>
-#include <string>
 #include <assert.h>
-#include "MathlibD.h"
-
+#include <map>
+#include "Singleton.h"
 #include "main.h"
-
 
 using namespace std;
 
@@ -30,18 +24,18 @@ public:
 	     };
 	 };
 
-	typedef std::map<std::string, sVar> dbMap;
+	typedef map<string, sVar> dbMap;
 
-	void set(const std::string& name, double val);
-	void set(const std::string& name, float val);
-	void set(const std::string& name, int val);
-	void set(const std::string& name, bool val);
-	void set(const std::string& name, const std::string& val);
+	void set(const string& name, double val);
+	void set(const string& name, float val);
+	void set(const string& name, int val);
+	void set(const string& name, bool val);
+	void set(const string& name, const string& val);
 
-	inline float    getf(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].fval;}
-	inline int      geti(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].ival;}
-	inline bool     getb(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].bval;}
-	inline string*  gets(const std::string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].sval;}
+	inline float    getf(const string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].fval;}
+	inline int      geti(const string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].ival;}
+	inline bool     getb(const string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].bval;}
+	inline string*  gets(const string& name)		{assert(m_VarDB.find(name)!=m_VarDB.end()); return m_VarDB[name].sval;}
 	
 	inline dbMap &	getDB()								{ return	m_VarDB; }
 
@@ -54,8 +48,8 @@ public:
     void sauve();
 	void Destroy();
 	
-	bool existe( const std::string& );
-	void erase( const std::string& );
+	bool existe( const string& );
+	void erase( const string& );
 
 protected:
     VarManager();
@@ -65,7 +59,8 @@ protected:
 
 private:
 	
-	std::map<std::string, sVar>	m_VarDB;
+	map<string, sVar>	m_VarDB;
+	string				sFileVar;
 
 SINGLETON_END()
 

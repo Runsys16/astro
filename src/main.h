@@ -320,11 +320,13 @@ typedef struct readBackground       rb_t;
 	extern vector<AlertBox*>		tAlert;
 
 	
+	extern string					sHome;
 	extern string					workDirCaptures;
 	extern string					workDirSauveCourbe;
 	extern string					workDirFileBrowser;
 	extern string					filenameSauve;
 	extern string					workDirFits;
+	
 #endif
 
 //--------------------------------------------------------------------------------------------------------------------
